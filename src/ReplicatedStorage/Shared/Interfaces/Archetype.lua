@@ -14,7 +14,7 @@ export type Archetype = {
 
   type: "Fighter" | "Defender" | "Destroyer" | "Supporter";
 
-  powers: {typeof(setmetatable({}, Action))};
+  actions: {typeof(setmetatable({}, Action))};
   
 }
 

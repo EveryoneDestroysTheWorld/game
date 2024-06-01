@@ -1,6 +1,6 @@
 --!strict
 local Archetype = require(script.Parent.Parent.Parent.Interfaces.Archetype);
-local ExplosiveLimbAttack = require(script.Parent.Parent.Actions.ExplosiveLimbAttack);
+local DetachLimb = require(script.Parent.Parent.Actions.DetachLimb);
 type Archetype = Archetype.Archetype;
 
 local archetype: Archetype = {
@@ -8,7 +8,7 @@ local archetype: Archetype = {
   name = "Explosive Mimic";
   description = "You're the bomb! No, seriously. Your limbs are explosive, but don't worry: you regenerate them. You can also cause explosions with your hands and feet!";
   type = "Destroyer";
-  powers = {ExplosiveLimbAttack};
+  actions = {DetachLimb};
 }
 
 return archetype;

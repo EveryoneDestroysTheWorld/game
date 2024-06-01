@@ -1,6 +1,7 @@
 --!strict
 -- Written by Christian Toney (Sudobeast)
 
+local ContextActionService = game:GetService("ContextActionService");
 local Action = require(script.Parent.Parent.Action);
 
 local ExplosiveLimbAttack = setmetatable({
@@ -49,7 +50,8 @@ function ExplosiveLimbAttack.__index:initialize(): ()
     self.limbSelectorGUI = limbSelectorGUI;
 
     -- Listen for events.
-
+    ContextActionService:BindAction("Select Limb", function() end, false, Enum.KeyCode.J, Enum.KeyCode.K);
+    ContextActionService:BindAction("Detach Limb", function() self:activate() end, false, Enum.UserInputType.MouseButton2);
 
   end;
 
@@ -64,6 +66,9 @@ end;
 function ExplosiveLimbAttack.__index:breakdown(): ()
 
   -- Disconnect events.
+  ContextActionService:UnbindAction("Select Limb");
+  ContextActionService:UnbindAction("Detach Limb");
+
   if self.limbSelectorGUI then
 
     self.limbSelectorGUI:Destroy();
