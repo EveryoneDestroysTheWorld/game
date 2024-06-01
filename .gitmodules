@@ -1,4 +1,0 @@
-[submodule "stage-maker"]
-	path = stage-maker
-	url = https://github.com/DemoDemons/stage-maker.git
-	branch = main
