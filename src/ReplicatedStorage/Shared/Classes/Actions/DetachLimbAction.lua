@@ -1,20 +1,25 @@
 --!strict
 -- Writer: Christian Toney (Sudobeast)
 -- Designer: Christian Toney (Sudobeast)
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ContextActionService = game:GetService("ContextActionService");
 local Action = require(script.Parent.Parent.Action);
 
 -- This is the class.
-local DetachLimbAction = setmetatable({__index = {}}, Action);
+local DetachLimbAction = setmetatable({
+  __index = {} :: Action.ActionMethods<DetachLimbAction>; -- Keeps IntelliSense working in the methods.
+  defaultProperties = {
+    ID = 1;
+    name = "Detach Limb";
+    description = "Detach a limb of your choice. It only hurts a little bit.";
+  }
+}, Action);
 
 local actionProperties: Action.ActionProperties<{
   user: Player?;
   limbSelectorGUI: ScreenGui?;
-}> = {
-  ID = 1;
-  name = "Detach Limb";
-  description = "Detach a limb of your choice. It only hurts a little bit.";
-};
+  selectedLimb: string?;
+}> = DetachLimbAction.defaultProperties;
 
 -- Although it has the same name, this is the object type.
 export type DetachLimbAction = typeof(setmetatable(Action.new(actionProperties), {__index = DetachLimbAction.__index}));
@@ -36,7 +41,7 @@ end
 
 -- @since v0.1.0
 function DetachLimbAction.__index:initialize(): ()
-  
+
   if self.user then
 
     -- Set up the limb selector UI.
@@ -61,7 +66,7 @@ end;
 -- @since v0.1.0
 function DetachLimbAction.__index:activate(): ()
 
-
+  ReplicatedStorage.Shared.Functions.ExecuteAction:InvokeServer(self.ID, "Detach Limb", self.selectedLimb);
 
 end;
 
