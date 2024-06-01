@@ -1,20 +1,22 @@
 --!strict
 -- Written by Christian Toney (Sudobeast)
 -- This module represents an Archetype, which contains a list of powers.
-local Power = require(script.Parent.Power);
+local Action = require(script.Parent.Parent.Classes.Action);
 
-type Power = Power.Power;
+type Action = Action.Action;
 
 export type Archetype = {
   
   -- The stage's unique ID.
-  ID: string;
+  ID: number;
   
   name: string;
 
   description: string?;
 
-  powers: {Power};
+  type: "Fighter" | "Defender" | "Destroyer" | "Supporter";
+
+  powers: {Action};
   
 }
 
