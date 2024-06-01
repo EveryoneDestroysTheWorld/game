@@ -5,6 +5,8 @@ local HttpService = game:GetService("HttpService");
 export type RoundProperties = {  
   -- This round's unique ID.
   ID: number;
+
+  gameMode: "Turf War";
   
   -- This stage's ID.
   stageID: string;
