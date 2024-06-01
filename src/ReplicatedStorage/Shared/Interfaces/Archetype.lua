@@ -3,8 +3,6 @@
 -- This module represents an Archetype, which contains a list of powers.
 local Action = require(script.Parent.Parent.Classes.Action);
 
-type Action = Action.Action;
-
 export type Archetype = {
   
   -- The stage's unique ID.
@@ -16,7 +14,7 @@ export type Archetype = {
 
   type: "Fighter" | "Defender" | "Destroyer" | "Supporter";
 
-  powers: {Action};
+  powers: {typeof(setmetatable({}, Action))};
   
 }
 

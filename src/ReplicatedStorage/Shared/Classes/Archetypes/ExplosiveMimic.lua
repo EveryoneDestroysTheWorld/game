@@ -11,6 +11,4 @@ local archetype: Archetype = {
   powers = {ExplosiveLimbAttack};
 }
 
-ExplosiveLimbAttack.__index.
-
 return archetype;

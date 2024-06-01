@@ -7,23 +7,23 @@ local ExplosiveLimbAttack = setmetatable({
   __index = {};
 }, Action);
 
-export type ExplosiveLimbAttack = typeof(setmetatable({} :: Action.Action, {__index = ExplosiveLimbAttack.__index}));
+local initialProperties = {
+  ID = 1;
+  name = "Detach Limb";
+};
+
+export type ExplosiveLimbAttack = typeof(setmetatable(Action.new(initialProperties), {__index = ExplosiveLimbAttack.__index}));
 
 function ExplosiveLimbAttack.new(): ExplosiveLimbAttack
 
-  local action = Action.new({
-    ID = 1;
-    name = "Detach Limb";
-  });
+  local action = Action.new(initialProperties);
 
-  return setmetatable(action, {__index = ExplosiveLimbAttack.__index});
-  
+  return setmetatable(action, ExplosiveLimbAttack.__index);
+
 end
 
 function ExplosiveLimbAttack.__index:initialize(): ()
   
-  
-
 end;
 
 function ExplosiveLimbAttack.__index:activate(): ()

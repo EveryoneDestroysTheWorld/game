@@ -18,9 +18,9 @@ export type ActionEvents = {
 }
 
 export type ActionMethods = {
-  activate: <action>(self: action) -> ();
-  initialize: <action>(self: action) -> ();
-  breakdown: <action>(self: action) -> ();
+  activate: <a>(self: a) -> ();
+  initialize: <b>(self: b) -> ();
+  breakdown: <c>(self: c) -> ();
 }
 
 local Action = {
