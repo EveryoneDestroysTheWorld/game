@@ -1,49 +1,49 @@
 --!strict
 -- Written by Christian Toney (Sudobeast)
 -- This module represents a Action.
-export type ActionProperties = {
+export type ActionProperties<T = {}> = {
   
   -- The stage's unique ID.
   ID: number;
   
   name: string;
 
-  description: string?;
+  description: string;
   
-}
+} & T;
 
 export type ActionEvents = {
   onActivate: RBXScriptSignal<"Press" | "Hold">;
   onHoldRelease: RBXScriptSignal;
 }
 
-export type ActionMethods = {
-  activate: <a>(self: a) -> ();
-  initialize: <b>(self: b) -> ();
-  breakdown: <c>(self: c) -> ();
+export type ActionMethods<T> = {
+  activate: (self: T) -> ();
+  initialize: (self: T) -> ();
+  breakdown: (self: T) -> ();
 }
 
 local Action = {
   __index = {};
 };
 
-export type Action = typeof(setmetatable({} :: ActionProperties & ActionEvents & ActionMethods, {__index = Action.__index}));
+export type Action<T> = typeof(setmetatable({}, {__index = Action.__index})) & ActionProperties<T> & ActionEvents & ActionMethods<T>;
 
 local events: {[any]: {[string]: BindableEvent}} = {};
 
-function Action.new(properties: ActionProperties): Action
+function Action.new<T>(properties: ActionProperties<T>): Action<T>
 
-  local power = properties;
+  local action = properties;
 
-  events[power] = {};
+  events[action] = {};
   for _, eventName in ipairs({"onActivate", "onHoldRelease"}) do
 
-    events[power][eventName] = Instance.new("BindableEvent");
-    power[eventName] = events[power][eventName].Event;
+    events[action][eventName] = Instance.new("BindableEvent");
+    (action :: {})[eventName] = events[action][eventName].Event;
 
   end
 
-  return setmetatable(properties :: ActionProperties & ActionEvents & ActionMethods, {__index = Action.__index});
+  return setmetatable(action :: {}, {__index = Action.__index}) :: Action<T>;
   
 end
 
