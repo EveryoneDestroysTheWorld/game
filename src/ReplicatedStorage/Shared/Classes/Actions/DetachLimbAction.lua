@@ -1,30 +1,30 @@
 --!strict
--- Written by Christian Toney (Sudobeast)
-
+-- Writer: Christian Toney (Sudobeast)
+-- Designer: Christian Toney (Sudobeast)
 local ContextActionService = game:GetService("ContextActionService");
 local Action = require(script.Parent.Parent.Action);
 
-local ExplosiveLimbAttack = setmetatable({
-  __index = {} :: Action.ActionMethods<ExplosiveLimbAttack>;
-}, Action);
+-- This is the class.
+local DetachLimbAction = setmetatable({__index = {}}, Action);
 
-type ExplosiveLimbAttackProperties = {
+local actionProperties: Action.ActionProperties<{
   user: Player?;
   limbSelectorGUI: ScreenGui?;
-};
-
-local actionProperties: Action.ActionProperties<ExplosiveLimbAttackProperties> = {
+}> = {
   ID = 1;
   name = "Detach Limb";
-  description = "";
+  description = "Detach a limb of your choice. It only hurts a little bit.";
 };
 
-export type ExplosiveLimbAttack = typeof(setmetatable(Action.new(actionProperties), {__index = ExplosiveLimbAttack.__index}));
+-- Although it has the same name, this is the object type.
+export type DetachLimbAction = typeof(setmetatable(Action.new(actionProperties), {__index = DetachLimbAction.__index}));
 
-function ExplosiveLimbAttack.new(user: Player): ExplosiveLimbAttack
+-- Returns a new action based on the user.
+-- @since v0.1.0
+function DetachLimbAction.new(user: Player): DetachLimbAction
 
   -- Get everything that comes with being an Action.
-  local self = setmetatable(Action.new(actionProperties), ExplosiveLimbAttack.__index );
+  local self = setmetatable(Action.new(actionProperties), DetachLimbAction.__index );
 
   -- Set up some unique variables.
   self.user = user;
@@ -34,7 +34,8 @@ function ExplosiveLimbAttack.new(user: Player): ExplosiveLimbAttack
 
 end
 
-function ExplosiveLimbAttack.__index:initialize(): ()
+-- @since v0.1.0
+function DetachLimbAction.__index:initialize(): ()
   
   if self.user then
 
@@ -57,13 +58,15 @@ function ExplosiveLimbAttack.__index:initialize(): ()
 
 end;
 
-function ExplosiveLimbAttack.__index:activate(): ()
+-- @since v0.1.0
+function DetachLimbAction.__index:activate(): ()
 
 
 
 end;
 
-function ExplosiveLimbAttack.__index:breakdown(): ()
+-- @since v0.1.0
+function DetachLimbAction.__index:breakdown(): ()
 
   -- Disconnect events.
   ContextActionService:UnbindAction("Select Limb");
@@ -77,4 +80,4 @@ function ExplosiveLimbAttack.__index:breakdown(): ()
 
 end;
 
-return ExplosiveLimbAttack;
+return DetachLimbAction;
