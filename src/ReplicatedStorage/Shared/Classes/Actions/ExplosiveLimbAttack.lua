@@ -16,9 +16,7 @@ export type ExplosiveLimbAttack = typeof(setmetatable(Action.new(initialProperti
 
 function ExplosiveLimbAttack.new(): ExplosiveLimbAttack
 
-  local action = Action.new(initialProperties);
-
-  return setmetatable(action, ExplosiveLimbAttack.__index);
+  return setmetatable(Action.new(initialProperties), ExplosiveLimbAttack.__index);
 
 end
 
