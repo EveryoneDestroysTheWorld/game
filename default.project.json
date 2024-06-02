@@ -1,5 +1,5 @@
 {
-  "name": "DemoDemons (Staging)",
+  "name": "DemoDemons (Staging): Arena",
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
@@ -17,8 +17,7 @@
       "$path": "src/ServerScriptService"
     },
     "ServerStorage": {
-      "$path": "src/ServerStorage",
-      "$ignoreUnknownInstances": true
+      "$path": "src/ServerStorage"
     },
     "StarterPlayer": {
       "StarterPlayerScripts": {
