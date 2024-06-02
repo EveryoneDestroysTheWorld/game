@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local Players = game:GetService("Players");
 local TeleportService = game:GetService("TeleportService");
+local Stage = require(ServerStorage.Classes.Stage);
 local Round = require(ServerStorage.Classes.Round);
 
 -- Get the match info.
@@ -22,22 +23,23 @@ local function startRound()
 
   -- Download a random stage from the stage list.
   local stage = Stage.random();
+  stage:getBuildData();
 
-  -- Start the round.
+  -- Show the results when the round ends.
   local round = Round.new({
     ID = "Test";
-    stage = stage.ID;
+    stageID = stage.ID;
     gameMode = "Turf War";
     participants = participants;
   });
 
   round.onEnded:Connect(function()
 
-    -- Show the results.
     ReplicatedStorage.Shared.Events.RoundEnded:FireAllClients(round);
 
   end);
 
+  -- Start the round.
   round:start(120);
 
 end;
