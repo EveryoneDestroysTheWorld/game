@@ -1,7 +1,8 @@
 --!strict
 -- Stage.lua
 -- Written by Christian "Sudobeast" Toney
--- This module is a class that represents a stage.
+-- This module is a class that represents a stage. 
+-- NOTE TO DEVELOPERS: This is a Roblox package, so remember to update it.
 
 local DataStoreService = game:GetService("DataStoreService");
 local DataStore = {
@@ -119,6 +120,36 @@ function Stage.new(properties: StageProperties): Stage
   return stage :: any;
   
 end
+
+-- Returns a random Stage object from the published stages list.
+function Stage.random(): Stage
+
+  -- Get a random published ID.
+  local dataStorePages = DataStore.PublishedStages:GetSortedAsync(true, 100);
+  local publishedIDArrayList = {};
+  repeat 
+
+    local currentPage = dataStorePages:GetCurrentPage();
+    table.insert(publishedIDArrayList, currentPage);
+
+    if not dataStorePages.IsFinished then
+
+      dataStorePages:AdvanceToNextPageAsync();
+
+    end;
+
+  until dataStorePages.IsFinished;
+
+  -- Pick a random page.
+  local publishedIDArray = publishedIDArrayList[math.random(1, #publishedIDArrayList)];
+  
+  -- Pick a random stage ID.
+  local selectedStageID = publishedIDArray[math.random(1, #publishedIDArray)].key;
+
+  -- Return the stage.
+  return Stage.fromID(selectedStageID);
+
+end;
 
 -- Returns a new Stage object based on an ID.
 function Stage.fromID(id: string): Stage
