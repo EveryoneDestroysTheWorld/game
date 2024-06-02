@@ -12,7 +12,7 @@ local participants = {};
 local playerCheck = task.delay(10, function()
 
   -- The round hasn't started, so kick everyone back to the lobby.
-  TeleportService:TeleportAsync(15555144468, participants);
+  TeleportService:TeleportAsync(15555144468, Players:GetPlayers());
 
 end);
 
@@ -27,7 +27,6 @@ local function startRound()
 
   -- Show the results when the round ends.
   local round = Round.new({
-    ID = "Test";
     stageID = stage.ID;
     gameMode = "Turf War";
     participants = participants;

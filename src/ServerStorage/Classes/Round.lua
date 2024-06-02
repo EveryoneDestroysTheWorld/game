@@ -4,7 +4,7 @@
 local HttpService = game:GetService("HttpService");
 export type RoundProperties = {  
   -- This round's unique ID.
-  ID: number;
+  ID: string?;
 
   gameMode: "Turf War";
   
