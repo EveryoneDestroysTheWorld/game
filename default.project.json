@@ -1,5 +1,6 @@
 {
   "name": "DemoDemons (Staging): Arena",
+  "servePlaceIds": [17711502472],
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
