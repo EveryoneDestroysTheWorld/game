@@ -21,7 +21,6 @@ export type GameModeProperties<T = {}, S = {
 export type GameModeMethods<T> = {
   start: (self: T, stageModel: Model) -> ();
   breakdown: (self: T) -> ();
-  updateStandings: (self: T) -> ();
   toString: (self: T) -> string;
 }
 

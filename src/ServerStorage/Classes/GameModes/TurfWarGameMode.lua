@@ -23,14 +23,16 @@ export type TurfWarGameModeProperties = {
   totalStageParts: number?;
 };
 
+export type TurfWarPlayerStats = typeof(setmetatable({} :: {
+  place: number;
+  partsDestroyed: number;
+  partsRestored: number;
+  timesDowned: number;
+  playersDowned: number;
+}, {}));
+
 export type TurfWarStats = {
-  [number]: {
-    place: number;
-    partsDestroyed: number;
-    partsRestored: number;
-    timesDowned: number;
-    playersDowned: number;
-  }
+  [number]: TurfWarPlayerStats;
 };
 
 local actionProperties: GameMode.GameModeProperties<TurfWarGameModeProperties, TurfWarStats> = TurfWarGameMode.defaultProperties;
@@ -46,56 +48,62 @@ function TurfWarGameMode.new(participantIDs: {number}): TurfWarGameMode
 
   for _, participantID in ipairs(participantIDs) do
 
-    gameMode.stats[participantID] = {
+    gameMode.stats[participantID] = setmetatable({
       place = 1;
       partsDestroyed = 0;
       partsRestored = 0;
       playersDowned = 0;
       timesDowned = 0;
-    };
+    }, {
+      __newindex = function(self: typeof(gameMode), index, value)
+
+        if index == "partsDestroyed" then
+
+          local standings: {{number}} = {};
+          for participantID, stats in pairs(self.stats) do
+
+            -- Find the standing that the player has.
+            local newStanding = 1;
+            for _, playerIDs in ipairs(standings) do
+
+              if self.stats[participantID].partsDestroyed >= self.stats[playerIDs[1]].partsDestroyed then
+
+                break;
+
+              end;
+
+              newStanding += 1;
+              
+            end;
+
+            -- Add the player to this standing.
+            standings[newStanding] = standings[newStanding] or {};
+            table.insert(standings[newStanding], newStanding, participantID);
+
+          end;
+
+          for standing, participantIDs in ipairs(standings) do
+
+            for _, participantID in ipairs(participantIDs) do
+
+              self.stats[participantID].place = standing;
+
+            end;
+
+          end;
+
+        end;
+
+        return value;
+
+      end;
+    });
 
   end;
 
   return gameMode;
 
 end
-
-function TurfWarGameMode.__index:updateStandings()
-
-  local standings: {{number}} = {};
-  for participantID, stats in pairs(self.stats) do
-
-    -- Find the standing that the player has.
-    local newStanding = 1;
-    for _, playerIDs in ipairs(standings) do
-
-      if self.stats[participantID].partsDestroyed >= self.stats[playerIDs[1]].partsDestroyed then
-
-        break;
-
-      end;
-
-      newStanding += 1;
-      
-    end;
-
-    -- Add the player to this standing.
-    standings[newStanding] = standings[newStanding] or {};
-    table.insert(standings[newStanding], newStanding, participantID);
-
-  end;
-
-  for standing, participantIDs in ipairs(standings) do
-
-    for _, participantID in ipairs(participantIDs) do
-
-      (self.stats :: TurfWarStats)[participantID].place = standing;
-
-    end;
-
-  end;
-
-end;
 
 -- @since v0.1.0
 function TurfWarGameMode.__index:start(stageModel: Model): ()
@@ -118,7 +126,6 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
 
           -- Add this to the score.
           self.stats[destroyerID].partsDestroyed += 1;
-          self:updateStandings();
 
           -- Give players a chance to restore the part.
           local restorablePart = restoredStage:FindFirstChild(child.Name);
@@ -143,7 +150,6 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
             -- Update scores.
             self.stats[destroyerID].partsDestroyed -= 1;
             self.stats[restorer.UserId].partsRestored += 1;
-            self:updateStandings();
 
           end);
 
@@ -165,7 +171,6 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
     -- Add it to their score.
     self.stats[victim.UserId].playersDowned += 1;
     self.stats[victim.UserId].timesDowned += 1;
-    self:updateStandings();
 
 
   end));
