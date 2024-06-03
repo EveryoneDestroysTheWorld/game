@@ -1,9 +1,11 @@
+--!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local Players = game:GetService("Players");
 local TeleportService = game:GetService("TeleportService");
 local Stage = require(ServerStorage.Classes.Stage);
 local Round = require(ServerStorage.Classes.Round);
+local TurfWarGameMode = require(ServerStorage.Classes.GameModes.TurfWarGameMode);
 
 -- Get the match info.
 local expectedPlayerIDs = {};
@@ -27,8 +29,8 @@ local function startRound()
 
   -- Show the results when the round ends.
   local round = Round.new({
-    stageID = stage.ID;
-    gameMode = "Turf War";
+    stageID = stage.ID :: string;
+    gameMode = TurfWarGameMode.new();
     participants = participants;
   });
 
@@ -39,7 +41,8 @@ local function startRound()
   end);
 
   -- Start the round.
-  round:start(120);
+  round:start(120, workspace.Stage);
+  ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(120);
 
 end;
 

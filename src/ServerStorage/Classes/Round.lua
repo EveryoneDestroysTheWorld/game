@@ -3,12 +3,12 @@
 -- This module represents a Round.
 local HttpService = game:GetService("HttpService");
 local GameMode = require(script.Parent.GameMode);
-local TurfWarGameMode = require(script.Parent.GameModes.TurfWarGameMode);
+local DataStoreService = game:GetService("DataStoreService");
 export type RoundProperties = {  
   -- This round's unique ID.
   ID: string?;
 
-  gameMode: GameMode;
+  gameMode: GameMode.GameMode<any>;
   
   -- This stage's ID.
   stageID: string;
@@ -19,7 +19,7 @@ export type RoundProperties = {
 
   participants: {Player};
 
-  stats: TurfWarGameMode.TurfWarStats?;
+  stats: {any}?;
 };
 
 export type RoundEvents = {
@@ -95,7 +95,11 @@ function Round.__index:stop()
   self.timeEnded = DateTime.now().UnixTimestampMillis;
   
   -- Get the stats from the game mode.
+  self.stats = self.gameMode.stats;
 
+  -- Save the round info in the database.
+  self.ID = HttpService:GenerateGUID();
+  DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.ID, self:toString());
 
 end;
 
@@ -114,6 +118,7 @@ function Round.__index:toString()
     timeStarted = self.timeStarted;
     timeEnded = self.timeEnded;
     participants = participantIDs;
+    gameModeID = self.gameMode.ID;
   });
   
 end;

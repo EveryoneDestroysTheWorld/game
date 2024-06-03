@@ -9,6 +9,8 @@ export type GameModeProperties<T = {}> = {
   name: string;
 
   description: string;
+
+  stats: {{[string]: number}};
   
 } & T;
 

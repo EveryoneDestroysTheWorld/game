@@ -17,13 +17,13 @@ local TurfWarGameMode = setmetatable({
 }, GameMode);
 
 export type TurfWarStats = {
-  [number]: {
+  {
     place: number;
     partsDestroyed: number;
     partsRestored: number;
     timesDowned: number;
     playersDowned: number;
-  };
+  }
 };
 
 local actionProperties: GameMode.GameModeProperties<{stats: TurfWarStats; events: {RBXScriptConnection}}> = TurfWarGameMode.defaultProperties;
