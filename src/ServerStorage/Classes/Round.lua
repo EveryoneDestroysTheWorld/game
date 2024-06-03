@@ -60,9 +60,8 @@ function Round.__index:start(duration: number)
   self.timeStarted = DateTime.now().UnixTimestampMillis;
 
   -- Start a timer.
-  local timer = task.spawn(function()
+  local timer = task.delay(duration, function()
   
-    task.wait(duration);
     self:stop();
 
   end);
