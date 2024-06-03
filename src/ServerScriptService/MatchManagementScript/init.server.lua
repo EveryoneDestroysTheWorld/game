@@ -26,7 +26,7 @@ local function startRound()
   -- Download a random stage from the stage list.
   local stage = Stage.random();
   local stageModel = stage:download();
-  -- stageMoodel.Parent = workspace;
+  stageModel.Parent = workspace;
 
   -- Show the results when the round ends.
   local participantIDs = {};
