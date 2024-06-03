@@ -66,7 +66,7 @@ type StageMethods = {
   updateBuildData: (self: Stage, newData: {string}) -> ();
   updateMetadata: (self: Stage, newData: UpdatableStageProperties) -> ();
   delete: (self: Stage) -> ();
-  download: (self: Stage) -> ();
+  download: (self: Stage) -> Model;
   publish: (self: Stage) -> ();
   unpublish: (self: Stage) -> ();
   verifyID: (self: Stage) -> ();
