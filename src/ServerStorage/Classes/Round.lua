@@ -2,11 +2,13 @@
 -- Writer: Christian Toney (Sudobeast)
 -- This module represents a Round.
 local HttpService = game:GetService("HttpService");
+local GameMode = require(script.Parent.GameMode);
+local TurfWarGameMode = require(script.Parent.GameModes.TurfWarGameMode);
 export type RoundProperties = {  
   -- This round's unique ID.
   ID: string?;
 
-  gameMode: "Turf War";
+  gameMode: GameMode;
   
   -- This stage's ID.
   stageID: string;
@@ -16,6 +18,8 @@ export type RoundProperties = {
   timeEnded: number?;
 
   participants: {Player};
+
+  stats: TurfWarGameMode.TurfWarStats?;
 };
 
 export type RoundEvents = {
@@ -24,7 +28,7 @@ export type RoundEvents = {
 }
 
 export type RoundMethods = {
-  start: (self: Round, duration: number) -> ();
+  start: (self: Round, duration: number, stageModel: Model) -> ();
   stop: (self: Round) -> ();
   toString: (self: Round) -> string;
 }
@@ -53,11 +57,18 @@ function Round.new(properties: RoundProperties): Round
   
 end
 
-function Round.__index:start(duration: number)
+function Round.__index:start(duration: number, stageModel: Model)
 
   assert(not self.timeStarted, "The round has already started.");
 
   self.timeStarted = DateTime.now().UnixTimestampMillis;
+
+  -- Run the game mode.
+  task.spawn(function()
+  
+    self.gameMode:start(stageModel);
+
+  end);
 
   -- Start a timer.
   local timer = task.delay(duration, function()
@@ -80,8 +91,12 @@ function Round.__index:stop()
 
   assert(not self.timeEnded, "The round has already ended.");
 
+  -- Update the time ended stat.
   self.timeEnded = DateTime.now().UnixTimestampMillis;
   
+  -- Get the stats from the game mode.
+
+
 end;
 
 function Round.__index:toString()
