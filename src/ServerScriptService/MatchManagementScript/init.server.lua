@@ -25,7 +25,8 @@ local function startRound()
 
   -- Download a random stage from the stage list.
   local stage = Stage.random();
-  stage:getBuildData();
+  local stageModel = stage:download();
+  stageMoodel.Parent = workspace;
 
   -- Show the results when the round ends.
   local participantIDs = {};
@@ -48,7 +49,7 @@ local function startRound()
   end);
 
   -- Start the round.
-  round:start(120, workspace.Stage);
+  round:start(120, stageModel);
   ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(120);
 
 end;
