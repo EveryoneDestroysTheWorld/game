@@ -9,7 +9,7 @@ local TurfWarGameMode = require(ServerStorage.Classes.GameModes.TurfWarGameMode)
 
 -- Get the match info.
 local expectedPlayerIDs = {};
-local participants = {};
+local participants: {Player} = {};
 
 local playerCheck = task.delay(10, function()
 
@@ -28,10 +28,17 @@ local function startRound()
   stage:getBuildData();
 
   -- Show the results when the round ends.
+  local participantIDs = {};
+  for _, participant in ipairs(participants) do
+
+    table.insert(participantIDs, participant.UserId);
+
+  end;
+
   local round = Round.new({
     stageID = stage.ID :: string;
-    gameMode = TurfWarGameMode.new();
-    participants = participants;
+    gameMode = TurfWarGameMode.new(participantIDs);
+    participantIDs = participantIDs;
   });
 
   round.onEnded:Connect(function()

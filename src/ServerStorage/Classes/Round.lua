@@ -17,7 +17,7 @@ export type RoundProperties = {
 
   timeEnded: number?;
 
-  participants: {Player};
+  participantIDs: {number};
 
   stats: {any}?;
 };
@@ -31,6 +31,7 @@ export type RoundMethods = {
   start: (self: Round, duration: number, stageModel: Model) -> ();
   stop: (self: Round) -> ();
   toString: (self: Round) -> string;
+  getParticipantIDs: (self: Round) -> {number};
 }
 
 local Round = {
@@ -93,32 +94,24 @@ function Round.__index:stop()
 
   -- Update the time ended stat.
   self.timeEnded = DateTime.now().UnixTimestampMillis;
-  
-  -- Get the stats from the game mode.
-  self.stats = self.gameMode.stats;
 
   -- Save the round info in the database.
   self.ID = HttpService:GenerateGUID();
-  DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.ID, self:toString());
+
+  -- Get user IDs.
+  DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.ID, self:toString(), self.participantIDs);
 
 end;
 
 function Round.__index:toString()
-
-  local participantIDs = {};
-  for _, participant in ipairs(self.participants) do
-
-    table.insert(participantIDs, participant.UserId);
-
-  end;
 
   return HttpService:JSONEncode({
     ID = self.ID;
     stageID = self.stageID;
     timeStarted = self.timeStarted;
     timeEnded = self.timeEnded;
-    participants = participantIDs;
-    gameModeID = self.gameMode.ID;
+    participantIDs = self.participantIDs;
+    gameMode = self.gameMode:toString();
   });
   
 end;

@@ -10,13 +10,19 @@ export type GameModeProperties<T = {}> = {
 
   description: string;
 
-  stats: {{[string]: number}};
+  stats: {
+    [number]: {
+      [string]: number;
+    };
+  };
   
 } & T;
 
 export type GameModeMethods<T> = {
   start: (self: T, stageModel: Model) -> ();
   breakdown: (self: T) -> ();
+  updateStandings: (self: T) -> ();
+  toString: (self: T) -> string;
 }
 
 local GameMode = {
