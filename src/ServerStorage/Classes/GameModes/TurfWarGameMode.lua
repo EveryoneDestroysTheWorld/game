@@ -25,6 +25,7 @@ export type TurfWarGameModeProperties = {
 
 export type TurfWarPlayerStats = typeof(setmetatable({} :: {
   place: number;
+  partsClaimed: number;
   partsDestroyed: number;
   partsRestored: number;
   timesDowned: number;
@@ -50,14 +51,15 @@ function TurfWarGameMode.new(participantIDs: {number}): TurfWarGameMode
 
     gameMode.stats[participantID] = setmetatable({
       place = 1;
+      partsClaimed = 0;
       partsDestroyed = 0;
       partsRestored = 0;
       playersDowned = 0;
       timesDowned = 0;
     }, {
-      __newindex = function(self: typeof(gameMode), index, value)
+      __newindex = function(self: typeof(gameMode), index: string, value: number)
 
-        if index == "partsDestroyed" then
+        if index == "partsClaimed" then
 
           local standings: {{number}} = {};
           for participantID, stats in pairs(self.stats) do
@@ -66,7 +68,7 @@ function TurfWarGameMode.new(participantIDs: {number}): TurfWarGameMode
             local newStanding = 1;
             for _, playerIDs in ipairs(standings) do
 
-              if self.stats[participantID].partsDestroyed >= self.stats[playerIDs[1]].partsDestroyed then
+              if self.stats[participantID].partsClaimed >= self.stats[playerIDs[1]].partsClaimed then
 
                 break;
 
@@ -115,7 +117,7 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
 
   -- Keep track of destroyed parts.
   local totalStageParts = 0;
-  for _, child in ipairs(stageModel:GetChildren()) do
+  for _, child in ipairs(restoredStage:GetChildren()) do
 
     if child:IsA("BasePart") and child:GetAttribute("BaseDurability") then
 
@@ -126,6 +128,7 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
 
           -- Add this to the score.
           self.stats[destroyerID].partsDestroyed += 1;
+          self.stats[destroyerID].partsClaimed += 1;
 
           -- Give players a chance to restore the part.
           local restorablePart = restoredStage:FindFirstChild(child.Name);
@@ -148,7 +151,7 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
             child:SetAttribute("CurrentDurability", child:GetAttribute("BaseDurability"));
 
             -- Update scores.
-            self.stats[destroyerID].partsDestroyed -= 1;
+            self.stats[destroyerID].partsClaimed -= 1;
             self.stats[restorer.UserId].partsRestored += 1;
 
           end);
@@ -171,7 +174,6 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
     -- Add it to their score.
     self.stats[victim.UserId].playersDowned += 1;
     self.stats[victim.UserId].timesDowned += 1;
-
 
   end));
 
