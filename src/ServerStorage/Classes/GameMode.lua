@@ -1,7 +1,11 @@
 --!strict
 -- Written by Christian Toney (Sudobeast)
 -- This module represents a Action.
-export type GameModeProperties<T = {}> = {
+export type GameModeProperties<T = {}, S = {
+  [number]: {
+    [string]: number;
+  };
+}> = {
   
   -- The stage's unique ID.
   ID: number;
@@ -10,11 +14,7 @@ export type GameModeProperties<T = {}> = {
 
   description: string;
 
-  stats: {
-    [number]: {
-      [string]: number;
-    };
-  };
+  stats: S;
   
 } & T;
 
@@ -29,13 +29,11 @@ local GameMode = {
   __index = {};
 };
 
-export type GameMode<T> = typeof(setmetatable({}, {__index = GameMode.__index})) & GameModeProperties<T> & GameModeMethods<T>;
+export type GameMode<T, S> = typeof(setmetatable({}, {__index = GameMode.__index})) & T & GameModeMethods<T>;
 
-function GameMode.new<T>(properties: GameModeProperties<T>): GameMode<T>
+function GameMode.new<T, S>(properties: GameModeProperties<T, S>): GameMode<T, S>
 
-  local action = properties;
-
-  return setmetatable(action :: {}, {__index = GameMode.__index}) :: GameMode<T>;
+  return setmetatable(properties :: {}, {__index = GameMode.__index}) :: GameMode<T, S>;
   
 end
 

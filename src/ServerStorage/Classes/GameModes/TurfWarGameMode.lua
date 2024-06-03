@@ -8,15 +8,20 @@ local GameMode = require(script.Parent.Parent.GameMode);
 
 -- This is the class.
 local TurfWarGameMode = setmetatable({
-  __index = {} :: GameMode.GameModeProperties<TurfWarGameMode>; -- Keeps IntelliSense working in the methods.
+  __index = {} :: GameMode.GameModeMethods<TurfWarGameMode>; -- Keeps IntelliSense working in the methods.
   defaultProperties = {
     ID = 1;
     name = "Turf War";
     description = "";
     stats = {};
     events = {};
-  }
+  };
 }, GameMode);
+
+export type TurfWarGameModeProperties = {
+  events: {RBXScriptConnection}; 
+  totalStageParts: number?;
+};
 
 export type TurfWarStats = {
   [number]: {
@@ -28,7 +33,7 @@ export type TurfWarStats = {
   }
 };
 
-local actionProperties: GameMode.GameModeProperties<{stats: TurfWarStats; events: {RBXScriptConnection}; totalStageParts: number?}> = TurfWarGameMode.defaultProperties;
+local actionProperties: GameMode.GameModeProperties<TurfWarGameModeProperties, TurfWarStats> = TurfWarGameMode.defaultProperties;
 
 -- Although it has the same name, this is the object type.
 export type TurfWarGameMode = typeof(setmetatable(GameMode.new(actionProperties), {__index = TurfWarGameMode.__index}));
@@ -41,13 +46,13 @@ function TurfWarGameMode.new(participantIDs: {number}): TurfWarGameMode
 
   for _, participantID in ipairs(participantIDs) do
 
-    (gameMode.stats :: TurfWarStats)[participantID] = {
+    gameMode.stats[participantID] = {
       place = 1;
       partsDestroyed = 0;
       partsRestored = 0;
       playersDowned = 0;
       timesDowned = 0;
-    }
+    };
 
   end;
 
@@ -60,13 +65,19 @@ function TurfWarGameMode.__index:updateStandings()
   local standings: {{number}} = {};
   for participantID, stats in pairs(self.stats) do
 
+    -- Find the standing that the player has.
     local newStanding = 1;
-    for _, standing in ipairs(standings) do
+    for _, playerIDs in ipairs(standings) do
 
+      if self.stats[participantID].partsDestroyed >= self.stats[playerIDs[1]].partsDestroyed then
 
+        break;
+
+      end;
+
+      newStanding += 1;
       
     end;
-    -- stats.
 
     -- Add the player to this standing.
     standings[newStanding] = standings[newStanding] or {};
@@ -74,9 +85,13 @@ function TurfWarGameMode.__index:updateStandings()
 
   end;
 
-  for standing, participantID in ipairs(standings) do
+  for standing, participantIDs in ipairs(standings) do
 
-    props.stats[participantID] = standing;
+    for _, participantID in ipairs(participantIDs) do
+
+      (self.stats :: TurfWarStats)[participantID].place = standing;
+
+    end;
 
   end;
 
@@ -102,7 +117,8 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
         if destroyerID then
 
           -- Add this to the score.
-          (self.stats :: {})[destroyerID].partsDestroyed += 1;
+          self.stats[destroyerID].partsDestroyed += 1;
+          self:updateStandings();
 
           -- Give players a chance to restore the part.
           local restorablePart = restoredStage:FindFirstChild(child.Name);
@@ -115,20 +131,21 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
           proximityPrompt.ActionText = "Restore";
           proximityPrompt.Parent = restorablePart;
 
-          proximityPrompt.Triggered:Connect(function(player)
+          proximityPrompt.Triggered:Connect(function(restorer)
           
+            -- Verify that the restorer is a participant.
+
+
             -- Restore the part.
             proximityPrompt:Destroy();
             child:SetAttribute("CurrentDurability", child:GetAttribute("BaseDurability"));
 
-            -- Remove the part from the player's score.
+            -- Update scores.
+            self.stats[destroyerID].partsDestroyed -= 1;
+            self.stats[restorer.UserId].partsRestored += 1;
+            self:updateStandings();
 
           end);
-
-        else
-
-          -- Make sure no one has this part in their score.
-
 
         end;
 
@@ -146,6 +163,9 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
   table.insert(self.events, ServerStorage.Events.ParticipantDowned.Event:Connect(function(victim: Player, downer: Player?)
   
     -- Add it to their score.
+    self.stats[victim.UserId].playersDowned += 1;
+    self.stats[victim.UserId].timesDowned += 1;
+    self:updateStandings();
 
 
   end));
