@@ -129,11 +129,15 @@ function Stage.random(): Stage
 
   -- Get a random published ID.
   local dataStorePages = DataStore.PublishedStages:GetSortedAsync(true, 100);
-  local publishedIDArrayList = {};
+  local publishedStageIDs = {};
   repeat 
 
     local currentPage = dataStorePages:GetCurrentPage();
-    table.insert(publishedIDArrayList, currentPage);
+    for _, entry in ipairs(currentPage) do
+
+      table.insert(publishedStageIDs, entry.key)
+
+    end;
 
     if not dataStorePages.IsFinished then
 
@@ -143,14 +147,40 @@ function Stage.random(): Stage
 
   until dataStorePages.IsFinished;
 
-  -- Pick a random page.
-  local publishedIDArray = publishedIDArrayList[math.random(1, #publishedIDArrayList)];
-  
-  -- Pick a random stage ID.
-  local selectedStageID = publishedIDArray[math.random(1, #publishedIDArray)].key;
+  if #publishedStageIDs == 0 then
 
-  -- Return the stage.
-  return Stage.fromID(selectedStageID);
+    error("There are no published stages available.");
+
+  end;
+
+  local stage: Stage;
+  repeat
+
+    local selectedStageIDIndex = math.random(1, #publishedStageIDs);
+    local selectedStageID = publishedStageIDs[selectedStageIDIndex];
+
+    local stageFound, errorMessage = pcall(function()
+      
+      local possibleStage = Stage.fromID(selectedStageID);
+      stage = possibleStage;
+
+    end);
+
+    if not stageFound and errorMessage:find("doesn't exist") then
+
+      task.spawn(function()
+
+        DataStore.PublishedStages:RemoveAsync(selectedStageID);
+        table.remove(publishedStageIDs, selectedStageIDIndex);
+        print(`Removed {selectedStageID} from the published stages list because it doesn't exist.`);
+
+      end);
+
+    end;
+
+  until stage;
+
+  return stage;
 
 end;
 
@@ -158,7 +188,7 @@ end;
 function Stage.fromID(id: string): Stage
   
   local encodedStageData = DataStoreService:GetDataStore("StageMetadata"):GetAsync(id);
-  assert(encodedStageData, `Stage {id} doesn't exist yet.`);
+  assert(encodedStageData, `Stage {id} doesn't exist.`);
   
   local stageData = HttpService:JSONDecode(encodedStageData);
   stageData.ID = id;
