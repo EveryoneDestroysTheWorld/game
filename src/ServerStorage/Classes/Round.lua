@@ -8,7 +8,7 @@ export type RoundProperties = {
   -- This round's unique ID.
   ID: string?;
 
-  gameMode: GameMode.GameMode<any>;
+  gameMode: GameMode.GameMode<any, any>;
   
   -- This stage's ID.
   stageID: string;
@@ -44,17 +44,17 @@ local events: {[any]: {[string]: BindableEvent}} = {};
 
 function Round.new(properties: RoundProperties): Round
 
-  local action = properties;
+  local round = setmetatable(properties :: {}, {__index = Round.__index}) :: Round;
 
-  events[action] = {};
+  events[round] = {};
   for _, eventName in ipairs({"onEnded", "onHoldRelease"}) do
 
-    events[action][eventName] = Instance.new("BindableEvent");
-    (action :: {})[eventName] = events[action][eventName].Event;
+    events[round][eventName] = Instance.new("BindableEvent");
+    (round :: {})[eventName] = events[round][eventName].Event;
 
   end
 
-  return setmetatable(action :: {}, {__index = Round.__index}) :: Round;
+  return round;
   
 end
 
@@ -92,14 +92,14 @@ function Round.__index:stop()
 
   assert(not self.timeEnded, "The round has already ended.");
 
-  -- Update the time ended stat.
-  self.timeEnded = DateTime.now().UnixTimestampMillis;
+  -- Break down the game mode.
+  self.gameMode:breakdown();
 
   -- Save the round info in the database.
+  self.timeEnded = DateTime.now().UnixTimestampMillis;
   self.ID = HttpService:GenerateGUID();
-
-  -- Get user IDs.
   DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.ID, self:toString(), self.participantIDs);
+  events[self].onEnded:Fire();
 
 end;
 
