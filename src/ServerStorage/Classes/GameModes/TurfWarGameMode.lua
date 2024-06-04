@@ -115,9 +115,14 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
   restoredStage.Name = "RestoredStage";
   restoredStage.Parent = ServerStorage;
 
+  local restorablePartsModel = Instance.new("Model");
+  restorablePartsModel.Name = "RestorablePartsModel";
+  restorablePartsModel.Parent = workspace;
+
   -- Keep track of destroyed parts.
   local totalStageParts = 0;
-  for _, child in ipairs(restoredStage:GetChildren()) do
+
+  local function checkChild(child: Instance)
 
     if child:IsA("BasePart") and child:GetAttribute("BaseDurability") then
 
@@ -131,28 +136,41 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
           self.stats[destroyerID].partsClaimed += 1;
 
           -- Give players a chance to restore the part.
-          local restorablePart = restoredStage:FindFirstChild(child.Name);
+          local partReference = restoredStage:FindFirstChild(child.Name);
+          assert(typeof(partReference) == "BasePart", `Restorable Part {child.Name} was not found.`);
+          local restorablePart = partReference:Clone();
+          restorablePart.Transparency = 0.7;
+          restorablePart.CanCollide = false;
+          restorablePart.Anchored = true;
+          restorablePart.Parent = restorablePartsModel;
 
           local proximityPrompt = Instance.new("ProximityPrompt");
           proximityPrompt.HoldDuration = 1.25;
           proximityPrompt.MaxActivationDistance = 40;
           proximityPrompt.RequiresLineOfSight = false;
-          proximityPrompt.ObjectText = `Destroyed by {Players:GetPlayerByUserId(destroyerID).Name}`
+          proximityPrompt.ObjectText = `Destroyed by {Players:GetPlayerByUserId(destroyerID).Name}`;
           proximityPrompt.ActionText = "Restore";
           proximityPrompt.Parent = restorablePart;
 
           proximityPrompt.Triggered:Connect(function(restorer)
           
             -- Verify that the restorer is a participant.
+            if self.stats[restorer.UserId] then
 
+              -- Delete old parts.
+              child:Destroy();
+              proximityPrompt:Destroy();
+              restorablePart:Destroy();
 
-            -- Restore the part.
-            proximityPrompt:Destroy();
-            child:SetAttribute("CurrentDurability", child:GetAttribute("BaseDurability"));
+              -- Restore the part.
+              local restoredPart = partReference:Clone();
+              restoredPart.Parent = stageModel;
 
-            -- Update scores.
-            self.stats[destroyerID].partsClaimed -= 1;
-            self.stats[restorer.UserId].partsRestored += 1;
+              -- Update scores.
+              self.stats[destroyerID].partsClaimed -= 1;
+              self.stats[restorer.UserId].partsRestored += 1;
+
+            end;
 
           end);
 
@@ -166,7 +184,18 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
 
   end;
 
+  for _, child in ipairs(stageModel:GetChildren()) do
+
+    checkChild(child);
+
+  end;
   self.totalStageParts = totalStageParts;
+
+  stageModel.ChildAdded:Connect(function(child)
+  
+    checkChild(child);
+
+  end);
 
   -- Keep track of downed players.
   table.insert(self.events, ServerStorage.Events.ParticipantDowned.Event:Connect(function(victim: Player, downer: Player?)
@@ -181,6 +210,13 @@ end;
 
 function TurfWarGameMode.__index:breakdown()
 
+  -- Disconnect all events.
+  for _, event in ipairs(self.events) do
+
+    event:Disconnect();
+
+  end;
+
   -- Delete the restored stage.
   local restoredStage = workspace:FindFirstChild("RestoredStage");
   if restoredStage then
@@ -189,10 +225,10 @@ function TurfWarGameMode.__index:breakdown()
 
   end;
 
-  -- Disconnect all events.
-  for _, event in ipairs(self.events) do
+  local restorablePartsModel = workspace:FindFirstChild("RestorablePartsModel");
+  if restorablePartsModel then
 
-    event:Disconnect();
+    restorablePartsModel:Destroy();
 
   end;
 
@@ -203,6 +239,7 @@ function TurfWarGameMode.__index:toString()
   return HttpService:JSONDecode({
     ID = self.ID;
     stats = self.stats;
+    totalStageParts = self.totalStageParts;
   });
 
 end;
