@@ -1,10 +1,8 @@
 --!strict
 local ServerScriptService = game:GetService("ServerScriptService");
-local DetachLimbAction = {};
-
 local validLimbNames = {"Head", "LeftArm", "RightArm", "LeftLeg", "RightLeg"};
 
-function DetachLimbAction:execute(player: Player, limbName: string?)
+return function(player: Player, limbName: string?)
 
   -- Verify variable types to maintain server security.
   assert(typeof(limbName) == "string", "Limb name must be a string.");
@@ -37,5 +35,3 @@ function DetachLimbAction:execute(player: Player, limbName: string?)
   return limbClone.Name;
 
 end;
-
-return DetachLimbAction;
