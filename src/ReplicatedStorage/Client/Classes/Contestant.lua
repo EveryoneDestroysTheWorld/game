@@ -10,6 +10,10 @@ export type ContestantProperties = {
   
 }
 
+export type RoundEvents = {
+  onDisqualified: RBXScriptSignal;
+}
+
 local Contestant = {
   __index = {};
 };

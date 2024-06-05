@@ -8,9 +8,9 @@ local Action = require(script.Parent.Parent.Action);
 type Action = Action.Action;
 
 local DetachLimbAction = {
-  ID = 2;
-  name = "Detach Limb";
-  description = "Detach a limb of your choice. It only hurts a little bit.";
+  ID = 3;
+  name = "Detonate Detached Limbs";
+  description = "Explodes all detached limbs and regenerates them.";
 };
 
 function DetachLimbAction.new(): Action
