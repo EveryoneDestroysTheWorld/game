@@ -2,7 +2,7 @@
 -- Written by Christian Toney (Sudobeast)
 -- This module represents an Archetype, which contains a list of powers.
 
-export type ArchetypeProperties = {
+export type ClientArchetypeProperties = {
   
   ID: number;
   
@@ -14,21 +14,21 @@ export type ArchetypeProperties = {
 
   actionIDs: {number};
 
-  breakdown: (self: Archetype) -> ();
+  breakdown: (self: ClientArchetype) -> ();
   
 }
 
-local Archetype = {}
+local ClientArchetype = {}
 
-export type Archetype = ArchetypeProperties;
+export type ClientArchetype = ClientArchetypeProperties;
 
-function Archetype.new(properties: ArchetypeProperties): Archetype
+function ClientArchetype.new(properties: ClientArchetypeProperties): ClientArchetype
 
   return properties;
   
 end
 
-function Archetype.get(archetypeID: number): Archetype
+function ClientArchetype.get(archetypeID: number): ClientArchetype
 
   for _, instance in ipairs(script.Parent.Archetypes:GetChildren()) do
   
@@ -49,4 +49,4 @@ function Archetype.get(archetypeID: number): Archetype
 
 end;
 
-return Archetype;
+return ClientArchetype;

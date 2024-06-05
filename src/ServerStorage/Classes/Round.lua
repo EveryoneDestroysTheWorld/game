@@ -29,7 +29,6 @@ export type RoundMethods = {
   start: (self: Round, duration: number, stageModel: Model) -> ();
   stop: (self: Round) -> ();
   toString: (self: Round) -> string;
-  getParticipantIDs: (self: Round) -> {number};
 }
 
 local Round = {

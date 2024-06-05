@@ -15,7 +15,7 @@ export type RoundEvents = {
   onEnded: RBXScriptSignal;
 }
 
-export type Round = typeof(setmetatable({} :: RoundProperties, Round)) & RoundEvents;
+export type Round = typeof(setmetatable({}, Round)) & RoundProperties & RoundEvents;
 
 function Round.new(properties: RoundProperties): Round
 
