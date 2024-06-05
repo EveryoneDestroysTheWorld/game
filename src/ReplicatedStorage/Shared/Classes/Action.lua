@@ -2,14 +2,12 @@
 -- Written by Christian Toney (Sudobeast)
 -- This module represents a Action.
 export type ActionProperties = {
-  
-  -- The stage's unique ID.
   ID: number;
-  
   name: string;
-
   description: string;
-  
+  activate: (self: Action) -> ();
+  initialize: (self: Action) -> ();
+  breakdown: (self: Action) -> ();
 };
 
 export type ActionEvents = {
@@ -17,33 +15,27 @@ export type ActionEvents = {
   onHoldRelease: RBXScriptSignal;
 }
 
-export type ActionMethods<ExtendedAction> = {
-  activate: (self: ExtendedAction) -> ();
-  initialize: (self: ExtendedAction) -> ();
-  breakdown: (self: ExtendedAction) -> ();
-}
-
 local Action = {
-  __index = {} :: ActionProperties;
+  __index = {};
 };
 
-export type Action = typeof(setmetatable({}, Action));
-
-local events: {[any]: {[string]: BindableEvent}} = {};
+export type Action = typeof(setmetatable({} :: ActionProperties, Action)) & ActionEvents;
 
 function Action.new(properties: ActionProperties): Action
 
   local action = properties;
 
-  events[action] = {};
-  for _, eventName in ipairs({"onActivate", "onHoldRelease"}) do
+  -- Set up events.
+  local events: {[string]: BindableEvent} = {};
+  local eventNames = {"onActivate", "onHoldRelease"};
+  for _, eventName in ipairs(eventNames) do
 
-    events[action][eventName] = Instance.new("BindableEvent");
-    (action :: {})[eventName] = events[action][eventName].Event;
+    events[eventName] = Instance.new("BindableEvent");
+    action[eventName] = events[eventName].Event;
 
   end
 
-  return setmetatable(action, Action);
+  return setmetatable(action, Action) :: Action;
   
 end
 
