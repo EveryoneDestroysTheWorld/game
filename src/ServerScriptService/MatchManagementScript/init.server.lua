@@ -2,25 +2,20 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local Players = game:GetService("Players");
-local TeleportService = game:GetService("TeleportService");
 local Stage = require(ServerStorage.Classes.Stage);
 local Round = require(ServerStorage.Classes.Round);
 local TurfWarGameMode = require(ServerStorage.Classes.GameModes.TurfWarGameMode);
 
--- Get the match info.
-local expectedPlayerIDs = {};
-local participants: {Player} = {};
+local expectedContestantIDs: {number} = {};
+local contestants: {Player} = {};
 
-local playerCheck = task.delay(10, function()
-
-  -- The round hasn't started, so notify the rest of the participants that there are missing players.
-
-end);
+local playerCheckThread: thread = nil;
+local currentRound: Round.Round? = nil;
 
 local function startRound()
 
   -- Disable the player check.
-  task.cancel(playerCheck);
+  task.cancel(playerCheckThread);
 
   -- Download a random stage from the stage list.
   local stage = Stage.random();
@@ -29,9 +24,9 @@ local function startRound()
 
   -- Show the results when the round ends.
   local participantIDs = {};
-  for _, participant in ipairs(participants) do
+  for _, contestant in ipairs(contestants) do
 
-    table.insert(participantIDs, participant.UserId);
+    table.insert(participantIDs, contestant.UserId);
 
   end;
 
@@ -40,11 +35,12 @@ local function startRound()
     gameMode = TurfWarGameMode.new(participantIDs);
     participantIDs = participantIDs;
   });
+
+  currentRound = round;
   
   round.onEnded:Connect(function()
 
     ReplicatedStorage.Shared.Events.RoundEnded:FireAllClients(round);
-    print(round);
 
   end);
 
@@ -55,37 +51,90 @@ local function startRound()
 
 end;
 
-Players.PlayerAdded:Connect(function(player)
+local function checkPlayers()
 
-  for _, playerID in ipairs(expectedPlayerIDs) do
+  if #contestants == 0 then
 
-    if playerID == player.UserId then
+    for _, player in ipairs(Players:GetPlayers()) do
 
-      table.insert(participants, player);
+      player:Kick("No contestant joined, so the match is off. :(");
 
     end;
 
-    -- Check if we should start the round.
-    local playerIDFound = false;
-    for _, player in ipairs(participants) do
+  else
 
-      if playerID == player.UserId then
-        
-        playerIDFound = true;
-        break;
+    -- The round hasn't started, so notify the rest of the participants that there are missing players.
+    local disqualifiedContestantIDs = {};
+    for _, expectedPlayerID in ipairs(expectedContestantIDs) do
+
+      if not Players:GetPlayerByUserId(expectedPlayerID) then
+
+        table.insert(disqualifiedContestantIDs, expectedPlayerID);
 
       end;
 
     end;
 
-    if not playerIDFound then
-
-      return;
-
-    end;
+    startRound();
 
   end;
 
-  startRound();
+end;
+
+playerCheckThread = task.delay(10, checkPlayers);
+
+Players.PlayerAdded:Connect(function(player)
+
+  if currentRound then
+
+    player:Kick("Round is currently in session.");
+
+  else
+
+    local foundNewContestantID = false;
+    for _, playerID in ipairs(expectedContestantIDs) do
+
+      if playerID == player.UserId then
+
+        table.insert(contestants, player);
+
+      end;
+
+      -- Check if we should start the round.
+      local playerIDFound = false;
+      for _, player in ipairs(contestants) do
+
+        if playerID == player.UserId then
+          
+          playerIDFound = true;
+          foundNewContestantID = true;
+          break;
+
+        end;
+
+      end;
+
+      if not playerIDFound then
+
+        if foundNewContestantID then
+
+          if playerCheckThread then
+
+            task.cancel(playerCheckThread);
+
+          end;
+          playerCheckThread = task.delay(10, checkPlayers);
+
+        end;
+
+        return;
+
+      end;
+
+    end;
+    
+    startRound();
+
+  end;
 
 end);
