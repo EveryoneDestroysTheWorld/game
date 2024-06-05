@@ -3,8 +3,8 @@
 -- Designer: Christian Toney (Sudobeast)
 local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local Contestant = require(script.Parent.Parent.Contestant);
-type Contestant = Contestant.Contestant;
+local ServerContestant = require(script.Parent.Parent.ServerContestant);
+type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
 local DetonateDetachedLimbsClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetonateDetachedLimbsClientAction);
@@ -15,7 +15,7 @@ local DetonateDetachedLimbsServerAction = {
   description = DetonateDetachedLimbsClientAction.description;
 };
 
-function DetonateDetachedLimbsServerAction.new(contestant: Contestant): ServerAction
+function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant): ServerAction
 
   local function activate()
 
