@@ -8,7 +8,8 @@ local Round = require(ServerStorage.Classes.Round);
 local TurfWarGameMode = require(ServerStorage.Classes.GameModes.TurfWarGameMode);
 
 -- Get the match info.
-local expectedPlayerIDs = {};
+-- local expectedPlayerIDs = {};
+local expectedPlayerIDs = {904459813};
 local participants: {Player} = {};
 
 local playerCheck = task.delay(10, function()
@@ -33,6 +34,7 @@ local function startRound()
   for _, participant in ipairs(participants) do
 
     table.insert(participantIDs, participant.UserId);
+    ReplicatedStorage.Shared.Functions.InitializeInventory:InvokeClient(participant, 1);
 
   end;
 

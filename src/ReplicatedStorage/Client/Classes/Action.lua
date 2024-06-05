@@ -1,12 +1,12 @@
 --!strict
 -- Written by Christian Toney (Sudobeast)
 -- This module represents a Action.
+
 export type ActionProperties = {
   ID: number;
   name: string;
   description: string;
   activate: (self: Action) -> ();
-  initialize: (self: Action) -> ();
   breakdown: (self: Action) -> ();
 };
 
@@ -15,11 +15,8 @@ export type ActionEvents = {
   onHoldRelease: RBXScriptSignal;
 }
 
-local Action = {
-  __index = {};
-};
-
-export type Action = typeof(setmetatable({} :: ActionProperties, Action)) & ActionEvents;
+local Action = {};
+export type Action = ActionProperties & ActionEvents;
 
 function Action.new(properties: ActionProperties): Action
 
@@ -35,8 +32,29 @@ function Action.new(properties: ActionProperties): Action
 
   end
 
-  return setmetatable(action, Action) :: Action;
+  return action :: Action;
   
 end
+
+function Action.get(actionID: number): Action
+
+  for _, instance in ipairs(script.Parent.Actions:GetChildren()) do
+  
+    if instance:IsA("ModuleScript") then
+  
+      local action = require(instance) :: any;
+      if action.ID == actionID then
+  
+        return action.new();
+  
+      end;
+  
+    end
+  
+  end;
+
+  error(`Couldn't find action from ID {actionID}.`);
+
+end;
 
 return Action;

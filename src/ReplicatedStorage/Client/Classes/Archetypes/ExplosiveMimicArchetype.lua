@@ -5,14 +5,11 @@ local ExplosiveMimicArchetype = {
   ID = 1;
   name = "Explosive Mimic";
   description = "";
+  actionIDs = {};
 };
-function ExplosiveMimicArchetype.new(contestant: any): Archetype
+function ExplosiveMimicArchetype.new(): Archetype
 
-  local function initializeEffects(self: Archetype)
-
-  end;
-
-  local function breakdownEffects(self: Archetype)
+  local function breakdown(self: Archetype)
 
   end;
 
@@ -20,10 +17,9 @@ function ExplosiveMimicArchetype.new(contestant: any): Archetype
     ID = ExplosiveMimicArchetype.ID;
     name = ExplosiveMimicArchetype.name;
     description = ExplosiveMimicArchetype.description;
-    actionIDs = {};
+    actionIDs = ExplosiveMimicArchetype.actionIDs;
     type = "Destroyer";
-    initializeEffects = initializeEffects;
-    breakdownEffects = breakdownEffects;
+    breakdown = breakdown;
   });
 
 end;
