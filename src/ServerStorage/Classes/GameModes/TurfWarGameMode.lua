@@ -123,18 +123,30 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
 
     if child:IsA("BasePart") and child:GetAttribute("BaseDurability") then
 
+      local eventIndex = #self.events + 1;
       table.insert(self.events, child:GetAttributeChangedSignal("CurrentDurability"):Connect(function()
       
-        local destroyerID = child:GetAttribute("DestroyerID") :: number?;
-        if destroyerID then
+        local currentDurability = child:GetAttribute("CurrentDurability") :: number;
+        if currentDurability <= 0 then
 
+          -- Make sure this event doesn't get called again.
+          self.events[eventIndex]:Disconnect();
+        
           -- Add this to the score.
-          self.stats[destroyerID].partsDestroyed += 1;
-          self.stats[destroyerID].partsClaimed += 1;
+          local destroyerID = child:GetAttribute("DestroyerID") :: number?;
+          if destroyerID then
+
+            self.stats[destroyerID].partsDestroyed += 1;
+            self.stats[destroyerID].partsClaimed += 1;
+
+          end;
+
+          -- Break the part.
+          child.Anchored = false;
 
           -- Give players a chance to restore the part.
           local partReference = restoredStage:FindFirstChild(child.Name);
-          assert(typeof(partReference) == "BasePart", `Restorable Part {child.Name} was not found.`);
+          assert(partReference and partReference:IsA("BasePart"), `Restorable Part {child.Name} was not found.`);
           local restorablePart = partReference:Clone();
           restorablePart.Transparency = 0.7;
           restorablePart.CanCollide = false;
@@ -145,7 +157,7 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
           proximityPrompt.HoldDuration = 1.25;
           proximityPrompt.MaxActivationDistance = 40;
           proximityPrompt.RequiresLineOfSight = false;
-          proximityPrompt.ObjectText = `Destroyed by {Players:GetPlayerByUserId(destroyerID).Name}`;
+          proximityPrompt.ObjectText = `Destroyed{if destroyerID then ` by {Players:GetPlayerByUserId(destroyerID).Name}` else ""}`;
           proximityPrompt.ActionText = "Restore";
           proximityPrompt.Parent = restorablePart;
 
@@ -163,9 +175,13 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
               local restoredPart = partReference:Clone();
               restoredPart.Parent = stageModel;
 
-              -- Update scores.
-              self.stats[destroyerID].partsClaimed -= 1;
-              self.stats[restorer.UserId].partsRestored += 1;
+              if destroyerID then
+
+                -- Update scores.
+                self.stats[destroyerID].partsClaimed -= 1;
+                self.stats[restorer.UserId].partsRestored += 1;
+
+              end;
 
             end;
 

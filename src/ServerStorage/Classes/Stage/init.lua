@@ -381,6 +381,13 @@ function Stage.__index:download(): Model
 
       end;
 
+      local baseDurability = instance:GetAttribute("BaseDurability");
+      if baseDurability then
+
+        instance:SetAttribute("CurrentDurability", baseDurability);
+
+      end
+
       instance.Parent = stageModel;
 
       partsAudited += 1;

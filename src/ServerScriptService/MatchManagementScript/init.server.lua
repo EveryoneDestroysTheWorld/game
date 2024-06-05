@@ -29,7 +29,7 @@ local function startRound()
   stageModel.Parent = workspace;
 
   -- Show the results when the round ends.
-  local participantIDs = {};
+  local participantIDs = {904459813};
   for _, participant in ipairs(participants) do
 
     table.insert(participantIDs, participant.UserId);
@@ -45,6 +45,7 @@ local function startRound()
   round.onEnded:Connect(function()
 
     ReplicatedStorage.Shared.Events.RoundEnded:FireAllClients(round);
+    print(round);
 
   end);
 
