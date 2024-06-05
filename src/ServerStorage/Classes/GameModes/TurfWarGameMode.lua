@@ -188,11 +188,11 @@ function TurfWarGameMode.__index:start(stageModel: Model): ()
   end;
   self.totalStageParts = totalStageParts;
 
-  stageModel.ChildAdded:Connect(function(child)
+  table.insert(self.events, stageModel.ChildAdded:Connect(function(child)
   
     checkChild(child);
 
-  end);
+  end));
 
   -- Keep track of downed players.
   table.insert(self.events, ServerStorage.Events.ParticipantDowned.Event:Connect(function(victim: Player, downer: Player?)
