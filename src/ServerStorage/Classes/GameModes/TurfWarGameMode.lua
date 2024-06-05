@@ -108,7 +108,6 @@ end
 function TurfWarGameMode.__index:start(stageModel: Model): ()
 
   -- 
-  print(2)
   local restoredStage = stageModel:Clone();
   restoredStage.Name = "RestoredStage";
   restoredStage.Parent = ServerStorage;

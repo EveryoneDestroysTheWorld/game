@@ -18,8 +18,6 @@ export type RoundProperties = {
   timeEnded: number?;
 
   participantIDs: {number};
-
-  stats: {any}?;
 };
 
 export type RoundEvents = {
@@ -65,11 +63,7 @@ function Round.__index:start(duration: number, stageModel: Model)
   self.timeStarted = DateTime.now().UnixTimestampMillis;
 
   -- Run the game mode.
-  task.spawn(function()
-  
-    self.gameMode:start(stageModel);
-
-  end);
+  self.gameMode:start(stageModel);
 
   -- Start a timer.
   local timer = task.delay(duration, function()
