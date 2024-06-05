@@ -54,6 +54,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant): Server
   
         end);
         explosion.Parent = workspace;
+        highlight:Destroy();
 
       end);
 
