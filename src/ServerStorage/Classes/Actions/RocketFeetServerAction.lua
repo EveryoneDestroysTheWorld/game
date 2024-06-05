@@ -25,6 +25,8 @@ function RocketFeetServerAction.new(contestant: Contestant): ServerAction
 
       if contestantExecutionTime and contestantExecutionTime > DateTime.now().UnixTimestampMillis - 500 then
   
+        -- Enable flying for the player.
+
         -- Activate rockets under the contestant's feet.
   
   
