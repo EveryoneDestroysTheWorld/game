@@ -8,7 +8,7 @@ export type RoundProperties = {
   -- This round's unique ID.
   ID: string?;
 
-  gameMode: GameMode.GameMode<any, any>;
+  gameMode: GameMode.GameMode & GameMode.GameModeMethods<any>;
   
   -- This stage's ID.
   stageID: string;

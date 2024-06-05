@@ -41,7 +41,7 @@ local function startRound()
     gameMode = TurfWarGameMode.new(participantIDs);
     participantIDs = participantIDs;
   });
-
+  
   round.onEnded:Connect(function()
 
     ReplicatedStorage.Shared.Events.RoundEnded:FireAllClients(round);

@@ -7,16 +7,15 @@ local Players = game:GetService("Players");
 local GameMode = require(script.Parent.Parent.GameMode);
 
 -- This is the class.
-local TurfWarGameMode = setmetatable({
-  __index = {} :: GameMode.GameModeMethods<TurfWarGameMode>; -- Keeps IntelliSense working in the methods.
-  defaultProperties = {
+local TurfWarGameMode = {
+  __index = {
     ID = 1;
     name = "Turf War";
     description = "";
     stats = {};
     events = {};
-  };
-}, GameMode);
+  } :: GameMode.GameModeProperties & TurfWarGameModeProperties & {stats: TurfWarStats} & GameMode.GameModeMethods<TurfWarGameMode>; -- Keeps IntelliSense working in the methods.
+};
 
 export type TurfWarGameModeProperties = {
   events: {RBXScriptConnection}; 
@@ -36,16 +35,14 @@ export type TurfWarStats = {
   [number]: TurfWarPlayerStats;
 };
 
-local actionProperties: GameMode.GameModeProperties<TurfWarGameModeProperties, TurfWarStats> = TurfWarGameMode.defaultProperties;
-
 -- Although it has the same name, this is the object type.
-export type TurfWarGameMode = typeof(setmetatable(GameMode.new(actionProperties), {__index = TurfWarGameMode.__index}));
+export type TurfWarGameMode = GameMode.GameMode & typeof(TurfWarGameMode.__index);
 
 -- Returns a new action based on the user.
 -- @since v0.1.0
 function TurfWarGameMode.new(participantIDs: {number}): TurfWarGameMode
 
-  local gameMode = setmetatable(GameMode.new(actionProperties), TurfWarGameMode.__index);
+  local gameMode = setmetatable(TurfWarGameMode.__index, {__index = GameMode.new(TurfWarGameMode.__index)}) :: TurfWarGameMode;
 
   for _, participantID in ipairs(participantIDs) do
 
@@ -111,6 +108,7 @@ end
 function TurfWarGameMode.__index:start(stageModel: Model): ()
 
   -- 
+  print(2)
   local restoredStage = stageModel:Clone();
   restoredStage.Name = "RestoredStage";
   restoredStage.Parent = ServerStorage;
