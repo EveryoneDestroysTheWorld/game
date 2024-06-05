@@ -5,7 +5,7 @@ local ExplosiveMimicArchetype = {
   ID = 1;
   name = "Explosive Mimic";
   description = "";
-  actionIDs = {};
+  actionIDs = {1};
 };
 function ExplosiveMimicArchetype.new(): Archetype
 
