@@ -34,7 +34,13 @@ local function startRound()
   for _, participant in ipairs(participants) do
 
     table.insert(participantIDs, participant.UserId);
-    ReplicatedStorage.Shared.Functions.InitializeInventory:InvokeClient(participant, 1);
+
+    task.spawn(function()
+      
+      -- TODO: Disqualify the player if this doesn't work.
+      ReplicatedStorage.Shared.Functions.InitializeInventory:InvokeClient(participant, 1);
+    
+    end)
 
   end;
 
