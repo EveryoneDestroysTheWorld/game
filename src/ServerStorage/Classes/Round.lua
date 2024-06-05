@@ -2,11 +2,13 @@
 -- Writer: Christian Toney (Sudobeast)
 -- This module represents a Round.
 local HttpService = game:GetService("HttpService");
+local GameMode = require(script.Parent.GameMode);
+local DataStoreService = game:GetService("DataStoreService");
 export type RoundProperties = {  
   -- This round's unique ID.
-  ID: number;
+  ID: string?;
 
-  gameMode: "Turf War";
+  gameMode: GameMode.GameMode & GameMode.GameModeMethods<any>;
   
   -- This stage's ID.
   stageID: string;
@@ -15,7 +17,7 @@ export type RoundProperties = {
 
   timeEnded: number?;
 
-  participants: {Player};
+  participantIDs: {number};
 };
 
 export type RoundEvents = {
@@ -24,9 +26,10 @@ export type RoundEvents = {
 }
 
 export type RoundMethods = {
-  start: (self: Round, duration: number) -> ();
+  start: (self: Round, duration: number, stageModel: Model) -> ();
   stop: (self: Round) -> ();
   toString: (self: Round) -> string;
+  getParticipantIDs: (self: Round) -> {number};
 }
 
 local Round = {
@@ -39,30 +42,32 @@ local events: {[any]: {[string]: BindableEvent}} = {};
 
 function Round.new(properties: RoundProperties): Round
 
-  local action = properties;
+  local round = setmetatable(properties :: {}, {__index = Round.__index}) :: Round;
 
-  events[action] = {};
+  events[round] = {};
   for _, eventName in ipairs({"onEnded", "onHoldRelease"}) do
 
-    events[action][eventName] = Instance.new("BindableEvent");
-    (action :: {})[eventName] = events[action][eventName].Event;
+    events[round][eventName] = Instance.new("BindableEvent");
+    (round :: {})[eventName] = events[round][eventName].Event;
 
   end
 
-  return setmetatable(action :: {}, {__index = Round.__index}) :: Round;
+  return round;
   
 end
 
-function Round.__index:start(duration: number)
+function Round.__index:start(duration: number, stageModel: Model)
 
   assert(not self.timeStarted, "The round has already started.");
 
   self.timeStarted = DateTime.now().UnixTimestampMillis;
 
+  -- Run the game mode.
+  self.gameMode:start(stageModel);
+
   -- Start a timer.
-  local timer = task.spawn(function()
+  local timer = task.delay(duration, function()
   
-    task.wait(duration);
     self:stop();
 
   end);
@@ -81,25 +86,26 @@ function Round.__index:stop()
 
   assert(not self.timeEnded, "The round has already ended.");
 
+  -- Break down the game mode.
+  self.gameMode:breakdown();
+
+  -- Save the round info in the database.
   self.timeEnded = DateTime.now().UnixTimestampMillis;
-  
+  self.ID = HttpService:GenerateGUID();
+  DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.ID, self:toString(), self.participantIDs);
+  events[self].onEnded:Fire();
+
 end;
 
 function Round.__index:toString()
-
-  local participantIDs = {};
-  for _, participant in ipairs(self.participants) do
-
-    table.insert(participantIDs, participant.UserId);
-
-  end;
 
   return HttpService:JSONEncode({
     ID = self.ID;
     stageID = self.stageID;
     timeStarted = self.timeStarted;
     timeEnded = self.timeEnded;
-    participants = participantIDs;
+    participantIDs = self.participantIDs;
+    gameMode = self.gameMode:toString();
   });
   
 end;

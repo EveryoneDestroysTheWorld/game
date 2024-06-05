@@ -1,0 +1,260 @@
+--!strict
+-- Writer: Christian Toney (Sudobeast)
+-- Designer: Christian Toney (Sudobeast)
+local ServerStorage = game:GetService("ServerStorage");
+local HttpService = game:GetService("HttpService");
+local Players = game:GetService("Players");
+local GameMode = require(script.Parent.Parent.GameMode);
+
+-- This is the class.
+local TurfWarGameMode = {
+  __index = {
+    ID = 1;
+    name = "Turf War";
+    description = "";
+    stats = {};
+    events = {};
+  } :: GameMode.GameModeProperties & TurfWarGameModeProperties & {stats: TurfWarStats} & GameMode.GameModeMethods<TurfWarGameMode>; -- Keeps IntelliSense working in the methods.
+};
+
+export type TurfWarGameModeProperties = {
+  events: {RBXScriptConnection}; 
+  totalStageParts: number?;
+};
+
+export type TurfWarPlayerStats = typeof(setmetatable({} :: {
+  place: number;
+  partsClaimed: number;
+  partsDestroyed: number;
+  partsRestored: number;
+  timesDowned: number;
+  playersDowned: number;
+}, {}));
+
+export type TurfWarStats = {
+  [number]: TurfWarPlayerStats;
+};
+
+-- Although it has the same name, this is the object type.
+export type TurfWarGameMode = GameMode.GameMode & typeof(TurfWarGameMode.__index);
+
+-- Returns a new action based on the user.
+-- @since v0.1.0
+function TurfWarGameMode.new(participantIDs: {number}): TurfWarGameMode
+
+  local gameMode = setmetatable(TurfWarGameMode.__index, {__index = GameMode.new(TurfWarGameMode.__index)}) :: TurfWarGameMode;
+
+  for _, participantID in ipairs(participantIDs) do
+
+    gameMode.stats[participantID] = setmetatable({
+      place = 1;
+      partsClaimed = 0;
+      partsDestroyed = 0;
+      partsRestored = 0;
+      playersDowned = 0;
+      timesDowned = 0;
+    }, {
+      __newindex = function(self: typeof(gameMode), index: string, value: number)
+
+        if index == "partsClaimed" then
+
+          local standings: {{number}} = {};
+          for participantID, stats in pairs(self.stats) do
+
+            -- Find the standing that the player has.
+            local newStanding = 1;
+            for _, playerIDs in ipairs(standings) do
+
+              if self.stats[participantID].partsClaimed >= self.stats[playerIDs[1]].partsClaimed then
+
+                break;
+
+              end;
+
+              newStanding += 1;
+              
+            end;
+
+            -- Add the player to this standing.
+            standings[newStanding] = standings[newStanding] or {};
+            table.insert(standings[newStanding], newStanding, participantID);
+
+          end;
+
+          for standing, participantIDs in ipairs(standings) do
+
+            for _, participantID in ipairs(participantIDs) do
+
+              self.stats[participantID].place = standing;
+
+            end;
+
+          end;
+
+        end;
+
+        return value;
+
+      end;
+    });
+
+  end;
+
+  return gameMode;
+
+end
+
+-- @since v0.1.0
+function TurfWarGameMode.__index:start(stageModel: Model): ()
+
+  -- 
+  local restoredStage = stageModel:Clone();
+  restoredStage.Name = "RestoredStage";
+  restoredStage.Parent = ServerStorage;
+
+  local restorablePartsModel = Instance.new("Model");
+  restorablePartsModel.Name = "RestorablePartsModel";
+  restorablePartsModel.Parent = workspace;
+
+  -- Keep track of destroyed parts.
+  local totalStageParts = 0;
+
+  local function checkChild(child: Instance)
+
+    if child:IsA("BasePart") and child:GetAttribute("BaseDurability") then
+
+      local eventIndex = #self.events + 1;
+      table.insert(self.events, child:GetAttributeChangedSignal("CurrentDurability"):Connect(function()
+      
+        local currentDurability = child:GetAttribute("CurrentDurability") :: number;
+        if currentDurability <= 0 then
+
+          -- Make sure this event doesn't get called again.
+          self.events[eventIndex]:Disconnect();
+        
+          -- Add this to the score.
+          local destroyerID = child:GetAttribute("DestroyerID") :: number?;
+          if destroyerID then
+
+            self.stats[destroyerID].partsDestroyed += 1;
+            self.stats[destroyerID].partsClaimed += 1;
+
+          end;
+
+          -- Break the part.
+          child.Anchored = false;
+
+          -- Give players a chance to restore the part.
+          local partReference = restoredStage:FindFirstChild(child.Name);
+          assert(partReference and partReference:IsA("BasePart"), `Restorable Part {child.Name} was not found.`);
+          local restorablePart = partReference:Clone();
+          restorablePart.Transparency = 0.7;
+          restorablePart.CanCollide = false;
+          restorablePart.Anchored = true;
+          restorablePart.Parent = restorablePartsModel;
+
+          local proximityPrompt = Instance.new("ProximityPrompt");
+          proximityPrompt.HoldDuration = 1.25;
+          proximityPrompt.MaxActivationDistance = 40;
+          proximityPrompt.RequiresLineOfSight = false;
+          proximityPrompt.ObjectText = `Destroyed{if destroyerID then ` by {Players:GetPlayerByUserId(destroyerID).Name}` else ""}`;
+          proximityPrompt.ActionText = "Restore";
+          proximityPrompt.Parent = restorablePart;
+
+          proximityPrompt.Triggered:Connect(function(restorer)
+          
+            -- Verify that the restorer is a participant.
+            if self.stats[restorer.UserId] then
+
+              -- Delete old parts.
+              child:Destroy();
+              proximityPrompt:Destroy();
+              restorablePart:Destroy();
+
+              -- Restore the part.
+              local restoredPart = partReference:Clone();
+              restoredPart.Parent = stageModel;
+
+              if destroyerID then
+
+                -- Update scores.
+                self.stats[destroyerID].partsClaimed -= 1;
+                self.stats[restorer.UserId].partsRestored += 1;
+
+              end;
+
+            end;
+
+          end);
+
+        end;
+
+      end));
+
+      totalStageParts += 1;
+
+    end;
+
+  end;
+
+  for _, child in ipairs(stageModel:GetChildren()) do
+
+    checkChild(child);
+
+  end;
+  self.totalStageParts = totalStageParts;
+
+  table.insert(self.events, stageModel.ChildAdded:Connect(function(child)
+  
+    checkChild(child);
+
+  end));
+
+  -- Keep track of downed players.
+  table.insert(self.events, ServerStorage.Events.ParticipantDowned.Event:Connect(function(victim: Player, downer: Player?)
+  
+    -- Add it to their score.
+    self.stats[victim.UserId].playersDowned += 1;
+    self.stats[victim.UserId].timesDowned += 1;
+
+  end));
+
+end;
+
+function TurfWarGameMode.__index:breakdown()
+
+  -- Disconnect all events.
+  for _, event in ipairs(self.events) do
+
+    event:Disconnect();
+
+  end;
+
+  -- Delete the restored stage.
+  local restoredStage = workspace:FindFirstChild("RestoredStage");
+  if restoredStage then
+
+    restoredStage:Destroy();
+
+  end;
+
+  local restorablePartsModel = workspace:FindFirstChild("RestorablePartsModel");
+  if restorablePartsModel then
+
+    restorablePartsModel:Destroy();
+
+  end;
+
+end;
+
+function TurfWarGameMode.__index:toString()
+
+  return HttpService:JSONDecode({
+    ID = self.ID;
+    stats = self.stats;
+    totalStageParts = self.totalStageParts;
+  });
+
+end;
+
+return TurfWarGameMode;

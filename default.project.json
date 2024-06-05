@@ -1,11 +1,9 @@
 {
-  "name": "DemoDemons (Staging): Arena",
+  "name": "DemoDemons (Staging): Game",
+  "servePlaceIds": [17711502472],
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
-      "Client": {
-        "$path": "src/ReplicatedStorage/Client"
-      },
       "Shared": {
         "$path": "src/ReplicatedStorage/Shared",
         "Packages": {
