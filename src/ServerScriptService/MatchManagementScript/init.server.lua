@@ -13,8 +13,7 @@ local participants: {Player} = {};
 
 local playerCheck = task.delay(10, function()
 
-  -- The round hasn't started, so kick everyone back to the lobby.
-  TeleportService:TeleportAsync(15555144468, Players:GetPlayers());
+  -- The round hasn't started, so notify the rest of the participants that there are missing players.
 
 end);
 
@@ -55,7 +54,6 @@ local function startRound()
   ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(120);
 
 end;
-
 
 Players.PlayerAdded:Connect(function(player)
 
