@@ -13,10 +13,10 @@ return function(player: Player, limbName: string?)
   assert(character, `{player.Name} doesn't have a character.`);
 
   local realLimb = character:FindFirstChild(limbName);
-  assert(typeof(realLimb) == "BasePart", `Couldn't find {limbName}.`);
+  assert(realLimb and realLimb:IsA("BasePart"), `Couldn't find {limbName}.`);
 
   local limbClone = realLimb:Clone() :: BasePart;
-  limbClone.Name = `{player.Name}_Explosive{limbClone.Name}`;
+  limbClone.Name = `{player.Name}_ExplosiveLimb_{limbClone.Name}`;
   limbClone.CanCollide = true;
   limbClone.Parent = workspace;
 
@@ -25,8 +25,8 @@ return function(player: Player, limbName: string?)
 
   -- Make the player take damage.
   local humanoid = character:FindFirstChild("Humanoid");
-  assert(typeof(humanoid) == "Humanoid", "Humanoid not found.");
-  humanoid.Health -= 10;
+  assert(humanoid and humanoid:IsA("Humanoid"), "Humanoid not found.");
+  humanoid.MaxHealth -= 19;
 
   -- Destroy the limb after the round ends.
   ServerScriptService.MatchManagementScript.AddDebris:Invoke(limbClone);
