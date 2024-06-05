@@ -6,8 +6,8 @@ export type ActionProperties = {
   ID: number;
   name: string;
   description: string;
-  activate: (self: Action) -> ();
-  breakdown: (self: Action) -> ();
+  activate: (self: ClientAction) -> ();
+  breakdown: (self: ClientAction) -> ();
 };
 
 export type ActionEvents = {
@@ -15,10 +15,10 @@ export type ActionEvents = {
   onHoldRelease: RBXScriptSignal;
 }
 
-local Action = {};
-export type Action = ActionProperties & ActionEvents;
+local ClientAction = {};
+export type ClientAction = ActionProperties & ActionEvents;
 
-function Action.new(properties: ActionProperties): Action
+function ClientAction.new(properties: ActionProperties): ClientAction
 
   local action = properties;
 
@@ -32,11 +32,11 @@ function Action.new(properties: ActionProperties): Action
 
   end
 
-  return action :: Action;
+  return action :: ClientAction;
   
 end
 
-function Action.get(actionID: number): Action
+function ClientAction.get(actionID: number): ClientAction
 
   for _, instance in ipairs(script.Parent.Actions:GetChildren()) do
   
@@ -57,4 +57,4 @@ function Action.get(actionID: number): Action
 
 end;
 
-return Action;
+return ClientAction;

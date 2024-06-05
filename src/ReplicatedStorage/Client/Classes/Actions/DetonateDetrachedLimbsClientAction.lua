@@ -4,28 +4,28 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
-local Action = require(script.Parent.Parent.Action);
-type Action = Action.Action;
+local ClientAction = require(script.Parent.Parent.ClientAction);
+type ClientAction = ClientAction.ClientAction;
 
 local DetachLimbAction = {
-  ID = 2;
-  name = "Detach Limb";
-  description = "Detach a limb of your choice. It only hurts a little bit.";
+  ID = 3;
+  name = "Detonate Detached Limbs";
+  description = "Explodes all detached limbs and regenerates them.";
 };
 
-function DetachLimbAction.new(): Action
+function DetachLimbAction.new(): ClientAction
 
   local limbSelectorGUI: ScreenGui = nil;
   local selectedLimb: string? = nil;
   local player = Players.LocalPlayer;
 
-  local function breakdown(self: Action)
+  local function breakdown(self: ClientAction)
 
     
 
   end;
 
-  local function activate(self: Action)
+  local function activate(self: ClientAction)
 
     if selectedLimb then
 
@@ -35,7 +35,7 @@ function DetachLimbAction.new(): Action
 
   end;
 
-  local action = Action.new({
+  local action = ClientAction.new({
     ID = DetachLimbAction.ID;
     name = DetachLimbAction.name;
     description = DetachLimbAction.description;

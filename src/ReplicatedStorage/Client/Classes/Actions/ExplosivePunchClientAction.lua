@@ -4,8 +4,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
-local Action = require(script.Parent.Parent.Action);
-type Action = Action.Action;
+local ClientAction = require(script.Parent.Parent.ClientAction);
+type ClientAction = ClientAction.ClientAction;
 
 local ExplosivePunchAction = {
   ID = 1;
@@ -13,20 +13,20 @@ local ExplosivePunchAction = {
   description = "Land explosive punches to your enemies.";
 };
 
-function ExplosivePunchAction.new(): Action
+function ExplosivePunchAction.new(): ClientAction
 
-  local function breakdown(self: Action)
+  local function breakdown(self: ClientAction)
 
     
 
   end;
 
-  local function activate(self: Action)
+  local function activate(self: ClientAction)
 
 
   end;
 
-  local action = Action.new({
+  local action = ClientAction.new({
     ID = ExplosivePunchAction.ID;
     name = ExplosivePunchAction.name;
     description = ExplosivePunchAction.description;

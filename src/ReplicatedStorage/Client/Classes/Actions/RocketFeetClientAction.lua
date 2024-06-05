@@ -2,10 +2,9 @@
 -- Writer: Christian Toney (Sudobeast)
 -- Designer: Christian Toney (Sudobeast)
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
-local Action = require(script.Parent.Parent.Action);
-type Action = Action.Action;
+local ClientAction = require(script.Parent.Parent.ClientAction);
+type ClientAction = ClientAction.ClientAction;
 
 local DetachLimbAction = {
   ID = 4;
@@ -13,21 +12,21 @@ local DetachLimbAction = {
   description = "Fly, touch the sky!";
 };
 
-function DetachLimbAction.new(): Action
+function DetachLimbAction.new(): ClientAction
 
-  local function breakdown(self: Action)
+  local function breakdown(self: ClientAction)
 
     
 
   end;
 
-  local function activate(self: Action)
+  local function activate(self: ClientAction)
 
     ReplicatedStorage.Shared.Functions.ExecuteAction:InvokeServer(self.ID, script.Parent.Name);
 
   end;
 
-  local action = Action.new({
+  local action = ClientAction.new({
     ID = DetachLimbAction.ID;
     name = DetachLimbAction.name;
     description = DetachLimbAction.description;
