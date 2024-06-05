@@ -6,36 +6,33 @@ local ContextActionService = game:GetService("ContextActionService");
 local Action = require(script.Parent.Parent.Action);
 
 -- This is the class.
-local DetachLimbAction = setmetatable({
-  __index = {} :: Action.ActionMethods<DetachLimbAction>; -- Keeps IntelliSense working in the methods.
-  defaultProperties = {
+local DetachLimbAction = {
+  __index = {
     ID = 1;
     name = "Detach Limb";
     description = "Detach a limb of your choice. It only hurts a little bit.";
-  }
-}, Action);
+  } :: Action.ActionProperties & DetachLimbActionProperties & Action.ActionMethods<DetachLimbAction>; -- Keeps IntelliSense working in the methods.
+};
 
-local actionProperties: Action.ActionProperties<{
-  user: Player?;
+export type DetachLimbActionProperties = {
   limbSelectorGUI: ScreenGui?;
   selectedLimb: string?;
-}> = DetachLimbAction.defaultProperties;
+};
 
 -- Although it has the same name, this is the object type.
-export type DetachLimbAction = typeof(setmetatable(Action.new(actionProperties), {__index = DetachLimbAction.__index}));
+export type DetachLimbAction = Action.Action & typeof(DetachLimbAction.__index);
 
 -- Returns a new action based on the user.
 -- @since v0.1.0
 function DetachLimbAction.new(user: Player): DetachLimbAction
 
   -- Get everything that comes with being an Action.
-  local self = setmetatable(Action.new(actionProperties), DetachLimbAction.__index );
+  local properties = DetachLimbAction.__index;
+  properties.user = user;
 
-  -- Set up some unique variables.
-  self.user = user;
+  local a: DetachLimbAction;
 
-  -- Return the action.
-  return self;
+  return setmetatable(DetachLimbAction.__index, {__index = Action.new(properties)}) :: DetachLimbAction;
 
 end
 
