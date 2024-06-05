@@ -10,8 +10,6 @@ export type ActionProperties = {
 
   description: string;
   
-  user: Player?;
-  
 };
 
 export type ActionEvents = {
@@ -33,7 +31,7 @@ export type Action = typeof(setmetatable({}, Action));
 
 local events: {[any]: {[string]: BindableEvent}} = {};
 
-function Action.new<T>(properties: ActionProperties): Action
+function Action.new(properties: ActionProperties): Action
 
   local action = properties;
 

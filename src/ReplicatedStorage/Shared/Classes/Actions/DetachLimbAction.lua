@@ -17,6 +17,7 @@ local DetachLimbAction = {
 export type DetachLimbActionProperties = {
   limbSelectorGUI: ScreenGui?;
   selectedLimb: string?;
+  user: Player?;
 };
 
 -- Although it has the same name, this is the object type.
@@ -29,9 +30,6 @@ function DetachLimbAction.new(user: Player): DetachLimbAction
   -- Get everything that comes with being an Action.
   local properties = DetachLimbAction.__index;
   properties.user = user;
-
-  local a: DetachLimbAction;
-
   return setmetatable(DetachLimbAction.__index, {__index = Action.new(properties)}) :: DetachLimbAction;
 
 end
