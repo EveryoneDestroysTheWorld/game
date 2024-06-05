@@ -4,7 +4,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
-local Action = require(script.Parent.Parent.Archetypes);
+local Action = require(script.Parent.Parent.Action);
 type Action = Action.Action;
 
 local DetachLimbAction = {
