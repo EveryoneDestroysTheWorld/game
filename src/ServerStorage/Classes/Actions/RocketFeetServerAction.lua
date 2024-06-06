@@ -35,59 +35,70 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
 
     if contestant.character then
 
-      local function activateFeetExplosions()
+      local humanoid = contestant.character:FindFirstChild("Humanoid");
+      assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.character}'s Humanoid`);
 
-        for _, explosivePart in ipairs({leftFootExplosivePart, rightFootExplosivePart}) do
+      if humanoid:GetAttribute("Stamina") >= 10 then
 
-          local explosion = Instance.new("Explosion");
-          explosion.BlastPressure = 0;
-          explosion.BlastRadius = 10;
-          explosion.DestroyJointRadiusPercent = 0;
-          explosion.Position = explosivePart.Position;
-          explosion.Hit:Connect(function(basePart)
-          
-            -- Make sure the part isn't a part of the player.
-    
-            -- Damage any parts or contestants that get hit.
-            local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
-            if basePartCurrentDurability and basePartCurrentDurability > 0 then
-    
-              ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, contestant);
-    
-            end;
-    
-          end);
-          explosion.Parent = explosivePart;
+        local function activateFeetExplosions()
+
+          for _, explosivePart in ipairs({leftFootExplosivePart, rightFootExplosivePart}) do
+
+            local explosion = Instance.new("Explosion");
+            explosion.BlastPressure = 0;
+            explosion.BlastRadius = 10;
+            explosion.DestroyJointRadiusPercent = 0;
+            explosion.Position = explosivePart.Position;
+            explosion.Hit:Connect(function(basePart)
+            
+              -- Make sure the part isn't a part of the player.
+
+              -- Damage any parts or contestants that get hit.
+              local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
+              if basePartCurrentDurability and basePartCurrentDurability > 0 then
+      
+                ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, contestant);
+      
+              end;
+
+            end);
+            explosion.Parent = explosivePart;
+
+          end;
+
+          -- Reduce the player's stamina.
+          humanoid:SetAttribute("Stamina", humanoid:GetAttribute("Stamina") - 10);
 
         end;
 
+        if not areRocketsEnabled and contestantExecutionTime and contestantExecutionTime > DateTime.now().UnixTimestampMillis - 500 then
+    
+          -- Enable flying for the player.
+
+          -- Activate rockets under the contestant's feet.
+          areRocketsEnabled = true;
+          task.spawn(function()
+
+            repeat
+
+              activateFeetExplosions();
+              task.wait(0.25);
+
+            until humanoid:GetAttribute("Stamina") < 10 or not areRocketsEnabled;
+            areRocketsEnabled = false;
+
+          end)
+    
+        else
+    
+          areRocketsEnabled = false;
+          activateFeetExplosions();
+    
+        end;
+    
+        contestantExecutionTime = DateTime.now().UnixTimestampMillis;
+
       end;
-
-      if not areRocketsEnabled and contestantExecutionTime and contestantExecutionTime > DateTime.now().UnixTimestampMillis - 500 then
-  
-        -- Enable flying for the player.
-
-        -- Activate rockets under the contestant's feet.
-        areRocketsEnabled = true;
-        task.spawn(function()
-
-          repeat
-
-            activateFeetExplosions();
-            task.wait(0.25);
-
-          until not areRocketsEnabled;
-
-        end)
-  
-      else
-  
-        areRocketsEnabled = false;
-        activateFeetExplosions();
-  
-      end;
-  
-      contestantExecutionTime = DateTime.now().UnixTimestampMillis;
   
     end;
 

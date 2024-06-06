@@ -250,6 +250,7 @@ function TurfWarGameMode.new(stageModel: Model, contestants: {ServerContestant})
 
         humanoid:SetAttribute("CurrentHealth", 100);
         humanoid:SetAttribute("BaseHealth", 100);
+        humanoid:SetAttribute("Stamina", 100);
 
         table.insert(events, humanoid:GetAttributeChangedSignal("CurrentHealth"):Connect(function()
         
