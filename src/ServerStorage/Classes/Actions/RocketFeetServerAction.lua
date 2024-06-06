@@ -51,7 +51,7 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
 
             local explosion = Instance.new("Explosion");
             explosion.BlastPressure = 0;
-            explosion.BlastRadius = 10;
+            explosion.BlastRadius = 5;
             explosion.DestroyJointRadiusPercent = 0;
             explosion.Position = explosivePart.Position;
             explosion.Hit:Connect(function(basePart)
@@ -196,7 +196,7 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
         explosiveWeldConstraint.Part1 = foot;
         explosiveWeldConstraint.Parent = explosivePart;
 
-        explosivePart.Position = foot.CFrame.Position - (if not isHumanoidR15 then Vector3.new(0, -foot.Size.Y / 2 + -explosivePart.Size.Y / 2, 0) else Vector3.zero);
+        explosivePart.Position = foot.CFrame.Position - (if not isHumanoidR15 then Vector3.new(0, foot.Size.Y / 2 + explosivePart.Size.Y / 2, 0) else Vector3.zero);
         explosivePart.Parent = contestant.character;
 
       end;

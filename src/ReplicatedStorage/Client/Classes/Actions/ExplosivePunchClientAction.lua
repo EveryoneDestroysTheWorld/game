@@ -15,14 +15,18 @@ local ExplosivePunchAction = {
 
 function ExplosivePunchAction.new(): ClientAction
 
+  local player = Players.LocalPlayer;
+  local remoteName: string;
+
   local function breakdown(self: ClientAction)
 
-    
+    ContextActionService:UnbindAction("ActivateExplosivePunch");
 
   end;
 
   local function activate(self: ClientAction)
 
+    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
 
   end;
 
@@ -33,6 +37,20 @@ function ExplosivePunchAction.new(): ClientAction
     activate = activate;
     breakdown = breakdown;
   });
+  
+  remoteName = `{player.UserId}_{action.ID}`;
+
+  local function checkJump(_, inputState: Enum.UserInputState)
+
+    if inputState == Enum.UserInputState.Begin then
+
+      action:activate();
+    
+    end;
+
+  end;
+
+  ContextActionService:BindActionAtPriority("ActivateExplosivePunch", checkJump, false, 2, Enum.UserInputType.MouseButton1);
 
   return action;
 

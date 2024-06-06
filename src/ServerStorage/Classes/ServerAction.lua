@@ -8,7 +8,7 @@ export type ActionProperties = {
   ID: number;
   name: string;
   description: string;
-  activate: (self: ServerAction, ...any) -> any;
+  activate: (self: ServerAction) -> ();
   breakdown: (self: ServerAction) -> ();
 };
 
