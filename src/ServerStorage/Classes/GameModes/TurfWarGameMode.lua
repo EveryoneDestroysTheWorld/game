@@ -243,6 +243,36 @@ function TurfWarGameMode.new(stageModel: Model, contestants: {ServerContestant})
       end;
     });
 
+    if contestant.character then
+
+      local humanoid = contestant.character:FindFirstChild("Humanoid");
+      if humanoid and humanoid:IsA("Humanoid") then
+
+        humanoid:SetAttribute("CurrentHealth", 100);
+        humanoid:SetAttribute("BaseHealth", 100);
+
+        table.insert(events, humanoid:GetAttributeChangedSignal("CurrentHealth"):Connect(function()
+        
+          if humanoid:GetAttribute("CurrentHealth") <= 0 then
+
+            contestant:disqualify();
+
+          end;
+
+        end));
+
+      else 
+
+        contestant:disqualify();
+
+      end;
+
+    else
+
+      contestant:disqualify();
+
+    end;
+
   end;
 
   return gameMode;
