@@ -3,6 +3,8 @@
 -- Designer: Christian Toney (Sudobeast)
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ContextActionService = game:GetService("ContextActionService");
+local Players = game:GetService("Players");
+local UserInputService = game:GetService("UserInputService");
 local ClientAction = require(script.Parent.Parent.ClientAction);
 type ClientAction = ClientAction.ClientAction;
 
@@ -14,25 +16,24 @@ local DetachLimbAction = {
 
 function DetachLimbAction.new(): ClientAction
 
-  local humanoidJumpingEvent;
   local lastJumpTime = 0;
 
   local action: ClientAction;
 
+  local jumpButtonClickEvent;
+
   local function breakdown(self: ClientAction)
 
-    
+    ContextActionService:UnbindAction("ActivateRocketFeet");
+    if jumpButtonClickEvent then
+
+      jumpButtonClickEvent:Disconnect();
+
+    end
 
   end;
 
   local function activate(self: ClientAction)
-
-    -- Listen for jumps.
-    humanoidJumpingEvent = humanoid.Jumping:Connect(function()
-  
-      
-
-    end);
 
     ReplicatedStorage.Shared.Functions.ExecuteAction:InvokeServer(self.ID, script.Parent.Name);
 
@@ -47,6 +48,23 @@ function DetachLimbAction.new(): ClientAction
     end;
 
     lastJumpTime = DateTime.now().UnixTimestampMillis;
+
+  end;
+
+  ContextActionService:BindActionAtPriority("ActivateRocketFeet", checkJump, false, 2, Enum.KeyCode.Space, Enum.KeyCode.ButtonA, Enum.KeyCode.ButtonX);
+
+  if UserInputService.TouchEnabled then
+
+    local jumpButton = Players.LocalPlayer.PlayerGui:FindFirstChild("TouchGui"):FindFirstChild("TouchControlFrame"):FindFirstChild("JumpButton");
+    if jumpButton then
+
+      jumpButtonClickEvent = jumpButton.MouseButton1Click:Connect(function()
+      
+        action:activate();
+
+      end);
+
+    end;
 
   end;
 
