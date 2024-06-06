@@ -29,6 +29,8 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
   rightFootExplosivePart.CanCollide = false;
   rightFootExplosivePart.Size = Vector3.new(1, 1, 1);
 
+  local areRocketsEnabled = false
+
   local function activate()
 
     if contestant.character then
@@ -38,7 +40,21 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
         -- Enable flying for the player.
 
         -- Activate rockets under the contestant's feet.
-  
+        areRocketsEnabled = true;
+        task.spawn(function()
+
+          repeat
+
+            for _, explosivePart in ipairs({leftFootExplosivePart, rightFootExplosivePart}) do
+
+              
+
+            end;
+            task.wait(0.25);
+
+          until not areRocketsEnabled;
+
+        end)
   
       else
   
