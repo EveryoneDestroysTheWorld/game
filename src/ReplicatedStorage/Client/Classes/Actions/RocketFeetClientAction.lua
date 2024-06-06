@@ -35,7 +35,7 @@ function DetachLimbAction.new(): ClientAction
 
   local function activate(self: ClientAction)
 
-    ReplicatedStorage.Shared.Functions.ExecuteActionFunctions:FindFirstChild(`{player.ID}_{self.ID}`):InvokeServer();
+    ReplicatedStorage.Shared.Functions.ExecuteActionFunctions:FindFirstChild(`{Players.LocalPlayer.ID}_{self.ID}`):InvokeServer();
 
   end;
 
