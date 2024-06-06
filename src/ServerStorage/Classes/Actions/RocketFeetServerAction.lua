@@ -75,6 +75,7 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
   end;
 
   local humanoidJumpingEvent: RBXScriptConnection? = nil;
+  local executeActionRemoteFunction: RemoteFunction? = nil;
 
   local function breakdown()
 
@@ -83,6 +84,12 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
       humanoidJumpingEvent:Disconnect();
 
     end;
+
+    if executeActionRemoteFunction then
+
+      executeActionRemoteFunction:Destroy();
+
+    end
 
     leftFootExplosivePart:Destroy();
     rightFootExplosivePart:Destroy();
@@ -117,6 +124,28 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
     end;
 
   end;
+
+  if contestant.player then
+
+    executeActionRemoteFunction = Instance.new("RemoteFunction");
+    executeActionRemoteFunction.Name = `{contestant.player}_{action.ID}`;
+    executeActionRemoteFunction.OnServerInvoke = function(player)
+
+      if player == contestant.player then
+
+        action:activate();
+
+      else
+
+        -- That's weird.
+        error("Unauthorized.");
+
+      end
+
+    end;
+    executeActionRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ExecuteActionFunctions;
+
+  end
 
   return ServerAction.new({
     name = RocketFeetServerAction.name;
