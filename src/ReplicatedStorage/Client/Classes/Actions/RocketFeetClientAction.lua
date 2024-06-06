@@ -16,8 +16,6 @@ local DetachLimbAction = {
 
 function DetachLimbAction.new(): ClientAction
 
-  local lastJumpTime = 0;
-
   local action: ClientAction;
 
   local jumpButtonClickEvent;
@@ -35,19 +33,24 @@ function DetachLimbAction.new(): ClientAction
 
   local function activate(self: ClientAction)
 
-    ReplicatedStorage.Shared.Functions.ExecuteActionFunctions:FindFirstChild(`{Players.LocalPlayer.ID}_{self.ID}`):InvokeServer();
+    ReplicatedStorage.Shared.Functions.ExecuteActionFunctions:FindFirstChild(`{Players.LocalPlayer.UserId}_{self.ID}`):InvokeServer();
 
   end;
 
-  local function checkJump()
+  local lastJumpTime = 0;
+  local function checkJump(_, inputState: Enum.UserInputState)
 
-    if lastJumpTime > DateTime.now().UnixTimestampMillis - 1500 then
-        
-      action:activate();
+    if inputState == Enum.UserInputState.Begin then
 
+      if lastJumpTime > DateTime.now().UnixTimestampMillis - 500 then
+          
+        action:activate();
+
+      end;
+
+      lastJumpTime = DateTime.now().UnixTimestampMillis;
+    
     end;
-
-    lastJumpTime = DateTime.now().UnixTimestampMillis;
 
   end;
 

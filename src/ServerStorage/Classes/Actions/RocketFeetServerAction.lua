@@ -35,34 +35,13 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
 
     if contestant.character then
 
-      if contestantExecutionTime and contestantExecutionTime > DateTime.now().UnixTimestampMillis - 500 then
-  
-        -- Enable flying for the player.
+      local function activateFeetExplosions()
 
-        -- Activate rockets under the contestant's feet.
-        areRocketsEnabled = true;
-        task.spawn(function()
-
-          repeat
-
-            for _, explosivePart in ipairs({leftFootExplosivePart, rightFootExplosivePart}) do
-
-              
-
-            end;
-            task.wait(0.25);
-
-          until not areRocketsEnabled;
-
-        end)
-  
-      else
-  
         for _, explosivePart in ipairs({leftFootExplosivePart, rightFootExplosivePart}) do
 
           local explosion = Instance.new("Explosion");
           explosion.BlastPressure = 0;
-          explosion.BlastRadius = 20;
+          explosion.BlastRadius = 10;
           explosion.DestroyJointRadiusPercent = 0;
           explosion.Position = explosivePart.Position;
           explosion.Hit:Connect(function(basePart)
@@ -81,6 +60,30 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
           explosion.Parent = explosivePart;
 
         end;
+
+      end;
+
+      if not areRocketsEnabled and contestantExecutionTime and contestantExecutionTime > DateTime.now().UnixTimestampMillis - 500 then
+  
+        -- Enable flying for the player.
+
+        -- Activate rockets under the contestant's feet.
+        areRocketsEnabled = true;
+        task.spawn(function()
+
+          repeat
+
+            activateFeetExplosions();
+            task.wait(0.25);
+
+          until not areRocketsEnabled;
+
+        end)
+  
+      else
+  
+        areRocketsEnabled = false;
+        activateFeetExplosions();
   
       end;
   
@@ -111,6 +114,14 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
     rightFootExplosivePart:Destroy();
 
   end;
+
+  local action = ServerAction.new({
+    name = RocketFeetServerAction.name;
+    ID = RocketFeetServerAction.ID;
+    description = RocketFeetServerAction.description;
+    breakdown = breakdown;
+    activate = activate;
+  });
 
   if contestant.character then
 
@@ -143,9 +154,9 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
 
   if contestant.player then
 
-    executeActionRemoteFunction = Instance.new("RemoteFunction");
-    executeActionRemoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
-    executeActionRemoteFunction.OnServerInvoke = function(player)
+    local remoteFunction = Instance.new("RemoteFunction");
+    remoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
+    remoteFunction.OnServerInvoke = function(player)
 
       if player == contestant.player then
 
@@ -159,17 +170,12 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
       end
 
     end;
-    executeActionRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ExecuteActionFunctions;
+    remoteFunction.Parent = ReplicatedStorage.Shared.Functions.ExecuteActionFunctions;
+    executeActionRemoteFunction = remoteFunction;
 
   end
 
-  return ServerAction.new({
-    name = RocketFeetServerAction.name;
-    ID = RocketFeetServerAction.ID;
-    description = RocketFeetServerAction.description;
-    breakdown = breakdown;
-    activate = activate;
-  })
+  return action;
 
 end;
 
