@@ -128,7 +128,7 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
   if contestant.player then
 
     executeActionRemoteFunction = Instance.new("RemoteFunction");
-    executeActionRemoteFunction.Name = `{contestant.player}_{action.ID}`;
+    executeActionRemoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
     executeActionRemoteFunction.OnServerInvoke = function(player)
 
       if player == contestant.player then
