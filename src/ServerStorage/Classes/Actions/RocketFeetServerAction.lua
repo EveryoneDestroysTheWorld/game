@@ -23,11 +23,13 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
   leftFootExplosivePart.Name = "LeftFootExplosivePart";
   leftFootExplosivePart.CanCollide = false;
   leftFootExplosivePart.Size = Vector3.new(1, 1, 1);
+  leftFootExplosivePart.Transparency = 1;
 
   local rightFootExplosivePart = Instance.new("Part");
   rightFootExplosivePart.Name = "RightFootExplosivePart";
   rightFootExplosivePart.CanCollide = false;
   rightFootExplosivePart.Size = Vector3.new(1, 1, 1);
+  rightFootExplosivePart.Transparency = 1;
 
   local areRocketsEnabled = false;
   local rocketFeetToggledEvent: RemoteEvent? = nil;
