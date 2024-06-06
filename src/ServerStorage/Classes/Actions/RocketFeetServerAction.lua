@@ -40,7 +40,7 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
 
       if humanoid:GetAttribute("Stamina") >= 10 then
 
-        local function activateFeetExplosions()
+        local function activateFeetExplosions(staminaReduction: number)
 
           for _, explosivePart in ipairs({leftFootExplosivePart, rightFootExplosivePart}) do
 
@@ -67,7 +67,7 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
           end;
 
           -- Reduce the player's stamina.
-          humanoid:SetAttribute("Stamina", humanoid:GetAttribute("Stamina") - 10);
+          humanoid:SetAttribute("Stamina", humanoid:GetAttribute("Stamina") - staminaReduction);
 
         end;
 
@@ -81,10 +81,10 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
 
             repeat
 
-              activateFeetExplosions();
+              activateFeetExplosions(2);
               task.wait(0.25);
 
-            until humanoid:GetAttribute("Stamina") < 10 or not areRocketsEnabled;
+            until humanoid:GetAttribute("Stamina") < 2 or not areRocketsEnabled;
             areRocketsEnabled = false;
 
           end)
@@ -92,7 +92,7 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
         else
     
           areRocketsEnabled = false;
-          activateFeetExplosions();
+          activateFeetExplosions(10);
     
         end;
     
