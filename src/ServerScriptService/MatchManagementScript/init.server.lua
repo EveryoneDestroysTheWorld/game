@@ -68,12 +68,6 @@ local function startRound()
   print("Round started.");
   ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(120);
 
-  task.delay(3, function() 
-    
-    contestants[1]:disqualify() 
-  
-  end)
-
 end;
 
 
