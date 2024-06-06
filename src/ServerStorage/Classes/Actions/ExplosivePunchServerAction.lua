@@ -61,8 +61,8 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant): ServerAct
 
     local punchAnimation = Instance.new("Animation");
     local shouldUseRightPunch = latestActivationTime > DateTime.now().UnixTimestampMillis - 500;
-    punchAnimation.AnimationId = `rbxassetid://{if shouldUseRightPunch then "17758648029" else "17758265394"}`;
-    if currentAnimationTrack then currentAnimationTrack:Stop(0.0001) end; 
+    punchAnimation.AnimationId = `rbxassetid://{if shouldUseRightPunch then "17759014502" else "17758265394"}`;
+    if currentAnimationTrack then currentAnimationTrack:Stop() end; 
     currentAnimationTrack = animator:LoadAnimation(punchAnimation);
     currentAnimationTrack:Play();
     latestActivationTime = if latestActivationTime == 0 then DateTime.now().UnixTimestampMillis else 0;
