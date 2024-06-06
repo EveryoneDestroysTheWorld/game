@@ -38,7 +38,8 @@ function DetachLimbAction.new(): ClientAction
 
   end;
 
-  local remoteName = `{Players.LocalPlayer.UserId}_{action.ID}`;
+  local player = Players.LocalPlayer;
+  local remoteName = `{player.UserId}_{action.ID}`;
 
   local function activate(self: ClientAction)
 
@@ -83,11 +84,40 @@ function DetachLimbAction.new(): ClientAction
   local remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:FindFirstChild(remoteName);
   if remoteEvent and remoteEvent:IsA("RemoteEvent") then
 
+    local function handleAction()
+
+    end;
+
     remoteEventConnection = remoteEvent.OnClientEvent:Connect(function(isRocketFeetEnabled: boolean)
-    
+      
+      local cFrameEvent;
+
+      local playerControls = (require(player.PlayerScripts.PlayerModule) :: any):GetControls();
       if isRocketFeetEnabled then
 
+        -- Disable default controls.
+        playerControls:Disable();
+
+        -- Send control info to the server.
+        cFrameEvent = workspace.CurrentCamera:GetPropertyChangedSignal("CFrame"):Connect(function()
+        
+          local cameraRotationX, cameraRotationY, cameraRotationZ = workspace.CurrentCamera.CFrame:ToEulerAnglesXYZ();
+          local cameraOrientation = CFrame.new(player.Character.HumanoidRootPart.CFrame.Position) * CFrame.Angles(cameraRotationX, cameraRotationY, cameraRotationZ);
+
+        end);
+
+        remoteEvent:FireServer(cameraOrientation);
+
       else
+
+        -- Re-enable normal controls.
+        if cFrameEvent then
+
+          cFrameEvent:Disconnect();
+
+        end;
+        ContextActionService:UnbindAction("FlyingDirection");
+        playerControls:Enable();
 
       end;
 

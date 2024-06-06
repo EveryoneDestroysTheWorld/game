@@ -154,8 +154,9 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
 
   local function breakdown()
 
-    if rocketFeetToggledEvent then
+    if rocketFeetToggledEvent and contestant.player then
 
+      rocketFeetToggledEvent:FireClient(contestant.player, false);
       rocketFeetToggledEvent:Destroy();
 
     end;
