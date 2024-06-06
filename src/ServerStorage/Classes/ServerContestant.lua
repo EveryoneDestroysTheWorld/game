@@ -2,18 +2,25 @@
 -- Written by Christian Toney (Sudobeast)
 -- This module represents an Archetype, which contains a list of powers.
 
+local HttpService = game:GetService("HttpService");
+
 export type ContestantProperties = {
+  
+  ID: number;
+
+  archetypeID: number;
   
   isDisqualified: boolean;
 
   player: Player?;
 
-  character: Model?
+  character: Model?;
   
 }
 
 export type ContestantMethods = {
   disqualify: (self: ServerContestant) -> ();
+  toString: (self: ServerContestant) -> string;
 }
 
 export type ContestantEvents = {
@@ -53,6 +60,13 @@ function ServerContestant.__index:disqualify()
 
 end;
 
+function ServerContestant.__index:toString()
 
+  return HttpService:JSONEncode({
+    ID = self.ID;
+    archetypeID = self.archetypeID;
+  });
+
+end;
 
 return ServerContestant;

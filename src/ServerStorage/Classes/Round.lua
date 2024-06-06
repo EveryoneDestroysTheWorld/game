@@ -3,12 +3,16 @@
 -- This module represents a Round.
 local HttpService = game:GetService("HttpService");
 local GameMode = require(script.Parent.GameMode);
+type GameMode = GameMode.GameMode;
 local DataStoreService = game:GetService("DataStoreService");
+local ServerContestant = require(script.Parent.ServerContestant);
+type ServerContestant = ServerContestant.ServerContestant;
+
 export type RoundProperties = {  
   -- This round's unique ID.
   ID: string?;
 
-  gameMode: GameMode.GameMode & GameMode.GameModeMethods<any>;
+  gameMode: GameMode;
   
   -- This stage's ID.
   stageID: string;
@@ -17,7 +21,8 @@ export type RoundProperties = {
 
   timeEnded: number?;
 
-  participantIDs: {number};
+  contestants: {ServerContestant};
+
 };
 
 export type RoundEvents = {
@@ -35,13 +40,13 @@ local Round = {
   __index = {} :: RoundMethods;
 };
 
-export type Round = typeof(setmetatable({}, {__index = Round.__index})) & RoundProperties & RoundEvents & RoundMethods;
+export type Round = typeof(setmetatable({}, Round)) & RoundProperties & RoundEvents & RoundMethods;
 
 local events: {[any]: {[string]: BindableEvent}} = {};
 
 function Round.new(properties: RoundProperties): Round
 
-  local round = setmetatable(properties :: {}, {__index = Round.__index}) :: Round;
+  local round = setmetatable(properties, Round) :: Round;
 
   events[round] = {};
   for _, eventName in ipairs({"onEnded", "onHoldRelease"}) do
@@ -91,19 +96,38 @@ function Round.__index:stop()
   -- Save the round info in the database.
   self.timeEnded = DateTime.now().UnixTimestampMillis;
   self.ID = HttpService:GenerateGUID();
-  DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.ID, self:toString(), self.participantIDs);
+
+  local contestantIDs = {};
+  for _, contestant in ipairs(self.contestants) do
+
+    if contestant.ID > 0 then
+
+      table.insert(contestantIDs, contestant.ID);
+
+    end;
+
+  end;
+
+  DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.ID, self:toString(), contestantIDs);
   events[self].onEnded:Fire();
 
 end;
 
 function Round.__index:toString()
 
+  local serverContestantStringList = {};
+  for _, contestant in ipairs(self.contestants) do
+
+    table.insert(serverContestantStringList, contestant:toString());
+
+  end;
+
   return HttpService:JSONEncode({
     ID = self.ID;
     stageID = self.stageID;
     timeStarted = self.timeStarted;
     timeEnded = self.timeEnded;
-    participantIDs = self.participantIDs;
+    contestants = HttpService:JSONEncode(serverContestantStringList);
     gameMode = self.gameMode:toString();
   });
   
