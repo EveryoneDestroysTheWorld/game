@@ -6,6 +6,7 @@ local TeleportService = game:GetService("TeleportService");
 local Stage = require(ServerStorage.Classes.Stage);
 local Round = require(ServerStorage.Classes.Round);
 local TurfWarGameMode = require(ServerStorage.Classes.GameModes.TurfWarGameMode);
+local ServerContestant = require(ServerStorage.Classes.ServerContestant);
 
 -- Get the match info.
 -- local expectedPlayerIDs = {};
@@ -30,15 +31,21 @@ local function startRound()
   stageModel.Parent = workspace;
 
   -- Show the results when the round ends.
-  local participantIDs = {};
-  for _, participant in ipairs(participants) do
+  local contestants = {};
+  for _, player in ipairs(participants) do
 
-    table.insert(participantIDs, participant.UserId);
+    table.insert(contestants, ServerContestant.new({
+      ID = player.UserId;
+      player = player;
+      character = player.Character;
+      archetypeID = 1;
+      isDisqualified = false;
+    }));
 
     task.spawn(function()
       
       -- TODO: Disqualify the player if this doesn't work.
-      ReplicatedStorage.Shared.Functions.InitializeInventory:InvokeClient(participant, 1);
+      ReplicatedStorage.Shared.Functions.InitializeInventory:InvokeClient(player, 1);
     
     end)
 
@@ -46,14 +53,13 @@ local function startRound()
 
   local round = Round.new({
     stageID = stage.ID :: string;
-    gameMode = TurfWarGameMode.new(participantIDs);
-    participantIDs = participantIDs;
+    gameMode = TurfWarGameMode.new(stageModel, contestants);
+    contestants = contestants;
   });
   
   round.onEnded:Connect(function()
 
     ReplicatedStorage.Shared.Events.RoundEnded:FireAllClients(round);
-    print(round);
 
   end);
 
@@ -61,6 +67,12 @@ local function startRound()
   round:start(120, stageModel);
   print("Round started.");
   ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(120);
+
+  task.delay(3, function() 
+    
+    contestants[1]:disqualify() 
+  
+  end)
 
 end;
 

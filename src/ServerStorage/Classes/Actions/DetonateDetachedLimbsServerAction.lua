@@ -76,3 +76,5 @@ function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant): Se
   })
 
 end;
+
+return DetonateDetachedLimbsServerAction;

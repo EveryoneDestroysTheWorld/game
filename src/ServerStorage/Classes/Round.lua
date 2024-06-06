@@ -7,6 +7,10 @@ type GameMode = GameMode.GameMode;
 local DataStoreService = game:GetService("DataStoreService");
 local ServerContestant = require(script.Parent.ServerContestant);
 type ServerContestant = ServerContestant.ServerContestant;
+local ServerArchetype = require(script.Parent.ServerArchetype);
+type ServerArchetype = ServerArchetype.ServerArchetype;
+local ServerAction = require(script.Parent.ServerAction);
+type ServerAction = ServerAction.ServerAction;
 
 export type RoundProperties = {  
   -- This round's unique ID.
@@ -20,6 +24,10 @@ export type RoundProperties = {
   timeStarted: number?;
 
   timeEnded: number?;
+
+  archetypes: {ServerArchetype}?;
+
+  actions: {ServerAction}?;
 
   contestants: {ServerContestant};
 
@@ -66,6 +74,25 @@ function Round.__index:start(duration: number, stageModel: Model)
 
   self.timeStarted = DateTime.now().UnixTimestampMillis;
 
+  -- Ready the archetypes and actions.
+  self.archetypes = {};
+  self.actions = {};
+  for _, contestant in ipairs(self.contestants) do
+
+    task.spawn(function()
+    
+      local archetype = ServerArchetype.get(contestant.archetypeID, contestant);
+      table.insert(self.archetypes :: {ServerArchetype}, archetype);
+      for _, actionID in ipairs(archetype.actionIDs) do
+
+        table.insert(self.actions :: {ServerAction}, ServerAction.get(actionID, contestant))
+
+      end;
+
+    end);
+
+  end;
+
   -- Run the game mode.
   self.gameMode:start(stageModel);
 
@@ -92,6 +119,27 @@ function Round.__index:stop()
 
   -- Break down the game mode.
   self.gameMode:breakdown();
+
+  -- Disable the actions.
+  for _, archetype in ipairs(self.archetypes :: {ServerArchetype}) do
+
+    task.spawn(function() 
+      
+      archetype:breakdown(); 
+    
+    end);
+
+  end;
+
+  for _, action in ipairs(self.actions :: {ServerAction}) do
+
+    task.spawn(function() 
+      
+      action:breakdown(); 
+    
+    end)
+
+  end;
 
   -- Save the round info in the database.
   self.timeEnded = DateTime.now().UnixTimestampMillis;

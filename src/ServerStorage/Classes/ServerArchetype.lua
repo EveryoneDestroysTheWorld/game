@@ -1,6 +1,8 @@
 --!strict
 -- Written by Christian Toney (Sudobeast)
 -- This module represents an Archetype, which contains a list of powers.
+local ServerContestant = require(script.Parent.ServerContestant);
+type ServerContestant = ServerContestant.ServerContestant;
 
 export type ServerArchetypeProperties = {
   
@@ -28,7 +30,7 @@ function ServerArchetype.new(properties: ServerArchetypeProperties): ServerArche
   
 end
 
-function ServerArchetype.get(archetypeID: number): ServerArchetype
+function ServerArchetype.get(archetypeID: number, contestants: {ServerContestant}): ServerArchetype
 
   for _, instance in ipairs(script.Parent.Archetypes:GetChildren()) do
   
@@ -37,7 +39,7 @@ function ServerArchetype.get(archetypeID: number): ServerArchetype
       local archetype = require(instance) :: any;
       if archetype.ID == archetypeID then
   
-        return archetype.new();
+        return archetype.new(contestants);
   
       end;
   

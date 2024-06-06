@@ -104,3 +104,5 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
   })
 
 end;
+
+return RocketFeetServerAction;

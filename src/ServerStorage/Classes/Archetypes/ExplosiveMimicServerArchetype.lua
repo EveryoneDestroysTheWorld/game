@@ -30,6 +30,26 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant): Server
       highlight.FillColor = Color3.new(1, 1, 1);
       highlight.Parent = contestant.character;
       
+      local humanoid = contestant.character:FindFirstChild("Humanoid");
+      local changedEvent;
+      if humanoid and humanoid:IsA("Humanoid") then
+
+        local humanoidDescription = humanoid:GetAppliedDescription();
+        local sizeTween = TweenService:Create(humanoidDescription, TweenInfo.new(2.5), {
+          DepthScale = humanoidDescription.DepthScale * 1.5;
+          WidthScale = humanoidDescription.WidthScale * 1.5;
+          HeightScale = humanoidDescription.HeightScale * 1.5;
+          HeadScale = humanoidDescription.HeadScale * 1.5;
+        });
+        changedEvent = humanoidDescription.Changed:Connect(function()
+        
+          humanoid:ApplyDescription(humanoidDescription);
+
+        end)
+        sizeTween:Play();
+
+      end;
+
       local tween = TweenService:Create(highlight, TweenInfo.new(3), {FillTransparency = 0});
       tween.Completed:Connect(function()
       
@@ -53,6 +73,14 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant): Server
           end;
   
         end);
+
+        if humanoid and humanoid:IsA("Humanoid") and changedEvent then
+
+          humanoid.Health = 0;
+          changedEvent:Disconnect();
+
+        end;
+
         explosion.Parent = workspace;
         highlight:Destroy();
 

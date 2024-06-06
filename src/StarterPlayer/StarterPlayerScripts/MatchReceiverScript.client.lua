@@ -1,21 +1,21 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local Archetype = require(ReplicatedStorage.Client.Classes.Archetype);
-local Action = require(ReplicatedStorage.Client.Classes.Action);
-type Archetype = Archetype.Archetype;
-type Action = Action.Action;
+local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype);
+local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
+type ClientArchetype = ClientArchetype.ClientArchetype;
+type ClientAction = ClientAction.ClientAction;
 
-local currentArchetype: Archetype = nil;
-local currentActions: {Action} = {};
+local currentArchetype: ClientArchetype = nil;
+local currentActions: {ClientAction} = {};
 
 ReplicatedStorage.Shared.Functions.InitializeInventory.OnClientInvoke = function(archetypeID: number)
 
   -- Set up the archetype and actions.
-  currentArchetype = Archetype.get(archetypeID);
+  currentArchetype = ClientArchetype.get(archetypeID);
   print(`Archetype active: {currentArchetype.name}`);
 
   for _, actionID in ipairs(currentArchetype.actionIDs) do
 
-    local action = Action.get(actionID);
+    local action = ClientAction.get(actionID);
     print(`Action active: {action.name}`);
     table.insert(currentActions, action);
 

@@ -40,10 +40,11 @@ function ServerContestant.new(properties: ContestantProperties): ServerContestan
 
   -- Set up events.
   local eventNames = {"onDisqualified"};
+  events[contestant] = {};
   for _, eventName in ipairs(eventNames) do
 
     events[contestant][eventName] = Instance.new("BindableEvent");
-    (contestant :: {})[eventName] = events[eventName].Event;
+    (contestant :: {})[eventName] = events[contestant][eventName].Event;
 
   end
 

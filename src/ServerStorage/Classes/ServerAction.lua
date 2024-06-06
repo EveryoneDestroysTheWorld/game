@@ -1,12 +1,14 @@
 --!strict
 -- Written by Christian Toney (Sudobeast)
 -- This module represents a Action.
+local ServerContestant = require(script.Parent.ServerContestant);
+type ServerContestant = ServerContestant.ServerContestant;
 
 export type ActionProperties = {
   ID: number;
   name: string;
   description: string;
-  activate: (self: ServerAction) -> ();
+  activate: (self: ServerAction, ...any) -> any;
   breakdown: (self: ServerAction) -> ();
 };
 
@@ -36,7 +38,7 @@ function ServerAction.new(properties: ActionProperties): ServerAction
   
 end
 
-function ServerAction.get(actionID: number): ServerAction
+function ServerAction.get(actionID: number, contestant: ServerContestant): ServerAction
 
   for _, instance in ipairs(script.Parent.Actions:GetChildren()) do
   
@@ -45,7 +47,7 @@ function ServerAction.get(actionID: number): ServerAction
       local action = require(instance) :: any;
       if action.ID == actionID then
   
-        return action.new();
+        return action.new(contestant);
   
       end;
   
