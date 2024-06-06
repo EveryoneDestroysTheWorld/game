@@ -100,15 +100,15 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
             local toggleEvent;
             if contestant.player and rocketFeetToggledEvent then
 
-              toggleEvent = rocketFeetToggledEvent.OnServerEvent:Connect(function(player: Player, cameraOrientation: CFrame, vectorVelocity: Vector3)
+              toggleEvent = rocketFeetToggledEvent.OnServerEvent:Connect(function(player: Player, direction: {cameraOrientation: CFrame, vectorVelocity: Vector3?})
 
                 if player == contestant.player then
 
-                  assert(typeof(cameraOrientation) == "CFrame", "Camera orientation is not a CFrame");
-                  assert(typeof(vectorVelocity) == "Vector3", "VectorVelocity is not a Vector3");
+                  assert(not direction.cameraOrientation or typeof(direction.cameraOrientation) == "CFrame", "Camera orientation is not a CFrame");
+                  assert(not direction.vectorVelocity or typeof(direction.vectorVelocity) == "Vector3", "VectorVelocity is not a Vector3");
 
-                  alignOrientation.CFrame = cameraOrientation;
-                  directionVelocity.VectorVelocity = vectorVelocity;
+                  alignOrientation.CFrame = direction.cameraOrientation or alignOrientation.CFrame;
+                  directionVelocity.VectorVelocity = direction.vectorVelocity or directionVelocity.VectorVelocity;
 
                 end;
 
@@ -128,6 +128,8 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
 
             if contestant.player and rocketFeetToggledEvent and toggleEvent then
 
+              directionVelocity:Destroy();
+              alignOrientation:Destroy();
               rocketFeetToggledEvent:FireClient(contestant.player, false);
               toggleEvent:Disconnect();
 
