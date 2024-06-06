@@ -19,6 +19,7 @@ function DetachLimbAction.new(): ClientAction
   local action: ClientAction;
 
   local jumpButtonClickEvent;
+  local remoteEventConnection;
 
   local function breakdown(self: ClientAction)
 
@@ -29,11 +30,19 @@ function DetachLimbAction.new(): ClientAction
 
     end
 
+    if remoteEventConnection then
+
+      remoteEventConnection:Disconnect();
+
+    end;
+
   end;
+
+  local remoteName = `{Players.LocalPlayer.UserId}_{action.ID}`;
 
   local function activate(self: ClientAction)
 
-    ReplicatedStorage.Shared.Functions.ExecuteActionFunctions:FindFirstChild(`{Players.LocalPlayer.UserId}_{self.ID}`):InvokeServer();
+    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
 
   end;
 
@@ -68,6 +77,21 @@ function DetachLimbAction.new(): ClientAction
       end);
 
     end;
+
+  end;
+
+  local remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:FindFirstChild(remoteName);
+  if remoteEvent and remoteEvent:IsA("RemoteEvent") then
+
+    remoteEventConnection = remoteEvent.OnClientEvent:Connect(function(isRocketFeetEnabled: boolean)
+    
+      if isRocketFeetEnabled then
+
+      else
+
+      end;
+
+    end);
 
   end;
 

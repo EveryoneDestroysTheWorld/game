@@ -29,7 +29,10 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
   rightFootExplosivePart.CanCollide = false;
   rightFootExplosivePart.Size = Vector3.new(1, 1, 1);
 
-  local areRocketsEnabled = false
+  local areRocketsEnabled = false;
+  local rocketFeetToggledEvent: RemoteEvent? = nil;
+
+  local action: ServerAction = nil;
 
   local function activate()
 
@@ -72,13 +75,49 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
         end;
 
         if not areRocketsEnabled and contestantExecutionTime and contestantExecutionTime > DateTime.now().UnixTimestampMillis - 500 then
-    
-          -- Enable flying for the player.
 
-          -- Activate rockets under the contestant's feet.
+          -- Enable flying for the player.
+          local humanoidRootPart = contestant.character:FindFirstChild("HumanoidRootPart");
+          assert(humanoidRootPart, "Couldn't find humanoidRootPart.");
           areRocketsEnabled = true;
           task.spawn(function()
 
+            local directionVelocity = Instance.new("LinearVelocity");
+            directionVelocity.Name = "Direction";
+            directionVelocity.Attachment0 = humanoidRootPart:FindFirstChild("RootAttachment") :: Attachment;
+            directionVelocity.MaxForce = math.huge;
+            directionVelocity.RelativeTo = Enum.ActuatorRelativeTo.Attachment0;
+            directionVelocity.Parent = humanoidRootPart;
+
+            local alignOrientation = Instance.new("AlignOrientation");
+            alignOrientation.Name = "Angle";
+            alignOrientation.Attachment0 = humanoidRootPart:FindFirstChild("RootAttachment") :: Attachment;
+            alignOrientation.Mode = Enum.OrientationAlignmentMode.OneAttachment;
+            alignOrientation.Responsiveness = math.huge;
+            alignOrientation.MaxTorque = math.huge;
+            alignOrientation.Parent = humanoidRootPart;
+
+            local toggleEvent;
+            if contestant.player and rocketFeetToggledEvent then
+
+              toggleEvent = rocketFeetToggledEvent.OnServerEvent:Connect(function(player: Player, cameraOrientation: CFrame, vectorVelocity: Vector3)
+
+                if player == contestant.player then
+
+                  assert(typeof(cameraOrientation) == "CFrame", "Camera orientation is not a CFrame");
+                  assert(typeof(vectorVelocity) == "Vector3", "VectorVelocity is not a Vector3");
+
+                  alignOrientation.CFrame = cameraOrientation;
+                  directionVelocity.VectorVelocity = vectorVelocity;
+
+                end;
+
+              end);
+              rocketFeetToggledEvent:FireClient(contestant.player, true);
+
+            end;
+
+            -- Add explosion effects.
             repeat
 
               activateFeetExplosions(2);
@@ -86,6 +125,13 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
 
             until humanoid:GetAttribute("Stamina") < 2 or not areRocketsEnabled;
             areRocketsEnabled = false;
+
+            if contestant.player and rocketFeetToggledEvent and toggleEvent then
+
+              rocketFeetToggledEvent:FireClient(contestant.player, false);
+              toggleEvent:Disconnect();
+
+            end;
 
           end)
     
@@ -104,14 +150,13 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
 
   end;
 
-  local humanoidJumpingEvent: RBXScriptConnection? = nil;
   local executeActionRemoteFunction: RemoteFunction? = nil;
 
   local function breakdown()
 
-    if humanoidJumpingEvent then
+    if rocketFeetToggledEvent then
 
-      humanoidJumpingEvent:Disconnect();
+      rocketFeetToggledEvent:Destroy();
 
     end;
 
@@ -125,14 +170,6 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
     rightFootExplosivePart:Destroy();
 
   end;
-
-  local action = ServerAction.new({
-    name = RocketFeetServerAction.name;
-    ID = RocketFeetServerAction.ID;
-    description = RocketFeetServerAction.description;
-    breakdown = breakdown;
-    activate = activate;
-  });
 
   if contestant.character then
 
@@ -163,6 +200,14 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
 
   end;
 
+  action = ServerAction.new({
+    name = RocketFeetServerAction.name;
+    ID = RocketFeetServerAction.ID;
+    description = RocketFeetServerAction.description;
+    breakdown = breakdown;
+    activate = activate;
+  });
+
   if contestant.player then
 
     local remoteFunction = Instance.new("RemoteFunction");
@@ -181,8 +226,13 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
       end
 
     end;
-    remoteFunction.Parent = ReplicatedStorage.Shared.Functions.ExecuteActionFunctions;
+    remoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
     executeActionRemoteFunction = remoteFunction;
+
+    local remoteEvent = Instance.new("RemoteEvent");
+    remoteEvent.Name = `{contestant.player.UserId}_{action.ID}`;
+    remoteEvent.Parent = ReplicatedStorage.Shared.Events.ActionEvents;
+    rocketFeetToggledEvent = remoteEvent;
 
   end
 
