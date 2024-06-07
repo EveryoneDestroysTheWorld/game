@@ -53,7 +53,9 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant): ServerAct
 
   local latestActivationTime = 0;
   local currentAnimationTrack = nil;
-  local function activate(self: ServerAction)
+  local chargedAttackActivated = false;
+  local chargingTask;
+  local function activate(self: ServerAction, chargeMode: ("Charge" | "Release")?)
 
     -- Run the animation.
     local animator = humanoid:FindFirstChild("Animator");
@@ -68,25 +70,75 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant): ServerAct
     latestActivationTime = if latestActivationTime == 0 then DateTime.now().UnixTimestampMillis else 0;
     task.wait(0.1);
 
-    -- Start the
-    local explosivePart = explosiveParts[if shouldUseRightPunch then 2 else 1];
-    local explosion = Instance.new("Explosion");
-    explosion.BlastPressure = 0;
-    explosion.BlastRadius = 5;
-    explosion.DestroyJointRadiusPercent = 0;
-    explosion.Position = explosivePart.Position;
-    explosion.Hit:Connect(function(basePart)
+    local function activateExplosivePart(explosivePart: BasePart)
 
-      -- Damage any parts or contestants that get hit.
-      local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
-      if basePartCurrentDurability and basePartCurrentDurability > 0 then
+      local explosion = Instance.new("Explosion");
+      explosion.BlastPressure = 0;
+      explosion.BlastRadius = 5;
+      explosion.DestroyJointRadiusPercent = 0;
+      explosion.Position = explosivePart.Position;
+      explosion.Hit:Connect(function(basePart)
 
-        ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, contestant);
+        -- Damage any parts or contestants that get hit.
+        local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
+        if basePartCurrentDurability and basePartCurrentDurability > 0 then
+
+          ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, contestant);
+
+        end;
+
+      end);
+      explosion.Parent = explosivePart;
+
+    end;
+
+    if chargeMode == "Charge" then
+
+      -- Animate the player.
+
+      -- Start the charging task.
+      if chargingTask then
+
+        task.cancel(chargingTask);
 
       end;
 
-    end);
-    explosion.Parent = explosivePart;
+      chargingTask = task.delay(3, function()
+
+        chargedAttackActivated = true;
+
+      end);
+
+    elseif chargeMode == "Release" then
+
+      -- Cancel the charging action.
+      if chargingTask then
+
+        task.cancel(chargingTask);
+
+      end;
+
+      -- Stop the charging animation.
+ 
+      if chargedAttackActivated then
+
+        -- Unleash the charged attack.
+        chargedAttackActivated = false;
+        for _, explosivePart in ipairs(explosiveParts) do
+
+          activateExplosivePart(explosivePart);
+
+        end
+
+      end;
+
+    else
+
+      -- Choose an arm normally.
+      local explosivePart = explosiveParts[if shouldUseRightPunch then 2 else 1];
+      activateExplosivePart(explosivePart);    
+
+    end;
 
   end;
   
@@ -120,11 +172,13 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant): ServerAct
     
     actionRemoteFunction = Instance.new("RemoteFunction");
     actionRemoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
-    actionRemoteFunction.OnServerInvoke = function(player)
+    actionRemoteFunction.OnServerInvoke = function(player, chargeMode: "charging" | "release")
+
+      assert(not chargeMode or (typeof(chargeMode) == "string" and (chargeMode == "charging" or chargeMode == "release")), "Charge mode must be nil, \"charging\", or \"release\"");  
 
       if player == contestant.player then
 
-        action:activate();
+        action:activate(chargeMode);
 
       else
 
