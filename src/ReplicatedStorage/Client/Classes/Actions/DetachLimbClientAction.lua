@@ -37,12 +37,20 @@ local function LimbSelectionButton(props: LimbSelectionButtonProps)
     IconContainerFrame = React.createElement("Frame", {
       BackgroundTransparency = 0.9;
       BorderSizePixel = 0;
+      LayoutOrder = 1;
+      Size = UDim2.new(1, 0, 1, -10);
     }, {
       UIStroke = React.createElement("UIStroke", {});
-      IconImageLabel = React.createElement("ImageLabel", {});
+      IconImageLabel = React.createElement("ImageLabel", {
+        AnchorPoint = Vector2.new(0.5, 0.5);
+        Position = UDim2.new(0.5, 0, 0.5, 0);
+        Size = UDim2.new(1, -10, 1, -10);
+        BackgroundTransparency = 1;
+      });
     });
     ShortcutCharacterLabel = React.createElement("TextLabel", {
       BackgroundTransparency = 1;
+      Size = UDim2.new(1, 0, 0, 10);
       LayoutOrder = 2;
       Text = props.shortcutCharacter;
     });
