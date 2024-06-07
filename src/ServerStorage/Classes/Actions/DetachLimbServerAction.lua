@@ -29,6 +29,9 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
     local character = contestant.character;
     assert(character, `Contestant {contestant.ID} doesn't have a character.`);
 
+    local humanoid = character:FindFirstChild("Humanoid") :: Humanoid;
+    assert(humanoid and humanoid:IsA("Model"), `Couldn't find {contestant.ID}'s humanoid.`);
+
     local realLimb = character:FindFirstChild(limbName);
     assert(realLimb and realLimb:IsA("BasePart"), `Couldn't find {limbName}.`);
 
