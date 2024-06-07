@@ -40,6 +40,7 @@ function ExplosivePunchAction.new(): ClientAction
   
   remoteName = `{player.UserId}_{action.ID}`;
 
+  local chargingTask;
   local function checkJump(_, inputState: Enum.UserInputState)
 
     if inputState == Enum.UserInputState.Begin then

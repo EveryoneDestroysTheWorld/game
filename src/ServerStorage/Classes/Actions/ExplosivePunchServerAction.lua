@@ -51,24 +51,21 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant): ServerAct
 
   end;
 
-  local latestActivationTime = 0;
+  local latestActivationTimes = {0, 0};
   local currentAnimationTrack = nil;
-  local chargedAttackActivated = false;
-  local chargingTask;
-  local function activate(self: ServerAction, chargeMode: ("Charge" | "Release")?)
+  local function activate(self: ServerAction)
 
     -- Run the animation.
     local animator = humanoid:FindFirstChild("Animator");
     assert(animator and animator:IsA("Animator"), "Animator not found");
 
     local punchAnimation = Instance.new("Animation");
-    local shouldUseRightPunch = latestActivationTime > DateTime.now().UnixTimestampMillis - 500;
-    punchAnimation.AnimationId = `rbxassetid://{if shouldUseRightPunch then "17759014502" else "17758265394"}`;
+    local shouldUseRightPunch = latestActivationTimes[1] > DateTime.now().UnixTimestampMillis - 500;
+    local shouldUseBothArms = shouldUseRightPunch and latestActivationTimes[1] - latestActivationTimes[2] <= 500;
+    punchAnimation.AnimationId = `rbxassetid://{if shouldUseBothArms then "" elseif shouldUseRightPunch then "17759014502" else "17758265394"}`;
     if currentAnimationTrack then currentAnimationTrack:Stop() end; 
     currentAnimationTrack = animator:LoadAnimation(punchAnimation);
     currentAnimationTrack:Play();
-    latestActivationTime = if latestActivationTime == 0 then DateTime.now().UnixTimestampMillis else 0;
-    task.wait(0.1);
 
     local function activateExplosivePart(explosivePart: BasePart)
 
@@ -91,55 +88,24 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant): ServerAct
       explosion.Parent = explosivePart;
 
     end;
+   
+    if shouldUseBothArms then
 
-    if chargeMode == "Charge" then
+      currentActivationTimes = {0, 0};
+      task.wait(0.1);
+      activateExplosivePart(explosiveParts[1]);
+      activateExplosivePart(explosiveParts[2]);
 
-      -- Animate the player.
+    else 
 
-      -- Start the charging task.
-      if chargingTask then
-
-        task.cancel(chargingTask);
-
-      end;
-
-      chargingTask = task.delay(3, function()
-
-        chargedAttackActivated = true;
-
-      end);
-
-    elseif chargeMode == "Release" then
-
-      -- Cancel the charging action.
-      if chargingTask then
-
-        task.cancel(chargingTask);
-
-      end;
-
-      -- Stop the charging animation.
- 
-      if chargedAttackActivated then
-
-        -- Unleash the charged attack.
-        chargedAttackActivated = false;
-        for _, explosivePart in ipairs(explosiveParts) do
-
-          activateExplosivePart(explosivePart);
-
-        end
-
-      end;
-
-    else
-
-      -- Choose an arm normally.
+      table.insert(latestActivationTimes, 1, DateTime.now().UnixTimestampMillis);
+      latestActivationTimes[3] = nil;
+      task.wait(0.1);
       local explosivePart = explosiveParts[if shouldUseRightPunch then 2 else 1];
       activateExplosivePart(explosivePart);    
 
     end;
-
+    
   end;
   
   local actionRemoteFunction;
