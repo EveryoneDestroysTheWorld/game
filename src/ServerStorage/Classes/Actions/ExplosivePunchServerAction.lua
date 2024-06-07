@@ -91,7 +91,7 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant): ServerAct
    
     if shouldUseBothArms then
 
-      currentActivationTimes = {0, 0};
+      latestActivationTimes = {0, 0};
       task.wait(0.1);
       activateExplosivePart(explosiveParts[1]);
       activateExplosivePart(explosiveParts[2]);
