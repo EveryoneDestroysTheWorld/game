@@ -43,16 +43,30 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
     local humanoid = character:FindFirstChild("Humanoid") :: Humanoid?;
     assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.ID}'s humanoid.`);
 
-    local function highlightRealLimb(limb: BasePart)
+    local function toggleLimbHighlight(limb: BasePart, isEnabled: boolean)
 
-      limb.Transparency = 0.7;
-      local highlight = Instance.new("Highlight");
-      highlight.FillColor = Color3.new(1, 1, 1);
-      highlight.FillTransparency = 0.8;
-      highlight.OutlineColor = Color3.new(1, 1, 1);
-      highlight.OutlineTransparency = 0.65;
-      highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
-      highlight.Parent = limb;
+      if isEnabled then
+
+        limb.Transparency = 0.7;
+        local highlight = Instance.new("Highlight");
+        highlight.FillColor = Color3.new(1, 1, 1);
+        highlight.FillTransparency = 0.8;
+        highlight.OutlineColor = Color3.new(1, 1, 1);
+        highlight.OutlineTransparency = 0.65;
+        highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
+        highlight.Parent = limb;
+
+      else
+
+        limb.Transparency = 0;
+        local highlight = limb:FindFirstChild("Highlight");
+        if highlight then
+
+          highlight:Destroy();
+
+        end;
+
+      end;
 
     end;
 
@@ -128,9 +142,20 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
       -- Hide the real limbs.
       for _, limb in ipairs(realLimbs) do
 
-        highlightRealLimb(limb);
+        toggleLimbHighlight(limb, true);
 
       end;
+
+      detachedLimbs[limbName].Destroying:Connect(function()
+    
+        for _, limb in ipairs(realLimbs) do
+
+          toggleLimbHighlight(limb, false);
+
+        end
+        detachedLimbs[limbName] = nil;
+        
+      end);
 
       -- Show the fake limbs.
       cloneLimbContainer.Parent = workspace;
@@ -153,18 +178,19 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
 
       end;
 
+      detachedLimbs[limbName].Destroying:Connect(function()
+    
+        toggleLimbHighlight(realLimb, false);
+        detachedLimbs[limbName] = nil;
+        
+      end);
+
       detachedLimbs[limbName] = limbClone;
   
       -- Hide the real limb.
-      highlightRealLimb(realLimb);
+      toggleLimbHighlight(realLimb, true);
 
     end;
-
-    detachedLimbs[limbName].Destroying:Connect(function()
-    
-      detachedLimbs[limbName] = nil;
-      
-    end);
     
     -- Make the player take damage.
     humanoid.MaxHealth -= 19;
