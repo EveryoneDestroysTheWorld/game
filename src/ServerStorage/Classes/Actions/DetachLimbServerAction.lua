@@ -70,6 +70,7 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
 
     end;
 
+    local primaryLimbClone;
     if humanoid.RigType == Enum.HumanoidRigType.R15 and limbName ~= "Head" then
       
       local cloneLimbContainer = Instance.new("Model");
@@ -97,6 +98,7 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
         lowerClone.Parent = cloneLimbContainer;
         
         cloneLimbContainer.PrimaryPart = upperClone;
+        primaryLimbClone = upperClone;
 
       else
         
@@ -134,6 +136,7 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
 
         realLimbs = {upper, lower, ending};
         cloneLimbContainer.PrimaryPart = upperClone;
+        primaryLimbClone = upperClone;
 
       end;
 
@@ -190,7 +193,19 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
       -- Hide the real limb.
       toggleLimbHighlight(realLimb, true);
 
+      primaryLimbClone = limbClone;
+
     end;
+
+    -- Allow players to pick up the limb.
+    local proximityPrompt = Instance.new("ProximityPrompt");
+    proximityPrompt.ActionText = "Pick up";
+    proximityPrompt.MaxActivationDistance = 5;
+    proximityPrompt.Triggered:Connect(function(player)
+    
+    end)
+    proximityPrompt.Parent = primaryLimbClone;
+    print(proximityPrompt.Parent);
     
     -- Make the player take damage.
     humanoid.MaxHealth -= 19;
