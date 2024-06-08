@@ -3,6 +3,7 @@
 -- Designer: Christian Toney (Sudobeast)
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
+local ServerStorage = game:GetService("ServerStorage");
 type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
@@ -27,6 +28,7 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
     return detachedLimbs;
 
   end;
+  bindableFunction.Parent = ServerStorage.Functions.ActionFunctions;
 
   local function activate(self: ServerAction, limbName: string?)
 

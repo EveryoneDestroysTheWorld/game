@@ -19,7 +19,7 @@ function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant): Se
 
   local function activate()
 
-    for limbName, instance in ipairs(ServerStorage.Functions:FindFirstDescendant(`{contestant.ID}_GetDetachedLimbs`):Invoke(contestant)) do
+    for limbName, instance in pairs(ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.ID}_GetDetachedLimbs`):Invoke(contestant)) do
 
       -- Use task.spawn so that they all explode at the same time.
       task.spawn(function()
@@ -61,19 +61,49 @@ function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant): Se
 
   end;
 
+  local remoteFunction: RemoteFunction?;
   local function breakdown()
 
+    if remoteFunction then
 
+      remoteFunction:Destroy();
+
+    end;
 
   end;
 
-  return ServerAction.new({
+  local action = ServerAction.new({
     name = DetonateDetachedLimbsServerAction.name;
     ID = DetonateDetachedLimbsServerAction.ID;
     description = DetonateDetachedLimbsServerAction.description;
     breakdown = breakdown;
     activate = activate;
-  })
+  });
+
+  if contestant.player then
+    
+    local actionRemoteFunction = Instance.new("RemoteFunction");
+    actionRemoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
+    actionRemoteFunction.OnServerInvoke = function(player)
+
+      if player == contestant.player then
+
+        action:activate();
+
+      else
+
+        -- That's weird.
+        error("Unauthorized.");
+
+      end
+
+    end;
+    actionRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
+    remoteFunction = actionRemoteFunction;
+
+  end;
+
+  return action;
 
 end;
 
