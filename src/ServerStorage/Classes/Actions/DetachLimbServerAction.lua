@@ -18,6 +18,8 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
   
   local validLimbNames = {"Head", "Torso", "LeftArm", "RightArm", "LeftLeg", "RightLeg"};
 
+  local action: ServerAction;
+
   local function activate(self: ServerAction, limbName: string?)
 
     -- Verify variable types to maintain server security.
@@ -144,17 +146,50 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
 
   end;
 
+  local remoteFunction: RemoteFunction?;
   local function breakdown()
+
+    if remoteFunction then
+
+      remoteFunction:Destroy();
+
+    end;
 
   end;
 
-  local action = ServerAction.new({
+  action = ServerAction.new({
     ID = DetachLimbServerAction.ID;
     name = DetachLimbServerAction.name;
     description = DetachLimbServerAction.description;
     activate = activate;
     breakdown = breakdown;
   });
+
+  -- Create a remote function.
+  if contestant.player then
+    
+    local actionRemoteFunction = Instance.new("RemoteFunction");
+    actionRemoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
+    actionRemoteFunction.OnServerInvoke = function(player, limbName: string)
+
+      assert(typeof(limbName) == "string", "Limb name must be a string");  
+
+      if player == contestant.player then
+
+        action:activate(limbName);
+
+      else
+
+        -- That's weird.
+        error("Unauthorized.");
+
+      end
+
+    end;
+    actionRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
+    remoteFunction = actionRemoteFunction;
+
+  end;
 
   return action;
 

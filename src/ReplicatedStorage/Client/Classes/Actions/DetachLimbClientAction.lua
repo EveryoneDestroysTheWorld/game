@@ -30,18 +30,7 @@ function DetachLimbAction.new(): ClientAction
   limbSelectorGUI.DisplayOrder = 1;
   limbSelectorGUI.Enabled = true;
 
-  local limbSelection;
-
   local root = ReactRoblox.createRoot(limbSelectorGUI);
-  root:render(React.createElement(LimbSelectionWindow, {
-    onSelect = function(newLimbSelection)
-
-      limbSelection = newLimbSelection;
-
-    end;
-  }));
-
-  
 
   local function breakdown(self: ClientAction)
 
@@ -50,13 +39,9 @@ function DetachLimbAction.new(): ClientAction
 
   end;
 
-  local function activate(self: ClientAction)
+  local function activate(self: ClientAction, limbName: string)
 
-    if limbSelection then
-
-      ReplicatedStorage.Shared.Functions:FindFirstChild(`{player.UserId}_{DetachLimbAction.ID}`):InvokeServer();
-
-    end;
+    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(`{player.UserId}_{DetachLimbAction.ID}`):InvokeServer(limbName);
 
   end;
 
@@ -68,9 +53,23 @@ function DetachLimbAction.new(): ClientAction
     breakdown = breakdown;
   });
 
+  local function activateGUI()
+
+    root:render(React.createElement(LimbSelectionWindow, {
+      onSelect = function(limbName) action:activate(limbName); end;
+      onClose = function() root:unmount(); end;
+    }));
+
+  end;
+
+  ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
+    onActivate = function() activateGUI() end;
+    shortcutCharacter = "L";
+    iconImage = "rbxassetid://17551046771";
+  }));
+
   -- Listen for events.
-  ContextActionService:BindAction("Select Limb", function() end, false, Enum.KeyCode.J, Enum.KeyCode.K);
-  ContextActionService:BindAction("Detach Limb", function() activate(action) end, false, Enum.UserInputType.MouseButton2);
+  ContextActionService:BindAction("Detach Limb", function() activateGUI() end, false, Enum.UserInputType.MouseButton2);
 
   return action;
 

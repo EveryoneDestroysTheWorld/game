@@ -3,50 +3,81 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local LimbSelectionButton = require(script.Parent.LimbSelectionButton);
 
 type LimbSelectionWindowProps = {
-  onLimbSelect: (limbName: string) -> ();
+  onSelect: (limbName: string) -> ();
+  onClose: () -> ();
 };
 
 local function LimbSelectionWindow(props: LimbSelectionWindowProps)
 
-  local isOpen, setIsOpen = React.useState(false)l
   local buttonComponents = {};
   local limbInfo = {
-    {name = "Torso"; shortcutCharacter = "1";};
-    {name = "Head"; shortcutCharacter = "2";};
+    {
+      {limbName = "Head"; shortcutCharacter = "U"}
+    };
+    {
+      {limbName = "LeftArm"; shortcutCharacter = "H"};
+      {limbName = "Torso"; shortcutCharacter = "J"};
+      {limbName = "RightArm"; shortcutCharacter = "K"};
+    };
+    {
+      {limbName = "LeftLeg"; shortcutCharacter = "N"};
+      {limbName = "RightLeg"; shortcutCharacter = "M"};
+    };
   };
-  for _, limb in ipairs(limbInfo) do
+  for rowIndex, row in ipairs(limbInfo) do
 
-    table.insert(buttonComponents, React.createElement(LimbSelectionButton, {
-      onActivate = function()
+    local buttonComponentsRow = {};
+    local layoutOrder = 1;
+    for _, componentInfo in ipairs(row) do
 
-        props.onLimbSelect(limb.name);
+      table.insert(buttonComponentsRow, React.createElement(LimbSelectionButton, {
+        shortcutCharacter = componentInfo.shortcutCharacter;
+        layoutOrder = layoutOrder;
+        onActivate = function()
+  
+          props.onSelect(componentInfo.limbName);
+  
+        end;
+      }));
+  
+      layoutOrder += 1;
 
-      end;
+    end;
+
+    table.insert(buttonComponents, React.createElement("Frame", {
+      LayoutOrder = rowIndex;
+      AutomaticSize = Enum.AutomaticSize.XY;
+      Size = UDim2.new(0, 0, 0, 0);
+      BackgroundTransparency = 1;
+    }, {
+      React.createElement("UIListLayout", {
+        Name = "UIListLayout";
+        Padding = UDim.new(0, 5);
+        SortOrder = Enum.SortOrder.LayoutOrder;
+        FillDirection = Enum.FillDirection.Horizontal;
+        HorizontalAlignment = Enum.HorizontalAlignment.Center;
+      });
+      buttonComponentsRow
     }));
 
   end;
 
-  React.useEffect(function()
-
-    
-
-  end, {});
-
   return React.createElement(React.StrictMode, {}, {
-    Container = if isOpen then React.createElement("Frame", {
+    Container = React.createElement("Frame", {
       BackgroundTransparency = 1;
-      Position = UDim2.new(0, 30, 1, -90);
+      AnchorPoint = Vector2.new(0.5, 0.5);
+      Position = UDim2.new(0.5, 0, 0.5, 0);
       Size = UDim2.new(0, 0, 0, 0);
       AutomaticSize = Enum.AutomaticSize.XY;
     }, {
       React.createElement("UIListLayout", {
         Name = "UIListLayout";
-        Padding = UDim.new(0, 15);
-        FillDirection = Enum.FillDirection.Horizontal;
+        Padding = UDim.new(0, 5);
         SortOrder = Enum.SortOrder.LayoutOrder;
+        HorizontalAlignment = Enum.HorizontalAlignment.Center;
       });
-      buttonComponents;
-    }) else nil;
+      buttonComponents
+    });
   });
 
 end;

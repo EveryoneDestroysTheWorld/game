@@ -6,7 +6,7 @@ export type ActionProperties = {
   ID: number;
   name: string;
   description: string;
-  activate: (self: ClientAction) -> ();
+  activate: (self: ClientAction, ...any) -> ();
   breakdown: (self: ClientAction) -> ();
 };
 
