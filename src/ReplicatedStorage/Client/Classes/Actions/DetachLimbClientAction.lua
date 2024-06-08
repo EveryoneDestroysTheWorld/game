@@ -41,16 +41,7 @@ function DetachLimbAction.new(): ClientAction
     end;
   }));
 
-  ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
-    onActivate = function()
-
-      -- Open the limb selector.
-      print("Open!");
-
-    end;
-    shortcutCharacter = "L";
-    iconImage = "rbxassetid://17551046771";
-  }));
+  
 
   local function breakdown(self: ClientAction)
 

@@ -8,6 +8,7 @@ type LimbSelectionWindowProps = {
 
 local function LimbSelectionWindow(props: LimbSelectionWindowProps)
 
+  local isOpen, setIsOpen = React.useState(false)l
   local buttonComponents = {};
   local limbInfo = {
     {name = "Torso"; shortcutCharacter = "1";};
@@ -25,8 +26,14 @@ local function LimbSelectionWindow(props: LimbSelectionWindowProps)
 
   end;
 
+  React.useEffect(function()
+
+    
+
+  end, {});
+
   return React.createElement(React.StrictMode, {}, {
-    Container = React.createElement("Frame", {
+    Container = if isOpen then React.createElement("Frame", {
       BackgroundTransparency = 1;
       Position = UDim2.new(0, 30, 1, -90);
       Size = UDim2.new(0, 0, 0, 0);
@@ -39,7 +46,7 @@ local function LimbSelectionWindow(props: LimbSelectionWindowProps)
         SortOrder = Enum.SortOrder.LayoutOrder;
       });
       buttonComponents;
-    });
+    }) else nil;
   });
 
 end;
