@@ -180,6 +180,7 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
 
       end;
 
+      detachedLimbs[limbName] = limbClone;
       detachedLimbs[limbName].Destroying:Connect(function()
     
         toggleLimbHighlight(realLimb, false);
@@ -187,8 +188,6 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
         
       end);
 
-      detachedLimbs[limbName] = limbClone;
-  
       -- Hide the real limb.
       toggleLimbHighlight(realLimb, true);
 
@@ -200,13 +199,17 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
     local proximityPrompt = Instance.new("ProximityPrompt");
     proximityPrompt.ActionText = "Pick up";
     proximityPrompt.MaxActivationDistance = 7;
-    proximityPrompt.Triggered:Connect(function(player)
+    proximityPrompt.Triggered:Connect(function(holdingPlayer)
     
       -- Disable the proximity prompt so no one can steal it.
       proximityPrompt.Enabled = false;
+      local monitorScriptProxy = Instance.new("ScreenGui");
+      local monitoringScript = script.LimbHoldingMonitorScript:Clone();
+      monitoringScript.Parent = monitorScriptProxy;
+      monitorScriptProxy.Parent = holdingPlayer.PlayerGui;
 
       -- Attach the limb to the contestant's hand.
-      local character = player.Character;
+      local character = holdingPlayer.Character;
       local humanoid = if character then character:FindFirstChild("Humanoid") :: Humanoid else nil;
       assert(character and humanoid, "Humanoid not found");
       local isUsingR15 = humanoid.RigType == Enum.HumanoidRigType.R15;
@@ -219,6 +222,51 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
       weldConstraint.Part0 = hand;
       weldConstraint.Part1 = primaryLimbClone;
       weldConstraint.Parent = primaryLimbClone;
+
+      monitoringScript.RemoteEvent.OnServerEvent:Connect(function(throwingPlayer: Player, targetPosition: Vector3)
+      
+        if holdingPlayer == throwingPlayer then
+
+          monitorScriptProxy:Destroy();
+
+          local parent = primaryLimbClone.Parent;
+          local focusParts = if parent and parent:IsA("Model") and not parent:IsA("Workspace") then parent:GetChildren() else {primaryLimbClone};
+          for _, part in ipairs(focusParts) do
+
+            for _, throwerPart in ipairs(character:GetChildren()) do
+
+              if throwerPart:IsA("BasePart") and throwerPart.CanCollide then
+
+                local constraint = Instance.new("NoCollisionConstraint");
+                constraint.Part0 = part;
+                constraint.Part1 = throwerPart;
+                constraint.Parent = part;
+                task.delay(1, function()
+                
+                  constraint:Destroy();
+
+                end);
+
+              end;
+
+            end;
+
+          end;
+          
+          assert(typeof(targetPosition) == "Vector3", "Mouse position must be a Vector3");
+          weldConstraint:Destroy();
+
+          local currentPosition = primaryLimbClone.Position;
+          local direction = targetPosition - currentPosition;
+          local clampedDirection = direction.Unit * math.min(direction.Magnitude, 5);
+          local duration = math.log(1.001 + clampedDirection.Magnitude * 0.01);
+          local force = clampedDirection / duration * Vector3.new(1, workspace.Gravity * 0.5 * duration, 1);
+          primaryLimbClone:ApplyImpulse(force * primaryLimbClone.AssemblyMass);
+          proximityPrompt.Enabled = true;
+
+        end;
+
+      end);
 
     end)
     proximityPrompt.Parent = primaryLimbClone;
