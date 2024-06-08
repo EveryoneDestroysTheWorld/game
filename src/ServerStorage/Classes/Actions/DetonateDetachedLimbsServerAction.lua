@@ -19,7 +19,7 @@ function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant): Se
 
   local function activate()
 
-    for _, limb in ipairs(ServerStorage.Functions.GetDetachedLimbs:Invoke(contestant)) do
+    for limbName, instance in ipairs(ServerStorage.Functions:FindFirstDescendant(`{contestant.ID}_GetDetachedLimbs`):Invoke(contestant)) do
 
       -- Use task.spawn so that they all explode at the same time.
       task.spawn(function()
@@ -29,7 +29,7 @@ function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant): Se
         explosion.BlastPressure = 5000000;
         explosion.BlastRadius = 20;
         explosion.DestroyJointRadiusPercent = 0;
-        explosion.Position = limb.CFrame.Position;
+        explosion.Position = (if instance:IsA("Model") then instance.PrimaryPart else instance).CFrame.Position;
         explosion.Hit:Connect(function(basePart)
   
           -- Damage any parts or contestants that get hit.
@@ -42,7 +42,7 @@ function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant): Se
   
         end);
         explosion.Parent = workspace;
-        limb:Destroy();
+        instance:Destroy();
 
         if contestant.character then
 

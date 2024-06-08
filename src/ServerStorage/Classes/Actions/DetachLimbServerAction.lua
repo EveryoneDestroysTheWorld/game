@@ -19,6 +19,14 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
   local validLimbNames = {"Head", "Torso", "LeftArm", "RightArm", "LeftLeg", "RightLeg"};
 
   local action: ServerAction;
+  local detachedLimbs: {[string]: BasePart | Model} = {};
+  local bindableFunction = Instance.new("BindableFunction");
+  bindableFunction.Name = `{contestant.ID}_GetDetachedLimbs`;
+  bindableFunction.OnInvoke = function()
+
+    return detachedLimbs;
+
+  end;
 
   local function activate(self: ServerAction, limbName: string?)
 
@@ -113,7 +121,7 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
 
       end;
 
-
+      detachedLimbs[limbName] = cloneLimbContainer;
 
       -- Hide the real limbs.
       for _, limb in ipairs(realLimbs) do
@@ -142,14 +150,19 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
         neck:Destroy();
 
       end;
+
+      detachedLimbs[limbName] = limbClone;
   
       -- Hide the real limb.
       highlightRealLimb(realLimb);
-  
-      -- Destroy the limb after the round ends.
-      -- ServerScriptService.MatchManagementScript.AddDebris:Invoke(limbClone);
 
     end;
+
+    detachedLimbs[limbName].Destroying:Connect(function()
+    
+      detachedLimbs[limbName] = nil;
+      
+    end);
     
     -- Make the player take damage.
     humanoid.MaxHealth -= 19;
@@ -158,6 +171,13 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
 
   local remoteFunction: RemoteFunction?;
   local function breakdown()
+
+    bindableFunction:Destroy();
+    for _, detachedLimb in pairs(detachedLimbs) do
+
+      detachedLimb:Destroy();
+
+    end;
 
     if remoteFunction then
 
