@@ -5,6 +5,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 local ClientAction = require(script.Parent.Parent.ClientAction);
+local React = require(ReplicatedStorage.Shared.Packages.react);
+local ActionButton = require(script.Parent.Parent.Parent.ReactComponents.ActionButton);
 type ClientAction = ClientAction.ClientAction;
 
 local ExplosivePunchAction = {
@@ -37,6 +39,16 @@ function ExplosivePunchAction.new(): ClientAction
     activate = activate;
     breakdown = breakdown;
   });
+
+  ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
+    onActivate = function()
+
+      action:activate();
+
+    end;
+    shortcutCharacter = "L";
+    iconImage = "rbxassetid://17771917538";
+  }));
   
   remoteName = `{player.UserId}_{action.ID}`;
 

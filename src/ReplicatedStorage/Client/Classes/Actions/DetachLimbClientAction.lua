@@ -7,6 +7,7 @@ local ContextActionService = game:GetService("ContextActionService");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 local ClientAction = require(script.Parent.Parent.ClientAction);
+local ActionButton = require(script.Parent.Parent.Parent.ReactComponents.ActionButton);
 local LimbSelectionWindow = require(script.Parent.Parent.Parent.ReactComponents.LimbSelectionWindow);
 type ClientAction = ClientAction.ClientAction;
 
@@ -38,6 +39,17 @@ function DetachLimbAction.new(): ClientAction
       limbSelection = newLimbSelection;
 
     end;
+  }));
+
+  ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
+    onActivate = function()
+
+      -- Open the limb selector.
+      print("Open!");
+
+    end;
+    shortcutCharacter = "L";
+    iconImage = "rbxassetid://17551046771";
   }));
 
   local function breakdown(self: ClientAction)

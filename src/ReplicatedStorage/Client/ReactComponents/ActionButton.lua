@@ -1,18 +1,32 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
+local UserInputService = game:GetService("UserInputService");
 
 type LimbSelectionButtonProps = {
   onActivate: () -> ();
   shortcutCharacter: string;
+  iconImage: string?;
 }
 
 local function ActionButton(props: LimbSelectionButtonProps)
+
+  local isKeyboardEnabled, setIsKeyboardEnabled = React.useState(false);
 
   local function onActivate()
 
     props.onActivate();
 
   end;
+
+  React.useEffect(function()
+  
+    UserInputService:GetPropertyChangedSignal("KeyboardEnabled"):Connect(function()
+    
+      setIsKeyboardEnabled(isKeyboardEnabled);
+
+    end);
+
+  end, {});
 
   return React.createElement("TextButton", {
     [React.Event.Activated] = onActivate;
@@ -45,26 +59,28 @@ local function ActionButton(props: LimbSelectionButtonProps)
         UIStroke = React.createElement("UIStroke", {
           Color = Color3.fromRGB(204, 204, 204);
           Thickness = 1;
+          ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
           Transparency = 0.4;
         });
-        IconImageLabel = React.createElement("ImageLabel", {
+        IconImageLabel = if props.iconImage then React.createElement("ImageLabel", {
           AnchorPoint = Vector2.new(0.5, 0.5);
           Rotation = -45;
           Position = UDim2.new(0.5, 0, 0.5, 0);
           Size = UDim2.new(1, -10, 1, -10);
           BackgroundTransparency = 1;
-          Image = "rbxassetid://17551046771";
-        });
+          Image = props.iconImage;
+        }) else nil;
       });
     });
-    ShortcutCharacterLabel = React.createElement("TextLabel", {
+    ShortcutCharacterLabel = if props.shortcutCharacter then React.createElement("TextLabel", {
       BackgroundTransparency = 1;
       LayoutOrder = 2;
       TextColor3 = Color3.new(1, 1, 1);
-      Text = props.shortcutCharacter or "";
+      TextSize = 14;
+      Text = props.shortcutCharacter;
       FontFace = Font.fromId(11702779517, Enum.FontWeight.Bold);
       AutomaticSize = Enum.AutomaticSize.XY;
-    });
+    }) else nil;
   });
 
 end;
