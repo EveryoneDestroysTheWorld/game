@@ -47,27 +47,32 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
     end;
 
     if humanoid.RigType == Enum.HumanoidRigType.R15 and limbName ~= "Head" then
+      
+      local cloneLimbContainer = Instance.new("Model");
+      cloneLimbContainer.Name = `{contestant.ID}_ExplosiveLimb_{limbName}`;
 
       local realLimbs = {};
-      local cloneLimbs = {};
       if limbName == "Torso" then
 
         local upper = character:FindFirstChild("UpperTorso") :: BasePart;
         local lower = character:FindFirstChild("LowerTorso") :: BasePart;
         local upperClone = upper:Clone();
+        upperClone.CanCollide = true;
         local lowerClone = lower:Clone();
+        lowerClone.CanCollide = true;
         local upperMotor6D = upperClone:FindFirstChild("Waist") :: Motor6D;
         upperMotor6D.Part0 = lowerClone;
         upperMotor6D.Part1 = upperClone;
 
         local lowerMotor6D = lowerClone:FindFirstChild("Root") :: Motor6D;
         lowerMotor6D:Destroy();
-
-        upperClone.Parent = workspace;
-        lowerClone.Parent = workspace;
         
         realLimbs = {upper, lower};
-        cloneLimbs = {upperClone, lowerClone};
+
+        upperClone.Parent = cloneLimbContainer;
+        lowerClone.Parent = cloneLimbContainer;
+        
+        cloneLimbContainer.PrimaryPart = upperClone;
 
       else
         
@@ -79,25 +84,36 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
         local ending = character:FindFirstChild(direction .. if majorLimbName == "Arm" then "Hand" else "Foot") :: BasePart;
 
         local upperClone = upper:Clone();
+        upperClone.CanCollide = true;
+        upperClone.Parent = cloneLimbContainer;
+
         local upperMotor6D = upperClone:FindFirstChild(direction .. if majorLimbName == "Arm" then "Shoulder" else "Hip") :: Motor6D;
         upperMotor6D:Destroy();
 
         local lowerClone = lower:Clone();
+        lowerClone.CanCollide = true;
+        lowerClone.Parent = cloneLimbContainer;
+
         local lowerMotor6D = lowerClone:FindFirstChild(direction .. if majorLimbName == "Arm" then "Elbow" else "Knee") :: Motor6D;
         lowerMotor6D.Part0 = upperClone;
         lowerMotor6D.Part1 = lowerClone;
         lowerMotor6D.Parent = lowerClone;
 
         local endingClone = ending:Clone();
+        endingClone.CanCollide = true;
+        endingClone.Parent = cloneLimbContainer;
+
         local endingMotor6D = endingClone:FindFirstChild(direction .. if majorLimbName == "Arm" then "Wrist" else "Ankle") :: Motor6D;
         endingMotor6D.Part0 = lowerClone;
         endingMotor6D.Part1 = endingClone;
         endingMotor6D.Parent = endingClone;
 
         realLimbs = {upper, lower, ending};
-        cloneLimbs = {upperClone, lowerClone, endingClone};
+        cloneLimbContainer.PrimaryPart = upperClone;
 
       end;
+
+
 
       -- Hide the real limbs.
       for _, limb in ipairs(realLimbs) do
@@ -107,14 +123,8 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
       end;
 
       -- Show the fake limbs.
-      for _, clone in ipairs(cloneLimbs) do
-
-        clone.Name = `{contestant.ID}ExplosiveLimb{clone.Name}`;
-        clone.CanCollide = true;
-        clone.Parent = workspace;
-        -- ServerScriptService.MatchManagementScript.AddDebris:Invoke(clone);
-
-      end;
+      cloneLimbContainer.Parent = workspace;
+      -- ServerScriptService.MatchManagementScript.AddDebris:Invoke(clone);
 
     else
 
@@ -122,7 +132,7 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
       assert(realLimb and realLimb:IsA("BasePart"), `Couldn't find {limbName}.`);
   
       local limbClone = realLimb:Clone() :: BasePart;
-      limbClone.Name = `{contestant.ID}ExplosiveLimb{limbClone.Name}`;
+      limbClone.Name = `{contestant.ID}_ExplosiveLimb_{limbClone.Name}`;
       limbClone.CanCollide = true;
       limbClone.Parent = workspace;
 
