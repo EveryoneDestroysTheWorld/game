@@ -17,6 +17,8 @@ export type ServerArchetypeProperties = {
   actionIDs: {number};
 
   breakdown: (self: ServerArchetype) -> ();
+
+  runAutoPilot: (self: ServerArchetype) -> ();
   
 }
 
@@ -30,7 +32,7 @@ function ServerArchetype.new(properties: ServerArchetypeProperties): ServerArche
   
 end
 
-function ServerArchetype.get(archetypeID: number, contestants: {ServerContestant}): ServerArchetype
+function ServerArchetype.get(archetypeID: number, ...: any): ServerArchetype
 
   for _, instance in ipairs(script.Parent.Archetypes:GetChildren()) do
   
@@ -39,7 +41,7 @@ function ServerArchetype.get(archetypeID: number, contestants: {ServerContestant
       local archetype = require(instance) :: any;
       if archetype.ID == archetypeID then
   
-        return archetype.new(contestants);
+        return archetype.new(...);
   
       end;
   

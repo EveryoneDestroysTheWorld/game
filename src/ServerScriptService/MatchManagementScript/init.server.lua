@@ -64,7 +64,7 @@ local function startRound()
   end);
 
   -- Start the round.
-  round:start(120, stageModel);
+  round:start(stageModel);
   print("Round started.");
   ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(120);
 

@@ -7,6 +7,8 @@ local ServerContestant = require(script.Parent.Parent.ServerContestant);
 type ServerContestant = ServerContestant.ServerContestant;
 type ServerArchetype = ServerArchetype.ServerArchetype;
 local ExplosiveMimicClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.ExplosiveMimicClientArchetype);
+local Round = require(script.Parent.Parent.Round);
+type Round = Round.Round;
 
 local ExplosiveMimicServerArchetype = {
   ID = ExplosiveMimicClientArchetype.ID;
@@ -16,7 +18,7 @@ local ExplosiveMimicServerArchetype = {
   type = ExplosiveMimicClientArchetype.type;
 };
 
-function ExplosiveMimicServerArchetype.new(contestant: ServerContestant): ServerArchetype
+function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: Round): ServerArchetype
 
   -- Set up the self-destruct.
   local disqualificationEvent = contestant.onDisqualified:Connect(function()
@@ -98,6 +100,93 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant): Server
 
   end;
 
+  local function runAutoPilot(self: ServerArchetype)
+
+    -- Make sure the contestant has a character.
+    local character = contestant.character
+    assert(character, "Character not found");
+
+    repeat
+
+      -- Notes: Since Explosive Mimic is a Destroyer class archetype, the bot should focus on 
+      --        destroying instead of fighting, supporting, or defending. However, there may be times
+      --        when the bot should act outside its class. For example, when an enemy attacks the bot [fight], 
+      --        when a nearby teammate is at low HP [support], or when the bot's team is ahead [defend].
+      --        Revert back to Destroyer mode when possible.
+
+      -- [Always Active]
+      -- STRATEGIC SELF-DESTRUCT
+        -- If the bot is about to die, look for a nearby crowd of enemies UNLESS one of exceptions hold true. Go to the biggest crowd. 
+        -- If there are multiple crowds, prioritize the crowd with the highest ranking players. Regardless the decision, try to avoid attacks.
+        -- Once the bot is close enough, the bot should disqualify itself, causing the Self-Destruct effect to activate.
+        -- Keep close to the enemies for as long as possible as they might try to escape.
+
+        -- Exceptions: 
+          -- 1. The bot is currently destroying a part AND is at maximum 35 durability points to destroying it.
+          -- 2. The bot has a healing item or is nearby a healing zone.
+          -- 3. The bot is currently getting healed.
+          -- 4. The bot can significantly recover its health before it gets hurt again.
+
+      local humanoid = character:FindFirstChild("Humanoid") :: Humanoid?;
+      if humanoid then
+
+        local criticalHealthPointsValue = 10;
+        if humanoid:GetAttribute("CurrentHealth") >= criticalHealthPointsValue then
+
+          -- Look for enemies and head into that direction.
+
+          -- Down the contestant so that disqualification happens.
+          contestant:disqualify();
+
+        end;
+
+      end;
+
+      -- TROLL SELF-DESTRUCT
+        -- If the round is 10 seconds to ending and the bot's team is significantly ahead, the bot should approach an enemy and disqualify itself 
+        -- when it is three seconds away from the enemy. Prioritize enemies who haven't moved in a while, if any.
+
+      local isRoundEnding = round.timeStarted and round.duration and DateTime.now().UnixTimestampMillis - 10000 > round.timeStarted + round.duration * 1000;
+      if isRoundEnding then
+
+        -- Search for an enemy.
+
+        -- Approach the enemy.
+
+        -- 
+        contestant:disqualify();
+
+      end;
+
+      -- STRATEGIC DEFENSE
+        -- If the bot gets attacked while destroying a part, determine the damage taken per hit and the amount of time to the bot's disqualification.
+        -- If the bot can break the part at least 3 seconds before it gets disqualified, continue breaking the part and escape the enemy's trajectory;
+        -- otherwise, escape immediately.
+
+      -- STRATEGIC LIMB DETONATION
+        -- If the bot sees an enemy nearby its detached limb, detonate it.
+
+      -- [Default Loop]
+      -- 1.) Search for massive, destroyable structures. Go to the biggest one and detach a random limb on the way.
+      --     Although the server has access to all destroyable parts, take a guess to ensure the round is fair.
+
+      -- 2.) Go to the destroyable part.
+
+      -- 3.) If the part is in front of the player:
+        -- a.) Use Explosive Punch until the part is destroyed.
+        -- b.) Look for close parts that are in punching range.
+
+      -- Else, if the part is under the player:
+        -- a.) Use Rocket Feet until the part is destroyed.
+        -- b.) Look for close parts that are under the player's feet.
+        -- c.) Once no more ground parts are found, disable Rocket Feet to save stamina.
+
+      -- 4.) Continue from #1.
+
+    until round.timeEnded;
+
+  end;
+
   return ServerArchetype.new({
     ID = ExplosiveMimicServerArchetype.ID;
     name = ExplosiveMimicServerArchetype.name;
@@ -105,6 +194,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant): Server
     actionIDs = ExplosiveMimicServerArchetype.actionIDs;
     type = ExplosiveMimicServerArchetype.type;
     breakdown = breakdown;
+    runAutoPilot = runAutoPilot;
   });
 
 end;

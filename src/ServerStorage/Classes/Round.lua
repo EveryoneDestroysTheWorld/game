@@ -23,6 +23,8 @@ export type RoundProperties = {
 
   timeStarted: number?;
 
+  duration: number?;
+
   timeEnded: number?;
 
   archetypes: {ServerArchetype}?;
@@ -39,7 +41,7 @@ export type RoundEvents = {
 }
 
 export type RoundMethods = {
-  start: (self: Round, duration: number, stageModel: Model) -> ();
+  start: (self: Round, stageModel: Model) -> ();
   stop: (self: Round) -> ();
   toString: (self: Round) -> string;
 }
@@ -68,11 +70,9 @@ function Round.new(properties: RoundProperties): Round
   
 end
 
-function Round.__index:start(duration: number, stageModel: Model)
+function Round.__index:start(stageModel: Model)
 
   assert(not self.timeStarted, "The round has already started.");
-
-  self.timeStarted = DateTime.now().UnixTimestampMillis;
 
   -- Ready the archetypes and actions.
   self.archetypes = {};
@@ -81,7 +81,7 @@ function Round.__index:start(duration: number, stageModel: Model)
 
     task.spawn(function()
     
-      local archetype = ServerArchetype.get(contestant.archetypeID, contestant);
+      local archetype = ServerArchetype.get(contestant.archetypeID, contestant, self);
       table.insert(self.archetypes :: {ServerArchetype}, archetype);
       for _, actionID in ipairs(archetype.actionIDs) do
 
@@ -96,8 +96,10 @@ function Round.__index:start(duration: number, stageModel: Model)
   -- Run the game mode.
   self.gameMode:start(stageModel);
 
+  self.timeStarted = DateTime.now().UnixTimestampMillis;
+
   -- Start a timer.
-  local timer = task.delay(duration, function()
+  local timer = task.delay(self.duration, function()
   
     self:stop();
 
