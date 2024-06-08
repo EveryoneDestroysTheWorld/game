@@ -162,7 +162,6 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
 
       -- Show the fake limbs.
       cloneLimbContainer.Parent = workspace;
-      -- ServerScriptService.MatchManagementScript.AddDebris:Invoke(clone);
 
     else
 
@@ -203,6 +202,24 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
     proximityPrompt.MaxActivationDistance = 7;
     proximityPrompt.Triggered:Connect(function(player)
     
+      -- Disable the proximity prompt so no one can steal it.
+      proximityPrompt.Enabled = false;
+
+      -- Attach the limb to the contestant's hand.
+      local character = player.Character;
+      local humanoid = if character then character:FindFirstChild("Humanoid") :: Humanoid else nil;
+      assert(character and humanoid, "Humanoid not found");
+      local isUsingR15 = humanoid.RigType == Enum.HumanoidRigType.R15;
+      local handName = `Right{if isUsingR15 then "Hand" else "Arm"}`;
+      local hand = character:FindFirstChild(handName) :: BasePart;
+      assert(hand, `{handName} not found`);
+      primaryLimbClone.CFrame = hand.CFrame;
+      
+      local weldConstraint = Instance.new("WeldConstraint");
+      weldConstraint.Part0 = hand;
+      weldConstraint.Part1 = primaryLimbClone;
+      weldConstraint.Parent = primaryLimbClone;
+
     end)
     proximityPrompt.Parent = primaryLimbClone;
     
