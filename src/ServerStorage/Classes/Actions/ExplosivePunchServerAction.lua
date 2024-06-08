@@ -35,14 +35,14 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant): ServerAct
       explosivePart.Name = `{hand.Name}ExplosivePart`;
       explosivePart.CanCollide = false;
       explosivePart.Size = Vector3.new(1, 1, 1);
-      -- explosivePart.Transparency = 1;
+      explosivePart.Transparency = 1;
+      explosivePart.Position = hand.CFrame.Position - (if not isHumanoidR15 then Vector3.new(0, hand.Size.Y / 2 + explosivePart.Size.Y / 2, 0) else Vector3.new(0, 1.5, 0));
 
       local explosiveWeldConstraint = Instance.new("WeldConstraint");
       explosiveWeldConstraint.Part0 = explosivePart;
       explosiveWeldConstraint.Part1 = hand;
       explosiveWeldConstraint.Parent = explosivePart;
 
-      explosivePart.Position = hand.CFrame.Position - (if not isHumanoidR15 then Vector3.new(0, hand.Size.Y / 2 + explosivePart.Size.Y / 2, 0) else Vector3.new(0, 1.5, 0));
       explosivePart.Parent = contestant.character;
 
       table.insert(explosiveParts, explosivePart);
@@ -62,10 +62,10 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant): ServerAct
     local punchAnimation = Instance.new("Animation");
     local shouldUseRightPunch = latestActivationTimes[1] > DateTime.now().UnixTimestampMillis - 500;
     local shouldUseBothArms = shouldUseRightPunch and latestActivationTimes[1] - latestActivationTimes[2] <= 500;
-    punchAnimation.AnimationId = `rbxassetid://{if shouldUseBothArms then "" elseif shouldUseRightPunch then "17759014502" else "17758265394"}`;
-    if currentAnimationTrack then currentAnimationTrack:Stop() end; 
+    punchAnimation.AnimationId = `rbxassetid://{if shouldUseBothArms then "17783699843" elseif shouldUseRightPunch then "17759014502" else "17758265394"}`;
+    if currentAnimationTrack then currentAnimationTrack:Stop(0) end; 
     currentAnimationTrack = animator:LoadAnimation(punchAnimation);
-    currentAnimationTrack:Play();
+    currentAnimationTrack:Play(0.025);
 
     local function activateExplosivePart(explosivePart: BasePart)
 
