@@ -200,12 +200,11 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
     -- Allow players to pick up the limb.
     local proximityPrompt = Instance.new("ProximityPrompt");
     proximityPrompt.ActionText = "Pick up";
-    proximityPrompt.MaxActivationDistance = 5;
+    proximityPrompt.MaxActivationDistance = 7;
     proximityPrompt.Triggered:Connect(function(player)
     
     end)
     proximityPrompt.Parent = primaryLimbClone;
-    print(proximityPrompt.Parent);
     
     -- Make the player take damage.
     humanoid.MaxHealth -= 19;
