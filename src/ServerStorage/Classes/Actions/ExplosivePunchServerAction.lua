@@ -80,7 +80,7 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant): ServerAct
         local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
         if basePartCurrentDurability and basePartCurrentDurability > 0 then
 
-          ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, contestant);
+          basePart:SetAttribute("CurrentDurability", basePartCurrentDurability - 35);
 
         end;
 

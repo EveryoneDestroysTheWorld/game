@@ -62,7 +62,7 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
               local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
               if basePartCurrentDurability and basePartCurrentDurability > 0 then
       
-                ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, contestant);
+                basePart:SetAttribute("CurrentDurability", basePartCurrentDurability - 35);
       
               end;
 
@@ -127,11 +127,11 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
 
             until humanoid:GetAttribute("Stamina") < 2 or not areRocketsEnabled;
             areRocketsEnabled = false;
+            directionVelocity:Destroy();
+            alignOrientation:Destroy();
 
             if contestant.player and rocketFeetToggledEvent and toggleEvent then
 
-              directionVelocity:Destroy();
-              alignOrientation:Destroy();
               rocketFeetToggledEvent:FireClient(contestant.player, false);
               toggleEvent:Disconnect();
 
