@@ -2,13 +2,16 @@
 local TweenService = game:GetService("TweenService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
+local PathfindingService = game:GetService("PathfindingService");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
-type ServerArchetype = ServerArchetype.ServerArchetype;
 local ExplosiveMimicClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.ExplosiveMimicClientArchetype);
 local Round = require(script.Parent.Parent.Round);
+local ServerAction = require(script.Parent.Parent.ServerAction);
 type Round = Round.Round;
+type ServerContestant = ServerContestant.ServerContestant;
+type ServerArchetype = ServerArchetype.ServerArchetype;
+type ServerAction = ServerAction.ServerAction;
 
 local ExplosiveMimicServerArchetype = {
   ID = ExplosiveMimicClientArchetype.ID;
@@ -18,7 +21,7 @@ local ExplosiveMimicServerArchetype = {
   type = ExplosiveMimicClientArchetype.type;
 };
 
-function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: Round): ServerArchetype
+function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: Round, stageModel: Model): ServerArchetype
 
   -- Set up the self-destruct.
   local disqualificationEvent = contestant.onDisqualified:Connect(function()
@@ -122,7 +125,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
   end;
 
-  local function runAutoPilot(self: ServerArchetype)
+  local function runAutoPilot(self: ServerArchetype, actions: {ServerAction})
 
     -- Make sure the contestant has a character.
     local character = contestant.character
@@ -138,78 +141,77 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
       local humanoid = character:FindFirstChild("Humanoid") :: Humanoid?;
       local head = character:FindFirstChild("Head") :: BasePart?;
-      if head and humanoid then
+      if not humanoid or not head then continue end;
 
-        local function seekAndSelfDestruct()
+      
+      local defaultRaycastParams: RaycastParams = RaycastParams.new();
+      defaultRaycastParams.FilterType = Enum.RaycastFilterType.Exclude;
+      defaultRaycastParams.FilterDescendantsInstances = {character};
 
-          -- Look for enemies and head into that direction.
-          for _, possibleEnemyContestant in ipairs(round.contestants) do
+      local function seekAndSelfDestruct()
 
-            -- TODO: Check if the contestant is on a different team (when teams are implemented).
-            local isOnSameTeam = possibleEnemyContestant == contestant;
-            local possibleEnemyCharacter = possibleEnemyContestant.character;
-            if not isOnSameTeam and possibleEnemyCharacter then
+        -- Look for enemies and head into that direction.
+        for _, possibleEnemyContestant in ipairs(round.contestants) do
 
-              -- Check if the contestant is in view.
-              local enemyHumanoidRootPart = possibleEnemyCharacter:FindFirstChild("HumanoidRootPart") :: BasePart?;
-              if enemyHumanoidRootPart then
+          -- TODO: Check if the contestant is on a different team (when teams are implemented).
+          local isOnSameTeam = possibleEnemyContestant == contestant;
+          local possibleEnemyCharacter = possibleEnemyContestant.character;
+          if not isOnSameTeam and possibleEnemyCharacter then
 
-                local rayParams: RaycastParams = RaycastParams.new();
-                rayParams.FilterType = Enum.RaycastFilterType.Exclude;
-                rayParams.FilterDescendantsInstances = {};
-                local result = workspace:Raycast(head.CFrame.Position, enemyHumanoidRootPart.CFrame.Position - head.CFrame.Position, rayParams);
-                if result and result.Instance:IsDescendantOf(possibleEnemyCharacter) then  
-                  
-                  humanoid:MoveTo(enemyHumanoidRootPart.CFrame.Position, enemyHumanoidRootPart);
-                  humanoid.MoveToFinished:Wait();
+            -- Check if the contestant is in view.
+            local enemyHumanoidRootPart = possibleEnemyCharacter:FindFirstChild("HumanoidRootPart") :: BasePart?;
+            if enemyHumanoidRootPart then
 
-                  if not contestant.isDisqualified then
+              local result = workspace:Raycast(head.CFrame.Position, enemyHumanoidRootPart.CFrame.Position - head.CFrame.Position, defaultRaycastParams);
+              if result and result.Instance:IsDescendantOf(possibleEnemyCharacter) then  
+                
+                humanoid:MoveTo(enemyHumanoidRootPart.CFrame.Position, enemyHumanoidRootPart);
+                humanoid.MoveToFinished:Wait();
 
-                    contestant:disqualify();
+                if not contestant.isDisqualified then
 
-                  end;
+                  contestant:disqualify();
 
-                  break;
+                end;
 
-                end
+                break;
 
               end
 
-            end;
+            end
 
           end;
 
         end;
 
-        -- [Always Active]
-        -- STRATEGIC SELF-DESTRUCT
-          -- If the bot is about to die, look for a nearby crowd of enemies UNLESS one of exceptions hold true. Go to the biggest crowd. 
-          -- If there are multiple crowds, prioritize the crowd with the highest ranking players. Regardless the decision, try to avoid attacks.
-          -- Once the bot is close enough, the bot should disqualify itself, causing the Self-Destruct effect to activate.
-          -- Keep close to the enemies for as long as possible as they might try to escape.
+      end;
 
-          -- Exceptions: 
-            -- 1. The bot is currently destroying a part AND is at maximum 35 durability points to destroying it.
-            -- 2. The bot has a healing item or is nearby a healing zone.
-            -- 3. The bot is currently getting healed.
-            -- 4. The bot can significantly recover its health before it gets hurt again.
-        local criticalHealthPointsValue = 10;
-        if humanoid:GetAttribute("CurrentHealth") <= criticalHealthPointsValue then
+      -- [Always Active]
+      -- STRATEGIC SELF-DESTRUCT
+        -- If the bot is about to die, look for a nearby crowd of enemies UNLESS one of exceptions hold true. Go to the biggest crowd. 
+        -- If there are multiple crowds, prioritize the crowd with the highest ranking players. Regardless the decision, try to avoid attacks.
+        -- Once the bot is close enough, the bot should disqualify itself, causing the Self-Destruct effect to activate.
+        -- Keep close to the enemies for as long as possible as they might try to escape.
 
-          seekAndSelfDestruct();
+        -- Exceptions: 
+          -- 1. The bot is currently destroying a part AND is at maximum 35 durability points to destroying it.
+          -- 2. The bot has a healing item or is nearby a healing zone.
+          -- 3. The bot is currently getting healed.
+          -- 4. The bot can significantly recover its health before it gets hurt again.
+      local criticalHealthPointsValue = 10;
+      if humanoid:GetAttribute("CurrentHealth") <= criticalHealthPointsValue then
 
-        end;
+        seekAndSelfDestruct();
 
-        -- TROLL SELF-DESTRUCT
-          -- If the round is 10 seconds to ending and the bot's team is significantly ahead, the bot should approach an enemy and disqualify itself 
-          -- when it is three seconds away from the enemy. Prioritize enemies who haven't moved in a while, if any.
+      end;
 
-        local isRoundEnding = round.timeStarted and round.duration and DateTime.now().UnixTimestampMillis >= round.timeStarted + round.duration * 1000 - 10000;
-        if isRoundEnding then
+      -- TROLL SELF-DESTRUCT
+        -- If the round is 10 seconds to ending and the bot's team is significantly ahead, the bot should approach an enemy and disqualify itself 
+        -- when it is three seconds away from the enemy. Prioritize enemies who haven't moved in a while, if any.
+      local isRoundEnding = round.timeStarted and round.duration and DateTime.now().UnixTimestampMillis >= round.timeStarted + round.duration * 1000 - 10000;
+      if isRoundEnding then
 
-          seekAndSelfDestruct();
-
-        end;
+        seekAndSelfDestruct();
 
       end;
 
@@ -224,21 +226,60 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
       -- [Default Loop]
       -- 1.) Search for massive, destroyable structures. Go to the biggest one and detach a random limb on the way.
       --     Although the server has access to all destroyable parts, take a guess to ensure the round is fair.
+      local targetPart: BasePart;
+      repeat
+
+        for _, destroyablePart in ipairs(stageModel:GetChildren()) do
+
+          local currentDurability = destroyablePart:GetAttribute("CurrentDurability");
+          if destroyablePart:IsA("BasePart") and currentDurability and currentDurability > 0 then
+
+            -- Ensure the part is in visible range.
+            local result = workspace:Raycast(head.CFrame.Position, destroyablePart.CFrame.Position - head.CFrame.Position, defaultRaycastParams);
+            if result and result.Instance == destroyablePart then
+
+              targetPart = destroyablePart;
+
+            end;
+
+          end;
+
+        end
+
+        if not targetPart then
+
+          -- Move into another direction.
+          
+        end;
+
+        task.wait();
+
+      until targetPart;
 
       -- 2.) Go to the destroyable part.
+      humanoid:MoveTo(targetPart.Position, targetPart);
+      humanoid.MoveToFinished:Wait();
 
-      -- 3.) If the part is in front of the player:
-        -- a.) Use Explosive Punch until the part is destroyed.
-        -- b.) Look for close parts that are in punching range.
+      -- 3.) If the part is in front of the player, use Explosive Punch until the part is destroyed.
+      local primaryPart = character.PrimaryPart;
+      if not primaryPart then continue; end;
 
-      -- Else, if the part is under the player:
-        -- a.) Use Rocket Feet until the part is destroyed.
-        -- b.) Look for close parts that are under the player's feet.
-        -- c.) Once no more ground parts are found, disable Rocket Feet to save stamina.
+      local frontResult = workspace:Raycast(primaryPart.CFrame.Position, primaryPart.CFrame.LookVector * 3, defaultRaycastParams);
+      if frontResult and frontResult.Instance == targetPart then
 
-      -- 4.) Continue from #1.
+        actions[1]:activate();
 
-      task.wait();
+      else
+
+        -- Else, if the part is under the player, use Rocket Feet until the part is destroyed.
+        local bottomResult = workspace:Raycast(primaryPart.CFrame.Position, -head.CFrame.UpVector * 3, defaultRaycastParams);
+        if bottomResult and bottomResult.Instance == targetPart then
+
+          actions[4]:activate();
+
+        end;
+
+      end;
 
     until round.timeEnded;
 

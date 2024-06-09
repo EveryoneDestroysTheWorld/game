@@ -73,7 +73,7 @@ local function startRound()
     stageID = stage.ID :: string;
     gameMode = TurfWarGameMode.new(stageModel, contestants);
     contestants = contestants;
-    duration = 15;
+    duration = 1500;
   });
   
   round.onEnded:Connect(function()

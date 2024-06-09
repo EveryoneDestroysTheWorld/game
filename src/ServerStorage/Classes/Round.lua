@@ -84,18 +84,23 @@ function Round.__index:start(stageModel: Model)
 
     task.spawn(function()
     
-      local archetype = ServerArchetype.get(contestant.archetypeID, contestant, self);
+      local archetype = ServerArchetype.get(contestant.archetypeID, contestant, self, stageModel);
 
-      table.insert(self.archetypes :: {ServerArchetype}, archetype);
+      local actions = {};
       for _, actionID in ipairs(archetype.actionIDs) do
 
-        table.insert(self.actions :: {ServerAction}, ServerAction.get(actionID, contestant))
+        local action = ServerAction.get(actionID, contestant);
+        table.insert(self.actions :: {ServerAction}, action);
+        actions[actionID] = action;
 
       end;
+
+      table.insert(self.archetypes :: {ServerArchetype}, archetype);
+      
       
       if contestant.ID < 1 then
           
-        archetype:runAutoPilot();
+        archetype:runAutoPilot(actions);
 
       end;
 

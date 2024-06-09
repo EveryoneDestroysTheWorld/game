@@ -3,6 +3,8 @@
 -- This module represents an Archetype, which contains a list of powers.
 local ServerContestant = require(script.Parent.ServerContestant);
 type ServerContestant = ServerContestant.ServerContestant;
+local ServerAction = require(script.Parent.ServerAction);
+type ServerAction = ServerAction.ServerAction;
 
 export type ServerArchetypeProperties = {
   
@@ -18,7 +20,7 @@ export type ServerArchetypeProperties = {
 
   breakdown: (self: ServerArchetype) -> ();
 
-  runAutoPilot: (self: ServerArchetype) -> ();
+  runAutoPilot: (self: ServerArchetype, actions: {ServerAction}) -> ();
   
 }
 
