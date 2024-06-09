@@ -262,7 +262,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
       -- 3.) If the part is in front of the player, use Explosive Punch until the part is destroyed.
       local primaryPart = character.PrimaryPart;
-      if not primaryPart then print("wait"); continue; end;
+      if not primaryPart then continue; end;
 
       local frontResult = workspace:Raycast(primaryPart.CFrame.Position, primaryPart.CFrame.LookVector * 3, defaultRaycastParams);
       if frontResult and frontResult.Instance == targetPart then
