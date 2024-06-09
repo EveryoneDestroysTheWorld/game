@@ -74,6 +74,9 @@ function Round.__index:start(stageModel: Model)
 
   assert(not self.timeStarted, "The round has already started.");
 
+  -- Run the game mode.
+  self.gameMode:start(stageModel);
+
   -- Ready the archetypes and actions.
   self.archetypes = {};
   self.actions = {};
@@ -82,19 +85,23 @@ function Round.__index:start(stageModel: Model)
     task.spawn(function()
     
       local archetype = ServerArchetype.get(contestant.archetypeID, contestant, self);
+
       table.insert(self.archetypes :: {ServerArchetype}, archetype);
       for _, actionID in ipairs(archetype.actionIDs) do
 
         table.insert(self.actions :: {ServerAction}, ServerAction.get(actionID, contestant))
 
       end;
+      
+      if contestant.ID < 1 then
+          
+        archetype:runAutoPilot();
+
+      end;
 
     end);
 
   end;
-
-  -- Run the game mode.
-  self.gameMode:start(stageModel);
 
   self.timeStarted = DateTime.now().UnixTimestampMillis;
 
@@ -108,6 +115,7 @@ function Round.__index:start(stageModel: Model)
   local onEndedEvent;
   onEndedEvent = self.onEnded:Connect(function()
   
+    print("End!");
     onEndedEvent:Disconnect();
     task.cancel(timer);
 

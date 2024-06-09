@@ -60,13 +60,35 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
         assert(primaryPart, "PrimaryPart not found.");
 
         local explosion = Instance.new("Explosion");
-        explosion.BlastPressure = 5000000;
+        explosion.BlastPressure = 50000;
         explosion.BlastRadius = 40;
         explosion.DestroyJointRadiusPercent = 0;
         explosion.Position = primaryPart.CFrame.Position - Vector3.new(0, 5, 0);
+        local hitContestants = {};
         explosion.Hit:Connect(function(basePart)
   
           -- Damage any parts or contestants that get hit.
+          for _, possibleEnemyContestant in ipairs(round.contestants) do
+
+            task.spawn(function()
+
+              local possibleEnemyCharacter = possibleEnemyContestant.character;
+              if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
+
+                table.insert(hitContestants, possibleEnemyContestant);
+                local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
+                if enemyHumanoid then
+
+                  enemyHumanoid:SetAttribute("CurrentHealth", enemyHumanoid:GetAttribute("CurrentHealth") - 50);
+
+                end;
+
+              end;
+
+            end);
+
+          end;
+
           local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
           if basePartCurrentDurability and basePartCurrentDurability > 0 then
   
@@ -114,47 +136,80 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
       --        when a nearby teammate is at low HP [support], or when the bot's team is ahead [defend].
       --        Revert back to Destroyer mode when possible.
 
-      -- [Always Active]
-      -- STRATEGIC SELF-DESTRUCT
-        -- If the bot is about to die, look for a nearby crowd of enemies UNLESS one of exceptions hold true. Go to the biggest crowd. 
-        -- If there are multiple crowds, prioritize the crowd with the highest ranking players. Regardless the decision, try to avoid attacks.
-        -- Once the bot is close enough, the bot should disqualify itself, causing the Self-Destruct effect to activate.
-        -- Keep close to the enemies for as long as possible as they might try to escape.
-
-        -- Exceptions: 
-          -- 1. The bot is currently destroying a part AND is at maximum 35 durability points to destroying it.
-          -- 2. The bot has a healing item or is nearby a healing zone.
-          -- 3. The bot is currently getting healed.
-          -- 4. The bot can significantly recover its health before it gets hurt again.
-
       local humanoid = character:FindFirstChild("Humanoid") :: Humanoid?;
-      if humanoid then
+      local head = character:FindFirstChild("Head") :: BasePart?;
+      if head and humanoid then
 
-        local criticalHealthPointsValue = 10;
-        if humanoid:GetAttribute("CurrentHealth") >= criticalHealthPointsValue then
+        local function seekAndSelfDestruct()
 
           -- Look for enemies and head into that direction.
+          for _, possibleEnemyContestant in ipairs(round.contestants) do
 
-          -- Down the contestant so that disqualification happens.
-          contestant:disqualify();
+            -- TODO: Check if the contestant is on a different team (when teams are implemented).
+            local isOnSameTeam = possibleEnemyContestant == contestant;
+            local possibleEnemyCharacter = possibleEnemyContestant.character;
+            if not isOnSameTeam and possibleEnemyCharacter then
+
+              -- Check if the contestant is in view.
+              local enemyHumanoidRootPart = possibleEnemyCharacter:FindFirstChild("HumanoidRootPart") :: BasePart?;
+              if enemyHumanoidRootPart then
+
+                local rayParams: RaycastParams = RaycastParams.new();
+                rayParams.FilterType = Enum.RaycastFilterType.Exclude;
+                rayParams.FilterDescendantsInstances = {};
+                local result = workspace:Raycast(head.CFrame.Position, enemyHumanoidRootPart.CFrame.Position - head.CFrame.Position, rayParams);
+                if result and result.Instance:IsDescendantOf(possibleEnemyCharacter) then  
+                  
+                  humanoid:MoveTo(enemyHumanoidRootPart.CFrame.Position, enemyHumanoidRootPart);
+                  humanoid.MoveToFinished:Wait();
+
+                  if not contestant.isDisqualified then
+
+                    contestant:disqualify();
+
+                  end;
+
+                  break;
+
+                end
+
+              end
+
+            end;
+
+          end;
 
         end;
 
-      end;
+        -- [Always Active]
+        -- STRATEGIC SELF-DESTRUCT
+          -- If the bot is about to die, look for a nearby crowd of enemies UNLESS one of exceptions hold true. Go to the biggest crowd. 
+          -- If there are multiple crowds, prioritize the crowd with the highest ranking players. Regardless the decision, try to avoid attacks.
+          -- Once the bot is close enough, the bot should disqualify itself, causing the Self-Destruct effect to activate.
+          -- Keep close to the enemies for as long as possible as they might try to escape.
 
-      -- TROLL SELF-DESTRUCT
-        -- If the round is 10 seconds to ending and the bot's team is significantly ahead, the bot should approach an enemy and disqualify itself 
-        -- when it is three seconds away from the enemy. Prioritize enemies who haven't moved in a while, if any.
+          -- Exceptions: 
+            -- 1. The bot is currently destroying a part AND is at maximum 35 durability points to destroying it.
+            -- 2. The bot has a healing item or is nearby a healing zone.
+            -- 3. The bot is currently getting healed.
+            -- 4. The bot can significantly recover its health before it gets hurt again.
+        local criticalHealthPointsValue = 10;
+        if humanoid:GetAttribute("CurrentHealth") <= criticalHealthPointsValue then
 
-      local isRoundEnding = round.timeStarted and round.duration and DateTime.now().UnixTimestampMillis - 10000 > round.timeStarted + round.duration * 1000;
-      if isRoundEnding then
+          seekAndSelfDestruct();
 
-        -- Search for an enemy.
+        end;
 
-        -- Approach the enemy.
+        -- TROLL SELF-DESTRUCT
+          -- If the round is 10 seconds to ending and the bot's team is significantly ahead, the bot should approach an enemy and disqualify itself 
+          -- when it is three seconds away from the enemy. Prioritize enemies who haven't moved in a while, if any.
 
-        -- 
-        contestant:disqualify();
+        local isRoundEnding = round.timeStarted and round.duration and DateTime.now().UnixTimestampMillis >= round.timeStarted + round.duration * 1000 - 10000;
+        if isRoundEnding then
+
+          seekAndSelfDestruct();
+
+        end;
 
       end;
 
@@ -182,6 +237,8 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
         -- c.) Once no more ground parts are found, disable Rocket Feet to save stamina.
 
       -- 4.) Continue from #1.
+
+      task.wait();
 
     until round.timeEnded;
 

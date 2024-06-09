@@ -51,10 +51,29 @@ local function startRound()
 
   end;
 
+  -- Create bot NPCs
+  for i = 1, 2 - #contestants do
+
+    -- Create the NPC's character.
+    local character: Model = ServerStorage:FindFirstChild("NPCRigs"):FindFirstChild("Rig"):Clone();
+    character.Name = "NPC" .. i;
+    character.Parent = workspace;
+
+    -- Add the NPC to the contestant list.
+    table.insert(contestants, ServerContestant.new({
+      ID = i * 0.01;
+      character = character;
+      archetypeID = 1;
+      isDisqualified = false;
+    }));
+
+  end;
+
   local round = Round.new({
     stageID = stage.ID :: string;
     gameMode = TurfWarGameMode.new(stageModel, contestants);
     contestants = contestants;
+    duration = 15;
   });
   
   round.onEnded:Connect(function()
