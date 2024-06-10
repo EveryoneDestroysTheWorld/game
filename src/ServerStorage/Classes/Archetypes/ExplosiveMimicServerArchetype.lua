@@ -272,6 +272,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
         -- Search for a visible, destroyable structure.
         -- TODO: Search for *massive* structures.
+        local visibleDestroyableParts = {};
         for _, destroyablePart in ipairs(stageModel:GetChildren()) do
 
           local currentDurability = destroyablePart:GetAttribute("CurrentDurability");
@@ -281,13 +282,25 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
             local result = workspace:Raycast(head.CFrame.Position, destroyablePart.CFrame.Position - head.CFrame.Position, defaultRaycastParams);
             if result and result.Instance == destroyablePart then
 
-              targetPart = destroyablePart;
+              table.insert(visibleDestroyableParts, destroyablePart);
 
             end;
 
           end;
 
-        end
+        end;
+
+        for _, destroyablePart in ipairs(visibleDestroyableParts) do
+
+          local headPosition = head.CFrame.Position;
+          local isPartCloserThanTargetPart = not targetPart or (targetPart.CFrame.Position - headPosition).Magnitude > (destroyablePart.CFrame.Position - headPosition).Magnitude;
+          if isPartCloserThanTargetPart then
+
+            targetPart = destroyablePart;
+
+          end;
+          
+        end;
 
         -- If there is no part, move into a random direction and search again.
         if not targetPart then

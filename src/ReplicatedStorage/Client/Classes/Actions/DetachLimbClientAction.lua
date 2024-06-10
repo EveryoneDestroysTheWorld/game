@@ -68,8 +68,22 @@ function DetachLimbAction.new(): ClientAction
     iconImage = "rbxassetid://17551046771";
   }));
 
+  local function toggleGUI(_, inputState: Enum.UserInputState)
+
+    if inputState == Enum.UserInputState.Begin then
+
+      activateGUI()
+
+    elseif inputState == Enum.UserInputState.End then
+
+      root:unmount();
+
+    end;
+
+  end;
+
   -- Listen for events.
-  ContextActionService:BindAction("Detach Limb", function() activateGUI() end, false, Enum.UserInputType.MouseButton2);
+  ContextActionService:BindActionAtPriority("Detach Limb", toggleGUI, false, 3, Enum.UserInputType.MouseButton2);
 
   return action;
 
