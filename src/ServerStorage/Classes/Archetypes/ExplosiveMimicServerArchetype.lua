@@ -208,8 +208,8 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
       -- TROLL SELF-DESTRUCT
         -- If the round is 10 seconds to ending and the bot's team is significantly ahead, the bot should approach an enemy and disqualify itself 
         -- when it is three seconds away from the enemy. Prioritize enemies who haven't moved in a while, if any.
-      local isRoundEnding = round.timeStarted and round.duration and DateTime.now().UnixTimestampMillis >= round.timeStarted + round.duration * 1000 - 10000;
-      if isRoundEnding then
+      local isRoundEndingSoon = round.timeStarted and round.duration and DateTime.now().UnixTimestampMillis >= round.timeStarted + round.duration * 1000 - 10000;
+      if isRoundEndingSoon then
 
         seekAndSelfDestruct();
 
@@ -226,7 +226,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
       if detachLimbFunction then
 
         local detachedLimbs = detachLimbFunction:Invoke();
-        for _, limb in ipairs(detachedLimbs) do
+        for _, limb in pairs(detachedLimbs) do
 
           local didDetonateAllLimbs = false;
           for _, possibleEnemyContestant in ipairs(round.contestants) do
@@ -295,7 +295,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
           
         end;
 
-      until targetPart and task.wait();
+      until task.wait() and targetPart;
 
       -- 2.) Go to the destroyable part.
       local path = PathfindingService:CreatePath();
