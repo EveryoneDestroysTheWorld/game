@@ -222,6 +222,47 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
       -- STRATEGIC LIMB DETONATION
         -- If the bot sees an enemy nearby its detached limb, detonate it.
+      local detachLimbFunction = ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.ID}_GetDetachedLimbs`) :: BindableFunction?;
+      if detachLimbFunction then
+
+        local detachedLimbs = detachLimbFunction:Invoke();
+        for _, limb in ipairs(detachedLimbs) do
+
+          local didDetonateAllLimbs = false;
+          for _, possibleEnemyContestant in ipairs(round.contestants) do
+
+            local possibleEnemyCharacter = contestant.character;
+            if possibleEnemyContestant ~= contestant and possibleEnemyCharacter then
+              
+              local enemyPrimaryPart = possibleEnemyCharacter.PrimaryPart;
+              local isEnemyInRangeOfExplosion = enemyPrimaryPart and (enemyPrimaryPart.CFrame.Position - limb.CFrame.Position).magnitude < 10;
+              if enemyPrimaryPart and isEnemyInRangeOfExplosion then
+              
+                local raycastResult = workspace:Raycast(head.CFrame.Position, enemyPrimaryPart.CFrame.Position - head.CFrame.Position, defaultRaycastParams);
+                local canNPCSeeEnemy = raycastResult and raycastResult.Instance == enemyPrimaryPart;
+                if canNPCSeeEnemy then
+
+                  actions[3]:activate();
+                  didDetonateAllLimbs = true;
+                  break;
+
+                end;
+
+              end;
+
+            end;
+
+          end;
+
+          if didDetonateAllLimbs then
+
+            break;
+
+          end;
+
+        end;
+
+      end;
 
       -- [Default Loop]
       -- 1.) Search for massive, destroyable structures. Go to the biggest one and detach a random limb on the way.
@@ -229,6 +270,8 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
       local targetPart: BasePart;
       repeat
 
+        -- Search for a visible, destroyable structure.
+        -- TODO: Search for *massive* structures.
         for _, destroyablePart in ipairs(stageModel:GetChildren()) do
 
           local currentDurability = destroyablePart:GetAttribute("CurrentDurability");
@@ -246,24 +289,48 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
         end
 
+        -- If there is no part, move into a random direction and search again.
         if not targetPart then
 
-          -- Move into another direction.
           
         end;
 
-        task.wait();
-
-      until targetPart;
+      until targetPart and task.wait();
 
       -- 2.) Go to the destroyable part.
-      humanoid:MoveTo(targetPart.Position, targetPart);
-      humanoid.MoveToFinished:Wait();
-
-      -- 3.) If the part is in front of the player, use Explosive Punch until the part is destroyed.
+      local path = PathfindingService:CreatePath();
       local primaryPart = character.PrimaryPart;
       if not primaryPart then continue; end;
 
+      local didSuccessfullyComputePath, errorMessage = pcall(function() 
+        path:ComputeAsync(primaryPart.CFrame.Position, targetPart.CFrame.Position);
+      end)
+      if not didSuccessfullyComputePath or path.Status ~= Enum.PathStatus.Success then
+
+        warn(errorMessage);
+        continue;
+
+      end;
+      local waypoints = path:GetWaypoints();
+      local isPathBlocked = false;
+      local blockedEvent = path.Blocked:Connect(function()
+      
+        isPathBlocked = true;
+
+      end);
+      for _, waypoint in ipairs(waypoints) do
+
+        humanoid:MoveTo(waypoint.Position);
+        if not humanoid.MoveToFinished:Wait() or isPathBlocked then
+
+          break;
+
+        end;
+
+      end;
+      blockedEvent:Disconnect();
+
+      -- 3.) If the part is in front of the player, use Explosive Punch until the part is destroyed.
       local frontResult = workspace:Raycast(primaryPart.CFrame.Position, primaryPart.CFrame.LookVector * 3, defaultRaycastParams);
       if frontResult and frontResult.Instance == targetPart then
 
