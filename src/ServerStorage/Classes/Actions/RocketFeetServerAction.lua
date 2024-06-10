@@ -1,7 +1,6 @@
 --!strict
 -- Writer: Christian Toney (Sudobeast)
 -- Designer: Christian Toney (Sudobeast)
-local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
 type ServerContestant = ServerContestant.ServerContestant;
@@ -17,8 +16,6 @@ local RocketFeetServerAction = {
 
 function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
 
-  local contestantExecutionTime: number? = nil;
-
   local leftFootExplosivePart = Instance.new("Part");
   leftFootExplosivePart.Name = "LeftFootExplosivePart";
   leftFootExplosivePart.CanCollide = false;
@@ -31,9 +28,6 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
   rightFootExplosivePart.Size = Vector3.new(1, 1, 1);
   rightFootExplosivePart.Transparency = 1;
 
-  local areRocketsEnabled = false;
-  local rocketFeetToggledEvent: RemoteEvent? = nil;
-
   local action: ServerAction = nil;
 
   local function activate()
@@ -45,108 +39,49 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
 
       if humanoid:GetAttribute("Stamina") >= 10 then
 
-        local function activateFeetExplosions(staminaReduction: number)
+        for _, explosivePart in ipairs({leftFootExplosivePart, rightFootExplosivePart}) do
 
-          for _, explosivePart in ipairs({leftFootExplosivePart, rightFootExplosivePart}) do
+          local explosion = Instance.new("Explosion");
+          explosion.BlastPressure = 0;
+          explosion.BlastRadius = 5;
+          explosion.DestroyJointRadiusPercent = 0;
+          explosion.Position = explosivePart.Position;
+          explosion.Hit:Connect(function(basePart)
+          
+            -- Make sure the part isn't a part of the player.
 
-            local explosion = Instance.new("Explosion");
-            explosion.BlastPressure = 0;
-            explosion.BlastRadius = 5;
-            explosion.DestroyJointRadiusPercent = 0;
-            explosion.Position = explosivePart.Position;
-            explosion.Hit:Connect(function(basePart)
-            
-              -- Make sure the part isn't a part of the player.
+            -- Damage any parts or contestants that get hit.
+            local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
+            if basePartCurrentDurability and basePartCurrentDurability > 0 then
+    
+              basePart:SetAttribute("CurrentDurability", basePartCurrentDurability - 35);
+    
+            end;
 
-              -- Damage any parts or contestants that get hit.
-              local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
-              if basePartCurrentDurability and basePartCurrentDurability > 0 then
-      
-                basePart:SetAttribute("CurrentDurability", basePartCurrentDurability - 35);
-      
-              end;
-
-            end);
-            explosion.Parent = explosivePart;
-
-          end;
-
-          -- Reduce the player's stamina.
-          humanoid:SetAttribute("Stamina", humanoid:GetAttribute("Stamina") - staminaReduction);
+          end);
+          explosion.Parent = explosivePart;
 
         end;
 
-        if not areRocketsEnabled and contestantExecutionTime and contestantExecutionTime > DateTime.now().UnixTimestampMillis - 500 then
+        -- Activate double jump.
+        local primaryPart = contestant.character.PrimaryPart;
+        if humanoid:GetState() == Enum.HumanoidStateType.Freefall and primaryPart then
 
-          -- Enable flying for the player.
-          local humanoidRootPart = contestant.character:FindFirstChild("HumanoidRootPart");
-          assert(humanoidRootPart, "Couldn't find humanoidRootPart.");
-          areRocketsEnabled = true;
-          task.spawn(function()
+          local linearVelocity = Instance.new("LinearVelocity");
+          linearVelocity.VectorVelocity = Vector3.new(0, 60, 0);
+          linearVelocity.MaxForce = math.huge;
+          linearVelocity.Parent = primaryPart;
+          linearVelocity.Attachment0 = primaryPart:FindFirstChild("RootAttachment") :: Attachment;
+          task.delay(0.1, function()
+          
+            linearVelocity:Destroy();
 
-            local directionVelocity = Instance.new("LinearVelocity");
-            directionVelocity.Name = "Direction";
-            directionVelocity.Attachment0 = humanoidRootPart:FindFirstChild("RootAttachment") :: Attachment;
-            directionVelocity.MaxForce = math.huge;
-            directionVelocity.RelativeTo = Enum.ActuatorRelativeTo.Attachment0;
-            directionVelocity.Parent = humanoidRootPart;
+          end);
 
-            local alignOrientation = Instance.new("AlignOrientation");
-            alignOrientation.Name = "Angle";
-            alignOrientation.Attachment0 = humanoidRootPart:FindFirstChild("RootAttachment") :: Attachment;
-            alignOrientation.Mode = Enum.OrientationAlignmentMode.OneAttachment;
-            alignOrientation.Responsiveness = math.huge;
-            alignOrientation.MaxTorque = math.huge;
-            alignOrientation.Parent = humanoidRootPart;
-
-            local toggleEvent;
-            if contestant.player and rocketFeetToggledEvent then
-
-              toggleEvent = rocketFeetToggledEvent.OnServerEvent:Connect(function(player: Player, direction: {cameraOrientation: CFrame, vectorVelocity: Vector3?})
-
-                if player == contestant.player then
-
-                  assert(not direction.cameraOrientation or typeof(direction.cameraOrientation) == "CFrame", "Camera orientation is not a CFrame");
-                  assert(not direction.vectorVelocity or typeof(direction.vectorVelocity) == "Vector3", "VectorVelocity is not a Vector3");
-
-                  alignOrientation.CFrame = direction.cameraOrientation or alignOrientation.CFrame;
-                  directionVelocity.VectorVelocity = direction.vectorVelocity or directionVelocity.VectorVelocity;
-
-                end;
-
-              end);
-              rocketFeetToggledEvent:FireClient(contestant.player, true);
-
-            end;
-
-            -- Add explosion effects.
-            repeat
-
-              activateFeetExplosions(2);
-              task.wait(0.25);
-
-            until humanoid:GetAttribute("Stamina") < 2 or not areRocketsEnabled;
-            areRocketsEnabled = false;
-            directionVelocity:Destroy();
-            alignOrientation:Destroy();
-
-            if contestant.player and rocketFeetToggledEvent and toggleEvent then
-
-              rocketFeetToggledEvent:FireClient(contestant.player, false);
-              toggleEvent:Disconnect();
-
-            end;
-
-          end)
-    
-        else
-    
-          areRocketsEnabled = false;
-          activateFeetExplosions(10);
-    
         end;
-    
-        contestantExecutionTime = DateTime.now().UnixTimestampMillis;
+
+        -- Reduce the player's stamina.
+        humanoid:SetAttribute("Stamina", humanoid:GetAttribute("Stamina") - 10);
 
       end;
   
@@ -157,13 +92,6 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
   local executeActionRemoteFunction: RemoteFunction? = nil;
 
   local function breakdown()
-
-    if rocketFeetToggledEvent and contestant.player then
-
-      rocketFeetToggledEvent:FireClient(contestant.player, false);
-      rocketFeetToggledEvent:Destroy();
-
-    end;
 
     if executeActionRemoteFunction then
 
@@ -233,11 +161,6 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
     end;
     remoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
     executeActionRemoteFunction = remoteFunction;
-
-    local remoteEvent = Instance.new("RemoteEvent");
-    remoteEvent.Name = `{contestant.player.UserId}_{action.ID}`;
-    remoteEvent.Parent = ReplicatedStorage.Shared.Events.ActionEvents;
-    rocketFeetToggledEvent = remoteEvent;
 
   end
 

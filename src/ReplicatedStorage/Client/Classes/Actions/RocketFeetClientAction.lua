@@ -57,18 +57,16 @@ function DetachLimbAction.new(): ClientAction
 
   remoteName = `{player.UserId}_{action.ID}`;
 
-  local lastJumpTime = 0;
   local function checkJump(_, inputState: Enum.UserInputState)
 
     if inputState == Enum.UserInputState.Begin then
 
-      if lastJumpTime > DateTime.now().UnixTimestampMillis - 500 then
-          
+      local humanoid = player.Character:FindFirstChild("Humanoid") :: Humanoid;
+      if humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+        
         action:activate();
 
       end;
-
-      lastJumpTime = DateTime.now().UnixTimestampMillis;
     
     end;
 
