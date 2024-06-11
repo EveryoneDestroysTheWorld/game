@@ -131,6 +131,57 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
     local character = contestant.character
     assert(character, "Character not found");
 
+    -- STRATEGIC DEFENSE
+      -- If the bot gets attacked while destroying a part, determine the damage taken per hit and the amount of time to the bot's disqualification.
+      -- If the bot can break the part at least 3 seconds before it gets disqualified, continue breaking the part and escape the enemy's trajectory;
+      -- otherwise, escape immediately.
+    local contestantToAttack: ServerContestant?;
+    local timeEnemyAttacked: number = 0;
+    local targetPart: BasePart;
+    local healthUpdateEvent = contestant.onHealthUpdated:Connect(function(healthIncremented, cause)
+
+      local primaryPart = character.PrimaryPart;
+      local isTargetPartAlmostDestroyed = not targetPart or targetPart and targetPart:GetAttribute("CurrentDurability") <= 35;
+      local enemyCharacter = cause and cause.contestant and cause.contestant.character;
+      if isTargetPartAlmostDestroyed and primaryPart and healthIncremented < 0 and cause and cause.contestant and enemyCharacter and cause.actionID and cause.actionID ~= 2 then
+
+        -- Determine if it is possible to get to the player before they kill the NPC.
+        local enemyPrimaryPart = enemyCharacter.PrimaryPart;
+        if enemyPrimaryPart then
+
+          local forgivenessEvent;
+          local forgivenessTask;
+          local function forgiveEnemy()
+
+            forgivenessEvent:Disconnect();
+            task.cancel(forgivenessTask);
+
+            local enemyHumanoid = enemyCharacter:FindFirstChild("Humanoid") :: Humanoid;
+            local isEnemyAlmostDead = enemyHumanoid:GetAttribute("CurrentHealth") < 25;
+            local hasEnemyAttackedPlayerAgain = DateTime.now().UnixTimestampMillis <= timeEnemyAttacked + 3000;
+            local shouldForgiveEnemy = not isEnemyAlmostDead and not hasEnemyAttackedPlayerAgain;
+            if shouldForgiveEnemy then
+
+              contestantToAttack = nil;
+              timeEnemyAttacked = 0;
+
+            end;
+
+          end;
+
+          contestantToAttack = cause.contestant;
+          timeEnemyAttacked = DateTime.now().UnixTimestampMillis;
+
+          -- Forgive the enemy after 3 seconds of peace or when they get disqualified.
+          forgivenessTask = task.delay(3, forgiveEnemy);
+          forgivenessEvent = cause.contestant.onDisqualified:Connect(forgiveEnemy);
+
+        end;
+
+      end
+    
+    end);
+
     repeat
 
       -- Notes: Since Explosive Mimic is a Destroyer class archetype, the bot should focus on 
@@ -143,7 +194,6 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
       local head = character:FindFirstChild("Head") :: BasePart?;
       if not humanoid or not head then continue; end;
 
-      
       local defaultRaycastParams: RaycastParams = RaycastParams.new();
       defaultRaycastParams.FilterType = Enum.RaycastFilterType.Exclude;
       defaultRaycastParams.FilterDescendantsInstances = {character};
@@ -198,27 +248,18 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
           -- 2. The bot has a healing item or is nearby a healing zone.
           -- 3. The bot is currently getting healed.
           -- 4. The bot can significantly recover its health before it gets hurt again.
-      local criticalHealthPointsValue = 10;
-      if humanoid:GetAttribute("CurrentHealth") <= criticalHealthPointsValue then
-
-        seekAndSelfDestruct();
-
-      end;
-
+      
       -- TROLL SELF-DESTRUCT
         -- If the round is 10 seconds to ending and the bot's team is significantly ahead, the bot should approach an enemy and disqualify itself 
         -- when it is three seconds away from the enemy. Prioritize enemies who haven't moved in a while, if any.
+      local criticalHealthPointsValue = 10;
       local isRoundEndingSoon = round.timeStarted and round.duration and DateTime.now().UnixTimestampMillis >= round.timeStarted + round.duration * 1000 - 10000;
-      if isRoundEndingSoon then
+      if humanoid:GetAttribute("CurrentHealth") <= criticalHealthPointsValue or isRoundEndingSoon then
 
         seekAndSelfDestruct();
+        continue;
 
       end;
-
-      -- STRATEGIC DEFENSE
-        -- If the bot gets attacked while destroying a part, determine the damage taken per hit and the amount of time to the bot's disqualification.
-        -- If the bot can break the part at least 3 seconds before it gets disqualified, continue breaking the part and escape the enemy's trajectory;
-        -- otherwise, escape immediately.
 
       -- STRATEGIC LIMB DETONATION
         -- If the bot sees an enemy nearby its detached limb, detonate it.
@@ -264,73 +305,87 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
       end;
 
-      -- [Default Loop]
-      -- 1.) Search for massive, destroyable structures. Go to the biggest one and detach a random limb on the way.
-      --     Although the server has access to all destroyable parts, take a guess to ensure the round is fair.
-      local targetPart: BasePart;
-      repeat
+      local path = PathfindingService:CreatePath();
+      local primaryPart = character.PrimaryPart;
+      if not primaryPart then continue; end;
+      
+      local enemyContestantPrimaryPart = contestantToAttack and contestantToAttack.character and contestantToAttack.character.PrimaryPart;
+      if enemyContestantPrimaryPart then
 
-        -- Search for a visible, destroyable structure.
-        -- TODO: Search for *massive* structures.
-        local visibleDestroyableParts = {};
-        for _, destroyablePart in ipairs(stageModel:GetChildren()) do
+        targetPart = enemyContestantPrimaryPart;
 
-          local currentDurability = destroyablePart:GetAttribute("CurrentDurability");
-          if destroyablePart:IsA("BasePart") and currentDurability and currentDurability > 0 then
+      else
 
-            -- Ensure the part is in visible range.
-            local result = workspace:Raycast(head.CFrame.Position, destroyablePart.CFrame.Position - head.CFrame.Position, defaultRaycastParams);
-            if result and result.Instance == destroyablePart then
+        -- [Default Loop]
+        -- 1.) Search for massive, destroyable structures. Go to the biggest one and detach a random limb on the way.
+        --     Although the server has access to all destroyable parts, take a guess to ensure the round is fair.
+        repeat
 
-              table.insert(visibleDestroyableParts, destroyablePart);
+          -- Search for a visible, destroyable structure.
+          -- TODO: Search for *massive* structures.
+          local visibleDestroyableParts = {};
+          for _, destroyablePart in ipairs(stageModel:GetChildren()) do
+
+            local currentDurability = destroyablePart:GetAttribute("CurrentDurability");
+            if destroyablePart:IsA("BasePart") and currentDurability and currentDurability > 0 then
+
+              -- Ensure the part is in visible range.
+              local result = workspace:Raycast(head.CFrame.Position, destroyablePart.CFrame.Position - head.CFrame.Position, defaultRaycastParams);
+              if result and result.Instance == destroyablePart then
+
+                table.insert(visibleDestroyableParts, destroyablePart);
+
+              end;
 
             end;
 
           end;
 
-        end;
+          for _, destroyablePart in ipairs(visibleDestroyableParts) do
 
-        for _, destroyablePart in ipairs(visibleDestroyableParts) do
+            local headPosition = head.CFrame.Position;
+            local isPartCloserThanTargetPart = not targetPart or (targetPart.CFrame.Position - headPosition).Magnitude > (destroyablePart.CFrame.Position - headPosition).Magnitude;
+            if isPartCloserThanTargetPart then
 
-          local headPosition = head.CFrame.Position;
-          local isPartCloserThanTargetPart = not targetPart or (targetPart.CFrame.Position - headPosition).Magnitude > (destroyablePart.CFrame.Position - headPosition).Magnitude;
-          if isPartCloserThanTargetPart then
+              targetPart = destroyablePart;
 
-            targetPart = destroyablePart;
-
+            end;
+            
           end;
-          
-        end;
 
-        -- If there is no part, move into a random direction and search again.
-        if not targetPart then
+          -- If there is no part, move into a random direction and search again.
+          if not targetPart then
 
-          
-        end;
+            
+          end;
 
-      until task.wait() and targetPart;
+        until task.wait() and targetPart;
+
+      end;
 
       -- 2.) Go to the destroyable part.
-      local path = PathfindingService:CreatePath();
-      local primaryPart = character.PrimaryPart;
-      if not primaryPart then continue; end;
-
       local didSuccessfullyComputePath, errorMessage = pcall(function() 
+
         path:ComputeAsync(primaryPart.CFrame.Position, targetPart.CFrame.Position);
-      end)
+
+      end);
+
       if not didSuccessfullyComputePath or path.Status ~= Enum.PathStatus.Success then
 
         warn(errorMessage);
         continue;
 
       end;
+
       local waypoints = path:GetWaypoints();
       local isPathBlocked = false;
       local blockedEvent = path.Blocked:Connect(function()
       
         isPathBlocked = true;
+        humanoid:MoveTo(primaryPart.CFrame.Position);
 
       end);
+
       for _, waypoint in ipairs(waypoints) do
 
         humanoid:MoveTo(waypoint.Position);
@@ -341,6 +396,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
         end;
 
       end;
+
       blockedEvent:Disconnect();
 
       -- 3.) If the part is in front of the player, use Explosive Punch until the part is destroyed.
@@ -362,6 +418,8 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
       end;
 
     until round.timeEnded;
+
+    healthUpdateEvent:Disconnect();
 
   end;
 

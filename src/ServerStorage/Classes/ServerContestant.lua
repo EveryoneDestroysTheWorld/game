@@ -25,6 +25,11 @@ export type ContestantMethods = {
 
 export type ContestantEvents = {
   onDisqualified: RBXScriptSignal;
+  onHealthUpdated: RBXScriptSignal<number, {
+    contestant: ServerContestant; 
+    actionID: number?; 
+    archetypeID: number?;
+  }?>;
 }
 
 local ServerContestant = {
@@ -39,7 +44,7 @@ function ServerContestant.new(properties: ContestantProperties): ServerContestan
   local contestant = setmetatable(properties, ServerContestant) :: ServerContestant;
 
   -- Set up events.
-  local eventNames = {"onDisqualified"};
+  local eventNames = {"onDisqualified", "onHealthUpdated"};
   events[contestant] = {};
   for _, eventName in ipairs(eventNames) do
 
