@@ -89,14 +89,13 @@ function Round.__index:start(stageModel: Model)
       local actions = {};
       for _, actionID in ipairs(archetype.actionIDs) do
 
-        local action = ServerAction.get(actionID, contestant);
+        local action = ServerAction.get(actionID, contestant, self);
         table.insert(self.actions :: {ServerAction}, action);
         actions[actionID] = action;
 
       end;
 
       table.insert(self.archetypes :: {ServerArchetype}, archetype);
-      
       
       if contestant.ID < 1 then
           

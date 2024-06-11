@@ -82,7 +82,11 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
                 local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
                 if enemyHumanoid then
 
-                  enemyHumanoid:SetAttribute("CurrentHealth", enemyHumanoid:GetAttribute("CurrentHealth") - 50);
+                  local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 50;
+                  possibleEnemyContestant:updateHealth(newHealth, {
+                    contestant = contestant;
+                    archetypeID = ExplosiveMimicServerArchetype.ID;
+                  });
 
                 end;
 
@@ -137,13 +141,14 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
       -- otherwise, escape immediately.
     local contestantToAttack: ServerContestant?;
     local timeEnemyAttacked: number = 0;
-    local targetPart: BasePart;
+    local targetPart: BasePart?;
     local forgivenessEvent;
     local forgivenessTask;
     local healthUpdateEvent = contestant.onHealthUpdated:Connect(function(newHealth, oldHealth, cause)
 
       local primaryPart = character.PrimaryPart;
-      local isTargetPartAlmostDestroyed = not contestantToAttack and not targetPart or targetPart and targetPart:GetAttribute("CurrentDurability") <= 35;
+      local targetPartDurability = targetPart and targetPart:GetAttribute("CurrentDurability");
+      local isTargetPartAlmostDestroyed = not contestantToAttack and not targetPart or targetPartDurability and targetPartDurability <= 35;
       local enemyCharacter = cause and cause.contestant and cause.contestant.character;
       if isTargetPartAlmostDestroyed and primaryPart and newHealth < oldHealth and cause and cause.contestant and enemyCharacter and cause.actionID and cause.actionID ~= 2 then
 
@@ -159,7 +164,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
   
             end;
   
-            if forgivenessTask then
+            if forgivenessTask and coroutine.status(forgivenessTask) == "suspended" then
   
               task.cancel(forgivenessTask);
   
@@ -177,7 +182,9 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
             local shouldForgiveEnemy = not isEnemyInCriticalCondition and not hasEnemyAttackedPlayerAgain;
             if shouldForgiveEnemy then
 
+              print("forgiven")
               contestantToAttack = nil;
+              targetPart = nil;
               timeEnemyAttacked = 0;
 
             end;
@@ -190,7 +197,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
           timeEnemyAttacked = DateTime.now().UnixTimestampMillis;
 
           -- Forgive the enemy after 3 seconds of peace or when they get disqualified.
-          forgivenessTask = task.delay(3, forgiveEnemy);
+          forgivenessTask = task.delay(30, forgiveEnemy);
           forgivenessEvent = cause.contestant.onDisqualified:Connect(forgiveEnemy);
 
         end;
@@ -322,9 +329,34 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
       end;
 
-      local path = PathfindingService:CreatePath();
+      local path = PathfindingService:CreatePath({
+        WaypointSpacing = 100;
+      });
       local primaryPart = character.PrimaryPart;
       if not primaryPart then continue; end;
+
+      local waypoints = {};
+      local originalPartPosition;
+      local function updatePath()
+
+        return pcall(function()
+
+          originalPartPosition = (targetPart :: BasePart).CFrame.Position;
+          path:ComputeAsync(primaryPart.CFrame.Position, originalPartPosition);
+          waypoints = path:GetWaypoints()
+  
+        end);
+
+      end;
+
+      local function resetMoveTo()
+      
+        updatePath();
+        humanoid.PlatformStand = true;
+        task.wait();
+        humanoid.PlatformStand = false;
+
+      end;
       
       local enemyContestantPrimaryPart = contestantToAttack and contestantToAttack.character and contestantToAttack.character.PrimaryPart;
       if enemyContestantPrimaryPart then
@@ -381,12 +413,16 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
       end;
 
       -- 2.) Go to the destroyable part.
-      local didSuccessfullyComputePath, errorMessage = pcall(function() 
+      local didSuccessfullyComputePath, errorMessage = updatePath();
+      local checkEvent = game:GetService("RunService").Heartbeat:Connect(function() 
+      
+        if targetPart and math.abs(((targetPart :: BasePart).CFrame.Position - originalPartPosition).Magnitude) > 3 then
 
-        path:ComputeAsync(primaryPart.CFrame.Position, targetPart.CFrame.Position);
+          updatePath();
+
+        end;
 
       end);
-
       if not didSuccessfullyComputePath or path.Status ~= Enum.PathStatus.Success then
 
         warn(errorMessage);
@@ -394,38 +430,50 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
       end;
 
-      local waypoints = path:GetWaypoints();
-      local isPathBlocked = false;
-      local blockedEvent = path.Blocked:Connect(function()
-      
-        isPathBlocked = true;
-        humanoid:MoveTo(primaryPart.CFrame.Position);
+      local blockedEvent = path.Blocked:Connect(resetMoveTo);
 
-      end);
+      while waypoints[1] do
 
-      for _, waypoint in ipairs(waypoints) do
+        local originalWaypoint = waypoints[1];
+        humanoid:MoveTo(waypoints[1].Position);
 
-        humanoid:MoveTo(waypoint.Position);
-        if not humanoid.MoveToFinished:Wait() or isPathBlocked then
+        local shouldContinue = false;
+        local moveToEvent = humanoid.MoveToFinished:Connect(function() 
+        
+          shouldContinue = true;
+
+        end);
+
+        local shouldBreak = false;
+        repeat task.wait() until shouldContinue or waypoints[1] ~= originalWaypoint;
+        moveToEvent:Disconnect();
+
+        if shouldBreak then
 
           break;
 
         end;
 
+        table.remove(waypoints, 1);
+
       end;
 
+      checkEvent:Disconnect();
       blockedEvent:Disconnect();
 
       -- 3.) If the part is in front of the player, use Explosive Punch until the part is destroyed.
       local frontResult = workspace:Raycast(primaryPart.CFrame.Position, primaryPart.CFrame.LookVector * 3, defaultRaycastParams);
-      if frontResult and frontResult.Instance == targetPart then
+      local isByEnemy = frontResult and enemyContestantPrimaryPart and frontResult.Instance:IsDescendantOf(enemyContestantPrimaryPart.Parent);
+      if frontResult and frontResult.Instance == targetPart or isByEnemy then
 
+        print("front!");
         actions[1]:activate();
 
       else
 
         -- Else, if the part is under the player, use Rocket Feet until the part is destroyed.
         local bottomResult = workspace:Raycast(primaryPart.CFrame.Position, -head.CFrame.UpVector * 3, defaultRaycastParams);
+        isByEnemy = bottomResult and enemyContestantPrimaryPart and bottomResult.Instance:IsDescendantOf(enemyContestantPrimaryPart.Parent);
         if bottomResult and bottomResult.Instance == targetPart then
 
           actions[4]:activate();
@@ -434,7 +482,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
       end;
 
-    until round.timeEnded;
+    until task.wait() and round.timeEnded;
 
     healthUpdateEvent:Disconnect();
 

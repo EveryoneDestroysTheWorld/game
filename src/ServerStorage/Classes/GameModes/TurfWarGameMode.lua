@@ -254,7 +254,7 @@ function TurfWarGameMode.new(stageModel: Model, contestants: {ServerContestant})
 
         table.insert(events, humanoid:GetAttributeChangedSignal("CurrentHealth"):Connect(function()
         
-          if humanoid:GetAttribute("CurrentHealth") <= 0 then
+          if not contestant.isDisqualified and humanoid:GetAttribute("CurrentHealth") <= 0 then
 
             contestant:disqualify();
 

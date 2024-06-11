@@ -7,6 +7,8 @@ type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
 local RocketFeetClientAction = require(ReplicatedStorage.Client.Classes.Actions.RocketFeetClientAction);
+local Round = require(script.Parent.Parent.Round);
+type Round = Round.Round;
 
 local RocketFeetServerAction = {
   ID = RocketFeetClientAction.ID;
@@ -14,7 +16,7 @@ local RocketFeetServerAction = {
   description = RocketFeetClientAction.description;
 };
 
-function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
+function RocketFeetServerAction.new(contestant: ServerContestant, round: Round): ServerAction
 
   local leftFootExplosivePart = Instance.new("Part");
   leftFootExplosivePart.Name = "LeftFootExplosivePart";
@@ -46,11 +48,34 @@ function RocketFeetServerAction.new(contestant: ServerContestant): ServerAction
           explosion.BlastRadius = 5;
           explosion.DestroyJointRadiusPercent = 0;
           explosion.Position = explosivePart.Position;
+          local hitContestants = {};
           explosion.Hit:Connect(function(basePart)
-          
-            -- Make sure the part isn't a part of the player.
 
             -- Damage any parts or contestants that get hit.
+            for _, possibleEnemyContestant in ipairs(round.contestants) do
+
+              task.spawn(function()
+
+                local possibleEnemyCharacter = possibleEnemyContestant.character;
+                if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
+
+                  table.insert(hitContestants, possibleEnemyContestant);
+                  local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
+                  if enemyHumanoid then
+
+                    local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 15;
+                    possibleEnemyContestant:updateHealth(newHealth, {
+                      contestant = contestant;
+                      actionID = RocketFeetServerAction.ID;
+                    });
+
+                  end;
+
+                end;
+
+              end);
+
+            end;
             local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
             if basePartCurrentDurability and basePartCurrentDurability > 0 then
     

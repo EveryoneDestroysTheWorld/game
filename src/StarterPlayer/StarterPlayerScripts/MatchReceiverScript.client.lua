@@ -5,6 +5,7 @@ local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 local ActionButtonContainer = require(ReplicatedStorage.Client.ReactComponents.ActionButtonContainer);
+local StarterGui = game:GetService("StarterGui");
 type ClientArchetype = ClientArchetype.ClientArchetype;
 type ClientAction = ClientAction.ClientAction;
 
@@ -64,3 +65,22 @@ ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function()
   end;
 
 end);
+
+while not pcall(function()
+
+  local resetBindable = Instance.new("BindableEvent")
+  resetBindable.Event:connect(function()
+
+    ReplicatedStorage.Shared.Events.ResetButtonPressed:FireServer();
+
+  end)
+
+  -- This will remove the current behavior for when the reset button 
+  -- is pressed and just fire resetBindable instead.
+  StarterGui:SetCore("ResetButtonCallback", resetBindable);
+  
+end) do
+
+  task.wait();
+
+end;

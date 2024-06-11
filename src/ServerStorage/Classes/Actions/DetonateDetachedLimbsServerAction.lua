@@ -8,6 +8,8 @@ type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
 local DetonateDetachedLimbsClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetonateDetachedLimbsClientAction);
+local Round = require(script.Parent.Parent.Round);
+type Round = Round.Round;
 
 local DetonateDetachedLimbsServerAction = {
   ID = DetonateDetachedLimbsClientAction.ID;
@@ -15,7 +17,7 @@ local DetonateDetachedLimbsServerAction = {
   description = DetonateDetachedLimbsClientAction.description;
 };
 
-function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant): ServerAction
+function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant, round: Round): ServerAction
 
   local function activate()
 
@@ -30,9 +32,36 @@ function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant): Se
         explosion.BlastRadius = 20;
         explosion.DestroyJointRadiusPercent = 0;
         explosion.Position = (if instance:IsA("Model") then instance.PrimaryPart else instance).CFrame.Position;
+        local hitContestants = {};
         explosion.Hit:Connect(function(basePart)
   
           -- Damage any parts or contestants that get hit.
+          -- Damage any parts or contestants that get hit.
+          for _, possibleEnemyContestant in ipairs(round.contestants) do
+
+            task.spawn(function()
+
+              local possibleEnemyCharacter = possibleEnemyContestant.character;
+              if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
+
+                table.insert(hitContestants, possibleEnemyContestant);
+                local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
+                if enemyHumanoid then
+
+                  local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 15;
+                  possibleEnemyContestant:updateHealth(newHealth, {
+                    contestant = contestant;
+                    actionID = DetonateDetachedLimbsServerAction.ID;
+                  });
+
+                end;
+
+              end;
+
+            end);
+
+          end;
+
           local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
           if basePartCurrentDurability and basePartCurrentDurability > 0 then
   

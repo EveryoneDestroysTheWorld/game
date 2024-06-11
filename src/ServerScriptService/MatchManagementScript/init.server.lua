@@ -69,6 +69,21 @@ local function startRound()
 
   end;
 
+  ReplicatedStorage.Shared.Events.ResetButtonPressed.OnServerEvent:Connect(function(player)
+  
+    for _, contestant in ipairs(contestants) do
+
+      if contestant.ID == player.UserId then
+
+        contestant:disqualify();
+        break;
+
+      end
+
+    end;
+
+  end);
+
   local round = Round.new({
     stageID = stage.ID :: string;
     gameMode = TurfWarGameMode.new(stageModel, contestants);

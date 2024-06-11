@@ -38,7 +38,7 @@ function ServerAction.new(properties: ActionProperties): ServerAction
   
 end
 
-function ServerAction.get(actionID: number, contestant: ServerContestant): ServerAction
+function ServerAction.get(actionID: number, contestant: ServerContestant, ...: any): ServerAction
 
   for _, instance in ipairs(script.Parent.Actions:GetChildren()) do
   
@@ -47,7 +47,7 @@ function ServerAction.get(actionID: number, contestant: ServerContestant): Serve
       local action = require(instance) :: any;
       if action.ID == actionID then
   
-        return action.new(contestant);
+        return action.new(contestant, ...);
   
       end;
   

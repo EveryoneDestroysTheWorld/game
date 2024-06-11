@@ -2,12 +2,13 @@
 -- Writer: Christian Toney (Sudobeast)
 -- Designer: Christian Toney (Sudobeast)
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local ServerStorage = game:GetService("ServerStorage");
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
 type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
 local ExplosivePunchClientAction = require(ReplicatedStorage.Client.Classes.Actions.ExplosivePunchClientAction);
+local Round = require(script.Parent.Parent.Round);
+type Round = Round.Round;
 
 local ExplosivePunchServerAction = {
   ID = ExplosivePunchClientAction.ID;
@@ -15,7 +16,7 @@ local ExplosivePunchServerAction = {
   description = ExplosivePunchClientAction.description;
 };
 
-function ExplosivePunchServerAction.new(contestant: ServerContestant): ServerAction
+function ExplosivePunchServerAction.new(contestant: ServerContestant, round: Round): ServerAction
 
   assert(contestant.character, "No character");
 
@@ -74,9 +75,35 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant): ServerAct
       explosion.BlastRadius = 5;
       explosion.DestroyJointRadiusPercent = 0;
       explosion.Position = explosivePart.Position;
+      local hitContestants = {};
       explosion.Hit:Connect(function(basePart)
 
         -- Damage any parts or contestants that get hit.
+        for _, possibleEnemyContestant in ipairs(round.contestants) do
+
+          task.spawn(function()
+
+            local possibleEnemyCharacter = possibleEnemyContestant.character;
+            if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
+
+              table.insert(hitContestants, possibleEnemyContestant);
+              local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
+              if enemyHumanoid then
+
+                local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 15;
+                possibleEnemyContestant:updateHealth(newHealth, {
+                  contestant = contestant;
+                  actionID = ExplosivePunchServerAction.ID;
+                });
+
+              end;
+
+            end;
+
+          end);
+
+        end;
+        
         local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
         if basePartCurrentDurability and basePartCurrentDurability > 0 then
 
