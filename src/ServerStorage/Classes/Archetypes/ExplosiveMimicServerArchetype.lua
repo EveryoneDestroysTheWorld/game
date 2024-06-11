@@ -182,7 +182,6 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
             local shouldForgiveEnemy = not isEnemyInCriticalCondition and not hasEnemyAttackedPlayerAgain;
             if shouldForgiveEnemy then
 
-              print("forgiven")
               contestantToAttack = nil;
               targetPart = nil;
               timeEnemyAttacked = 0;
@@ -348,15 +347,6 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
         end);
 
       end;
-
-      local function resetMoveTo()
-      
-        updatePath();
-        humanoid.PlatformStand = true;
-        task.wait();
-        humanoid.PlatformStand = false;
-
-      end;
       
       local enemyContestantPrimaryPart = contestantToAttack and contestantToAttack.character and contestantToAttack.character.PrimaryPart;
       if enemyContestantPrimaryPart then
@@ -372,6 +362,13 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
           -- Search for a visible, destroyable structure.
           -- TODO: Search for *massive* structures.
+          local currentPartDurability = targetPart and targetPart:GetAttribute("CurrentDurability");
+          if currentPartDurability and currentPartDurability <= 0 then
+
+            targetPart = nil;
+
+          end;
+
           local visibleDestroyableParts = {};
           for _, destroyablePart in ipairs(stageModel:GetChildren()) do
 
@@ -430,7 +427,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
       end;
 
-      local blockedEvent = path.Blocked:Connect(resetMoveTo);
+      local blockedEvent = path.Blocked:Connect(updatePath);
 
       while waypoints[1] do
 
@@ -466,7 +463,6 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
       local isByEnemy = frontResult and enemyContestantPrimaryPart and frontResult.Instance:IsDescendantOf(enemyContestantPrimaryPart.Parent);
       if frontResult and frontResult.Instance == targetPart or isByEnemy then
 
-        print("front!");
         actions[1]:activate();
 
       else
