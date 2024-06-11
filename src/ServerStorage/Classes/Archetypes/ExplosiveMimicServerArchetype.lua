@@ -64,7 +64,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
         local explosion = Instance.new("Explosion");
         explosion.BlastPressure = 50000;
-        explosion.BlastRadius = 40;
+        explosion.BlastRadius = 20;
         explosion.DestroyJointRadiusPercent = 0;
         explosion.Position = primaryPart.CFrame.Position - Vector3.new(0, 5, 0);
         local hitContestants = {};
@@ -180,7 +180,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
             local isEnemyInCriticalCondition = enemyHumanoid:GetAttribute("CurrentHealth") < 25;
             local hasEnemyAttackedPlayerAgain = DateTime.now().UnixTimestampMillis <= timeEnemyAttacked + 3000;
             local shouldForgiveEnemy = not isEnemyInCriticalCondition and not hasEnemyAttackedPlayerAgain;
-            if shouldForgiveEnemy then
+            if cause.contestant.isDisqualified or shouldForgiveEnemy then
 
               contestantToAttack = nil;
               targetPart = nil;
@@ -224,6 +224,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
       local function seekAndSelfDestruct()
 
         -- Look for enemies and head into that direction.
+        local closestEnemyHRP: BasePart?;
         for _, possibleEnemyContestant in ipairs(round.contestants) do
 
           -- TODO: Check if the contestant is on a different team (when teams are implemented).
@@ -236,22 +237,30 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
             if enemyHumanoidRootPart then
 
               local result = workspace:Raycast(head.CFrame.Position, enemyHumanoidRootPart.CFrame.Position - head.CFrame.Position, defaultRaycastParams);
-              if result and result.Instance:IsDescendantOf(possibleEnemyCharacter) then  
+              local selfHRP = character:FindFirstChild("HuamnoidRootPart") :: BasePart?;
+              local selfPosition = selfHRP and selfHRP.CFrame.Position;
+              local isEnemyClosest = selfPosition and (not closestEnemyHRP or (closestEnemyHRP.CFrame.Position - selfPosition).Magnitude > (enemyHumanoidRootPart.CFrame.Position - selfPosition).Magnitude);
+              if result and result.Instance:IsDescendantOf(possibleEnemyCharacter) and isEnemyClosest then  
                 
-                humanoid:MoveTo(enemyHumanoidRootPart.CFrame.Position, enemyHumanoidRootPart);
-                humanoid.MoveToFinished:Wait();
-
-                if not contestant.isDisqualified then
-
-                  contestant:disqualify();
-
-                end;
-
+                closestEnemyHRP = enemyHumanoidRootPart;
                 break;
 
               end
 
             end
+
+          end;
+
+        end;
+
+        if closestEnemyHRP then
+
+          humanoid:MoveTo(closestEnemyHRP.CFrame.Position, closestEnemyHRP);
+          humanoid.MoveToFinished:Wait();
+
+          if not contestant.isDisqualified then
+
+            contestant:disqualify();
 
           end;
 

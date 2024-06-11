@@ -119,7 +119,6 @@ function Round.__index:start(stageModel: Model)
   local onEndedEvent;
   onEndedEvent = self.onEnded:Connect(function()
   
-    print("End!");
     onEndedEvent:Disconnect();
     task.cancel(timer);
 
