@@ -18,18 +18,21 @@ export type ContestantProperties = {
   
 }
 
+export type Cause = {
+  contestant: ServerContestant; 
+  actionID: number?; 
+  archetypeID: number?;
+};
+
 export type ContestantMethods = {
   disqualify: (self: ServerContestant) -> ();
+  updateHealth: (self: ServerContestant, newHealth: number, cause: Cause?) -> ();
   toString: (self: ServerContestant) -> string;
 }
 
 export type ContestantEvents = {
   onDisqualified: RBXScriptSignal;
-  onHealthUpdated: RBXScriptSignal<number, {
-    contestant: ServerContestant; 
-    actionID: number?; 
-    archetypeID: number?;
-  }?>;
+  onHealthUpdated: RBXScriptSignal<number, number, Cause?>;
 }
 
 local ServerContestant = {
@@ -56,6 +59,19 @@ function ServerContestant.new(properties: ContestantProperties): ServerContestan
   return contestant;
   
 end
+
+function ServerContestant.__index:updateHealth(newHealth: number, cause: Cause?)
+
+  local character = self.character;
+  local humanoid = character and character:FindFirstChild("Humanoid") :: Humanoid;
+  assert(humanoid, "No humanoid found.");
+
+  local oldHealth = humanoid:GetAttribute("CurrentHealth");
+  humanoid:SetAttribute("CurrentHealth", newHealth);
+
+  events[self].onHealthUpdated:Fire(newHealth, oldHealth, cause);
+
+end;
 
 function ServerContestant.__index:disqualify()
 

@@ -140,12 +140,12 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
     local targetPart: BasePart;
     local forgivenessEvent;
     local forgivenessTask;
-    local healthUpdateEvent = contestant.onHealthUpdated:Connect(function(healthIncremented, cause)
+    local healthUpdateEvent = contestant.onHealthUpdated:Connect(function(newHealth, oldHealth, cause)
 
       local primaryPart = character.PrimaryPart;
       local isTargetPartAlmostDestroyed = not contestantToAttack and not targetPart or targetPart and targetPart:GetAttribute("CurrentDurability") <= 35;
       local enemyCharacter = cause and cause.contestant and cause.contestant.character;
-      if isTargetPartAlmostDestroyed and primaryPart and healthIncremented < 0 and cause and cause.contestant and enemyCharacter and cause.actionID and cause.actionID ~= 2 then
+      if isTargetPartAlmostDestroyed and primaryPart and newHealth < oldHealth and cause and cause.contestant and enemyCharacter and cause.actionID and cause.actionID ~= 2 then
 
         -- Determine if it is possible to get to the player before they kill the NPC.
         local enemyPrimaryPart = enemyCharacter.PrimaryPart;
