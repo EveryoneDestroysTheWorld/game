@@ -138,10 +138,12 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
     local contestantToAttack: ServerContestant?;
     local timeEnemyAttacked: number = 0;
     local targetPart: BasePart;
+    local forgivenessEvent;
+    local forgivenessTask;
     local healthUpdateEvent = contestant.onHealthUpdated:Connect(function(healthIncremented, cause)
 
       local primaryPart = character.PrimaryPart;
-      local isTargetPartAlmostDestroyed = not targetPart or targetPart and targetPart:GetAttribute("CurrentDurability") <= 35;
+      local isTargetPartAlmostDestroyed = not contestantToAttack and not targetPart or targetPart and targetPart:GetAttribute("CurrentDurability") <= 35;
       local enemyCharacter = cause and cause.contestant and cause.contestant.character;
       if isTargetPartAlmostDestroyed and primaryPart and healthIncremented < 0 and cause and cause.contestant and enemyCharacter and cause.actionID and cause.actionID ~= 2 then
 
@@ -149,17 +151,30 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
         local enemyPrimaryPart = enemyCharacter.PrimaryPart;
         if enemyPrimaryPart then
 
-          local forgivenessEvent;
-          local forgivenessTask;
+          local function cleanupEventAndTask()
+
+            if forgivenessEvent then
+
+              forgivenessEvent:Disconnect();
+  
+            end;
+  
+            if forgivenessTask then
+  
+              task.cancel(forgivenessTask);
+  
+            end;
+
+          end;
+
           local function forgiveEnemy()
 
-            forgivenessEvent:Disconnect();
-            task.cancel(forgivenessTask);
+            cleanupEventAndTask();
 
             local enemyHumanoid = enemyCharacter:FindFirstChild("Humanoid") :: Humanoid;
-            local isEnemyAlmostDead = enemyHumanoid:GetAttribute("CurrentHealth") < 25;
+            local isEnemyInCriticalCondition = enemyHumanoid:GetAttribute("CurrentHealth") < 25;
             local hasEnemyAttackedPlayerAgain = DateTime.now().UnixTimestampMillis <= timeEnemyAttacked + 3000;
-            local shouldForgiveEnemy = not isEnemyAlmostDead and not hasEnemyAttackedPlayerAgain;
+            local shouldForgiveEnemy = not isEnemyInCriticalCondition and not hasEnemyAttackedPlayerAgain;
             if shouldForgiveEnemy then
 
               contestantToAttack = nil;
@@ -168,6 +183,8 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
             end;
 
           end;
+
+          cleanupEventAndTask();
 
           contestantToAttack = cause.contestant;
           timeEnemyAttacked = DateTime.now().UnixTimestampMillis;
@@ -252,9 +269,9 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
       -- TROLL SELF-DESTRUCT
         -- If the round is 10 seconds to ending and the bot's team is significantly ahead, the bot should approach an enemy and disqualify itself 
         -- when it is three seconds away from the enemy. Prioritize enemies who haven't moved in a while, if any.
-      local criticalHealthPointsValue = 10;
+      local isEnemyInCriticalCondition = humanoid:GetAttribute("CurrentHealth") <= 10;
       local isRoundEndingSoon = round.timeStarted and round.duration and DateTime.now().UnixTimestampMillis >= round.timeStarted + round.duration * 1000 - 10000;
-      if humanoid:GetAttribute("CurrentHealth") <= criticalHealthPointsValue or isRoundEndingSoon then
+      if isEnemyInCriticalCondition or isRoundEndingSoon then
 
         seekAndSelfDestruct();
         continue;
