@@ -52,7 +52,7 @@ local function startRound()
   end;
 
   -- Create bot NPCs
-  for i = 1, 3 - #contestants do
+  for i = 1, 4 - #contestants do
 
     -- Create the NPC's character.
     local character: Model = ServerStorage:FindFirstChild("NPCRigs"):FindFirstChild("Rig"):Clone();

@@ -222,14 +222,14 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
           -- TODO: Check if the contestant is on a different team (when teams are implemented).
           local isOnSameTeam = possibleEnemyContestant == contestant;
           local possibleEnemyCharacter = possibleEnemyContestant.character;
-          if not isOnSameTeam and possibleEnemyCharacter then
+          if not possibleEnemyContestant.isDisqualified and not isOnSameTeam and possibleEnemyCharacter then
 
             -- Check if the contestant is in view.
             local enemyHumanoidRootPart = possibleEnemyCharacter:FindFirstChild("HumanoidRootPart") :: BasePart?;
             if enemyHumanoidRootPart then
 
               local result = workspace:Raycast(head.CFrame.Position, enemyHumanoidRootPart.CFrame.Position - head.CFrame.Position, defaultRaycastParams);
-              local selfHRP = character:FindFirstChild("HuamnoidRootPart") :: BasePart?;
+              local selfHRP = character:FindFirstChild("HumanoidRootPart") :: BasePart?;
               local selfPosition = selfHRP and selfHRP.CFrame.Position;
               local isEnemyClosest = selfPosition and (not closestEnemyHRP or (closestEnemyHRP.CFrame.Position - selfPosition).Magnitude > (enemyHumanoidRootPart.CFrame.Position - selfPosition).Magnitude);
               if result and result.Instance:IsDescendantOf(possibleEnemyCharacter) and isEnemyClosest then  
@@ -247,6 +247,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
         if closestEnemyHRP then
 
+          print("seeking");
           humanoid:MoveTo(closestEnemyHRP.CFrame.Position, closestEnemyHRP);
           humanoid.MoveToFinished:Wait();
 
@@ -276,9 +277,8 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
       -- TROLL SELF-DESTRUCT
         -- If the round is 10 seconds to ending and the bot's team is significantly ahead, the bot should approach an enemy and disqualify itself 
         -- when it is three seconds away from the enemy. Prioritize enemies who haven't moved in a while, if any.
-      local isEnemyInCriticalCondition = humanoid:GetAttribute("CurrentHealth") <= 10;
       local isRoundEndingSoon = round.timeStarted and round.duration and DateTime.now().UnixTimestampMillis >= round.timeStarted + round.duration * 1000 - 10000;
-      if isEnemyInCriticalCondition or isRoundEndingSoon or contestant.isDisqualified then
+      if isRoundEndingSoon or contestant.isDisqualified then
 
         seekAndSelfDestruct();
         continue;
