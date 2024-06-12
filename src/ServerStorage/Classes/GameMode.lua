@@ -9,24 +9,22 @@ export type GameModeProperties = {
   name: string;
 
   description: string;
+
+  start: (self: GameMode, stageModel: Model) -> ();
+
+  breakdown: (self: GameMode) -> ();
+
+  toString: (self: GameMode) -> string;
   
 };
 
-export type GameModeMethods<GameMode> = {
-  start: (self: GameMode, stageModel: Model) -> ();
-  breakdown: (self: GameMode) -> ();
-  toString: (self: GameMode) -> string;
-}
+local GameMode = {};
 
-local GameMode = {
-  __index = {} :: GameModeProperties;
-};
-
-export type GameMode = typeof(setmetatable({}, GameMode));
+export type GameMode = GameModeProperties;
 
 function GameMode.new(properties: GameModeProperties): GameMode
 
-  return setmetatable(properties, GameMode);
+  return properties :: GameMode;
   
 end
 

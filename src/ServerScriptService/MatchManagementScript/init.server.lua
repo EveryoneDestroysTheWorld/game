@@ -6,9 +6,11 @@ local TeleportService = game:GetService("TeleportService");
 local Stage = require(ServerStorage.Classes.Stage);
 local Round = require(ServerStorage.Classes.Round);
 local TurfWarGameMode = require(ServerStorage.Classes.GameModes.TurfWarGameMode);
+local ServerContestant = require(ServerStorage.Classes.ServerContestant);
 
 -- Get the match info.
-local expectedPlayerIDs = {};
+-- local expectedPlayerIDs = {};
+local expectedPlayerIDs = {904459813};
 local participants: {Player} = {};
 
 local playerCheck = task.delay(10, function()
@@ -29,28 +31,74 @@ local function startRound()
   stageModel.Parent = workspace;
 
   -- Show the results when the round ends.
-  local participantIDs = {};
-  for _, participant in ipairs(participants) do
+  local contestants = {};
+  for _, player in ipairs(participants) do
 
-    table.insert(participantIDs, participant.UserId);
+    table.insert(contestants, ServerContestant.new({
+      ID = player.UserId;
+      player = player;
+      character = player.Character;
+      archetypeID = 1;
+      isDisqualified = false;
+    }));
+
+    task.spawn(function()
+      
+      -- TODO: Disqualify the player if this doesn't work.
+      ReplicatedStorage.Shared.Functions.InitializeInventory:InvokeClient(player, 1);
+    
+    end)
 
   end;
 
+  -- Create bot NPCs
+  for i = 1, 4 - #contestants do
+
+    -- Create the NPC's character.
+    local character: Model = ServerStorage:FindFirstChild("NPCRigs"):FindFirstChild("Rig"):Clone();
+    character.Name = "NPC" .. i;
+    character.Parent = workspace;
+
+    -- Add the NPC to the contestant list.
+    table.insert(contestants, ServerContestant.new({
+      ID = i * 0.01;
+      character = character;
+      archetypeID = 1;
+      isDisqualified = false;
+    }));
+
+  end;
+
+  ReplicatedStorage.Shared.Events.ResetButtonPressed.OnServerEvent:Connect(function(player)
+  
+    for _, contestant in ipairs(contestants) do
+
+      if contestant.ID == player.UserId then
+
+        contestant:disqualify();
+        break;
+
+      end
+
+    end;
+
+  end);
+
   local round = Round.new({
     stageID = stage.ID :: string;
-    gameMode = TurfWarGameMode.new(participantIDs);
-    participantIDs = participantIDs;
+    gameMode = TurfWarGameMode.new(stageModel, contestants);
+    contestants = contestants;
+    duration = 1500;
   });
   
   round.onEnded:Connect(function()
 
     ReplicatedStorage.Shared.Events.RoundEnded:FireAllClients(round);
-    print(round);
 
   end);
 
   -- Start the round.
-  round:start(120, stageModel);
+  round:start(stageModel);
   print("Round started.");
   ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(120);
 
