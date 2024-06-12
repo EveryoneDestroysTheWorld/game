@@ -247,7 +247,6 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
         if closestEnemyHRP then
 
-          print("seeking");
           humanoid:MoveTo(closestEnemyHRP.CFrame.Position, closestEnemyHRP);
           humanoid.MoveToFinished:Wait();
 
