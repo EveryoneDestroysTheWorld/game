@@ -142,7 +142,6 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
     local contestantToAttack: ServerContestant?;
     local timeEnemyAttacked: number = 0;
     local targetPart: BasePart?;
-    local forgivenessEvent;
     local forgivenessTask;
     local healthUpdateEvent = contestant.onHealthUpdated:Connect(function(newHealth, oldHealth, cause)
 
@@ -156,14 +155,8 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
         local enemyPrimaryPart = enemyCharacter.PrimaryPart;
         if enemyPrimaryPart then
 
-          local function cleanupEventAndTask()
+          local function cleanupTask()
 
-            if forgivenessEvent then
-
-              forgivenessEvent:Disconnect();
-  
-            end;
-  
             if forgivenessTask and coroutine.status(forgivenessTask) == "suspended" then
   
               task.cancel(forgivenessTask);
@@ -174,13 +167,13 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
           local function forgiveEnemy()
 
-            cleanupEventAndTask();
+            cleanupTask();
 
             local enemyHumanoid = enemyCharacter:FindFirstChild("Humanoid") :: Humanoid;
             local isEnemyInCriticalCondition = enemyHumanoid:GetAttribute("CurrentHealth") < 25;
             local hasEnemyAttackedPlayerAgain = DateTime.now().UnixTimestampMillis <= timeEnemyAttacked + 3000;
             local shouldForgiveEnemy = not isEnemyInCriticalCondition and not hasEnemyAttackedPlayerAgain;
-            if cause.contestant.isDisqualified or shouldForgiveEnemy then
+            if shouldForgiveEnemy then
 
               contestantToAttack = nil;
               targetPart = nil;
@@ -190,14 +183,13 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
           end;
 
-          cleanupEventAndTask();
+          cleanupTask();
 
           contestantToAttack = cause.contestant;
           timeEnemyAttacked = DateTime.now().UnixTimestampMillis;
 
           -- Forgive the enemy after 3 seconds of peace or when they get disqualified.
-          forgivenessTask = task.delay(30, forgiveEnemy);
-          forgivenessEvent = cause.contestant.onDisqualified:Connect(forgiveEnemy);
+          forgivenessTask = task.delay(3, forgiveEnemy);
 
         end;
 
@@ -286,7 +278,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
         -- when it is three seconds away from the enemy. Prioritize enemies who haven't moved in a while, if any.
       local isEnemyInCriticalCondition = humanoid:GetAttribute("CurrentHealth") <= 10;
       local isRoundEndingSoon = round.timeStarted and round.duration and DateTime.now().UnixTimestampMillis >= round.timeStarted + round.duration * 1000 - 10000;
-      if isEnemyInCriticalCondition or isRoundEndingSoon then
+      if isEnemyInCriticalCondition or isRoundEndingSoon or contestant.isDisqualified then
 
         seekAndSelfDestruct();
         continue;
@@ -344,7 +336,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
       if not primaryPart then continue; end;
 
       local waypoints = {};
-      local originalPartPosition;
+      local originalPartPosition = Vector3.zero;
       local function updatePath()
 
         return pcall(function()
@@ -357,10 +349,22 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
       end;
       
-      local enemyContestantPrimaryPart = contestantToAttack and contestantToAttack.character and contestantToAttack.character.PrimaryPart;
+      local enemyContestantCharacter = contestantToAttack and contestantToAttack.character;
+      local enemyContestantHumanoid = enemyContestantCharacter and enemyContestantCharacter:FindFirstChild("Humanoid") :: Humanoid;
+      local enemyContestantPrimaryPart = enemyContestantCharacter and enemyContestantCharacter.PrimaryPart;
       if enemyContestantPrimaryPart then
 
-        targetPart = enemyContestantPrimaryPart;
+        if enemyContestantHumanoid and enemyContestantHumanoid:GetAttribute("CurrentHealth") < 0 then
+
+          contestantToAttack = nil;
+          targetPart = nil;
+          continue;
+
+        else
+
+          targetPart = enemyContestantPrimaryPart;
+
+        end;
 
       else
 
