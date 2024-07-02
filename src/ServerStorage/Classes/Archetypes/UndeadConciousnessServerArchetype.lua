@@ -43,7 +43,7 @@ function UndeadConciousnessServerArchetype.new(contestant: ServerContestant, rou
     -- Allow the player to revive disqualified allies and give them this archetype.
     for _, allyContestant in ipairs({}) do
 
-
+      -- To be implemented when teams are implemented.
 
     end;
 
