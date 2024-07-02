@@ -41,9 +41,14 @@ function UndeadConciousnessServerArchetype.new(contestant: ServerContestant, rou
     humanoid.WalkSpeed = 12;
 
     -- Allow the player to revive disqualified allies and give them this archetype.
-    for _, allyContestant in ipairs({}) do
+    for _, possibleAllyContestant in ipairs(round.contestants) do
 
       -- To be implemented when teams are implemented.
+      possibleAllyContestant.onDisqualified:Connect(function()
+      
+        
+
+      end);
 
     end;
 
