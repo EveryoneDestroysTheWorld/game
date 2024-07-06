@@ -1,7 +1,10 @@
-# Archetypes
+# Client archetypes
 Client archetypes are meant to let the server know when the player does something that the server wouldn't know by itself. For example, when the player presses a key on their keyboard or moves their mouse. Client archetypes are typically not designed to handle actions because all archetypes must be compatible with bot players. Bots cannot access client archetypes.
 
 ## Creating an archetype
+Raise an issue in the design repository before creating an official archetype.
+
+## Implementing an archetype
 ### Metadata
 Archetypes only require names, IDs, and types. Descriptions and action IDs are optional. The client manages this information, while the server pulls it from ReplicatedStorage.
 
