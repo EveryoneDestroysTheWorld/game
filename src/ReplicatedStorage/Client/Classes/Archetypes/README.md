@@ -2,7 +2,7 @@
 Client archetypes are meant to let the server know when the player does something that the server wouldn't know by itself. For example, when the player presses a key on their keyboard or moves their mouse. Client archetypes are typically not designed to handle actions because all archetypes must be compatible with bot players. Bots cannot access client archetypes.
 
 ## Creating an archetype
-Raise an issue in the design repository before creating an official archetype.
+Raise an issue in the [design repository](https://github.com/DemoDemons/design) before creating an official archetype. After it's approved by the design team, move on to ["Implementing an archetype"](#implementing-an-archetype).
 
 ## Implementing an archetype
 ### Metadata
