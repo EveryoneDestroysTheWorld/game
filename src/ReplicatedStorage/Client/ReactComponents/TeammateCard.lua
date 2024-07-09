@@ -20,11 +20,15 @@ local function TeammateCard(props: TeammateCardProps)
   }, {
     UIListLayout = React.createElement("UIListLayout", {
       Padding = UDim.new(0, 15);
+      SortOrder = Enum.SortOrder.LayoutOrder;
+      FillDirection = Enum.FillDirection.Horizontal;
+      VerticalAlignment = Enum.VerticalAlignment.Center;
     });
     RotationContainerFrame = React.createElement("Frame", {
       AutomaticSize = Enum.AutomaticSize.XY;
       Size = UDim2.new();
       BackgroundTransparency = 1;
+      LayoutOrder = 1;
     }, {
       TeammateCardFrame = React.createElement("Frame", {
         Size = UDim2.new(0, 300, 0, 100);
@@ -44,6 +48,7 @@ local function TeammateCard(props: TeammateCardProps)
           TextTransparency = if props.contestant then 0 else 0.5;
           TextColor3 = if props.isRival then Color3.fromRGB(255, 117, 117) else Color3.new(1, 1, 1);
           TextSize = 17;
+          FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
           TextXAlignment = Enum.TextXAlignment.Left;
           TextTruncate = Enum.TextTruncate.AtEnd;
         }, {
@@ -71,6 +76,7 @@ local function TeammateCard(props: TeammateCardProps)
       Size = UDim2.new(0, 35, 0, 35);
       Image = "rbxassetid://17571806169";
       BackgroundTransparency = 1;
+      LayoutOrder = 2;
     });
   });
 

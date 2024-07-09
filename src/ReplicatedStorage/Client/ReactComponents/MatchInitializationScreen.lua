@@ -8,6 +8,8 @@ local Ticker = require(script.Parent.Ticker);
 local MatchInitializationTimer = require(script.Parent.MatchInitializationTimer);
 local TeammateCard = require(script.Parent.TeammateCard);
 local TeammateCardList = require(script.Parent.TeammateCardList);
+local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
+type ClientRound = ClientRound.ClientRound;
 
 local function MatchInitializationScreen()
 
@@ -25,60 +27,55 @@ local function MatchInitializationScreen()
   end, {});
 
   -- Get teammate cards to show to the player.
-  -- local allyTeammateCards, setAllyTeammateCards = React.useState({});
-  -- local rivalTeammateCards, setRivalTeammateCards = React.useState({});
-  -- React.useEffect(function()
+  local allyTeammateCards, setAllyTeammateCards = React.useState({});
+  local rivalTeammateCards, setRivalTeammateCards = React.useState({});
+  React.useEffect(function()
 
-  --   -- Get the current list of teams.
-  --   local function updateTeamLists()
+    -- Get the current list of teams.
+    local function updateTeamLists()
 
-  --     local teams = ReplicatedStorage.Shared.Functions.GetTeams:Invoke();
-  --     for _, team in ipairs(teams) do
+      local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
+      local round: ClientRound = ClientRound.new(roundConstructorProperties);
+      local newAllyTeammateCards = {};
+      local newRivalTeammateCards = {};
 
-  --       -- Distinguish rival teams.
-  --       local isRivalTeam = true;
-  --       for _, teammate in ipairs(team.members) do
+      local ownTeamID: number?;
+      for _, contestant in ipairs(round.contestants) do
 
-  --         if teammate.player and teammate.player == player then
+        if contestant.ID == player.UserId then
 
-  --           isRivalTeam = false;
-  --           break
+          ownTeamID = contestant.teamID;
+          break;
 
-  --         end;
-          
-  --       end;
+        end;
 
-  --       local teammateCards = {};
-  --       for index, teammate in ipairs(team.members) do
+      end;
 
-  --         table.insert(teammateCards, React.createElement(TeammateCard, {
-  --           contestant = teammate;
-  --           isRival = isRivalTeam;
-  --           layoutOrder = index;
-  --         }));
+      for _, contestant in ipairs(round.contestants) do
 
-  --       end;
+        local isRival = contestant.ID ~= player.UserId and not ownTeamID or contestant.teamID ~= ownTeamID;
+        local selectedTable = if isRival then newRivalTeammateCards else newAllyTeammateCards;
+        local teammateCard = React.createElement(TeammateCard, {
+          contestant = contestant;
+          isRival = isRival;
+          layoutOrder = #selectedTable;
+        })
 
-  --       if isRivalTeam then
+        table.insert(selectedTable, teammateCard);
 
-  --         setRivalTeammateCards(rivalTeammateCards);
+      end;
 
-  --       else
+      setAllyTeammateCards(newAllyTeammateCards);
+      setRivalTeammateCards(newRivalTeammateCards);
 
-  --         setAllyTeammateCards(teammateCards);
-
-  --       end;
-
-  --     end;
-
-  --   end;
-  --   updateTeamLists();
+    end;
+    updateTeamLists();
    
-  --   -- Listen for updates.
-  --   ReplicatedStorage.Shared.Events.TeamMemberAdded.OnClientEvent:Connect(updateTeamLists);
-  --   ReplicatedStorage.Shared.Events.TeamMemberRemoved.OnClientEvent:Connect(updateTeamLists);
+    -- Listen for updates.
+    ReplicatedStorage.Shared.Events.ContestantAdded.OnClientEvent:Connect(updateTeamLists);
+    ReplicatedStorage.Shared.Events.ContestantRemoved.OnClientEvent:Connect(updateTeamLists);
 
-  -- end, {});
+  end, {});
 
   return React.createElement("Frame", {
     BackgroundTransparency = 0.4;
@@ -150,25 +147,25 @@ local function MatchInitializationScreen()
           layoutOrder = 2;
         });
       });
-    --   Content = React.createElement("Frame", {
-    --     AutomaticSize = Enum.AutomaticSize.Y;
-    --     BackgroundTransparency = 1;
-    --     LayoutOrder = 2;
-    --     AnchorPoint = Vector2.new(0.5, 0.5);
-    --     Position = UDim2.new(0.5, 0, 0.5, 0);
-    --     Size = UDim2.new(1, 0, 0, 0);
-    --   }, {
-    --     UIListLayout = React.createElement("UIListLayout", {
-    --       SortOrder = Enum.SortOrder.LayoutOrder;
-    --       HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween;
-    --     });
-    --     AllyTeammateCardList = React.createElement(TeammateCardList, {
-    --       layoutOrder = 1;
-    --     }, allyTeammateCards);
-    --     RivalTeammateCardList = React.createElement(TeammateCardList, {
-    --       layoutOrder = 2;
-    --     }, rivalTeammateCards);
-    --   });
+      Content = React.createElement("Frame", {
+        AutomaticSize = Enum.AutomaticSize.Y;
+        BackgroundTransparency = 1;
+        LayoutOrder = 2;
+        AnchorPoint = Vector2.new(0.5, 0.5);
+        Position = UDim2.new(0.5, 0, 0.5, 0);
+        Size = UDim2.new(1, 0, 0, 0);
+      }, {
+        UIListLayout = React.createElement("UIListLayout", {
+          SortOrder = Enum.SortOrder.LayoutOrder;
+          HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween;
+        });
+        AllyTeammateCardList = React.createElement(TeammateCardList, {
+          layoutOrder = 1;
+        }, allyTeammateCards);
+        RivalTeammateCardList = React.createElement(TeammateCardList, {
+          layoutOrder = 2;
+        }, rivalTeammateCards);
+      });
     });
     Ticker = React.createElement(Ticker);
     -- MainStatus = React.createElement("TextLabel", {

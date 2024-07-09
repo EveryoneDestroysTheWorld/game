@@ -1,9 +1,10 @@
 --!strict
 -- Writer: Christian Toney (Sudobeast)
--- This module represents a Round.
+-- This module represents a ServerRound.
 local HttpService = game:GetService("HttpService");
 local GameMode = require(script.Parent.GameMode);
 type GameMode = GameMode.GameMode;
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local DataStoreService = game:GetService("DataStoreService");
 local ServerContestant = require(script.Parent.ServerContestant);
 type ServerContestant = ServerContestant.ServerContestant;
@@ -11,12 +12,14 @@ local ServerArchetype = require(script.Parent.ServerArchetype);
 type ServerArchetype = ServerArchetype.ServerArchetype;
 local ServerAction = require(script.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
+local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
+type ClientRound = ClientRound.ClientRound;
 
-export type RoundProperties = {  
+export type ServerRoundProperties = {  
   -- This round's unique ID.
-  ID: string?;
+  ID: string;
 
-  gameMode: GameMode;
+  gameMode: GameMode?;
   
   -- This stage's ID.
   stageID: string;
@@ -35,31 +38,36 @@ export type RoundProperties = {
 
 };
 
-export type RoundEvents = {
+export type ServerRoundEvents = {
   onEnded: RBXScriptSignal;
   onHoldRelease: RBXScriptSignal;
+  onContestantAdded: RBXScriptSignal;
+  onContestantRemoved: RBXScriptSignal;
 }
 
-export type RoundMethods = {
-  start: (self: Round, stageModel: Model) -> ();
-  stop: (self: Round) -> ();
-  toString: (self: Round) -> string;
+export type ServerRoundMethods = {
+  addContestant: (self: ServerRound, contestant: ServerContestant) -> ();
+  getClientConstructorProperties: (self: ServerRound) -> any;
+  start: (self: ServerRound, stageModel: Model) -> ();
+  stop: (self: ServerRound) -> ();
+  setGameMode: (self: ServerRound, gameMode: GameMode) -> ();
+  toString: (self: ServerRound) -> string;
 }
 
-local Round = {
-  __index = {} :: RoundMethods;
+local ServerRound = {
+  __index = {} :: ServerRoundMethods;
 };
 
-export type Round = typeof(setmetatable({}, Round)) & RoundProperties & RoundEvents & RoundMethods;
+export type ServerRound = typeof(setmetatable({}, ServerRound)) & ServerRoundProperties & ServerRoundEvents & ServerRoundMethods;
 
 local events: {[any]: {[string]: BindableEvent}} = {};
 
-function Round.new(properties: RoundProperties): Round
+function ServerRound.new(properties: ServerRoundProperties): ServerRound
 
-  local round = setmetatable(properties, Round) :: Round;
+  local round = setmetatable(properties, ServerRound) :: ServerRound;
 
   events[round] = {};
-  for _, eventName in ipairs({"onEnded", "onHoldRelease"}) do
+  for _, eventName in ipairs({"onEnded", "onHoldRelease", "onContestantAdded", "onContestantRemoved"}) do
 
     events[round][eventName] = Instance.new("BindableEvent");
     (round :: {})[eventName] = events[round][eventName].Event;
@@ -68,11 +76,12 @@ function Round.new(properties: RoundProperties): Round
 
   return round;
   
-end
+end;
 
-function Round.__index:start(stageModel: Model)
+function ServerRound.__index:start(stageModel: Model): ()
 
   assert(not self.timeStarted, "The round has already started.");
+  assert(self.gameMode, "This round has no game mode.");
 
   -- Run the game mode.
   self.gameMode:start(stageModel);
@@ -126,12 +135,51 @@ function Round.__index:start(stageModel: Model)
 
 end;
 
-function Round.__index:stop()
+-- Add a contestant to the round.
+function ServerRound.__index:addContestant(contestant: ServerContestant): ()
+
+  table.insert(self.contestants, contestant);
+  events[self].onContestantAdded:Fire(contestant);
+  ReplicatedStorage.Shared.Events.ContestantAdded:FireAllClients(self.ID, contestant:convertToClient());
+
+end;
+
+function ServerRound.__index:getClientConstructorProperties(): any
+
+  -- Convert ServerContestants to ClientContestants.
+  local clientContestants = {};
+  for _, serverContestant in ipairs(self.contestants) do
+
+    table.insert(clientContestants, serverContestant:convertToClient());
+
+  end;
+
+  return {
+    ID = self.ID;
+    contestants = clientContestants;
+    duration = self.duration;
+    timeStarted = self.timeStarted;
+    stageID = self.stageID;
+  };
+
+end;
+
+function ServerRound.__index:setGameMode(gameMode: GameMode): ()
+
+  self.gameMode = gameMode;
+
+end;
+
+function ServerRound.__index:stop(): ()
 
   assert(not self.timeEnded, "The round has already ended.");
 
   -- Break down the game mode.
-  self.gameMode:breakdown();
+  if self.gameMode then
+
+    self.gameMode:breakdown();
+
+  end;
 
   -- Disable the actions.
   for _, archetype in ipairs(self.archetypes :: {ServerArchetype}) do
@@ -156,7 +204,6 @@ function Round.__index:stop()
 
   -- Save the round info in the database.
   self.timeEnded = DateTime.now().UnixTimestampMillis;
-  self.ID = HttpService:GenerateGUID();
 
   local contestantIDs = {};
   for _, contestant in ipairs(self.contestants) do
@@ -174,7 +221,7 @@ function Round.__index:stop()
 
 end;
 
-function Round.__index:toString()
+function ServerRound.__index:toString()
 
   local serverContestantStringList = {};
   for _, contestant in ipairs(self.contestants) do
@@ -189,9 +236,9 @@ function Round.__index:toString()
     timeStarted = self.timeStarted;
     timeEnded = self.timeEnded;
     contestants = HttpService:JSONEncode(serverContestantStringList);
-    gameMode = self.gameMode:toString();
+    gameMode = if self.gameMode then self.gameMode:toString() else nil;
   });
   
 end;
 
-return Round;
+return ServerRound;

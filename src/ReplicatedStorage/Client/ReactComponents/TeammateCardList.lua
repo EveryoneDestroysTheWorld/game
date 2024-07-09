@@ -4,6 +4,7 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 
 type TeammateCardListProps = {
   layoutOrder: number;
+  children: any;
 }
 
 local function TeammateCardList(props)
@@ -13,6 +14,12 @@ local function TeammateCardList(props)
     BackgroundTransparency = 1;
     Size = UDim2.new();
     LayoutOrder = props.layoutOrder;
+  }, {
+    React.createElement("UIListLayout", {
+      SortOrder = Enum.SortOrder.LayoutOrder;
+      Padding = UDim.new(0, 15);
+    });
+    React.createElement(React.Fragment, {}, props.children);
   })
 
 end;
