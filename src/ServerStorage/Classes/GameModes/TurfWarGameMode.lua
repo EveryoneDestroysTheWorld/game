@@ -6,8 +6,8 @@ local Players = game:GetService("Players");
 local GameMode = require(script.Parent.Parent.GameMode);
 type GameMode = GameMode.GameMode;
 local HttpService = game:GetService("HttpService");
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
+local ServerRound = require(script.Parent.Parent.ServerRound);
+type ServerRound = ServerRound.ServerRound;
 
 -- This is the class.
 local TurfWarGameMode = {
@@ -29,7 +29,7 @@ export type TurfWarStats = {
   [number]: TurfWarPlayerStats;
 };
 
-function TurfWarGameMode.new(stageModel: Model, contestants: {ServerContestant}): GameMode
+function TurfWarGameMode.new(stageModel: Model, round: ServerRound): GameMode
 
   local stats: TurfWarStats = {};
   local totalStageParts = 0;
@@ -185,7 +185,7 @@ function TurfWarGameMode.new(stageModel: Model, contestants: {ServerContestant})
     end;
   });
 
-  for _, contestant in ipairs(contestants) do
+  for _, contestant in ipairs(round.contestants) do
 
     stats[contestant.ID] = setmetatable({
       place = 1;

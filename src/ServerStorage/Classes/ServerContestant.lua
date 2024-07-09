@@ -3,6 +3,9 @@
 -- This module represents an Archetype, which contains a list of powers.
 
 local HttpService = game:GetService("HttpService");
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
+type ClientContestant = ClientContestant.ClientContestant;
 
 export type ContestantProperties = {
   
@@ -15,6 +18,8 @@ export type ContestantProperties = {
   player: Player?;
 
   character: Model?;
+
+  teamID: number?;
   
 }
 
@@ -25,6 +30,7 @@ export type Cause = {
 };
 
 export type ContestantMethods = {
+  convertToClient: (self: ServerContestant) -> ClientContestant;
   disqualify: (self: ServerContestant) -> ();
   updateHealth: (self: ServerContestant, newHealth: number, cause: Cause?) -> ();
   toString: (self: ServerContestant) -> string;
@@ -59,6 +65,19 @@ function ServerContestant.new(properties: ContestantProperties): ServerContestan
   return contestant;
   
 end
+
+function ServerContestant.__index:convertToClient(): ClientContestant
+
+  return ClientContestant.new({
+    ID = self.ID;
+    archetypeID = self.archetypeID;
+    isDisqualified = self.isDisqualified;
+    player = self.player;
+    character = self.character;
+    teamID = self.teamID;
+  });
+
+end;
 
 function ServerContestant.__index:updateHealth(newHealth: number, cause: Cause?)
 

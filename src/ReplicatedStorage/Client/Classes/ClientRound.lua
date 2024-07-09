@@ -2,12 +2,25 @@
 -- Written by Christian Toney (Sudobeast)
 -- This module represents an Archetype, which contains a list of powers.
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local ClientContestant = require(script.Parent.ClientContestant);
+type ClientContestant = ClientContestant.ClientContestant;
 
 export type RoundProperties = {
-  ID: string;
+  ID: string;  
+  
+  -- This stage's ID.
+  stageID: string;
+
+  timeStarted: number?;
+
+  duration: number?;
+
+  timeEnded: number?;
+
+  contestants: {ClientContestant};
 }
 
-local Round = {
+local ClientRound = {
   __index = {};
 };
 
@@ -15,9 +28,9 @@ export type RoundEvents = {
   onEnded: RBXScriptSignal;
 }
 
-export type Round = typeof(setmetatable({}, Round)) & RoundProperties & RoundEvents;
+export type ClientRound = typeof(setmetatable({}, ClientRound)) & RoundProperties & RoundEvents;
 
-function Round.new(properties: RoundProperties): Round
+function ClientRound.new(properties: RoundProperties): ClientRound
 
   local round = properties;
 
@@ -31,7 +44,7 @@ function Round.new(properties: RoundProperties): Round
 
   end
 
-  ReplicatedStorage.Shared.Events.RoundEnded:Connect(function(roundID: string)
+  ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function(roundID: string)
   
     if roundID == round.ID then
 
@@ -41,8 +54,8 @@ function Round.new(properties: RoundProperties): Round
 
   end);
 
-  return setmetatable(properties, Round) :: Round;
+  return setmetatable(round, ClientRound) :: ClientRound;
   
 end
 
-return Round;
+return ClientRound;
