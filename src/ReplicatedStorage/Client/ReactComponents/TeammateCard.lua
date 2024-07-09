@@ -28,11 +28,11 @@ local function TeammateCard(props: TeammateCardProps)
       AutomaticSize = Enum.AutomaticSize.XY;
       Size = UDim2.new();
       BackgroundTransparency = 1;
-      LayoutOrder = 1;
+      LayoutOrder = if props.isRival then 2 else 1;
     }, {
       TeammateCardFrame = React.createElement("Frame", {
         Size = UDim2.new(0, 300, 0, 100);
-        Rotation = -2;
+        Rotation = if props.isRival then 2 else -2;
         BackgroundTransparency = 1;
       }, {
         UIListLayout = React.createElement("UIListLayout", {
@@ -72,12 +72,12 @@ local function TeammateCard(props: TeammateCardProps)
         });
       });
     });
-    ReadyIndicationImageLabel = React.createElement("ImageLabel", {
+    ReadyIndicationImageLabel = if props.contestant then React.createElement("ImageLabel", {
       Size = UDim2.new(0, 35, 0, 35);
       Image = "rbxassetid://17571806169";
       BackgroundTransparency = 1;
-      LayoutOrder = 2;
-    });
+      LayoutOrder = if props.isRival then 1 else 2;
+    }) else nil;
   });
 
 end;

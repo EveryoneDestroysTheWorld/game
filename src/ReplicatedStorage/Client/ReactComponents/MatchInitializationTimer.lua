@@ -3,11 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 
-type MatchInitializationTimerProps = {
-  layoutOrder: number;
-}
-
-local function MatchInitializationTimer(props: MatchInitializationTimerProps)
+local function MatchInitializationTimer()
 
   local originalTextSize = 50;
   local currentSecond, setCurrentSecond = React.useState(10);
@@ -41,7 +37,8 @@ local function MatchInitializationTimer(props: MatchInitializationTimerProps)
     BackgroundTransparency = 1;
     AutomaticSize = Enum.AutomaticSize.XY;
     Size = UDim2.new();
-    LayoutOrder = props.layoutOrder;
+    AnchorPoint = Vector2.new(1, 0);
+    Position = UDim2.new(1, 0, 0, 0);
   }, {
     CurrentSecondTextLabel = React.createElement("TextLabel", {
       Text = currentSecond;

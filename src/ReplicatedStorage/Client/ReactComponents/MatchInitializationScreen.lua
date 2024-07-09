@@ -65,6 +65,19 @@ local function MatchInitializationScreen()
 
       end;
 
+      for ti, t in ipairs({newAllyTeammateCards, newRivalTeammateCards}) do
+
+        for i = #t + 1, 4 do
+
+          table.insert(t, React.createElement(TeammateCard, {
+            isRival = ti == 2;
+            layoutOrder = i;
+          }))
+
+        end;
+
+      end;
+
       setAllyTeammateCards(newAllyTeammateCards);
       setRivalTeammateCards(newRivalTeammateCards);
 
@@ -98,19 +111,18 @@ local function MatchInitializationScreen()
         BackgroundTransparency = 1;
         Size = UDim2.new(1, 0, 0, 0);
       }, {
-        UIListLayout = React.createElement("UIListLayout", {
-          SortOrder = Enum.SortOrder.LayoutOrder;
-          FillDirection = Enum.FillDirection.Horizontal;
-          HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween;
-        });
         GameModeDescriptionFrame = React.createElement("Frame", {
           BackgroundTransparency = 1;
           AutomaticSize = Enum.AutomaticSize.XY;
           LayoutOrder = 1;
+          Position = UDim2.new(0.5, 0, 0, 0);
+          AnchorPoint = Vector2.new(0.5, 0);
           Size = UDim2.new();
         }, {
           UIListLayout = React.createElement("UIListLayout", {
             SortOrder = Enum.SortOrder.LayoutOrder;
+            Padding = UDim.new(0, 5);
+            HorizontalAlignment = Enum.HorizontalAlignment.Center;
           });
           SubtitleLabel = React.createElement("TextLabel", {
             BackgroundTransparency = 1;
@@ -143,9 +155,7 @@ local function MatchInitializationScreen()
             TextSize = 18;
           });
         });
-        MatchInitializationTimerFrame = React.createElement(MatchInitializationTimer, {
-          layoutOrder = 2;
-        });
+        MatchInitializationTimerFrame = React.createElement(MatchInitializationTimer);
       });
       Content = React.createElement("Frame", {
         AutomaticSize = Enum.AutomaticSize.Y;
@@ -158,6 +168,7 @@ local function MatchInitializationScreen()
         UIListLayout = React.createElement("UIListLayout", {
           SortOrder = Enum.SortOrder.LayoutOrder;
           HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween;
+          FillDirection = Enum.FillDirection.Horizontal;
         });
         AllyTeammateCardList = React.createElement(TeammateCardList, {
           layoutOrder = 1;
