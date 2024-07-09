@@ -22,8 +22,16 @@ local function MatchInitializationTimer(props: MatchInitializationTimerProps)
       self.Rotation = -360;
       self.TextSize = 0;
       TweenService:Create(self, TweenInfo.new(0.75, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Rotation = 0, TextSize = originalTextSize}):Play();
-      task.wait(1);
-      setCurrentSecond(currentSecond - 1);
+
+      if currentSecond > 0 then
+
+        task.delay(1, function()
+
+          setCurrentSecond(currentSecond - 1);
+
+        end);
+
+      end;
 
     end;
 

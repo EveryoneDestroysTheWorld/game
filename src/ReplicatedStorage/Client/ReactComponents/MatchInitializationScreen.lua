@@ -86,67 +86,70 @@ local function MatchInitializationScreen()
     BorderSizePixel = 0;
     Size = UDim2.new(1, 0, 1, 0);
   }, {
-    -- MainContainer = React.createElement("Frame", {}, {
-    --   UIPadding = React.createElement("UIPadding", {
-    --     PaddingBottom = UDim.new(0, 30);
-    --     PaddingLeft = UDim.new(0, 30);
-    --     PaddingRight = UDim.new(0, 30);
-    --     PaddingTop = UDim.new(0, 30);
-    --   });
-    --   Header = React.createElement("Frame", {}, {
-    --     BackgroundTransparency = 1;
-    --     Size = UDim2.new(1, 0, 0, 0);
-    --     AutomaticSize = Enum.AutomaticSize.Y;
-    --   }, {
-    --     UIListLayout = React.createElement("UIListLayout", {
-    --       SortOrder = Enum.SortOrder.LayoutOrder;
-    --       FillDirection = Enum.FillDirection.Horizontal;
-    --       HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween;
-    --     });
-    --     GameModeDescriptionFrame = React.createElement("Frame", {
-    --       BackgroundTransparency = 1;
-    --       AutomaticSize = Enum.AutomaticSize.XY;
-    --       LayoutOrder = 1;
-    --       Size = UDim2.new();
-    --     }, {
-    --       UIListLayout = React.createElement("UIListLayout", {
-    --         SortOrder = Enum.SortOrder.LayoutOrder;
-    --       });
-    --       SubtitleLabel = React.createElement("TextLabel", {
-    --         BackgroundTransparency = 1;
-    --         AutomaticSize = Enum.AutomaticSize.XY;
-    --         Size = UDim2.new();
-    --         Text = "YOU'RE IN A";
-    --         LayoutOrder = 1;
-    --         FontFace = Font.fromId(11702779517, Enum.FontWeight.Bold);
-    --         TextColor3 = Color3.fromRGB(255, 255, 255);
-    --         TextSize = 14;
-    --       });
-    --       GameModeLabel = React.createElement("TextLabel", {
-    --         BackgroundTransparency = 1;
-    --         AutomaticSize = Enum.AutomaticSize.XY;
-    --         Size = UDim2.new();
-    --         Text = "TURF WAR";
-    --         LayoutOrder = 2;
-    --         FontFace = Font.fromId(11702779517, Enum.FontWeight.Heavy);
-    --         TextColor3 = Color3.fromRGB(255, 94, 97);
-    --         TextSize = 30;
-    --       });
-    --       TaglineLabel = React.createElement("TextLabel", {
-    --         BackgroundTransparency = 1;
-    --         AutomaticSize = Enum.AutomaticSize.XY;
-    --         Size = UDim2.new();
-    --         LayoutOrder = 3;
-    --         Text = "The rules are simple: destroy everything before they do";
-    --         FontFace = Font.fromId(11702779517);
-    --         TextColor3 = Color3.fromRGB(199, 199, 199);
-    --         TextSize = 18;
-    --       });
-    --     });
-    --     MatchInitializationTimerFrame = React.createElement(MatchInitializationTimer, {
-    --       layoutOrder = 2;
-    --     });
-    --   });
+    MainContainer = React.createElement("Frame", {
+      BackgroundTransparency = 1;
+      Size = UDim2.new(1, 0, 1, 0);
+    }, {
+      UIPadding = React.createElement("UIPadding", {
+        PaddingBottom = UDim.new(0, 30);
+        PaddingLeft = UDim.new(0, 30);
+        PaddingRight = UDim.new(0, 30);
+        PaddingTop = UDim.new(0, 30);
+      });
+      Header = React.createElement("Frame", {
+        AutomaticSize = Enum.AutomaticSize.Y;
+        BackgroundTransparency = 1;
+        Size = UDim2.new(1, 0, 0, 0);
+      }, {
+        UIListLayout = React.createElement("UIListLayout", {
+          SortOrder = Enum.SortOrder.LayoutOrder;
+          FillDirection = Enum.FillDirection.Horizontal;
+          HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween;
+        });
+        GameModeDescriptionFrame = React.createElement("Frame", {
+          BackgroundTransparency = 1;
+          AutomaticSize = Enum.AutomaticSize.XY;
+          LayoutOrder = 1;
+          Size = UDim2.new();
+        }, {
+          UIListLayout = React.createElement("UIListLayout", {
+            SortOrder = Enum.SortOrder.LayoutOrder;
+          });
+          SubtitleLabel = React.createElement("TextLabel", {
+            BackgroundTransparency = 1;
+            AutomaticSize = Enum.AutomaticSize.XY;
+            Size = UDim2.new();
+            Text = "YOU'RE IN A";
+            LayoutOrder = 1;
+            FontFace = Font.fromId(11702779517, Enum.FontWeight.Bold);
+            TextColor3 = Color3.fromRGB(255, 255, 255);
+            TextSize = 14;
+          });
+          GameModeLabel = React.createElement("TextLabel", {
+            BackgroundTransparency = 1;
+            AutomaticSize = Enum.AutomaticSize.XY;
+            Size = UDim2.new();
+            Text = "TURF WAR";
+            LayoutOrder = 2;
+            FontFace = Font.fromId(11702779517, Enum.FontWeight.Heavy);
+            TextColor3 = Color3.fromRGB(255, 94, 97);
+            TextSize = 30;
+          });
+          TaglineLabel = React.createElement("TextLabel", {
+            BackgroundTransparency = 1;
+            AutomaticSize = Enum.AutomaticSize.XY;
+            Size = UDim2.new();
+            LayoutOrder = 3;
+            Text = "The rules are simple: destroy everything before they do";
+            FontFace = Font.fromId(11702779517);
+            TextColor3 = Color3.fromRGB(199, 199, 199);
+            TextSize = 18;
+          });
+        });
+        MatchInitializationTimerFrame = React.createElement(MatchInitializationTimer, {
+          layoutOrder = 2;
+        });
+      });
     --   Content = React.createElement("Frame", {
     --     AutomaticSize = Enum.AutomaticSize.Y;
     --     BackgroundTransparency = 1;
@@ -166,7 +169,7 @@ local function MatchInitializationScreen()
     --       layoutOrder = 2;
     --     }, rivalTeammateCards);
     --   });
-    -- });
+    });
     Ticker = React.createElement(Ticker);
     -- MainStatus = React.createElement("TextLabel", {
     --   Text = "GET READY!";
