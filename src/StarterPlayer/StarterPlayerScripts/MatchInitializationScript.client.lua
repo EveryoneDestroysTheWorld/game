@@ -17,3 +17,4 @@ actionButtonContainer.Enabled = true;
 
 local root = ReactRoblox.createRoot(actionButtonContainer);
 root:render(React.createElement(MatchInitializationScreen));
+

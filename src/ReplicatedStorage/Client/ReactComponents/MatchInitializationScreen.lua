@@ -82,7 +82,9 @@ local function MatchInitializationScreen()
       setRivalTeammateCards(newRivalTeammateCards);
 
     end;
-    updateTeamLists();
+
+    -- Use task.spawn to prevent blocking of other effects.
+    task.spawn(function() updateTeamLists() end);
    
     -- Listen for updates.
     ReplicatedStorage.Shared.Events.ContestantAdded.OnClientEvent:Connect(updateTeamLists);

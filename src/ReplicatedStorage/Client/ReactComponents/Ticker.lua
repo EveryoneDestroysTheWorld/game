@@ -1,5 +1,6 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local Colors = require(ReplicatedStorage.Client.Colors);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local TickerMessageTextLabel = require(script.Parent.TickerMessageTextLabel);
 
@@ -59,7 +60,7 @@ local function Ticker()
 
   return React.createElement("ScrollingFrame", {
     ref = scrollingFrameRef;
-    BackgroundColor3 = Color3.fromRGB(4, 4, 4);
+    BackgroundColor3 = Colors.PopupBackground;
     BackgroundTransparency = 0.15;
     BorderSizePixel = 0.15;
     Size = UDim2.new(1, 0, 0, 50);

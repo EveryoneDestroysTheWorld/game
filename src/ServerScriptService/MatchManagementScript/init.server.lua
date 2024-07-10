@@ -9,17 +9,32 @@ local ServerRound = require(ServerStorage.Classes.ServerRound);
 local TurfWarGameMode = require(ServerStorage.Classes.GameModes.TurfWarGameMode);
 local ServerContestant = require(ServerStorage.Classes.ServerContestant);
 
--- Get the match info.
-local expectedPlayerIDs = {904459813};
-local playerCheck = task.delay(10, function()
-
-  -- The round hasn't started, so kick everyone back to the lobby.
-  TeleportService:TeleportAsync(15555144468, Players:GetPlayers());
-
-end);
-
 -- Download a random stage from the stage list.
-local stage = Stage.random();
+local stage;
+local shouldGetRandomStage = true;
+if game.PrivateServerId ~= "" then
+
+  stage = Stage.fromPrivateServerID(game.PrivateServerId)
+
+elseif shouldGetRandomStage then
+
+  -- This should only happen during test times.
+  stage = Stage.random();
+
+else
+
+  ReplicatedStorage.Shared.Events.RoundStopped:FireAllClients()
+  
+  Players.PlayerAdded:Connect(function(player)
+  
+    ReplicatedStorage.Shared.Events.RoundStopped:FireClient(player);
+
+  end);
+  
+  return;
+
+end;
+
 local stageModel = stage:download();
 stageModel.Parent = workspace;
 
@@ -41,6 +56,15 @@ ReplicatedStorage.Shared.Functions.GetRound.OnServerInvoke = function()
   return round:getClientConstructorProperties();
 
 end;
+
+-- Get the match info.
+local expectedPlayerIDs = {904459813};
+local playerCheck = task.delay(10, function()
+
+  -- The round hasn't started, so kick everyone back to the lobby.
+  TeleportService:TeleportAsync(15555144468, Players:GetPlayers());
+
+end);
 
 local function startRound()
 

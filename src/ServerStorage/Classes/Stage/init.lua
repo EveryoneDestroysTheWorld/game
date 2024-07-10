@@ -9,6 +9,7 @@ local DataStore = {
   StageMetadata = DataStoreService:GetDataStore("StageMetadata");
   StageBuildData = DataStoreService:GetDataStore("StageBuildData");
   PublishedStages = DataStoreService:GetOrderedDataStore("PublishedStages");
+  PrivateServerStages = DataStoreService:GetDataStore("PrivateServerStages");
 };
 local ServerScriptService = game:GetService("ServerScriptService");
 local HttpService = game:GetService("HttpService");
@@ -123,6 +124,15 @@ function Stage.new(properties: StageProperties): Stage
   return stage :: any;
   
 end
+
+function Stage.fromPrivateServerID(privateServerID: number): Stage
+
+  local stageID = DataStore.PrivateServerStages:GetAsync(privateServerID);
+  assert(typeof(stageID) == "string", "Couldn't find a stage ID.");
+
+  return Stage.fromID(stageID);
+
+end;
 
 -- Returns a random Stage object from the published stages list.
 function Stage.random(): Stage
