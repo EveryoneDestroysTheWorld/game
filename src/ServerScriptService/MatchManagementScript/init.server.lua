@@ -19,7 +19,23 @@ local playerCheck = task.delay(10, function()
 end);
 
 -- Download a random stage from the stage list.
-local stage = Stage.random();
+local stage;
+local shouldGetRandomStage = true;
+if game.PrivateServerId then
+
+  stage = Stage.fromPrivateServerID(game.PrivateServerId)
+
+elseif shouldGetRandomStage then
+
+  -- This should only happen during test times.
+  stage = Stage.random();
+
+else
+
+  error("This isn't a private server.");
+
+end;
+
 local stageModel = stage:download();
 stageModel.Parent = workspace;
 
