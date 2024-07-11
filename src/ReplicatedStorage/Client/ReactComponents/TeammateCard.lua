@@ -10,6 +10,33 @@ type TeammateCardProps = {
   isRival: boolean;
 }
 
+type NameLabelProps = {
+  name: string;
+  type: "Username" | "Display Name";
+}
+
+local function NameLabel(props: NameLabelProps)
+
+  return React.createElement("TextLabel", {
+    BackgroundTransparency = 1;
+    AutomaticSize = Enum.AutomaticSize.XY;
+    Size = UDim2.new();
+    Text = props.name;
+    FontFace = Font.fromId(11702779517, if props.type == "Display Name" then Enum.FontWeight.Heavy else Enum.FontWeight.Medium);
+    TextSize = if props.type == "Display Name" then 20 else 14;
+    TextColor3 = if props.type == "Display Name" then Color3.new(1, 1, 1) else Color3.fromRGB(208, 208, 208);
+    LayoutOrder = if props.type == "Display Name" then 1 else 2;
+    TextTruncate = Enum.TextTruncate.AtEnd;
+    TextXAlignment = Enum.TextXAlignment.Left;
+  }, {
+    UIPadding = React.createElement("UIPadding", {
+      PaddingLeft = UDim.new(0, 15);
+      PaddingRight = UDim.new(0, 15);
+    })
+  });
+
+end;
+
 local function TeammateCard(props: TeammateCardProps)
 
   return React.createElement("Frame", {
@@ -39,12 +66,12 @@ local function TeammateCard(props: TeammateCardProps)
           Padding = UDim.new(0, 5);
           SortOrder = Enum.SortOrder.LayoutOrder;
         });
-        ContestantDisplayNameLabel = React.createElement("TextLabel", {
+        StatusLabel = React.createElement("TextLabel", {
           BackgroundTransparency = 1;
           LayoutOrder = 1;
           Size = UDim2.new(1, 0, 0, 0);
           AutomaticSize = Enum.AutomaticSize.Y;
-          Text = if props.contestant then props.contestant.player.DisplayName else "Waiting for players...";
+          Text = if props.contestant then "Joined!" else "Waiting for players...";
           TextTransparency = if props.contestant then 0 else 0.5;
           TextColor3 = if props.isRival then Color3.fromRGB(255, 117, 117) else Color3.new(1, 1, 1);
           TextSize = 17;
@@ -69,15 +96,58 @@ local function TeammateCard(props: TeammateCardProps)
           UICorner = React.createElement("UICorner", {
             CornerRadius = UDim.new(0, 5);
           });
+          UIGradient = React.createElement("UIGradient", {
+            Color = ColorSequence.new({
+              ColorSequenceKeypoint.new(0, Color3.new());
+              ColorSequenceKeypoint.new(0.488, Color3.fromRGB(124, 124, 124));
+              ColorSequenceKeypoint.new(1, Color3.new(1, 1, 1));
+            });
+            Transparency = NumberSequence.new({
+              NumberSequenceKeypoint.new(0, 0, 0);
+              NumberSequenceKeypoint.new(1, 1, 0);
+            })
+          });
+          UIListLayout = React.createElement("UIListLayout", {
+            Padding = UDim.new(0, 15);
+            FillDirection = Enum.FillDirection.Horizontal;
+            VerticalAlignment = Enum.VerticalAlignment.Center;
+          });
+          ContestantInformationFrame = React.createElement("Frame", {
+            BackgroundColor3 = Color3.new(0, 0, 0);
+            BackgroundTransparency = 0.4;
+            Size = UDim2.new(1, 0, 1, 0);
+          }, {
+            UICorner = React.createElement("UICorner", {
+              CornerRadius = UDim.new(0, 5);
+            });
+            UIGradient = React.createElement("UIGradient", {
+              Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.50625, 0);
+                NumberSequenceKeypoint.new(1, 0.8, 0);
+              });
+            });
+            UIListLayout = React.createElement("UIListLayout", {
+              SortOrder = Enum.SortOrder.LayoutOrder;
+              VerticalAlignment = Enum.VerticalAlignment.Center;
+            });
+            DisplayNameLabel = if props.contestant then React.createElement(NameLabel, {
+              name = props.contestant.player.DisplayName;
+              type = "Display Name";
+            }) else nil;
+            UsernameLabel = if props.contestant then React.createElement(NameLabel, {
+              name = props.contestant.player.Name;
+              type = "Username";
+            }) else nil;
+          });
+          ReadyIndicationImageLabel = if props.contestant then React.createElement("ImageLabel", {
+            Size = UDim2.new(0, 35, 0, 35);
+            Image = "rbxassetid://17571806169";
+            BackgroundTransparency = 1;
+            LayoutOrder = if props.isRival then 1 else 2;
+          }) else nil;
         });
       });
     });
-    ReadyIndicationImageLabel = if props.contestant then React.createElement("ImageLabel", {
-      Size = UDim2.new(0, 35, 0, 35);
-      Image = "rbxassetid://17571806169";
-      BackgroundTransparency = 1;
-      LayoutOrder = if props.isRival then 1 else 2;
-    }) else nil;
   });
 
 end;
