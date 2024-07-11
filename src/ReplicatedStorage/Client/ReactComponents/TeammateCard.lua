@@ -85,7 +85,8 @@ local function TeammateCard(props: TeammateCardProps)
           });
         });
         ContestantBannerImageLabel = React.createElement("ImageLabel", {
-          BackgroundColor3 = Color3.fromRGB(91, 91, 91);
+          BackgroundColor3 = Color3.fromRGB(0, 0, 0);
+          BackgroundTransparency = if props.contestant then 0 else 0.4;
           Size = UDim2.new(1, 0, 1, -25);
           Image = "rbxassetid://15562720000";
           ScaleType = Enum.ScaleType.Tile;
@@ -96,7 +97,7 @@ local function TeammateCard(props: TeammateCardProps)
           UICorner = React.createElement("UICorner", {
             CornerRadius = UDim.new(0, 5);
           });
-          UIGradient = React.createElement("UIGradient", {
+          UIGradient = if props.contestant then React.createElement("UIGradient", {
             Color = ColorSequence.new({
               ColorSequenceKeypoint.new(0, Color3.new());
               ColorSequenceKeypoint.new(0.488, Color3.fromRGB(124, 124, 124));
@@ -106,13 +107,13 @@ local function TeammateCard(props: TeammateCardProps)
               NumberSequenceKeypoint.new(0, 0, 0);
               NumberSequenceKeypoint.new(1, 1, 0);
             })
-          });
+          }) else nil;
           UIListLayout = React.createElement("UIListLayout", {
             Padding = UDim.new(0, 15);
             FillDirection = Enum.FillDirection.Horizontal;
             VerticalAlignment = Enum.VerticalAlignment.Center;
           });
-          ContestantInformationFrame = React.createElement("Frame", {
+          ContestantInformationFrame = if props.contestant then React.createElement("Frame", {
             BackgroundColor3 = Color3.new(0, 0, 0);
             BackgroundTransparency = 0.4;
             Size = UDim2.new(1, 0, 1, 0);
@@ -130,15 +131,15 @@ local function TeammateCard(props: TeammateCardProps)
               SortOrder = Enum.SortOrder.LayoutOrder;
               VerticalAlignment = Enum.VerticalAlignment.Center;
             });
-            DisplayNameLabel = if props.contestant then React.createElement(NameLabel, {
+            DisplayNameLabel = React.createElement(NameLabel, {
               name = props.contestant.player.DisplayName;
               type = "Display Name";
-            }) else nil;
-            UsernameLabel = if props.contestant then React.createElement(NameLabel, {
+            });
+            UsernameLabel = React.createElement(NameLabel, {
               name = props.contestant.player.Name;
               type = "Username";
-            }) else nil;
-          });
+            });
+          }) else nil;
           ReadyIndicationImageLabel = if props.contestant then React.createElement("ImageLabel", {
             Size = UDim2.new(0, 35, 0, 35);
             Image = "rbxassetid://17571806169";
