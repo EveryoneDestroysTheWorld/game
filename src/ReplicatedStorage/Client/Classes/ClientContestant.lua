@@ -10,6 +10,10 @@ export type ClientContestantProperties = {
 
   character: Model?;
 
+  name: string;
+
+  isBot: boolean;
+
   teamID: number?;
   
 }

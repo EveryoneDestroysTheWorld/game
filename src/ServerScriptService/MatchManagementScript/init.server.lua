@@ -2,7 +2,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local Players = game:GetService("Players");
-local TeleportService = game:GetService("TeleportService");
 local HttpService = game:GetService("HttpService");
 local Stage = require(ServerStorage.Classes.Stage);
 local ServerRound = require(ServerStorage.Classes.ServerRound);
@@ -59,61 +58,76 @@ end;
 
 -- Get the match info.
 local expectedPlayerIDs = {904459813};
-local playerCheck = task.delay(10, function()
-
-  -- The round hasn't started, so kick everyone back to the lobby.
-  TeleportService:TeleportAsync(15555144468, Players:GetPlayers());
-
-end);
 
 local function startRound()
 
-  -- Disable the player check.
-  task.cancel(playerCheck);
+  -- Create required bot contestants.
+  local team1BotCount = 4;
+  local team2BotCount = 4;
+  for _, contestant in ipairs(round.contestants) do
 
-  -- Create bot NPCs
-  -- for i = 1, 4 - #contestants do
+    if contestant.teamID == 1 then
 
-  --   -- Create the NPC's character.
-  --   local character: Model = ServerStorage:FindFirstChild("NPCRigs"):FindFirstChild("Rig"):Clone();
-  --   character.Name = "NPC" .. i;
-  --   character.Parent = workspace;
+      team1BotCount -= 1;
 
-  --   -- Add the NPC to the contestant list.
-  --   table.insert(contestants, ServerContestant.new({
-  --     ID = i * 0.01;
-  --     character = character;
-  --     archetypeID = 1;
-  --     isDisqualified = false;
-  --   }));
+    elseif contestant.teamID == 2 then
 
-  -- end;
+      team2BotCount -= 1;
 
-  ReplicatedStorage.Shared.Events.ResetButtonPressed.OnServerEvent:Connect(function(player)
-  
-    for _, contestant in ipairs(round.contestants) do
+    else 
 
-      if contestant.ID == player.UserId then
-
-        contestant:disqualify();
-        break;
-
-      end
+      warn(`Contestant {contestant.name} ({contestant.ID}) doesn't have a team.`)
 
     end;
 
-  end);
+  end;
 
-  round.onEnded:Connect(function()
+  for i = 1, team1BotCount + team2BotCount do
 
-    ReplicatedStorage.Shared.Events.RoundEnded:FireAllClients(round);
+    -- Create the NPC's character.
+    local character: Model = ServerStorage:FindFirstChild("NPCRigs"):FindFirstChild("Rig"):Clone();
+    character.Name = "NPC" .. i;
 
-  end);
+    -- Add the NPC to the contestant list.
+    local botContestant = ServerContestant.new({
+      ID = i * 0.01;
+      character = character;
+      name = `NPC {i * 0.01}`;
+      isBot = true;
+      archetypeID = 1;
+      isDisqualified = false;
+      teamID = if i > team1BotCount then 2 else 1;
+    });
 
-  -- Start the round.
-  round:start(stageModel);
-  print("Round started.");
-  ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(120);
+    round:addContestant(botContestant);
+
+  end;
+
+  -- ReplicatedStorage.Shared.Events.ResetButtonPressed.OnServerEvent:Connect(function(player)
+  
+  --   for _, contestant in ipairs(round.contestants) do
+
+  --     if contestant.ID == player.UserId then
+
+  --       contestant:disqualify();
+  --       break;
+
+  --     end
+
+  --   end;
+
+  -- end);
+
+  -- round.onEnded:Connect(function()
+
+  --   ReplicatedStorage.Shared.Events.RoundEnded:FireAllClients(round);
+
+  -- end);
+
+  -- -- Start the round.
+  -- round:start(stageModel);
+  -- print("Round started.");
+  -- ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(120);
 
 end;
 
@@ -127,8 +141,11 @@ local function checkPlayerList(player: Player)
         ID = player.UserId;
         player = player;
         character = player.Character;
+        name = player.Name;
         archetypeID = 1;
+        isBot = false;
         isDisqualified = false;
+        teamID = 1;
       }));
 
     end;
@@ -161,7 +178,7 @@ local function checkPlayerList(player: Player)
 
   end;
 
-  -- startRound();
+  startRound();
 
 end;
 

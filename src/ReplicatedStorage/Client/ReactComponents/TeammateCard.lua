@@ -28,11 +28,6 @@ local function NameLabel(props: NameLabelProps)
     LayoutOrder = if props.type == "Display Name" then 1 else 2;
     TextTruncate = Enum.TextTruncate.AtEnd;
     TextXAlignment = Enum.TextXAlignment.Left;
-  }, {
-    UIPadding = React.createElement("UIPadding", {
-      PaddingLeft = UDim.new(0, 15);
-      PaddingRight = UDim.new(0, 15);
-    })
   });
 
 end;
@@ -76,7 +71,7 @@ local function TeammateCard(props: TeammateCardProps)
           TextColor3 = if props.isRival then Color3.fromRGB(255, 117, 117) else Color3.new(1, 1, 1);
           TextSize = 17;
           FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
-          TextXAlignment = Enum.TextXAlignment.Left;
+          TextXAlignment = if props.isRival then Enum.TextXAlignment.Right else Enum.TextXAlignment.Left;
           TextTruncate = Enum.TextTruncate.AtEnd;
         }, {
           UIPadding = React.createElement("UIPadding", {
@@ -97,7 +92,17 @@ local function TeammateCard(props: TeammateCardProps)
           UICorner = React.createElement("UICorner", {
             CornerRadius = UDim.new(0, 5);
           });
-          UIGradient = if props.contestant then React.createElement("UIGradient", {
+          UIGradient = if props.contestant then React.createElement("UIGradient", if props.isRival then {
+            Color = ColorSequence.new({
+              ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1));
+              ColorSequenceKeypoint.new(0.488, Color3.fromRGB(124, 124, 124));
+              ColorSequenceKeypoint.new(1, Color3.new());
+            });
+            Transparency = NumberSequence.new({
+              NumberSequenceKeypoint.new(0, 1, 0);
+              NumberSequenceKeypoint.new(1, 0, 0);
+            })
+          } else {
             Color = ColorSequence.new({
               ColorSequenceKeypoint.new(0, Color3.new());
               ColorSequenceKeypoint.new(0.488, Color3.fromRGB(124, 124, 124));
@@ -108,12 +113,7 @@ local function TeammateCard(props: TeammateCardProps)
               NumberSequenceKeypoint.new(1, 1, 0);
             })
           }) else nil;
-          UIListLayout = React.createElement("UIListLayout", {
-            Padding = UDim.new(0, 15);
-            FillDirection = Enum.FillDirection.Horizontal;
-            VerticalAlignment = Enum.VerticalAlignment.Center;
-          });
-          ContestantInformationFrame = if props.contestant then React.createElement("Frame", {
+          ContestantInformationContainerFrame = if props.contestant then React.createElement("Frame", {
             BackgroundColor3 = Color3.new(0, 0, 0);
             BackgroundTransparency = 0.4;
             Size = UDim2.new(1, 0, 1, 0);
@@ -122,7 +122,10 @@ local function TeammateCard(props: TeammateCardProps)
               CornerRadius = UDim.new(0, 5);
             });
             UIGradient = React.createElement("UIGradient", {
-              Transparency = NumberSequence.new({
+              Transparency = NumberSequence.new(if props.isRival then {
+                NumberSequenceKeypoint.new(0, 0.8, 0);
+                NumberSequenceKeypoint.new(1, 0.50625, 0);
+              } else {
                 NumberSequenceKeypoint.new(0, 0.50625, 0);
                 NumberSequenceKeypoint.new(1, 0.8, 0);
               });
@@ -130,21 +133,38 @@ local function TeammateCard(props: TeammateCardProps)
             UIListLayout = React.createElement("UIListLayout", {
               SortOrder = Enum.SortOrder.LayoutOrder;
               VerticalAlignment = Enum.VerticalAlignment.Center;
+              HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween;
+              FillDirection = Enum.FillDirection.Horizontal;
             });
-            DisplayNameLabel = React.createElement(NameLabel, {
-              name = props.contestant.player.DisplayName;
-              type = "Display Name";
+            UIPadding = React.createElement("UIPadding", {
+              PaddingLeft = UDim.new(0, 15);
+              PaddingRight = UDim.new(0, 15);
             });
-            UsernameLabel = React.createElement(NameLabel, {
-              name = props.contestant.player.Name;
-              type = "Username";
+            ContestantInformationFrame = React.createElement("Frame", {
+              BackgroundTransparency = 1;
+              AutomaticSize = Enum.AutomaticSize.XY;
+              Size = UDim2.new();
+              LayoutOrder = if props.isRival then 2 else 1;
+            }, {
+              UIListLayout = React.createElement("UIListLayout", {
+                SortOrder = Enum.SortOrder.LayoutOrder;
+                VerticalAlignment = Enum.VerticalAlignment.Center;
+              });
+              DisplayNameLabel = React.createElement(NameLabel, {
+                name = props.contestant.name;
+                type = "Display Name";
+              });
+              UsernameLabel = if props.contestant.isBot then nil else React.createElement(NameLabel, {
+                name = props.contestant.player.Name;
+                type = "Username";
+              });
             });
-          }) else nil;
-          ReadyIndicationImageLabel = if props.contestant then React.createElement("ImageLabel", {
-            Size = UDim2.new(0, 35, 0, 35);
-            Image = "rbxassetid://17571806169";
-            BackgroundTransparency = 1;
-            LayoutOrder = if props.isRival then 1 else 2;
+            ReadyIndicationImageLabel = if props.contestant then React.createElement("ImageLabel", {
+              Size = UDim2.new(0, 35, 0, 35);
+              Image = "rbxassetid://17571806169";
+              BackgroundTransparency = 1;
+              LayoutOrder = if props.isRival then 1 else 2;
+            }) else nil;
           }) else nil;
         });
       });

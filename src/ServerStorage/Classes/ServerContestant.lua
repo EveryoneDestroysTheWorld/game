@@ -13,6 +13,10 @@ export type ContestantProperties = {
 
   archetypeID: number;
   
+  name: string;
+
+  isBot: boolean;
+
   isDisqualified: boolean;
 
   player: Player?;
@@ -73,6 +77,8 @@ function ServerContestant.__index:convertToClient(): ClientContestant
     archetypeID = self.archetypeID;
     isDisqualified = self.isDisqualified;
     player = self.player;
+    name = self.name;
+    isBot = self.isBot;
     character = self.character;
     teamID = self.teamID;
   });
