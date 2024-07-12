@@ -160,9 +160,10 @@ local function startRound()
 
   end;
 
-  ReplicatedStorage.Shared.Events.ArchetypeSelectionEnabled:FireAllClients();
+  local selectionTimeLimitSeconds = 15;
+  ReplicatedStorage.Shared.Events.ArchetypeSelectionEnabled:FireAllClients(selectionTimeLimitSeconds);
 
-  task.delay(10, function()
+  task.delay(selectionTimeLimitSeconds, function()
 
     -- Block selections.
     ReplicatedStorage.Shared.Functions.GetArchetypeIDs.OnServerInvoke = nil;
@@ -281,11 +282,19 @@ local function checkPlayerList(player: Player)
 
   end;
 
-  if #expectedPlayerIDs == 0 then
+  -- Verify that all expected players joined the server.
+  for _, playerID in ipairs(expectedPlayerIDs) do
 
-    startRound();
+    if not Players:GetPlayerByUserId(playerID) then
+
+      return;
+
+    end;
 
   end;
+
+  -- We have all expected players, so start the round.
+  startRound();
 
 end;
 

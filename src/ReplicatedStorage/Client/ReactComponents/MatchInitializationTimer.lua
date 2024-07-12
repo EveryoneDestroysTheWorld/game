@@ -10,9 +10,21 @@ local function MatchInitializationTimer()
   local textLabelRef = React.useRef(nil);
 
   React.useEffect(function()
+  
+    ReplicatedStorage.Shared.Events.ArchetypeSelectionEnabled.OnClientEvent:Connect(function(selectionTimeLimitSeconds: number)
+    
+      setCurrentSecond(selectionTimeLimitSeconds);
+
+    end);
+
+  end, {});
+
+  React.useEffect(function()
 
     local self = textLabelRef.current;
   
+    local delayTask;
+
     if currentSecond >= 0 and self then
 
       self.Rotation = -360;
@@ -21,11 +33,21 @@ local function MatchInitializationTimer()
 
       if currentSecond > 0 then
 
-        task.delay(1, function()
+        delayTask = task.delay(1, function()
 
           setCurrentSecond(currentSecond - 1);
 
         end);
+
+      end;
+
+    end;
+
+    return function()
+
+      if delayTask then
+
+        task.cancel(delayTask)
 
       end;
 
