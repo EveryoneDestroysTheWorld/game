@@ -47,6 +47,7 @@ local round = ServerRound.new({
   stageID = stage.ID :: string;
   contestants = {};
   duration = 1500;
+  status = "Waiting for players";
 });
 
 round:setGameMode(TurfWarGameMode.new(stageModel, round));
@@ -160,8 +161,9 @@ local function startRound()
 
   end;
 
+  round:setStatus("Contestant selection");
   local selectionTimeLimitSeconds = 15;
-  ReplicatedStorage.Shared.Events.ArchetypeSelectionEnabled:FireAllClients(selectionTimeLimitSeconds);
+  ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds);
 
   task.delay(selectionTimeLimitSeconds, function()
 

@@ -1,13 +1,18 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
--- local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant)
-type ClientContestant = nil;
+local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
+type ClientContestant = ClientContestant.ClientContestant;
+local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
+type ClientRound = ClientRound.ClientRound;
+local Players = game:GetService("Players");
+local TweenService = game:GetService("TweenService");
 
 type TeammateCardProps = {
   contestant: ClientContestant?;
   layoutOrder: number;
   isRival: boolean;
+  round: ClientRound;
 }
 
 type NameLabelProps = {
@@ -34,6 +39,93 @@ end;
 
 local function TeammateCard(props: TeammateCardProps)
 
+  local canChooseArchetype, setCanChooseArchetype = React.useState(false);
+  local canUseCanvasGroups, setCanUseCanvasGroups = React.useState(false);
+
+  local readyIndicationUIPaddingRef = React.useRef(nil);
+  local readyIndicationImageLabelRef = React.useRef(nil);
+
+  React.useEffect(function()
+
+    local event;
+
+    if props.round then 
+
+      local canChooseArchetype = props.round.status == "Contestant selection";
+      
+      if readyIndicationImageLabelRef.current then
+        
+        readyIndicationImageLabelRef.current.Visible = false;
+
+      end
+      setCanChooseArchetype(canChooseArchetype);
+      setCanUseCanvasGroups(canChooseArchetype);
+
+      if not canChooseArchetype then
+
+        event = props.round.onStatusChanged:Connect(function()
+        
+          setCanUseCanvasGroups(true);
+          setCanChooseArchetype(true);
+
+        end);
+
+      end;
+
+    end;
+
+    return function()
+
+      if event then
+
+        event:Disconnect();
+
+      end;
+
+    end;
+
+  end, {props.round});
+
+  local statusLabelText = "Waiting for players...";
+  if props.contestant then
+
+    if canChooseArchetype then
+
+      statusLabelText = if props.contestant.isBot then "Waiting..." else "Choosing...";
+
+    else 
+
+      statusLabelText = "Joined!";
+
+    end;
+
+  end;
+
+  React.useEffect(function()
+  
+    if canChooseArchetype and readyIndicationImageLabelRef.current and readyIndicationUIPaddingRef.current then
+
+      local numberValue = Instance.new("NumberValue");
+      numberValue:GetPropertyChangedSignal("Value"):Connect(function()
+      
+        readyIndicationImageLabelRef.current.Visible = true;
+        readyIndicationUIPaddingRef.current.PaddingTop = UDim.new(0, numberValue.Value);
+
+      end);
+      numberValue.Value = 60;
+      
+      local tween = TweenService:Create(numberValue, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 0});
+      tween.Completed:Connect(function()
+      
+        setCanUseCanvasGroups(false);
+
+      end);
+      tween:Play();
+
+    end;
+
+  end, {canChooseArchetype});
+
   return React.createElement("Frame", {
     BackgroundTransparency = 1;
     AutomaticSize = Enum.AutomaticSize.XY;
@@ -53,7 +145,7 @@ local function TeammateCard(props: TeammateCardProps)
       LayoutOrder = if props.isRival then 2 else 1;
     }, {
       TeammateCardFrame = React.createElement("Frame", {
-        Size = UDim2.new(0, 300, 0, 100);
+        AutomaticSize = Enum.AutomaticSize.XY;
         Rotation = if props.isRival then 2 else -2;
         BackgroundTransparency = 1;
       }, {
@@ -64,9 +156,8 @@ local function TeammateCard(props: TeammateCardProps)
         StatusLabel = React.createElement("TextLabel", {
           BackgroundTransparency = 1;
           LayoutOrder = 1;
-          Size = UDim2.new(1, 0, 0, 0);
-          AutomaticSize = Enum.AutomaticSize.Y;
-          Text = if props.contestant then "Joined!" else "Waiting for players...";
+          Size = UDim2.new(0, 300, 0, 17);
+          Text = statusLabelText;
           TextTransparency = if props.contestant then 0 else 0.5;
           TextColor3 = if props.isRival then Color3.fromRGB(255, 117, 117) else Color3.new(1, 1, 1);
           TextSize = 17;
@@ -82,15 +173,15 @@ local function TeammateCard(props: TeammateCardProps)
         ContestantBannerImageLabel = React.createElement("ImageLabel", {
           BackgroundColor3 = Color3.fromRGB(0, 0, 0);
           BackgroundTransparency = if props.contestant then 0 else 0.4;
-          Size = UDim2.new(1, 0, 1, -25);
+          Size = UDim2.new(0, 300, 0, if props.round and props.round.status == "Waiting for players" then 100 else 30);
           Image = "rbxassetid://15562720000";
           ScaleType = Enum.ScaleType.Tile;
           LayoutOrder = 2;
           TileSize = UDim2.new(0, 28, 0, 28);
-          ImageTransparency = if props.contestant then 0 else 1;
+          ImageTransparency = if props.contestant or (props.round and props.round.status ~= "Waiting for players") then 0 else 1;
         }, {
           UICorner = React.createElement("UICorner", {
-            CornerRadius = UDim.new(0, 5);
+            CornerRadius = if props.round and props.round.status ~= "Waiting for players" then UDim.new(1, 0) else UDim.new(0, 5);
           });
           UIGradient = if props.contestant then React.createElement("UIGradient", if props.isRival then {
             Color = ColorSequence.new({
@@ -119,7 +210,7 @@ local function TeammateCard(props: TeammateCardProps)
             Size = UDim2.new(1, 0, 1, 0);
           }, {
             UICorner = React.createElement("UICorner", {
-              CornerRadius = UDim.new(0, 5);
+              CornerRadius = if props.round and props.round.status ~= "Waiting for players" then UDim.new(1, 0) else UDim.new(0, 5)
             });
             UIGradient = React.createElement("UIGradient", {
               Transparency = NumberSequence.new(if props.isRival then {
@@ -130,12 +221,12 @@ local function TeammateCard(props: TeammateCardProps)
                 NumberSequenceKeypoint.new(1, 0.8, 0);
               });
             });
-            UIListLayout = React.createElement("UIListLayout", {
+            UIListLayout = if props.round and props.round.status == "Waiting for players" then React.createElement("UIListLayout", {
               SortOrder = Enum.SortOrder.LayoutOrder;
               VerticalAlignment = Enum.VerticalAlignment.Center;
               HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween;
               FillDirection = Enum.FillDirection.Horizontal;
-            });
+            }) else nil;
             UIPadding = React.createElement("UIPadding", {
               PaddingLeft = UDim.new(0, 15);
               PaddingRight = UDim.new(0, 15);
@@ -143,28 +234,41 @@ local function TeammateCard(props: TeammateCardProps)
             ContestantInformationFrame = React.createElement("Frame", {
               BackgroundTransparency = 1;
               AutomaticSize = Enum.AutomaticSize.XY;
+              Position = UDim2.new(if props.isRival then 1 else 0, 0, 0.5, 0);
+              AnchorPoint = Vector2.new(if props.isRival then 1 else 0, 0.5);
               Size = UDim2.new();
               LayoutOrder = if props.isRival then 2 else 1;
             }, {
-              UIListLayout = React.createElement("UIListLayout", {
+              UIListLayout = if props.round and props.round.status ~= "Waiting for players" then React.createElement("UIListLayout", {
                 SortOrder = Enum.SortOrder.LayoutOrder;
                 VerticalAlignment = Enum.VerticalAlignment.Center;
-              });
+              }) else nil;
               DisplayNameLabel = React.createElement(NameLabel, {
                 name = props.contestant.name;
                 type = "Display Name";
               });
-              UsernameLabel = if props.contestant.isBot then nil else React.createElement(NameLabel, {
+              UsernameLabel = if props.round and props.round.status == "Waiting for players" and props.contestant.player then React.createElement(NameLabel, {
                 name = props.contestant.player.Name;
                 type = "Username";
-              });
+              }) else nil;
             });
-            ReadyIndicationImageLabel = if props.contestant then React.createElement("ImageLabel", {
-              Size = UDim2.new(0, 35, 0, 35);
-              Image = "rbxassetid://17571806169";
+            ReadyIndicationImageLabelContainer = React.createElement(if canUseCanvasGroups then "CanvasGroup" else "Frame", {
               BackgroundTransparency = 1;
-              LayoutOrder = if props.isRival then 1 else 2;
-            }) else nil;
+              AnchorPoint = Vector2.new(if props.isRival then 0 else 1, 1);
+              Position = if props.round and props.round.status ~= "Waiting for players" then UDim2.new(if props.isRival then 0 else 1, 0, 1, 0) else UDim2.new();
+              Size = if props.round and props.round.status ~= "Waiting for players" then UDim2.new(0, 60, 0, 60) else UDim2.new(0, 35, 0, 35);
+            }, {
+              UIPadding = React.createElement("UIPadding", {
+                ref = readyIndicationUIPaddingRef;
+              });
+              ReadyIndicationImageLabel = if props.contestant then React.createElement("ImageLabel", {
+                Size = UDim2.new(1, 0, 1, 0);
+                ref = readyIndicationImageLabelRef;
+                Image = if props.round and props.round.status ~= "Waiting for players" then if props.contestant.player then Players:GetUserThumbnailAsync(props.contestant.player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420) else "rbxassetid://18458164991" else "rbxassetid://17571806169";
+                BackgroundTransparency = 1;
+                LayoutOrder = if props.isRival then 1 else 2;
+              }) else nil;
+            });
           }) else nil;
         });
       });

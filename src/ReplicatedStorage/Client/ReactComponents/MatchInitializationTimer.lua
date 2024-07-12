@@ -11,7 +11,7 @@ local function MatchInitializationTimer()
 
   React.useEffect(function()
   
-    ReplicatedStorage.Shared.Events.ArchetypeSelectionEnabled.OnClientEvent:Connect(function(selectionTimeLimitSeconds: number)
+    ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled.OnClientEvent:Connect(function(selectionTimeLimitSeconds: number)
     
       setCurrentSecond(selectionTimeLimitSeconds);
 

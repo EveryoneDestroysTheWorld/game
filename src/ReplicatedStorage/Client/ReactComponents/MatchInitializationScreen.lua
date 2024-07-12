@@ -29,68 +29,80 @@ local function MatchInitializationScreen()
   -- Get teammate cards to show to the player.
   local allyTeammateCards, setAllyTeammateCards = React.useState({});
   local rivalTeammateCards, setRivalTeammateCards = React.useState({});
+  local round, setRound = React.useState(nil :: ClientRound?);
+  React.useEffect(function()
+  
+    local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
+    local round = ClientRound.new(roundConstructorProperties);
+    setRound(round);
+    
+  end, {});
+
   React.useEffect(function()
 
-    -- Get the current list of teams.
-    local function updateTeamLists()
+    if round then
 
-      local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
-      local round: ClientRound = ClientRound.new(roundConstructorProperties);
-      local newAllyTeammateCards = {};
-      local newRivalTeammateCards = {};
+      -- Get the current list of teams.
+      local function updateTeamLists()
 
-      local ownTeamID: number?;
-      for _, contestant in ipairs(round.contestants) do
+        local newAllyTeammateCards = {};
+        local newRivalTeammateCards = {};
 
-        if contestant.ID == player.UserId then
+        local ownTeamID: number?;
+        for _, contestant in ipairs(round.contestants) do
 
-          ownTeamID = contestant.teamID;
-          break;
+          if contestant.ID == player.UserId then
 
-        end;
+            ownTeamID = contestant.teamID;
+            break;
 
-      end;
-
-      for _, contestant in ipairs(round.contestants) do
-
-        local isRival = contestant.ID ~= player.UserId and not ownTeamID or contestant.teamID ~= ownTeamID;
-        local selectedTable = if isRival then newRivalTeammateCards else newAllyTeammateCards;
-        local teammateCard = React.createElement(TeammateCard, {
-          contestant = contestant;
-          isRival = isRival;
-          layoutOrder = #selectedTable;
-        })
-
-        table.insert(selectedTable, teammateCard);
-
-      end;
-
-      for ti, t in ipairs({newAllyTeammateCards, newRivalTeammateCards}) do
-
-        for i = #t + 1, 4 do
-
-          table.insert(t, React.createElement(TeammateCard, {
-            isRival = ti == 2;
-            layoutOrder = i;
-          }))
+          end;
 
         end;
 
+        for _, contestant in ipairs(round.contestants) do
+
+          local isRival = contestant.ID ~= player.UserId and not ownTeamID or contestant.teamID ~= ownTeamID;
+          local selectedTable = if isRival then newRivalTeammateCards else newAllyTeammateCards;
+          local teammateCard = React.createElement(TeammateCard, {
+            contestant = contestant;
+            isRival = isRival;
+            layoutOrder = #selectedTable;
+            round = round;
+          })
+
+          table.insert(selectedTable, teammateCard);
+
+        end;
+
+        for ti, t in ipairs({newAllyTeammateCards, newRivalTeammateCards}) do
+
+          for i = #t + 1, 4 do
+
+            table.insert(t, React.createElement(TeammateCard, {
+              isRival = ti == 2;
+              layoutOrder = i;
+            }))
+
+          end;
+
+        end;
+
+        setAllyTeammateCards(newAllyTeammateCards);
+        setRivalTeammateCards(newRivalTeammateCards);
+
       end;
 
-      setAllyTeammateCards(newAllyTeammateCards);
-      setRivalTeammateCards(newRivalTeammateCards);
+      -- Use task.spawn to prevent blocking of other effects.
+      task.spawn(function() updateTeamLists() end);
+    
+      -- Listen for updates.
+      round.onContestantAdded:Connect(updateTeamLists);
+      round.onContestantRemoved:Connect(updateTeamLists);
 
     end;
 
-    -- Use task.spawn to prevent blocking of other effects.
-    task.spawn(function() updateTeamLists() end);
-   
-    -- Listen for updates.
-    ReplicatedStorage.Shared.Events.ContestantAdded.OnClientEvent:Connect(updateTeamLists);
-    ReplicatedStorage.Shared.Events.ContestantRemoved.OnClientEvent:Connect(updateTeamLists);
-
-  end, {});
+  end, {round});
 
   return React.createElement("Frame", {
     BackgroundTransparency = 0.4;

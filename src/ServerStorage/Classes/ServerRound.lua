@@ -14,6 +14,7 @@ local ServerAction = require(script.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
+type RoundStatus = ClientRound.RoundStatus;
 
 export type ServerRoundProperties = {  
   -- This round's unique ID.
@@ -23,6 +24,8 @@ export type ServerRoundProperties = {
   
   -- This stage's ID.
   stageID: string;
+
+  status: RoundStatus;
 
   timeStarted: number?;
 
@@ -41,6 +44,7 @@ export type ServerRoundProperties = {
 export type ServerRoundEvents = {
   onEnded: RBXScriptSignal;
   onHoldRelease: RBXScriptSignal;
+  onStatusChanged: RBXScriptSignal;
   onContestantAdded: RBXScriptSignal;
   onContestantRemoved: RBXScriptSignal;
 }
@@ -48,6 +52,7 @@ export type ServerRoundEvents = {
 export type ServerRoundMethods = {
   addContestant: (self: ServerRound, contestant: ServerContestant) -> ();
   getClientConstructorProperties: (self: ServerRound) -> any;
+  setStatus: (self: ServerRound, newStatus: RoundStatus) -> ();
   start: (self: ServerRound, stageModel: Model) -> ();
   stop: (self: ServerRound) -> ();
   setGameMode: (self: ServerRound, gameMode: GameMode) -> ();
@@ -67,7 +72,7 @@ function ServerRound.new(properties: ServerRoundProperties): ServerRound
   local round = setmetatable(properties, ServerRound) :: ServerRound;
 
   events[round] = {};
-  for _, eventName in ipairs({"onEnded", "onHoldRelease", "onContestantAdded", "onContestantRemoved"}) do
+  for _, eventName in ipairs({"onEnded", "onHoldRelease", "onContestantAdded", "onContestantRemoved", "onStatusChanged"}) do
 
     events[round][eventName] = Instance.new("BindableEvent");
     (round :: {})[eventName] = events[round][eventName].Event;
@@ -166,10 +171,20 @@ function ServerRound.__index:getClientConstructorProperties(): any
   return {
     ID = self.ID;
     contestants = clientContestants;
+    status = self.status;
     duration = self.duration;
     timeStarted = self.timeStarted;
     stageID = self.stageID;
   };
+
+end;
+
+function ServerRound.__index:setStatus(newStatus: RoundStatus): ()
+
+  local oldStatus = self.status;
+  self.status = newStatus;
+  events[self].onStatusChanged:Fire(newStatus, oldStatus);
+  ReplicatedStorage.Shared.Events.RoundStatusChanged:FireAllClients(self.ID, newStatus, oldStatus);
 
 end;
 
