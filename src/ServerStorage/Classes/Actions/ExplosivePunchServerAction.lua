@@ -7,8 +7,8 @@ type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
 local ExplosivePunchClientAction = require(ReplicatedStorage.Client.Classes.Actions.ExplosivePunchClientAction);
-local Round = require(script.Parent.Parent.Round);
-type Round = Round.Round;
+local ServerRound = require(script.Parent.Parent.ServerRound);
+type ServerRound = ServerRound.ServerRound;
 
 local ExplosivePunchServerAction = {
   ID = ExplosivePunchClientAction.ID;
@@ -16,7 +16,7 @@ local ExplosivePunchServerAction = {
   description = ExplosivePunchClientAction.description;
 };
 
-function ExplosivePunchServerAction.new(contestant: ServerContestant, round: Round): ServerAction
+function ExplosivePunchServerAction.new(contestant: ServerContestant, round: ServerRound): ServerAction
 
   assert(contestant.character, "No character");
 

@@ -7,6 +7,10 @@ local Stage = require(ServerStorage.Classes.Stage);
 local ServerRound = require(ServerStorage.Classes.ServerRound);
 local TurfWarGameMode = require(ServerStorage.Classes.GameModes.TurfWarGameMode);
 local ServerContestant = require(ServerStorage.Classes.ServerContestant);
+type ServerContestant = ServerContestant.ServerContestant;
+local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
+type ServerArchetype = ServerArchetype.ServerArchetype;
+local Profile = require(ServerStorage.Classes.Profile);
 
 -- Download a random stage from the stage list.
 local stage;
@@ -94,7 +98,6 @@ local function startRound()
       character = character;
       name = `NPC {i * 0.01}`;
       isBot = true;
-      archetypeID = 1;
       isDisqualified = false;
       teamID = if i > team1BotCount then 2 else 1;
     });
@@ -103,82 +106,185 @@ local function startRound()
 
   end;
 
-  -- ReplicatedStorage.Shared.Events.ResetButtonPressed.OnServerEvent:Connect(function(player)
-  
-  --   for _, contestant in ipairs(round.contestants) do
+  -- Let the players choose an archetype that they own.
+  local function getContestantFromPlayer(player: Player): ServerContestant?
 
-  --     if contestant.ID == player.UserId then
-
-  --       contestant:disqualify();
-  --       break;
-
-  --     end
-
-  --   end;
-
-  -- end);
-
-  -- round.onEnded:Connect(function()
-
-  --   ReplicatedStorage.Shared.Events.RoundEnded:FireAllClients(round);
-
-  -- end);
-
-  -- -- Start the round.
-  -- round:start(stageModel);
-  -- print("Round started.");
-  -- ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(120);
-
-end;
-
-local function checkPlayerList(player: Player)
-
-  for _, playerID in ipairs(expectedPlayerIDs) do
-
-    if playerID == player.UserId then
-
-      round:addContestant(ServerContestant.new({
-        ID = player.UserId;
-        player = player;
-        character = player.Character;
-        name = player.Name;
-        archetypeID = 1;
-        isBot = false;
-        isDisqualified = false;
-        teamID = 1;
-      }));
-
-    end;
-
-    -- task.spawn(function()
-      
-    --   -- TODO: Disqualify the player if this doesn't work.
-    --   ReplicatedStorage.Shared.Functions.InitializeInventory:InvokeClient(player, 1);
-    
-    -- end)
-
-    -- Check if we should start the round.
-    local playerIDFound = false;
     for _, contestant in ipairs(round.contestants) do
 
-      if playerID == contestant.ID then
-        
-        playerIDFound = true;
-        break;
+      if contestant.player == player then
+
+        return contestant;
 
       end;
 
     end;
 
-    if not playerIDFound then
+    return nil;
 
-      return;
+  end;
+
+  ReplicatedStorage.Shared.Functions.GetArchetypeIDs.OnServerInvoke = function(player): {number}
+
+    local contestant = getContestantFromPlayer(player);
+    assert(contestant, `{player.Name} ({player.UserId}) isn't a contestant in this round, so it is unnecessary to get the archetype list.`);
+    assert(contestant.profile, "Couldn't find the player's profile.");
+    return contestant.profile:getArchetypeIDs();
+
+  end;
+
+  local chosenArchetypeIDs = {};
+  ReplicatedStorage.Shared.Functions.ChooseArchetype.OnServerInvoke = function(player, archetypeID)
+
+    -- Verify that the player is a contestant.
+    local contestant = getContestantFromPlayer(player);
+    local playerIdentifier = `{player.Name} ({player.UserId})`;
+    assert(contestant, `{playerIdentifier} isn't a contestant in this round, so it is unnecessary for them to choose an archetype.`);
+    assert(contestant.profile, `Couldn't find the {playerIdentifier}'s profile.`);
+
+    -- Verify that the archetype ID is valid.
+    assert(table.find(contestant.profile:getArchetypeIDs(), archetypeID), `{playerIdentifier} doesn't own archetype {archetypeID}, so it can't be used in this round.`);
+
+    -- Update the archetype.
+    chosenArchetypeIDs[contestant] = archetypeID;
+
+    -- Let every team member know.
+    for _, possibleTeammate in ipairs(round.contestants) do
+
+      if possibleTeammate.teamID == contestant.teamID and possibleTeammate.player then
+
+        ReplicatedStorage.Shared.Events.TeamMemberArchetypePrivatelyChosen:FireClient(possibleTeammate.player, contestant.ID, archetypeID);
+
+      end;
 
     end;
 
   end;
 
-  startRound();
+  ReplicatedStorage.Shared.Events.ArchetypeSelectionEnabled:FireAllClients();
+
+  task.delay(10, function()
+
+    -- Block selections.
+    ReplicatedStorage.Shared.Functions.GetArchetypeIDs.OnServerInvoke = nil;
+    ReplicatedStorage.Shared.Functions.ChooseArchetype.OnServerInvoke = nil;
+    ReplicatedStorage.Shared.Events.ArchetypeSelectionsFinalized:FireAllClients();
+  
+    -- Verify that each contestant has an archetype.
+    for _, contestant in ipairs(round.contestants) do
+
+      local chosenArchetypeID = chosenArchetypeIDs[contestant];
+      if not chosenArchetypeID then
+
+        local ownedArchetypeIDs = {};
+        if contestant.isBot then
+
+          for _, archetype in ipairs(ServerArchetype.getAll()) do
+
+            table.insert(ownedArchetypeIDs, archetype.ID);
+
+          end;
+
+        elseif contestant.profile then
+
+          ownedArchetypeIDs = contestant.profile:getArchetypeIDs();
+
+        end;
+
+        if contestant.teamID then
+
+          -- Choose an archetype of a class that the team doesn't have.
+          local neededTypes = {"Destroyer", "Defender", "Fighter", "Supporter"};
+          for _, possibleTeammate in ipairs(round.contestants) do
+
+            if #neededTypes == 0 then
+
+              break;
+
+            end;
+
+            if possibleTeammate.archetypeID and possibleTeammate.teamID == contestant.teamID then
+
+              local archetype = ServerArchetype.get(possibleTeammate.archetypeID);
+              local typeIndex = table.find(neededTypes, archetype.type);
+              if typeIndex then
+
+                table.remove(neededTypes, typeIndex);
+
+              end;
+
+            end;
+
+          end;
+
+          if #neededTypes > 0 then
+
+            local eligbleArchetypeIDs = {};
+            for _, archetypeID in ipairs(ownedArchetypeIDs) do
+
+              local archetype = ServerArchetype.get(archetypeID);
+              if table.find(neededTypes, archetype.type) then
+
+                table.insert(eligbleArchetypeIDs, archetypeID);
+
+              end;
+
+            end;
+
+            ownedArchetypeIDs = eligbleArchetypeIDs;
+
+          end;
+
+        end;
+
+        -- Choose a random archetype for those who didn't choose.
+        local selectedArchetypeIndex = math.random(1, #ownedArchetypeIDs);
+        chosenArchetypeID = ownedArchetypeIDs[selectedArchetypeIndex];
+
+      end
+
+      contestant:updateArchetypeID(chosenArchetypeID);
+
+    end;
+
+  end);
+
+end;
+
+local function checkPlayerList(player: Player)
+
+  for index, playerID in ipairs(expectedPlayerIDs) do
+
+    if playerID == player.UserId then
+
+      -- Verify that the player has at least one archetype.
+      local profile = Profile.fromID(playerID);
+      if #profile:getArchetypeIDs() > 0 then
+        
+        round:addContestant(ServerContestant.new({
+          ID = player.UserId;
+          player = player;
+          character = player.Character;
+          name = player.Name;
+          isBot = false;
+          isDisqualified = false;
+          teamID = 1;
+        }));
+
+      end;
+
+      table.remove(expectedPlayerIDs, index);
+
+      break;
+
+    end;
+
+  end;
+
+  if #expectedPlayerIDs == 0 then
+
+    startRound();
+
+  end;
 
 end;
 

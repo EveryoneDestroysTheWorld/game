@@ -92,23 +92,32 @@ function ServerRound.__index:start(stageModel: Model): ()
   for _, contestant in ipairs(self.contestants) do
 
     task.spawn(function()
-    
-      local archetype = ServerArchetype.get(contestant.archetypeID, contestant, self, stageModel);
 
-      local actions = {};
-      for _, actionID in ipairs(archetype.actionIDs) do
+      if contestant.archetypeID then
 
-        local action = ServerAction.get(actionID, contestant, self);
-        table.insert(self.actions :: {ServerAction}, action);
-        actions[actionID] = action;
+        local archetype = ServerArchetype.get(contestant.archetypeID).new(contestant, self, stageModel);
 
-      end;
+        local actions = {};
+        for _, actionID in ipairs(archetype.actionIDs) do
 
-      table.insert(self.archetypes :: {ServerArchetype}, archetype);
-      
-      if contestant.ID < 1 then
-          
-        archetype:runAutoPilot(actions);
+          local action = ServerAction.get(actionID, contestant, self);
+          table.insert(self.actions :: {ServerAction}, action);
+          actions[actionID] = action;
+
+        end;
+
+        table.insert(self.archetypes :: {ServerArchetype}, archetype);
+        
+        if contestant.ID < 1 then
+            
+          archetype:runAutoPilot(actions);
+
+        end;
+
+      else
+
+        contestant:disqualify();
+        warn(`Disqualified {contestant.name} ({contestant.ID}) because they don't have an archetype.`);
 
       end;
 

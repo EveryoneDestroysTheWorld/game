@@ -4,25 +4,43 @@
 
 local HttpService = game:GetService("HttpService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local ServerStorage = game:GetService("ServerStorage");
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
+local Profile = require(ServerStorage.Classes.Profile);
+type Profile = Profile.Profile;
 
 export type ContestantProperties = {
   
+  -- The ID of the contestant. 
+  -- If the contestant is a bot, this is a unique temporary ID assigned by the server. It will be an irrational number.
+  -- If the contestant is a player, this is the same value as player.UserId. It will be an integer.
   ID: number;
 
-  archetypeID: number;
-  
+  -- This could be nil if the server hasn't assigned an archetype to the contestant yet.
+  archetypeID: number?;
+
+  -- The name of the contestant. This is here to easily reference bot names. 
+  -- If the contestant is a player, this is the same value as player.DisplayName. To get the username, use player.Name.
   name: string;
 
+  -- Is this contestant created by the server?
   isBot: boolean;
 
+  -- Is this contestant still a part of the game?
   isDisqualified: boolean;
 
+  -- The profile of the contestant. This should be nil if the contestant isn't a player.
+  profile: Profile?;
+
+  -- The player reference of the contestant. This should be nil if the contestant isn't a player.
   player: Player?;
 
+  -- The character reference of the contestant. This is here to easily reference characters of bot contestants.
+  -- If the contestant is a player, this is the same value as player.Character.
   character: Model?;
 
+  -- The team ID of the contestant. This will be nil if the game rules call for a free-for-all.
   teamID: number?;
   
 }
@@ -36,6 +54,7 @@ export type Cause = {
 export type ContestantMethods = {
   convertToClient: (self: ServerContestant) -> ClientContestant;
   disqualify: (self: ServerContestant) -> ();
+  updateArchetypeID: (self: ServerContestant, newArchetypeID: number) -> ();
   updateHealth: (self: ServerContestant, newHealth: number, cause: Cause?) -> ();
   toString: (self: ServerContestant) -> string;
 }
@@ -82,6 +101,12 @@ function ServerContestant.__index:convertToClient(): ClientContestant
     character = self.character;
     teamID = self.teamID;
   });
+
+end;
+
+function ServerContestant.__index:updateArchetypeID(newArchetypeID: number): ()
+
+  self.archetypeID = newArchetypeID;
 
 end;
 

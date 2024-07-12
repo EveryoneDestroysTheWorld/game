@@ -1,7 +1,7 @@
 --!strict
 local ClientArchetype = require(script.Parent.Parent.ClientArchetype);
-local Contestant = require(script.Parent.Parent.Contestant);
-type Contestant = Contestant.Contestant;
+local ClientContestant = require(script.Parent.Parent.ClientContestant);
+type ClientContestant = ClientContestant.ClientContestant;
 type ClientArchetype = ClientArchetype.ClientArchetype;
 local ExplosiveMimicClientArchetype = {
   ID = 1;
@@ -10,7 +10,7 @@ local ExplosiveMimicClientArchetype = {
   actionIDs = {1, 2, 3, 4};
   type = "Destroyer" :: "Destroyer";
 };
-function ExplosiveMimicClientArchetype.new(contestant: Contestant): ClientArchetype
+function ExplosiveMimicClientArchetype.new(contestant: ClientContestant): ClientArchetype
 
   local function breakdown(self: ClientArchetype)
 
