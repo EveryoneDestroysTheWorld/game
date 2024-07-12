@@ -15,7 +15,6 @@ local Stage = require(script.Parent.Stage);
 
 type ProfileProperties = {
   
-  -- [Properties]
   -- The player's ID.
   ID: number;
 
@@ -26,13 +25,21 @@ type ProfileProperties = {
 }
 
 local Profile = {
-  __index = {};
+  __index = {} :: ProfileMethods;
 };
 
-export type Profile = typeof(setmetatable({}, {__index = Profile.__index})) & ProfileProperties;
+export type ProfileMethods = {
+  delete: (self: Profile) -> ();
+  createStage: (self: Profile) -> ();
+  getArchetypeIDs: (self: Profile) -> {number};
+  updateArchetypeIDs: (self: Profile, newArchetypeIDList: {number}) -> ();
+  getStages: (self: Profile) -> ();
+}
+
+export type Profile = typeof(setmetatable({}, {__index = Profile.__index})) & ProfileProperties & ProfileMethods;
 
 -- Returns a new Player object.
-function Profile.new(properties: {[string]: any}): Profile
+function Profile.new(properties: ProfileProperties): Profile
   
   local player = {
     ID = properties.ID;
@@ -226,6 +233,66 @@ function Profile.__index:getStages(): {Stage.Stage}
   until keyList.IsFinished;
 
   return stages;
+
+end;
+
+-- Updates the player's owned archetype ID list.
+function Profile.__index:updateArchetypeIDs(newArchetypeList: {number}): ()
+
+  -- Divide the IDs into separate lists to comply with Roblox's datastore limitations.
+  local pages: {{number}} = {};
+  local currentPage = 1;
+  pages[currentPage] = newArchetypeList;
+  while pages[currentPage] do
+
+    while HttpService:JSONEncode(pages[currentPage]):len() >= 4194304 do
+
+      if not pages[currentPage + 1] then
+        
+        pages[currentPage + 1] = {};
+
+      end;
+
+      table.insert(pages[currentPage + 1], pages[currentPage][#pages[currentPage]])
+      table.remove(pages[currentPage], #pages[currentPage]);
+
+    end;
+
+    currentPage += 1;
+
+  end;
+
+  for pageNumber, page in ipairs(pages) do
+
+    DataStore.Inventory:SetAsync(`{self.ID}/archetypes/{pageNumber}`, HttpService:JSONEncode(page));
+
+  end;
+
+  -- Removed unused pages from the datastore.
+  local keyList = DataStore.Inventory:ListKeysAsync(`{self.ID}/archetypes`);
+  repeat
+
+    local keys = keyList:GetCurrentPage();
+    for _, key in ipairs(keys) do
+
+      local pageNumberStringIndex = key.KeyName:match("^.*()/");
+      local pageNumber = tonumber(key.KeyName:sub(pageNumberStringIndex + 1));
+      if pageNumber and pageNumber > #pages then
+
+        DataStore.Inventory:RemoveAsync(key.KeyName);
+
+      end;
+
+  
+    end;
+
+    if not keyList.IsFinished then
+
+      keyList:AdvanceToNextPageAsync();
+
+    end;
+
+  until keyList.IsFinished;
 
 end;
 

@@ -258,21 +258,22 @@ local function checkPlayerList(player: Player)
 
       -- Verify that the player has at least one archetype.
       local profile = Profile.fromID(playerID);
-      if #profile:getArchetypeIDs() > 0 then
+      if #profile:getArchetypeIDs() == 0 then
         
-        round:addContestant(ServerContestant.new({
-          ID = player.UserId;
-          player = player;
-          character = player.Character;
-          name = player.Name;
-          isBot = false;
-          isDisqualified = false;
-          teamID = 1;
-        }));
+        profile:updateArchetypeIDs({1, 2, 3, 4});
 
       end;
 
-      table.remove(expectedPlayerIDs, index);
+      round:addContestant(ServerContestant.new({
+        ID = player.UserId;
+        player = player;
+        character = player.Character;
+        name = player.Name;
+        profile = profile;
+        isBot = false;
+        isDisqualified = false;
+        teamID = 1;
+      }));
 
       break;
 
