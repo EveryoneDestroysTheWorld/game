@@ -42,6 +42,7 @@ export type ServerRoundProperties = {
 };
 
 export type ServerRoundEvents = {
+  onStopped: RBXScriptSignal;
   onEnded: RBXScriptSignal;
   onHoldRelease: RBXScriptSignal;
   onStatusChanged: RBXScriptSignal;
@@ -54,7 +55,7 @@ export type ServerRoundMethods = {
   getClientConstructorProperties: (self: ServerRound) -> any;
   setStatus: (self: ServerRound, newStatus: RoundStatus) -> ();
   start: (self: ServerRound, stageModel: Model) -> ();
-  stop: (self: ServerRound) -> ();
+  stop: (self: ServerRound, forced: boolean?) -> ();
   setGameMode: (self: ServerRound, gameMode: GameMode) -> ();
   toString: (self: ServerRound) -> string;
 }
@@ -72,7 +73,7 @@ function ServerRound.new(properties: ServerRoundProperties): ServerRound
   local round = setmetatable(properties, ServerRound) :: ServerRound;
 
   events[round] = {};
-  for _, eventName in ipairs({"onEnded", "onHoldRelease", "onContestantAdded", "onContestantRemoved", "onStatusChanged"}) do
+  for _, eventName in ipairs({"onStopped", "onEnded", "onHoldRelease", "onContestantAdded", "onContestantRemoved", "onStatusChanged"}) do
 
     events[round][eventName] = Instance.new("BindableEvent");
     (round :: {})[eventName] = events[round][eventName].Event;
@@ -194,7 +195,7 @@ function ServerRound.__index:setGameMode(gameMode: GameMode): ()
 
 end;
 
-function ServerRound.__index:stop(): ()
+function ServerRound.__index:stop(forced: boolean?): ()
 
   assert(not self.timeEnded, "The round has already ended.");
 
@@ -206,23 +207,31 @@ function ServerRound.__index:stop(): ()
   end;
 
   -- Disable the actions.
-  for _, archetype in ipairs(self.archetypes :: {ServerArchetype}) do
+  if self.archetypes then
 
-    task.spawn(function() 
+    for _, archetype in ipairs(self.archetypes) do
+
+      task.spawn(function() 
+        
+        archetype:breakdown(); 
       
-      archetype:breakdown(); 
-    
-    end);
+      end);
+
+    end;
 
   end;
 
-  for _, action in ipairs(self.actions :: {ServerAction}) do
+  if self.actions then
 
-    task.spawn(function() 
+    for _, action in ipairs(self.actions :: {ServerAction}) do
+
+      task.spawn(function() 
+        
+        action:breakdown(); 
       
-      action:breakdown(); 
-    
-    end)
+      end)
+
+    end;
 
   end;
 
@@ -240,8 +249,9 @@ function ServerRound.__index:stop(): ()
 
   end;
 
-  DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.ID, self:toString(), contestantIDs);
-  events[self].onEnded:Fire();
+  -- DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.ID, self:toString(), contestantIDs);
+  events[self][if forced then "onStopped" else "onEnded"]:Fire();
+  ReplicatedStorage.Shared.Events[if forced then "RoundStopped" else "RoundEnded"]:FireAllClients(self.ID);
 
 end;
 
