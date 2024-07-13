@@ -87,11 +87,37 @@ local function TeammateCard(props: TeammateCardProps)
   end, {props.round});
 
   local statusLabelText = "Waiting for players...";
+  local rivalMessage, setRivalMessage = React.useState("");
+  React.useEffect(function()
+  
+    if props.contestant and props.isRival then
+
+      local messages = {
+        "It's our family's secret recipe!";
+        "Do you really wanna know?";
+        "Eh, I don't feel like it";
+        "BWAHA! I'll never tell";
+        "How much you willing to pay?";
+        "You'll know in a few seconds";
+        "Over my dead body!",
+        "Please donate me Robux"
+      }
+      setRivalMessage(messages[math.random(1, #messages)]);
+
+    end;
+
+  end, {props.contestant});
+
   if props.contestant then
 
     if canChooseArchetype then
 
       statusLabelText = if props.contestant.isBot then "Waiting..." else "Choosing...";
+      if props.isRival then
+
+        statusLabelText = rivalMessage;
+
+      end;
 
     else 
 

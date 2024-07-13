@@ -66,6 +66,7 @@ local expectedPlayerIDs = {904459813};
 
 local function startRound()
 
+  -- TODO: Wrap this entire thing in a pcall and send a signal if the thing fails
   -- Create required bot contestants.
   local team1BotCount = 4;
   local team2BotCount = 4;
@@ -129,7 +130,30 @@ local function startRound()
     local contestant = getContestantFromPlayer(player);
     assert(contestant, `{player.Name} ({player.UserId}) isn't a contestant in this round, so it is unnecessary to get the archetype list.`);
     assert(contestant.profile, "Couldn't find the player's profile.");
-    return contestant.profile:getArchetypeIDs();
+
+    -- Verify that the player has the default archetypes.
+    local archetypeIDs = contestant.profile:getArchetypeIDs();
+    local newArchetypeIDs: {number}? = nil;
+    for i = 1, 1 do
+
+      if not table.find(archetypeIDs, i) then
+
+        newArchetypeIDs = newArchetypeIDs or table.clone(archetypeIDs);
+        table.insert(newArchetypeIDs :: {number}, i);
+
+      end;
+
+    end;
+
+    -- Return the archetype IDs.
+    if newArchetypeIDs then
+
+      contestant.profile:updateArchetypeIDs(newArchetypeIDs);
+      return newArchetypeIDs;
+
+    end;
+
+    return archetypeIDs;
 
   end;
 
@@ -261,12 +285,6 @@ local function checkPlayerList(player: Player)
 
       -- Verify that the player has at least one archetype.
       local profile = Profile.fromID(playerID);
-      if #profile:getArchetypeIDs() == 0 then
-        
-        profile:updateArchetypeIDs({1, 2, 3, 4});
-
-      end;
-
       round:addContestant(ServerContestant.new({
         ID = player.UserId;
         player = player;

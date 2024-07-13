@@ -192,7 +192,7 @@ local function MatchInitializationScreen()
         }, rivalTeammateCards);
       });
     });
-    Ticker = React.createElement(Ticker);
+    Ticker = React.createElement(Ticker, {round = round});
     -- MainStatus = React.createElement("TextLabel", {
     --   Text = "GET READY!";
     --   AutomaticSize = Enum.AutomaticSize.XY;

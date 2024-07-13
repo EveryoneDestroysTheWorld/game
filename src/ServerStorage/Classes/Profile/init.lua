@@ -139,11 +139,19 @@ function Profile.__index:getArchetypeIDs(): {number}
     for _, key in ipairs(keys) do
 
       local archetypeIDListEncoded = DataStore.Inventory:GetAsync(key.KeyName);
-      local archetypeIDList = HttpService:JSONDecode(archetypeIDListEncoded);
-      for _, archetypeID in ipairs(archetypeIDList) do
+      if archetypeIDListEncoded then
 
-        table.insert(archetypeIDs, archetypeID);
-        
+        local archetypeIDList = HttpService:JSONDecode(archetypeIDListEncoded);
+        for _, archetypeID in ipairs(archetypeIDList) do
+
+          table.insert(archetypeIDs, archetypeID);
+          
+        end;
+
+      else
+
+        DataStore.Inventory:RemoveAsync(key.KeyName);
+
       end;
   
     end;
