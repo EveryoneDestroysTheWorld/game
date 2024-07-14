@@ -52,7 +52,7 @@ export type Cause = {
 };
 
 export type ContestantMethods = {
-  convertToClient: (self: ServerContestant) -> ClientContestant;
+  convertToClient: (self: ServerContestant) -> {any};
   disqualify: (self: ServerContestant) -> ();
   updateArchetypeID: (self: ServerContestant, newArchetypeID: number) -> ();
   updateHealth: (self: ServerContestant, newHealth: number, cause: Cause?) -> ();
@@ -61,6 +61,7 @@ export type ContestantMethods = {
 
 export type ContestantEvents = {
   onDisqualified: RBXScriptSignal;
+  onArchetypeUpdated: RBXScriptSignal;
   onHealthUpdated: RBXScriptSignal<number, number, Cause?>;
 }
 
@@ -76,7 +77,7 @@ function ServerContestant.new(properties: ContestantProperties): ServerContestan
   local contestant = setmetatable(properties, ServerContestant) :: ServerContestant;
 
   -- Set up events.
-  local eventNames = {"onDisqualified", "onHealthUpdated"};
+  local eventNames = {"onDisqualified", "onHealthUpdated", "onArchetypeUpdated"};
   events[contestant] = {};
   for _, eventName in ipairs(eventNames) do
 
@@ -89,9 +90,9 @@ function ServerContestant.new(properties: ContestantProperties): ServerContestan
   
 end
 
-function ServerContestant.__index:convertToClient(): ClientContestant
+function ServerContestant.__index:convertToClient(): {any}
 
-  return ClientContestant.new({
+  return {
     ID = self.ID;
     archetypeID = self.archetypeID;
     isDisqualified = self.isDisqualified;
@@ -100,13 +101,15 @@ function ServerContestant.__index:convertToClient(): ClientContestant
     isBot = self.isBot;
     character = self.character;
     teamID = self.teamID;
-  });
+  };
 
 end;
 
 function ServerContestant.__index:updateArchetypeID(newArchetypeID: number): ()
 
   self.archetypeID = newArchetypeID;
+  events[self].onArchetypeUpdated:Fire(newArchetypeID);
+  ReplicatedStorage.Shared.Events.ContestantArchetypeUpdated:FireAllClients(self.ID, newArchetypeID);
 
 end;
 

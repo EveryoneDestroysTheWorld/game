@@ -162,16 +162,16 @@ end;
 function ServerRound.__index:getClientConstructorProperties(): any
 
   -- Convert ServerContestants to ClientContestants.
-  local clientContestants = {};
-  for _, serverContestant in ipairs(self.contestants) do
+  local contestants = {};
+  for _, contestant in ipairs(self.contestants) do
 
-    table.insert(clientContestants, serverContestant:convertToClient());
+    table.insert(contestants, contestant:convertToClient());
 
   end;
 
   return {
     ID = self.ID;
-    contestants = clientContestants;
+    contestants = contestants;
     status = self.status;
     duration = self.duration;
     timeStarted = self.timeStarted;

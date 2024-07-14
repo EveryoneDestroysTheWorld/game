@@ -179,7 +179,7 @@ local function startRound()
 
         if possibleTeammate.teamID == contestant.teamID and possibleTeammate.player then
 
-          ReplicatedStorage.Shared.Events.TeamMemberArchetypePrivatelyChosen:FireClient(possibleTeammate.player, contestant.ID, archetypeID);
+          ReplicatedStorage.Shared.Events.ArchetypePrivatelyChosen:FireClient(possibleTeammate.player, contestant.ID, archetypeID);
 
         end;
 
@@ -188,7 +188,7 @@ local function startRound()
     end;
 
     round:setStatus("Contestant selection");
-    local selectionTimeLimitSeconds = 25;
+    local selectionTimeLimitSeconds = 5;
     local currentTime = os.time();
     ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds);
 
@@ -269,7 +269,11 @@ local function startRound()
 
                 end;
 
-                ownedArchetypeIDs = eligbleArchetypeIDs;
+                if #eligbleArchetypeIDs > 0 then
+                  
+                  ownedArchetypeIDs = eligbleArchetypeIDs;
+
+                end;
 
               end;
 
@@ -284,6 +288,8 @@ local function startRound()
           contestant:updateArchetypeID(chosenArchetypeID);
 
         end;
+
+        round:setStatus("Matchup preview");
 
       end);
 

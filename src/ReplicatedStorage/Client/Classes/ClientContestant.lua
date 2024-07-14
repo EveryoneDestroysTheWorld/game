@@ -1,3 +1,5 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
 export type ClientContestantProperties = {
   
   ID: number;
@@ -23,6 +25,9 @@ export type ClientContestantMethods = {
 
 export type ClientContestantEvents = {
   onDisqualified: RBXScriptSignal;
+  onHealthUpdated: RBXScriptSignal;
+  onArchetypePrivatelyChosen: RBXScriptSignal;
+  onArchetypeUpdated: RBXScriptSignal;
 }
 
 local ClientContestant = {
@@ -37,7 +42,7 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
   local contestant = setmetatable(properties, ClientContestant) :: ClientContestant;
 
   -- Set up events.
-  local eventNames = {"onDisqualified", "onHealthUpdated"};
+  local eventNames = {"onDisqualified", "onHealthUpdated", "onArchetypePrivatelyChosen", "onArchetypeUpdated"};
   events[contestant] = {};
   for _, eventName in ipairs(eventNames) do
 
@@ -45,6 +50,28 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
     (contestant :: {})[eventName] = events[contestant][eventName].Event;
 
   end
+
+  ReplicatedStorage.Shared.Events.ArchetypePrivatelyChosen.OnClientEvent:Connect(function(contestantID: number, archetypeID: number)
+  
+    if contestantID == contestant.ID then
+
+      contestant.archetypeID = archetypeID;
+      events[contestant].onArchetypePrivatelyChosen:Fire(archetypeID);
+
+    end;
+    
+  end);
+
+  ReplicatedStorage.Shared.Events.ContestantArchetypeUpdated.OnClientEvent:Connect(function(contestantID: number, archetypeID: number)
+  
+    if contestantID == contestant.ID then
+
+      contestant.archetypeID = archetypeID;
+      events[contestant].onArchetypeUpdated:Fire(archetypeID);
+
+    end;
+    
+  end);
 
   return contestant;
   

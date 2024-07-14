@@ -13,6 +13,8 @@ local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype);
 type ClientArchetype = ClientArchetype.ClientArchetype;
+local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
+type ClientContestant = ClientContestant.ClientContestant;
 local ArchetypeInformationFrame = require(script.Parent.ArchetypeInformationFrame);
 local ArchetypeSelectionFrame = require(script.Parent.ArchetypeSelectionFrame);
 
@@ -40,12 +42,22 @@ local function MatchInitializationScreen()
   React.useEffect(function()
   
     local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
+
+    local contestants = {}
+    for _, contestant in ipairs(roundConstructorProperties.contestants) do
+
+      table.insert(contestants, ClientContestant.new(contestant));
+
+    end;
+    roundConstructorProperties.contestants = contestants;
+
     local round = ClientRound.new(roundConstructorProperties);
     setRound(round);
     
   end, {});
 
-  React.useEffect(function()
+  local uiPaddingRightOffset, setUIPaddingRightOffset = React.useState(0);
+  React.useEffect(function(): ()
 
     if round then
 
@@ -76,6 +88,7 @@ local function MatchInitializationScreen()
             isRival = isRival;
             layoutOrder = #selectedTable;
             round = round;
+            uiPaddingRightOffset = if isRival then uiPaddingRightOffset else nil;
           })
 
           table.insert(selectedTable, teammateCard);
@@ -104,8 +117,8 @@ local function MatchInitializationScreen()
       task.spawn(function() updateTeamLists() end);
     
       -- Listen for updates.
-      round.onContestantAdded:Connect(updateTeamLists);
-      round.onContestantRemoved:Connect(updateTeamLists);
+      local e1 = round.onContestantAdded:Connect(updateTeamLists);
+      local e2 = round.onContestantRemoved:Connect(updateTeamLists);
 
       local function checkRoundStatus()
 
@@ -113,14 +126,21 @@ local function MatchInitializationScreen()
 
       end;
       
-      round.onStatusChanged:Connect(checkRoundStatus);
+      local e3 = round.onStatusChanged:Connect(checkRoundStatus);
       checkRoundStatus();
+
+      return function()
+
+        e1:Disconnect();
+        e2:Disconnect();
+        e3:Disconnect();
+
+      end;
 
     end;
 
-  end, {round});
+  end, {round, uiPaddingRightOffset :: any});
 
-  local uiPaddingRightOffset, setUIPaddingRightOffset = React.useState(0);
   React.useEffect(function()
   
     local numberValue = Instance.new("NumberValue");
@@ -129,6 +149,7 @@ local function MatchInitializationScreen()
       setUIPaddingRightOffset(numberValue.Value);
 
     end);
+    numberValue.Value = uiPaddingRightOffset;
     
     local goalTransparency = if shouldShowArchetypeInformation then -300 else 0;
     local tween = TweenService:Create(numberValue, TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = goalTransparency});
@@ -219,7 +240,6 @@ local function MatchInitializationScreen()
         }, allyTeammateCards);
         RivalTeammateCardList = React.createElement(TeammateCardList, {
           layoutOrder = 2;
-          uiPaddingRightOffset = uiPaddingRightOffset;
         }, rivalTeammateCards);
         ArchetypeInformationFrame = React.createElement(ArchetypeInformationFrame, {
           uiPaddingRightOffset = uiPaddingRightOffset;
@@ -231,6 +251,11 @@ local function MatchInitializationScreen()
         onSelectionChanged = function(newSelectedArchetype)
 
           setSelectedArchetype(newSelectedArchetype);
+
+        end;
+        onSelectionConfirmed = function()
+
+          ReplicatedStorage.Shared.Functions.ChooseArchetype:InvokeServer(selectedArchetype.ID);
 
         end;
       }) else nil;

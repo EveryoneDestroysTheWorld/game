@@ -5,7 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ClientContestant = require(script.Parent.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
 
-export type RoundStatus = "Waiting for players" | "Contestant selection";
+export type RoundStatus = "Waiting for players" | "Contestant selection" | "Matchup preview";
 
 export type RoundProperties = {
   ID: string;  
@@ -51,17 +51,27 @@ function ClientRound.new(properties: RoundProperties): ClientRound
 
   end
 
-  ReplicatedStorage.Shared.Events.ContestantAdded.OnClientEvent:Connect(function(roundID: string, contestant: ClientContestant)
+  ReplicatedStorage.Shared.Events.ContestantAdded.OnClientEvent:Connect(function(roundID: string, contestantProperties: ClientContestant.ClientContestantProperties)
   
+    local contestant = ClientContestant.new(contestantProperties);
     table.insert(round.contestants, contestant);
     events.onContestantAdded:Fire(contestant);
 
   end);
 
-  ReplicatedStorage.Shared.Events.ContestantRemoved.OnClientEvent:Connect(function(roundID: string, contestant: ClientContestant)
+  ReplicatedStorage.Shared.Events.ContestantRemoved.OnClientEvent:Connect(function(roundID: string, contestantID: number)
   
-    table.remove(round.contestants, table.find(round.contestants, contestant));
-    events.onContestantRemoved:Fire(contestant);
+    for index, contestant in ipairs(round.contestants) do
+
+      if contestant.ID == contestantID then
+
+        table.remove(round.contestants, index);
+        events.onContestantRemoved:Fire(contestant);
+        break;
+
+      end;
+
+    end;
 
   end);
 

@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
+local Players = game:GetService("Players");
 local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype);
 type ClientArchetype = ClientArchetype.ClientArchetype;
 local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
@@ -17,11 +18,21 @@ local function ArchetypeSelectionFrame(props: ArchetypeInformationFrameProps)
 
   local archetypeIDs, setArchetypeIDs = React.useState({});
   local archetypeCategoryFrames, setArchetypeCategoryFrames = React.useState({});
+  local confirmedArchetypeID, setConfirmedArchetypeID = React.useState(nil);
 
   -- Get a list of all owned archetypes.
   React.useEffect(function()
   
     setArchetypeIDs(ReplicatedStorage.Shared.Functions.GetArchetypeIDs:InvokeServer());
+    ReplicatedStorage.Shared.Events.ArchetypePrivatelyChosen.OnClientEvent:Connect(function(contestantID, archetypeID)
+      
+      if contestantID == Players.LocalPlayer.UserId then 
+
+        setConfirmedArchetypeID(archetypeID);
+
+      end;
+  
+    end);
 
   end, {});
 
@@ -152,7 +163,7 @@ local function ArchetypeSelectionFrame(props: ArchetypeInformationFrameProps)
     ConfirmButton = React.createElement(Button, {
       text = "CONFIRM";
       LayoutOrder = 1;
-      isDisabled = props.selectedArchetype == nil;
+      isDisabled = props.selectedArchetype == nil or props.selectedArchetype.ID == confirmedArchetypeID;
       onClick = function()
 
         props.onSelectionConfirmed();
