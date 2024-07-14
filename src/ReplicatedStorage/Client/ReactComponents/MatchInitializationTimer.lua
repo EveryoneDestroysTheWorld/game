@@ -6,14 +6,20 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local function MatchInitializationTimer()
 
   local originalTextSize = 50;
-  local currentSecond, setCurrentSecond = React.useState(10);
+  local currentSecond: number?, setCurrentSecond = React.useState(nil :: number?);
   local textLabelRef = React.useRef(nil);
 
   React.useEffect(function()
-  
+
     ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled.OnClientEvent:Connect(function(selectionTimeLimitSeconds: number)
     
       setCurrentSecond(selectionTimeLimitSeconds);
+
+    end);
+
+    task.spawn(function()
+    
+      setCurrentSecond(ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit:InvokeServer());
 
     end);
 
@@ -21,23 +27,27 @@ local function MatchInitializationTimer()
 
   React.useEffect(function()
 
-    local self = textLabelRef.current;
-  
     local delayTask;
 
-    if currentSecond >= 0 and self then
+    if currentSecond then
 
-      self.Rotation = -360;
-      self.TextSize = 0;
-      TweenService:Create(self, TweenInfo.new(0.75, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Rotation = 0, TextSize = originalTextSize}):Play();
+      local self = textLabelRef.current;
+    
+      if currentSecond >= 0 and self then
 
-      if currentSecond > 0 then
+        self.Rotation = -360;
+        self.TextSize = 0;
+        TweenService:Create(self, TweenInfo.new(0.75, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Rotation = 0, TextSize = originalTextSize}):Play();
 
-        delayTask = task.delay(1, function()
+        if currentSecond > 0 then
 
-          setCurrentSecond(currentSecond - 1);
+          delayTask = task.delay(1, function()
 
-        end);
+            setCurrentSecond(currentSecond - 1);
+
+          end);
+
+        end;
 
       end;
 
@@ -55,7 +65,7 @@ local function MatchInitializationTimer()
 
   end, {currentSecond});
 
-  return React.createElement("Frame", {
+  return if currentSecond then React.createElement("Frame", {
     BackgroundTransparency = 1;
     AutomaticSize = Enum.AutomaticSize.XY;
     Size = UDim2.new();
@@ -71,7 +81,7 @@ local function MatchInitializationTimer()
       Size = UDim2.new(0, 50, 0, 50);
       TextSize = originalTextSize;
     });
-  });
+  }) else nil;
 
 end;
 

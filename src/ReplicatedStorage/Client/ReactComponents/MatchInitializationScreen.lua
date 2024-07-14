@@ -10,6 +10,8 @@ local TeammateCard = require(script.Parent.TeammateCard);
 local TeammateCardList = require(script.Parent.TeammateCardList);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
+local ArchetypeInformationFrame = require(script.Parent.ArchetypeInformationFrame);
+local TweenService = game:GetService("TweenService");
 
 local function MatchInitializationScreen()
 
@@ -30,6 +32,7 @@ local function MatchInitializationScreen()
   local allyTeammateCards, setAllyTeammateCards = React.useState({});
   local rivalTeammateCards, setRivalTeammateCards = React.useState({});
   local round, setRound = React.useState(nil :: ClientRound?);
+  local shouldShowArchetypeInformation, setShouldShowArchetypeInformation = React.useState(false);
   React.useEffect(function()
   
     local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
@@ -100,9 +103,34 @@ local function MatchInitializationScreen()
       round.onContestantAdded:Connect(updateTeamLists);
       round.onContestantRemoved:Connect(updateTeamLists);
 
+      local function checkRoundStatus()
+
+        setShouldShowArchetypeInformation(round.status == "Contestant selection");
+
+      end;
+      
+      round.onStatusChanged:Connect(checkRoundStatus);
+      checkRoundStatus();
+
     end;
 
   end, {round});
+
+  local uiPaddingRightOffset, setUIPaddingRightOffset = React.useState(0);
+  React.useEffect(function()
+  
+    local numberValue = Instance.new("NumberValue");
+    numberValue:GetPropertyChangedSignal("Value"):Connect(function()
+      
+      setUIPaddingRightOffset(numberValue.Value);
+
+    end);
+    
+    local goalTransparency = if shouldShowArchetypeInformation then -300 else 0;
+    local tween = TweenService:Create(numberValue, TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = goalTransparency});
+    tween:Play();
+
+  end, {shouldShowArchetypeInformation});
 
   return React.createElement("Frame", {
     BackgroundTransparency = 0.4;
@@ -179,17 +207,19 @@ local function MatchInitializationScreen()
         Position = UDim2.new(0.5, 0, 0.5, 0);
         Size = UDim2.new(1, 0, 0, 0);
       }, {
-        UIListLayout = React.createElement("UIListLayout", {
-          SortOrder = Enum.SortOrder.LayoutOrder;
-          HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween;
-          FillDirection = Enum.FillDirection.Horizontal;
+        UIPadding = React.createElement("UIPadding", {
+          PaddingRight = UDim.new(0, uiPaddingRightOffset);
         });
         AllyTeammateCardList = React.createElement(TeammateCardList, {
           layoutOrder = 1;
         }, allyTeammateCards);
         RivalTeammateCardList = React.createElement(TeammateCardList, {
           layoutOrder = 2;
+          uiPaddingRightOffset = uiPaddingRightOffset;
         }, rivalTeammateCards);
+        ArchetypeInformationFrame = React.createElement(ArchetypeInformationFrame, {
+          uiPaddingRightOffset = uiPaddingRightOffset;
+        });
       });
     });
     Ticker = React.createElement(Ticker, {round = round});

@@ -134,9 +134,18 @@ local function TeammateCard(props: TeammateCardProps)
       local numberValue = Instance.new("NumberValue");
       numberValue:GetPropertyChangedSignal("Value"):Connect(function()
       
-        readyIndicationImageLabelRef.current.Visible = true;
-        readyIndicationUIPaddingRef.current.PaddingTop = UDim.new(0, numberValue.Value);
+        if readyIndicationImageLabelRef.current then
 
+          readyIndicationImageLabelRef.current.Visible = true;
+
+        end;
+
+        if readyIndicationUIPaddingRef.current then
+
+          readyIndicationUIPaddingRef.current.PaddingTop = UDim.new(0, numberValue.Value);
+
+        end;
+        
       end);
       numberValue.Value = 60;
       

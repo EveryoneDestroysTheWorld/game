@@ -12,6 +12,7 @@ local DetachLimbAction = {
   ID = 4;
   name = "Rocket Feet";
   description = "Fly, touch the sky!";
+  iconImage = "rbxassetid://18464513809";
 };
 
 function DetachLimbAction.new(): ClientAction
@@ -50,6 +51,7 @@ function DetachLimbAction.new(): ClientAction
   action = ClientAction.new({
     ID = DetachLimbAction.ID;
     name = DetachLimbAction.name;
+    iconImage = DetachLimbAction.iconImage;
     description = DetachLimbAction.description;
     activate = activate;
     breakdown = breakdown;

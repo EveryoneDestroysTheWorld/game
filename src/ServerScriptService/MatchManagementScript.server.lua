@@ -188,14 +188,22 @@ local function startRound()
     end;
 
     round:setStatus("Contestant selection");
-    local selectionTimeLimitSeconds = 5;
+    local selectionTimeLimitSeconds = 25;
+    local currentTime = os.time();
     ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds);
+
+    ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = function()
+
+      return os.time() - currentTime + selectionTimeLimitSeconds;
+
+    end;
 
     task.delay(selectionTimeLimitSeconds, function()
 
       local isSuccess, message = pcall(function()
 
         -- Block selections.
+        ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = nil;
         ReplicatedStorage.Shared.Functions.GetArchetypeIDs.OnServerInvoke = nil;
         ReplicatedStorage.Shared.Functions.ChooseArchetype.OnServerInvoke = nil;
         ReplicatedStorage.Shared.Events.ArchetypeSelectionsFinalized:FireAllClients();
