@@ -1,17 +1,20 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
+local StarterGui = game:GetService("StarterGui");
+local TweenService = game:GetService("TweenService");
 local player = Players.LocalPlayer;
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local StarterGui = game:GetService("StarterGui");
 local Ticker = require(script.Parent.Ticker);
 local MatchInitializationTimer = require(script.Parent.MatchInitializationTimer);
 local TeammateCard = require(script.Parent.TeammateCard);
 local TeammateCardList = require(script.Parent.TeammateCardList);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
+local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype);
+type ClientArchetype = ClientArchetype.ClientArchetype;
 local ArchetypeInformationFrame = require(script.Parent.ArchetypeInformationFrame);
-local TweenService = game:GetService("TweenService");
+local ArchetypeSelectionFrame = require(script.Parent.ArchetypeSelectionFrame);
 
 local function MatchInitializationScreen()
 
@@ -33,6 +36,7 @@ local function MatchInitializationScreen()
   local rivalTeammateCards, setRivalTeammateCards = React.useState({});
   local round, setRound = React.useState(nil :: ClientRound?);
   local shouldShowArchetypeInformation, setShouldShowArchetypeInformation = React.useState(false);
+  local selectedArchetype: ClientArchetype, setSelectedArchetype = React.useState(nil :: ClientArchetype?);
   React.useEffect(function()
   
     local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
@@ -219,8 +223,17 @@ local function MatchInitializationScreen()
         }, rivalTeammateCards);
         ArchetypeInformationFrame = React.createElement(ArchetypeInformationFrame, {
           uiPaddingRightOffset = uiPaddingRightOffset;
+          selectedArchetype = selectedArchetype;
         });
       });
+      ArchetypeSelectionFrame = if shouldShowArchetypeInformation then React.createElement(ArchetypeSelectionFrame, {
+        selectedArchetype = selectedArchetype;
+        onSelectionChanged = function(newSelectedArchetype)
+
+          setSelectedArchetype(newSelectedArchetype);
+
+        end;
+      }) else nil;
     });
     Ticker = React.createElement(Ticker, {round = round});
     -- MainStatus = React.createElement("TextLabel", {

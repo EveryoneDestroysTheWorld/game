@@ -19,30 +19,34 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
 
   React.useEffect(function()
   
-    if props.selectedArchetype then
+    task.spawn(function()
 
-      local actionTextButtons = {};
-      for _, actionID in ipairs(props.selectedArchetype.actionIDs) do
+      if props.selectedArchetype then
 
-        local action = ClientAction.get(actionID);
-        local actionButton = React.createElement(ActionButton, {
-          iconImage = action.iconImage;
-          onActivate = function() 
-            
-            setSelectedAction(action);
+        local actionTextButtons = {};
+        for _, actionID in ipairs(props.selectedArchetype.actionIDs) do
 
-          end
-        });
-        table.insert(actionTextButtons, actionButton)
+          local action = ClientAction.get(actionID);
+          local actionButton = React.createElement(ActionButton, {
+            iconImage = action.iconImage;
+            onActivate = function() 
+              
+              setSelectedAction(action);
+
+            end
+          });
+          table.insert(actionTextButtons, actionButton)
+
+        end;
+        setActionTextButtons(actionTextButtons);
+
+      else
+
+        setActionTextButtons({});
 
       end;
-      setActionTextButtons(actionTextButtons);
 
-    else
-
-      setActionTextButtons({});
-
-    end;
+    end)
 
   end, {props.selectedArchetype, selectedAction});
 
