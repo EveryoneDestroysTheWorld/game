@@ -45,6 +45,8 @@ local function TeammateCard(props: TeammateCardProps)
 
   local uiPaddingTop, setUIPaddingTop = React.useState(60);
   local roundStatus: ClientRound.RoundStatus?, setRoundStatus = React.useState(if props.round then props.round.status else nil);
+  local rivalMessage, setRivalMessage = React.useState("");
+  local archetypeID, setArchetypeID = React.useState(if props.contestant then props.contestant.archetypeID else nil);
 
   React.useEffect(function(): ()
 
@@ -66,10 +68,6 @@ local function TeammateCard(props: TeammateCardProps)
     end;
 
   end, {props.round});
-
-  local statusLabelText = "Waiting for players...";
-  local rivalMessage, setRivalMessage = React.useState("");
-  local archetypeID, setArchetypeID = React.useState(if props.contestant then props.contestant.archetypeID else nil);
 
   React.useEffect(function()
   
@@ -106,7 +104,30 @@ local function TeammateCard(props: TeammateCardProps)
     end;
 
   end, {props.contestant});
+  
+  React.useEffect(function()
+  
+    if roundStatus == "Contestant selection" then
 
+      local numberValue = Instance.new("NumberValue");
+      numberValue:GetPropertyChangedSignal("Value"):Connect(function()
+      
+        task.wait();
+        setUIPaddingTop(numberValue.Value);
+
+      end);
+      numberValue.Value = 60;
+      
+      local tween = TweenService:Create(numberValue, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 0});
+      tween:Play();
+
+    end;
+
+  end, {roundStatus});
+
+  local transparency = if props.uiPaddingRightOffset and props.uiPaddingRightOffset ~= 0 then props.uiPaddingRightOffset / -300 else nil;
+
+  local statusLabelText = "Waiting for players...";
   if props.contestant then
 
     if archetypeID then
@@ -129,29 +150,6 @@ local function TeammateCard(props: TeammateCardProps)
     end;
 
   end;
-
-  React.useEffect(function()
-  
-    if props.round and roundStatus ~= "Waiting for players" and uiPaddingTop == 60 then
-
-      local numberValue = Instance.new("NumberValue");
-      numberValue:GetPropertyChangedSignal("Value"):Connect(function()
-      
-        setUIPaddingTop(numberValue.Value);
-        print(numberValue.Value);
-        
-      end);
-      numberValue.Value = uiPaddingTop;
-      
-      local tween = TweenService:Create(numberValue, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 0});
-      tween:Play();
-
-    end;
-
-  end, {roundStatus :: any});
-
-  local transparency = if props.uiPaddingRightOffset and props.uiPaddingRightOffset ~= 0 then props.uiPaddingRightOffset / -300 else nil;
-
   return React.createElement("Frame", {
     BackgroundTransparency = 1;
     AutomaticSize = Enum.AutomaticSize.XY;
