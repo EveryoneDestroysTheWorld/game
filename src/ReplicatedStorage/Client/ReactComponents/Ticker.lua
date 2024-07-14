@@ -1,10 +1,17 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local TweenService = game:GetService("TweenService");
 local Colors = require(ReplicatedStorage.Client.Colors);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local TickerMessageTextLabel = require(script.Parent.TickerMessageTextLabel);
+local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
+type ClientRound = ClientRound.ClientRound;
 
-local function Ticker()
+type TickerProps = {
+  round: ClientRound;
+}
+
+local function Ticker(props: TickerProps)
 
   -- Create the messages on the ticker.
   local messages = {
@@ -58,13 +65,53 @@ local function Ticker()
 
   end, {canvasPosition});
 
+  local positionYOffset, setPositionYOffset = React.useState(0);
+  React.useEffect(function(): ()
+  
+    if props.round then
+
+      local function tweenOut()
+
+        local numberValue = Instance.new("NumberValue");
+        numberValue:GetPropertyChangedSignal("Value"):Connect(function()
+        
+          setPositionYOffset(numberValue.Value);
+          
+        end);
+        TweenService:Create(numberValue, TweenInfo.new(0.5, Enum.EasingStyle.Sine), {Value = 50}):Play();
+
+      end;
+
+      local function checkRoundStatus()
+
+        if props.round.status == "Contestant selection" then
+
+          tweenOut();
+
+        end;
+
+      end;
+      
+      local event = props.round.onStatusChanged:Connect(checkRoundStatus);
+      checkRoundStatus();
+
+      return function()
+
+        event:Disconnect();
+  
+      end;
+
+    end;
+    
+  end, {props.round});
+
   return React.createElement("ScrollingFrame", {
     ref = scrollingFrameRef;
     BackgroundColor3 = Colors.PopupBackground;
     BackgroundTransparency = 0.15;
     BorderSizePixel = 0.15;
     Size = UDim2.new(1, 0, 0, 50);
-    Position = UDim2.new(0, 0, 1, 0);
+    Position = UDim2.new(0, 0, 1, positionYOffset);
     AnchorPoint = Vector2.new(0, 1);
     ScrollBarThickness = 0;
     ScrollingEnabled = false;

@@ -12,6 +12,7 @@ type ClientAction = ClientAction.ClientAction;
 local DetonateDetachedLimbsClientAction = {
   ID = 3;
   name = "Detonate Detached Limbs";
+  iconImage = "rbxassetid://17771918066";
   description = "Explodes all detached limbs and regenerates them.";
 };
 
@@ -33,6 +34,7 @@ function DetonateDetachedLimbsClientAction.new(): ClientAction
 
   local action = ClientAction.new({
     ID = DetonateDetachedLimbsClientAction.ID;
+    iconImage = DetonateDetachedLimbsClientAction.iconImage;
     name = DetonateDetachedLimbsClientAction.name;
     description = DetonateDetachedLimbsClientAction.description;
     activate = activate;

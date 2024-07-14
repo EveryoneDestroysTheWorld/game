@@ -8,8 +8,8 @@ type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
 local DetonateDetachedLimbsClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetonateDetachedLimbsClientAction);
-local Round = require(script.Parent.Parent.Round);
-type Round = Round.Round;
+local ServerRound = require(script.Parent.Parent.ServerRound);
+type ServerRound = ServerRound.ServerRound;
 
 local DetonateDetachedLimbsServerAction = {
   ID = DetonateDetachedLimbsClientAction.ID;
@@ -17,7 +17,7 @@ local DetonateDetachedLimbsServerAction = {
   description = DetonateDetachedLimbsClientAction.description;
 };
 
-function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant, round: Round): ServerAction
+function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant, round: ServerRound): ServerAction
 
   local function activate()
 

@@ -6,9 +6,9 @@ local PathfindingService = game:GetService("PathfindingService");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local ExplosiveMimicClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.ExplosiveMimicClientArchetype);
-local Round = require(script.Parent.Parent.Round);
+local ServerRound = require(script.Parent.Parent.ServerRound);
 local ServerAction = require(script.Parent.Parent.ServerAction);
-type Round = Round.Round;
+type ServerRound = ServerRound.ServerRound;
 type ServerContestant = ServerContestant.ServerContestant;
 type ServerArchetype = ServerArchetype.ServerArchetype;
 type ServerAction = ServerAction.ServerAction;
@@ -21,7 +21,7 @@ local ExplosiveMimicServerArchetype = {
   type = ExplosiveMimicClientArchetype.type;
 };
 
-function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: Round, stageModel: Model): ServerArchetype
+function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: ServerRound, stageModel: Model): ServerArchetype
 
   -- Set up the self-destruct.
   local disqualificationEvent = contestant.onDisqualified:Connect(function()

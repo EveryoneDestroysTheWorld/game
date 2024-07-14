@@ -7,8 +7,8 @@ type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
 local RocketFeetClientAction = require(ReplicatedStorage.Client.Classes.Actions.RocketFeetClientAction);
-local Round = require(script.Parent.Parent.Round);
-type Round = Round.Round;
+local ServerRound = require(script.Parent.Parent.ServerRound);
+type ServerRound = ServerRound.ServerRound;
 
 local RocketFeetServerAction = {
   ID = RocketFeetClientAction.ID;
@@ -16,7 +16,7 @@ local RocketFeetServerAction = {
   description = RocketFeetClientAction.description;
 };
 
-function RocketFeetServerAction.new(contestant: ServerContestant, round: Round): ServerAction
+function RocketFeetServerAction.new(contestant: ServerContestant, round: ServerRound): ServerAction
 
   local leftFootExplosivePart = Instance.new("Part");
   leftFootExplosivePart.Name = "LeftFootExplosivePart";

@@ -5,6 +5,7 @@
 export type ActionProperties = {
   ID: number;
   name: string;
+  iconImage: string;
   description: string;
   activate: (self: ClientAction, ...any) -> ();
   breakdown: (self: ClientAction) -> ();

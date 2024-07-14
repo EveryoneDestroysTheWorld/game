@@ -9,6 +9,11 @@ type ButtonProps = {
   onClick: () -> (); 
   isDisabled: boolean?; 
   LayoutOrder: number;
+  TextTransparency: number?;
+  BackgroundTransparency: number?;
+  AnchorPoint: Vector2?;
+  Visible: boolean?;
+  Position: UDim2?;
 };
 
 local function Button(props: ButtonProps)
@@ -18,11 +23,15 @@ local function Button(props: ButtonProps)
     BackgroundColor3 = if props.isDisabled then Colors.DisabledButton else Colors.DemoDemonsOrange;
     TextColor3 = Colors.ButtonText;
     AutoButtonColor = not props.isDisabled;
+    BackgroundTransparency = props.BackgroundTransparency;
+    TextTransparency = props.TextTransparency;
     LayoutOrder = props.LayoutOrder;
     Active = not props.isDisabled;
     AutomaticSize = Enum.AutomaticSize.XY;
     FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
-    BackgroundTransparency = 0.1;
+    Position = props.Position;
+    AnchorPoint = props.AnchorPoint;
+    Visible = props.Visible;
     TextSize = 14;
     [React.Event.Activated] = if props.isDisabled then nil else function()
 

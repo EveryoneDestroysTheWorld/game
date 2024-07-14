@@ -14,6 +14,7 @@ type ClientAction = ClientAction.ClientAction;
 local DetachLimbAction = {
   ID = 2;
   name = "Detach Limb";
+  iconImage = "rbxassetid://17551046771";
   description = "Detach a limb of your choice. It only hurts a little bit.";
 };
 
@@ -48,6 +49,7 @@ function DetachLimbAction.new(): ClientAction
   local action = ClientAction.new({
     ID = DetachLimbAction.ID;
     name = DetachLimbAction.name;
+    iconImage = DetachLimbAction.iconImage;
     description = DetachLimbAction.description;
     activate = activate;
     breakdown = breakdown;

@@ -1,15 +1,22 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
+local StarterGui = game:GetService("StarterGui");
+local TweenService = game:GetService("TweenService");
 local player = Players.LocalPlayer;
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local StarterGui = game:GetService("StarterGui");
 local Ticker = require(script.Parent.Ticker);
 local MatchInitializationTimer = require(script.Parent.MatchInitializationTimer);
 local TeammateCard = require(script.Parent.TeammateCard);
 local TeammateCardList = require(script.Parent.TeammateCardList);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
+local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype);
+type ClientArchetype = ClientArchetype.ClientArchetype;
+local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
+type ClientContestant = ClientContestant.ClientContestant;
+local ArchetypeInformationFrame = require(script.Parent.ArchetypeInformationFrame);
+local ArchetypeSelectionFrame = require(script.Parent.ArchetypeSelectionFrame);
 
 local function MatchInitializationScreen()
 
@@ -29,68 +36,126 @@ local function MatchInitializationScreen()
   -- Get teammate cards to show to the player.
   local allyTeammateCards, setAllyTeammateCards = React.useState({});
   local rivalTeammateCards, setRivalTeammateCards = React.useState({});
+  local round, setRound = React.useState(nil :: ClientRound?);
+  local shouldShowArchetypeInformation, setShouldShowArchetypeInformation = React.useState(false);
+  local selectedArchetype: ClientArchetype, setSelectedArchetype = React.useState(nil :: ClientArchetype?);
   React.useEffect(function()
+  
+    local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
 
-    -- Get the current list of teams.
-    local function updateTeamLists()
+    local contestants = {}
+    for _, contestant in ipairs(roundConstructorProperties.contestants) do
 
-      local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
-      local round: ClientRound = ClientRound.new(roundConstructorProperties);
-      local newAllyTeammateCards = {};
-      local newRivalTeammateCards = {};
+      table.insert(contestants, ClientContestant.new(contestant));
 
-      local ownTeamID: number?;
-      for _, contestant in ipairs(round.contestants) do
+    end;
+    roundConstructorProperties.contestants = contestants;
 
-        if contestant.ID == player.UserId then
+    local round = ClientRound.new(roundConstructorProperties);
+    setRound(round);
+    
+  end, {});
 
-          ownTeamID = contestant.teamID;
-          break;
+  local uiPaddingRightOffset, setUIPaddingRightOffset = React.useState(0);
+  React.useEffect(function(): ()
 
-        end;
+    if round then
 
-      end;
+      -- Get the current list of teams.
+      local function updateTeamLists()
 
-      for _, contestant in ipairs(round.contestants) do
+        local newAllyTeammateCards = {};
+        local newRivalTeammateCards = {};
 
-        local isRival = contestant.ID ~= player.UserId and not ownTeamID or contestant.teamID ~= ownTeamID;
-        local selectedTable = if isRival then newRivalTeammateCards else newAllyTeammateCards;
-        local teammateCard = React.createElement(TeammateCard, {
-          contestant = contestant;
-          isRival = isRival;
-          layoutOrder = #selectedTable;
-        })
+        local ownTeamID: number?;
+        for _, contestant in ipairs(round.contestants) do
 
-        table.insert(selectedTable, teammateCard);
+          if contestant.ID == player.UserId then
 
-      end;
+            ownTeamID = contestant.teamID;
+            break;
 
-      for ti, t in ipairs({newAllyTeammateCards, newRivalTeammateCards}) do
-
-        for i = #t + 1, 4 do
-
-          table.insert(t, React.createElement(TeammateCard, {
-            isRival = ti == 2;
-            layoutOrder = i;
-          }))
+          end;
 
         end;
 
+        for _, contestant in ipairs(round.contestants) do
+
+          local isRival = contestant.ID ~= player.UserId and not ownTeamID or contestant.teamID ~= ownTeamID;
+          local selectedTable = if isRival then newRivalTeammateCards else newAllyTeammateCards;
+          local teammateCard = React.createElement(TeammateCard, {
+            contestant = contestant;
+            isRival = isRival;
+            layoutOrder = #selectedTable;
+            round = round;
+            uiPaddingRightOffset = if isRival then uiPaddingRightOffset else nil;
+          })
+
+          table.insert(selectedTable, teammateCard);
+
+        end;
+
+        for ti, t in ipairs({newAllyTeammateCards, newRivalTeammateCards}) do
+
+          for i = #t + 1, 4 do
+
+            table.insert(t, React.createElement(TeammateCard, {
+              isRival = ti == 2;
+              layoutOrder = i;
+            }))
+
+          end;
+
+        end;
+
+        setAllyTeammateCards(newAllyTeammateCards);
+        setRivalTeammateCards(newRivalTeammateCards);
+
       end;
 
-      setAllyTeammateCards(newAllyTeammateCards);
-      setRivalTeammateCards(newRivalTeammateCards);
+      -- Use task.spawn to prevent blocking of other effects.
+      task.spawn(function() updateTeamLists() end);
+    
+      -- Listen for updates.
+      local e1 = round.onContestantAdded:Connect(updateTeamLists);
+      local e2 = round.onContestantRemoved:Connect(updateTeamLists);
+
+      local function checkRoundStatus()
+
+        setShouldShowArchetypeInformation(round.status == "Contestant selection");
+
+      end;
+      
+      local e3 = round.onStatusChanged:Connect(checkRoundStatus);
+      checkRoundStatus();
+
+      return function()
+
+        e1:Disconnect();
+        e2:Disconnect();
+        e3:Disconnect();
+
+      end;
 
     end;
 
-    -- Use task.spawn to prevent blocking of other effects.
-    task.spawn(function() updateTeamLists() end);
-   
-    -- Listen for updates.
-    ReplicatedStorage.Shared.Events.ContestantAdded.OnClientEvent:Connect(updateTeamLists);
-    ReplicatedStorage.Shared.Events.ContestantRemoved.OnClientEvent:Connect(updateTeamLists);
+  end, {round, uiPaddingRightOffset :: any});
 
-  end, {});
+  React.useEffect(function()
+  
+    local numberValue = Instance.new("NumberValue");
+    numberValue:GetPropertyChangedSignal("Value"):Connect(function()
+      
+      setUIPaddingRightOffset(numberValue.Value);
+
+    end);
+    numberValue.Value = uiPaddingRightOffset;
+    
+    local goalTransparency = if shouldShowArchetypeInformation then -300 else 0;
+    local tween = TweenService:Create(numberValue, TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = goalTransparency});
+    tween:Play();
+
+  end, {shouldShowArchetypeInformation});
 
   return React.createElement("Frame", {
     BackgroundTransparency = 0.4;
@@ -167,10 +232,8 @@ local function MatchInitializationScreen()
         Position = UDim2.new(0.5, 0, 0.5, 0);
         Size = UDim2.new(1, 0, 0, 0);
       }, {
-        UIListLayout = React.createElement("UIListLayout", {
-          SortOrder = Enum.SortOrder.LayoutOrder;
-          HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween;
-          FillDirection = Enum.FillDirection.Horizontal;
+        UIPadding = React.createElement("UIPadding", {
+          PaddingRight = UDim.new(0, uiPaddingRightOffset);
         });
         AllyTeammateCardList = React.createElement(TeammateCardList, {
           layoutOrder = 1;
@@ -178,9 +241,26 @@ local function MatchInitializationScreen()
         RivalTeammateCardList = React.createElement(TeammateCardList, {
           layoutOrder = 2;
         }, rivalTeammateCards);
+        ArchetypeInformationFrame = React.createElement(ArchetypeInformationFrame, {
+          uiPaddingRightOffset = uiPaddingRightOffset;
+          selectedArchetype = selectedArchetype;
+        });
       });
+      ArchetypeSelectionFrame = if shouldShowArchetypeInformation then React.createElement(ArchetypeSelectionFrame, {
+        selectedArchetype = selectedArchetype;
+        onSelectionChanged = function(newSelectedArchetype)
+
+          setSelectedArchetype(newSelectedArchetype);
+
+        end;
+        onSelectionConfirmed = function()
+
+          ReplicatedStorage.Shared.Functions.ChooseArchetype:InvokeServer(selectedArchetype.ID);
+
+        end;
+      }) else nil;
     });
-    Ticker = React.createElement(Ticker);
+    Ticker = React.createElement(Ticker, {round = round});
     -- MainStatus = React.createElement("TextLabel", {
     --   Text = "GET READY!";
     --   AutomaticSize = Enum.AutomaticSize.XY;

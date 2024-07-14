@@ -14,6 +14,7 @@ local ServerAction = require(script.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
+type RoundStatus = ClientRound.RoundStatus;
 
 export type ServerRoundProperties = {  
   -- This round's unique ID.
@@ -23,6 +24,8 @@ export type ServerRoundProperties = {
   
   -- This stage's ID.
   stageID: string;
+
+  status: RoundStatus;
 
   timeStarted: number?;
 
@@ -39,8 +42,10 @@ export type ServerRoundProperties = {
 };
 
 export type ServerRoundEvents = {
+  onStopped: RBXScriptSignal;
   onEnded: RBXScriptSignal;
   onHoldRelease: RBXScriptSignal;
+  onStatusChanged: RBXScriptSignal;
   onContestantAdded: RBXScriptSignal;
   onContestantRemoved: RBXScriptSignal;
 }
@@ -48,8 +53,9 @@ export type ServerRoundEvents = {
 export type ServerRoundMethods = {
   addContestant: (self: ServerRound, contestant: ServerContestant) -> ();
   getClientConstructorProperties: (self: ServerRound) -> any;
+  setStatus: (self: ServerRound, newStatus: RoundStatus) -> ();
   start: (self: ServerRound, stageModel: Model) -> ();
-  stop: (self: ServerRound) -> ();
+  stop: (self: ServerRound, forced: boolean?) -> ();
   setGameMode: (self: ServerRound, gameMode: GameMode) -> ();
   toString: (self: ServerRound) -> string;
 }
@@ -67,7 +73,7 @@ function ServerRound.new(properties: ServerRoundProperties): ServerRound
   local round = setmetatable(properties, ServerRound) :: ServerRound;
 
   events[round] = {};
-  for _, eventName in ipairs({"onEnded", "onHoldRelease", "onContestantAdded", "onContestantRemoved"}) do
+  for _, eventName in ipairs({"onStopped", "onEnded", "onHoldRelease", "onContestantAdded", "onContestantRemoved", "onStatusChanged"}) do
 
     events[round][eventName] = Instance.new("BindableEvent");
     (round :: {})[eventName] = events[round][eventName].Event;
@@ -92,23 +98,32 @@ function ServerRound.__index:start(stageModel: Model): ()
   for _, contestant in ipairs(self.contestants) do
 
     task.spawn(function()
-    
-      local archetype = ServerArchetype.get(contestant.archetypeID, contestant, self, stageModel);
 
-      local actions = {};
-      for _, actionID in ipairs(archetype.actionIDs) do
+      if contestant.archetypeID then
 
-        local action = ServerAction.get(actionID, contestant, self);
-        table.insert(self.actions :: {ServerAction}, action);
-        actions[actionID] = action;
+        local archetype = ServerArchetype.get(contestant.archetypeID).new(contestant, self, stageModel);
 
-      end;
+        local actions = {};
+        for _, actionID in ipairs(archetype.actionIDs) do
 
-      table.insert(self.archetypes :: {ServerArchetype}, archetype);
-      
-      if contestant.ID < 1 then
-          
-        archetype:runAutoPilot(actions);
+          local action = ServerAction.get(actionID, contestant, self);
+          table.insert(self.actions :: {ServerAction}, action);
+          actions[actionID] = action;
+
+        end;
+
+        table.insert(self.archetypes :: {ServerArchetype}, archetype);
+        
+        if contestant.ID < 1 then
+            
+          archetype:runAutoPilot(actions);
+
+        end;
+
+      else
+
+        contestant:disqualify();
+        warn(`Disqualified {contestant.name} ({contestant.ID}) because they don't have an archetype.`);
 
       end;
 
@@ -147,20 +162,30 @@ end;
 function ServerRound.__index:getClientConstructorProperties(): any
 
   -- Convert ServerContestants to ClientContestants.
-  local clientContestants = {};
-  for _, serverContestant in ipairs(self.contestants) do
+  local contestants = {};
+  for _, contestant in ipairs(self.contestants) do
 
-    table.insert(clientContestants, serverContestant:convertToClient());
+    table.insert(contestants, contestant:convertToClient());
 
   end;
 
   return {
     ID = self.ID;
-    contestants = clientContestants;
+    contestants = contestants;
+    status = self.status;
     duration = self.duration;
     timeStarted = self.timeStarted;
     stageID = self.stageID;
   };
+
+end;
+
+function ServerRound.__index:setStatus(newStatus: RoundStatus): ()
+
+  local oldStatus = self.status;
+  self.status = newStatus;
+  events[self].onStatusChanged:Fire(newStatus, oldStatus);
+  ReplicatedStorage.Shared.Events.RoundStatusChanged:FireAllClients(self.ID, newStatus, oldStatus);
 
 end;
 
@@ -170,7 +195,7 @@ function ServerRound.__index:setGameMode(gameMode: GameMode): ()
 
 end;
 
-function ServerRound.__index:stop(): ()
+function ServerRound.__index:stop(forced: boolean?): ()
 
   assert(not self.timeEnded, "The round has already ended.");
 
@@ -182,23 +207,31 @@ function ServerRound.__index:stop(): ()
   end;
 
   -- Disable the actions.
-  for _, archetype in ipairs(self.archetypes :: {ServerArchetype}) do
+  if self.archetypes then
 
-    task.spawn(function() 
+    for _, archetype in ipairs(self.archetypes) do
+
+      task.spawn(function() 
+        
+        archetype:breakdown(); 
       
-      archetype:breakdown(); 
-    
-    end);
+      end);
+
+    end;
 
   end;
 
-  for _, action in ipairs(self.actions :: {ServerAction}) do
+  if self.actions then
 
-    task.spawn(function() 
+    for _, action in ipairs(self.actions :: {ServerAction}) do
+
+      task.spawn(function() 
+        
+        action:breakdown(); 
       
-      action:breakdown(); 
-    
-    end)
+      end)
+
+    end;
 
   end;
 
@@ -216,8 +249,9 @@ function ServerRound.__index:stop(): ()
 
   end;
 
-  DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.ID, self:toString(), contestantIDs);
-  events[self].onEnded:Fire();
+  -- DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.ID, self:toString(), contestantIDs);
+  events[self][if forced then "onStopped" else "onEnded"]:Fire();
+  ReplicatedStorage.Shared.Events[if forced then "RoundStopped" else "RoundEnded"]:FireAllClients(self.ID);
 
 end;
 

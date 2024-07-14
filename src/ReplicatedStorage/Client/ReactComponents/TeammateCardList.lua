@@ -7,10 +7,12 @@ type TeammateCardListProps = {
   children: any;
 }
 
-local function TeammateCardList(props)
+local function TeammateCardList(props: TeammateCardListProps)
 
   return React.createElement("Frame", {
+    AnchorPoint = Vector2.new(if props.layoutOrder == 1 then 0 else 1, 0);
     AutomaticSize = Enum.AutomaticSize.XY;
+    Position = UDim2.new(if props.layoutOrder == 1 then 0 else 1, 0, 0, 0);
     BackgroundTransparency = 1;
     Size = UDim2.new();
     LayoutOrder = props.layoutOrder;
