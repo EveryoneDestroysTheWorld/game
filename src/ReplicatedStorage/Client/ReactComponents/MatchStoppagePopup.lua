@@ -1,11 +1,8 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local Popup = require(script.Parent.Popup);
 local Colors = require(ReplicatedStorage.Client.Colors);
 local Button = require(script.Parent.Button);
-local ParagraphTextLabel = require(script.Parent.ParagraphTextLabel);
-local TeleportService = game:GetService("TeleportService");
 local TweenService = game:GetService("TweenService");
 
 local function CheckeredBackgroundImageLabel(props: {LayoutOrder: number})
@@ -71,7 +68,7 @@ local function CheckeredBackgroundImageLabel(props: {LayoutOrder: number})
 end;
 
 local function MatchStoppagePopup()
-  
+
   local contentFrameSizeScale, setContentFrameSizeScale = React.useState(0); -- Transition to 1 after offset = 150.
   local contentFrameSizeOffset, setContentFrameSizeOffset = React.useState(0); -- Transition to 150.
 

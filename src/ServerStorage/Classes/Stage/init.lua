@@ -24,8 +24,8 @@ type StageMemberObject = {
   role: "Admin";
 };
 
-type StageProperties = {
-  
+type StageConstructorProperties = {
+
   -- The stage's unique ID.
   ID: string?;
   
@@ -49,6 +49,12 @@ type StageProperties = {
 
   -- The stage's members.
   members: {StageMemberObject};
+
+};
+
+type StageProperties = StageConstructorProperties & {
+
+  model: Model?;
   
 }
 
@@ -115,7 +121,7 @@ function Stage.new(properties: StageProperties): Stage
   for _, eventName in ipairs({"onMetadataUpdate", "onBuildDataUpdate", "onBuildDataUpdateProgressChanged", "onDelete", "onStageBuildDataDownloadProgressChanged"}) do
 
     events[eventName] = Instance.new("BindableEvent");
-    stage[eventName] = events[eventName].Event;
+    (stage :: {})[eventName] = events[eventName].Event;
 
   end
 
@@ -124,15 +130,6 @@ function Stage.new(properties: StageProperties): Stage
   return stage :: any;
   
 end
-
-function Stage.fromPrivateServerID(privateServerID: number): Stage
-
-  local stageID = DataStore.PrivateServerStages:GetAsync(privateServerID);
-  assert(typeof(stageID) == "string", "Couldn't find a stage ID.");
-
-  return Stage.fromID(stageID);
-
-end;
 
 -- Returns a random Stage object from the published stages list.
 function Stage.random(): Stage
@@ -406,6 +403,8 @@ function Stage.__index:download(): Model
     end;
 
   end;
+
+  self.model = stageModel;
 
   return stageModel;
 
