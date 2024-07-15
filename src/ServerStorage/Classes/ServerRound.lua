@@ -15,12 +15,15 @@ type ServerAction = ServerAction.ServerAction;
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 type RoundStatus = ClientRound.RoundStatus;
+local Stage = require(script.Parent.Stage);
+type Stage = Stage.Stage;
 
-export type ServerRoundProperties = {  
+export type ServerRoundConstructorProperties = {
+
   -- This round's unique ID.
   ID: string;
 
-  gameMode: GameMode?;
+  gameModeID: number;
   
   -- This stage's ID.
   stageID: string;
@@ -33,11 +36,21 @@ export type ServerRoundProperties = {
 
   timeEnded: number?;
 
-  archetypes: {ServerArchetype}?;
+  contestantIDs: {number};
 
-  actions: {ServerAction}?;
+}
+
+export type ServerRoundProperties = ServerRoundConstructorProperties & {  
+
+  stage: Stage;
+
+  archetypes: {ServerArchetype};
+
+  actions: {ServerAction};
 
   contestants: {ServerContestant};
+
+  gameMode: GameMode?;
 
 };
 
@@ -68,9 +81,13 @@ export type ServerRound = typeof(setmetatable({}, ServerRound)) & ServerRoundPro
 
 local events: {[any]: {[string]: BindableEvent}} = {};
 
-function ServerRound.new(properties: ServerRoundProperties): ServerRound
+function ServerRound.new(properties: ServerRoundConstructorProperties & {stage: Stage?}): ServerRound
 
   local round = setmetatable(properties, ServerRound) :: ServerRound;
+  round.contestants = {};
+  round.actions = {};
+  round.archetypes = {};
+  round.stage = properties.stage or Stage.fromID(properties.stageID);
 
   events[round] = {};
   for _, eventName in ipairs({"onStopped", "onEnded", "onHoldRelease", "onContestantAdded", "onContestantRemoved", "onStatusChanged"}) do
@@ -84,13 +101,43 @@ function ServerRound.new(properties: ServerRoundProperties): ServerRound
   
 end;
 
+function ServerRound.fromPrivateServerID(privateServerID: number): ServerRound
+
+  -- Verify metadata integrity.
+  local roundMetadataEncoded = DataStoreService:GetDataStore("PrivateServerRoundMetadata"):GetAsync(privateServerID);
+  assert(typeof(roundMetadataEncoded) == "string", "Couldn't find a round metadata.");
+  local roundMetadata = HttpService:JSONDecode(roundMetadataEncoded);
+  assert(typeof(roundMetadata) == "table", "Round metadata isn't a table.");
+  assert(typeof(roundMetadata.ID) == "string", "Round ID isn't a string.");
+  assert(typeof(roundMetadata.stageID) == "string", "Stage ID isn't a string.");
+  assert(typeof(roundMetadata.gameModeID) == "number", "Game mode ID isn't a number.");
+  assert(typeof(roundMetadata.contestantIDs) == "table", "Round contestant IDs isn't a table.");
+
+  for index, possibleContestantID in pairs(roundMetadata.contestantIDs) do
+
+    assert(tonumber(index, 10), "Contestant ID list should not have non-integer indexes.");
+    assert(typeof(possibleContestantID) == "number", `Contestant at index {index} isn't a number.`);
+
+  end;
+
+  -- Return the new round.
+  return ServerRound.new({
+    ID = roundMetadata.ID;
+    stageID = roundMetadata.stageID;
+    gameModeID = roundMetadata.gameModeID;
+    contestantIDs = roundMetadata.contestantIDs;
+    status = "Waiting for players" :: RoundStatus;
+  });
+
+end;
+
 function ServerRound.__index:start(stageModel: Model): ()
 
   assert(not self.timeStarted, "The round has already started.");
-  assert(self.gameMode, "This round has no game mode.");
 
   -- Run the game mode.
-  self.gameMode:start(stageModel);
+  self.gameMode = GameMode.get(self.gameModeID).new(self);
+  (self.gameMode :: GameMode):start();
 
   -- Ready the archetypes and actions.
   self.archetypes = {};

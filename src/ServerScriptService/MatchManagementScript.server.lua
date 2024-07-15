@@ -5,26 +5,40 @@ local Players = game:GetService("Players");
 local HttpService = game:GetService("HttpService");
 local Stage = require(ServerStorage.Classes.Stage);
 local ServerRound = require(ServerStorage.Classes.ServerRound);
-local TurfWarGameMode = require(ServerStorage.Classes.GameModes.TurfWarGameMode);
 local ServerContestant = require(ServerStorage.Classes.ServerContestant);
 type ServerContestant = ServerContestant.ServerContestant;
 local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
 type ServerArchetype = ServerArchetype.ServerArchetype;
 local Profile = require(ServerStorage.Classes.Profile);
 
--- Download a random stage from the stage list.
-local stage;
-local shouldGetRandomStage = true;
-if game.PrivateServerId ~= "" then
+-- Initialize the round.
+local round;
+local didSuccessfullyInitializeRound, message = pcall(function()
 
-  stage = Stage.fromPrivateServerID(game.PrivateServerId)
+  local shouldCreateRound = true;
+  if shouldCreateRound then
 
-elseif shouldGetRandomStage then
+    round = ServerRound.new({
+      ID = HttpService:GenerateGUID();
+      stageID = Stage.random().ID :: string;
+      gameModeID = 1;
+      contestantIDs = {};
+      duration = 1500;
+      status = "Waiting for players" :: "Waiting for players";
+    });
 
-  -- This should only happen during test times.
-  stage = Stage.random();
+  elseif game.PrivateServerId ~= "" then
 
-else
+    round = ServerRound.fromPrivateServerID(game.PrivateServerId);
+    assert(round.stageID, "Round didn't have a stage ID.");
+
+  end;
+  
+  round.stage:download().Parent = workspace;
+
+end);
+
+if not didSuccessfullyInitializeRound then
 
   ReplicatedStorage.Shared.Events.RoundStopped:FireAllClients()
   
@@ -34,23 +48,9 @@ else
 
   end);
   
-  return;
+  error(message);
 
 end;
-
-local stageModel = stage:download();
-stageModel.Parent = workspace;
-
--- Initialize the round.
-local round = ServerRound.new({
-  ID = HttpService:GenerateGUID();
-  stageID = stage.ID :: string;
-  contestants = {};
-  duration = 1500;
-  status = "Waiting for players";
-});
-
-round:setGameMode(TurfWarGameMode.new(stageModel, round));
 
 ReplicatedStorage.Shared.Functions.GetRound.OnServerInvoke = function()
 
@@ -188,13 +188,13 @@ local function startRound()
     end;
 
     round:setStatus("Contestant selection");
-    local selectionTimeLimitSeconds = 5;
+    local selectionTimeLimitSeconds = 26;
     local currentTime = os.time();
-    ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds);
+    ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds - 1);
 
     ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = function()
 
-      return os.time() - currentTime + selectionTimeLimitSeconds;
+      return os.time() - currentTime + selectionTimeLimitSeconds - 1;
 
     end;
 

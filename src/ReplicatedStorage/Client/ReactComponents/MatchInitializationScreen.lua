@@ -41,18 +41,22 @@ local function MatchInitializationScreen()
   local selectedArchetype: ClientArchetype, setSelectedArchetype = React.useState(nil :: ClientArchetype?);
   React.useEffect(function()
   
-    local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
+    task.spawn(function()
+    
+      local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
 
-    local contestants = {}
-    for _, contestant in ipairs(roundConstructorProperties.contestants) do
+      local contestants = {}
+      for _, contestant in ipairs(roundConstructorProperties.contestants) do
+  
+        table.insert(contestants, ClientContestant.new(contestant));
+  
+      end;
+      roundConstructorProperties.contestants = contestants;
+  
+      local round = ClientRound.new(roundConstructorProperties);
+      setRound(round);
 
-      table.insert(contestants, ClientContestant.new(contestant));
-
-    end;
-    roundConstructorProperties.contestants = contestants;
-
-    local round = ClientRound.new(roundConstructorProperties);
-    setRound(round);
+    end);
     
   end, {});
 

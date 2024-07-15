@@ -29,11 +29,12 @@ export type TurfWarStats = {
   [number]: TurfWarPlayerStats;
 };
 
-function TurfWarGameMode.new(stageModel: Model, round: ServerRound): GameMode
+function TurfWarGameMode.new(round: ServerRound): GameMode
 
   local stats: TurfWarStats = {};
   local totalStageParts = 0;
   local events = {};
+
 
   local gameMode = GameMode.new({
     ID = TurfWarGameMode.ID;
@@ -41,7 +42,8 @@ function TurfWarGameMode.new(stageModel: Model, round: ServerRound): GameMode
     description = TurfWarGameMode.description;
     start = function(self)
 
-      local restoredStage = stageModel:Clone();
+      assert(round.stage and round.stage.model, "No stage provided.");
+      local restoredStage = round.stage.model:Clone();
       restoredStage.Name = "RestoredStage";
       restoredStage.Parent = ServerStorage;
 
@@ -103,7 +105,7 @@ function TurfWarGameMode.new(stageModel: Model, round: ServerRound): GameMode
 
                   -- Restore the part.
                   local restoredPart = partReference:Clone();
-                  restoredPart.Parent = stageModel;
+                  restoredPart.Parent = round.stage.model;
 
                   if destroyerID then
 
@@ -127,13 +129,13 @@ function TurfWarGameMode.new(stageModel: Model, round: ServerRound): GameMode
 
       end;
 
-      for _, child in ipairs(stageModel:GetChildren()) do
+      for _, child in ipairs(round.stage.model:GetChildren()) do
 
         checkChild(child);
 
       end;
 
-      table.insert(events, stageModel.ChildAdded:Connect(function(child)
+      table.insert(events, round.stage.model.ChildAdded:Connect(function(child)
       
         checkChild(child);
 
