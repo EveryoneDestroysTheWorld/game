@@ -18,7 +18,13 @@ local function MatchInitializationTimer()
   
       end);
 
-      -- setCurrentSecond(ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit:InvokeServer());
+      ReplicatedStorage.Shared.Events.ArchetypeSelectionsFinalized.OnClientEvent:Connect(function()
+      
+        setCurrentSecond(nil);
+
+      end);
+
+      setCurrentSecond(ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit:InvokeServer());
 
     end);
 
@@ -74,7 +80,7 @@ local function MatchInitializationTimer()
 
           delayTask = task.delay(1, function()
 
-            setCurrentSecond(currentSecond - 1);
+            setCurrentSecond(function(currentSecond) return if currentSecond then currentSecond - 1 else nil end);
 
           end);
 
@@ -96,7 +102,25 @@ local function MatchInitializationTimer()
 
   end, {currentSecond});
 
-  return if currentSecond and animatedSecond then React.createElement("Frame", {
+  React.useEffect(function()
+  
+    if not currentSecond and textTransparency == 0 then
+
+      local targetTextTransparencyNumberValue = Instance.new("NumberValue");
+      targetTextTransparencyNumberValue.Value = 0;
+      targetTextTransparencyNumberValue:GetPropertyChangedSignal("Value"):Connect(function()
+      
+        setTextTransparency(targetTextTransparencyNumberValue.Value);
+
+      end);
+      
+      TweenService:Create(targetTextTransparencyNumberValue, TweenInfo.new(0.5, Enum.EasingStyle.Sine), {Value = 1}):Play();
+
+    end;
+
+  end, {currentSecond, textTransparency});
+
+  return if animatedSecond then React.createElement("Frame", {
     BackgroundTransparency = 1;
     AutomaticSize = Enum.AutomaticSize.XY;
     Size = UDim2.new();

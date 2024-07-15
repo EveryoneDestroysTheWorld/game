@@ -159,48 +159,13 @@ local function startRound()
 
     end;
 
+    local delayTask = nil;
     local chosenArchetypeIDs = {};
-    ReplicatedStorage.Shared.Functions.ChooseArchetype.OnServerInvoke = function(player, archetypeID)
-
-      -- Verify that the player is a contestant.
-      local contestant = getContestantFromPlayer(player);
-      local playerIdentifier = `{player.Name} ({player.UserId})`;
-      assert(contestant, `{playerIdentifier} isn't a contestant in this round, so it is unnecessary for them to choose an archetype.`);
-      assert(contestant.profile, `Couldn't find the {playerIdentifier}'s profile.`);
-
-      -- Verify that the archetype ID is valid.
-      assert(table.find(contestant.profile:getArchetypeIDs(), archetypeID), `{playerIdentifier} doesn't own archetype {archetypeID}, so it can't be used in this round.`);
-
-      -- Update the archetype.
-      chosenArchetypeIDs[contestant] = archetypeID;
-
-      -- Let every team member know.
-      for _, possibleTeammate in ipairs(round.contestants) do
-
-        if possibleTeammate.teamID == contestant.teamID and possibleTeammate.player then
-
-          ReplicatedStorage.Shared.Events.ArchetypePrivatelyChosen:FireClient(possibleTeammate.player, contestant.ID, archetypeID);
-
-        end;
-
-      end;
-
-    end;
-
-    round:setStatus("Contestant selection");
-    local selectionTimeLimitSeconds = 26;
-    local currentTime = os.time();
-    ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds - 1);
-
-    ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = function()
-
-      return os.time() - currentTime + selectionTimeLimitSeconds - 1;
-
-    end;
-
-    task.delay(selectionTimeLimitSeconds, function()
+    local function previewMatchup()
 
       local isSuccess, message = pcall(function()
+
+        task.cancel(delayTask);
 
         -- Block selections.
         ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = nil;
@@ -300,7 +265,64 @@ local function startRound()
 
       end;
 
-    end);
+    end;
+
+    ReplicatedStorage.Shared.Functions.ChooseArchetype.OnServerInvoke = function(player, archetypeID)
+
+      -- Verify that the player is a contestant.
+      local contestant = getContestantFromPlayer(player);
+      local playerIdentifier = `{player.Name} ({player.UserId})`;
+      assert(contestant, `{playerIdentifier} isn't a contestant in this round, so it is unnecessary for them to choose an archetype.`);
+      assert(contestant.profile, `Couldn't find the {playerIdentifier}'s profile.`);
+
+      -- Verify that the archetype ID is valid.
+      assert(table.find(contestant.profile:getArchetypeIDs(), archetypeID), `{playerIdentifier} doesn't own archetype {archetypeID}, so it can't be used in this round.`);
+
+      -- Update the archetype.
+      chosenArchetypeIDs[contestant] = archetypeID;
+
+      -- Let every team member know.
+      for _, possibleTeammate in ipairs(round.contestants) do
+
+        if possibleTeammate.teamID == contestant.teamID and possibleTeammate.player then
+
+          ReplicatedStorage.Shared.Events.ArchetypePrivatelyChosen:FireClient(possibleTeammate.player, contestant.ID, archetypeID);
+
+        end;
+
+      end;
+
+      -- Check if every player made their selection
+      local shouldContinue = true;
+      for _, contestant in ipairs(round.contestants) do
+
+        if contestant.player and not chosenArchetypeIDs[contestant] then
+
+          shouldContinue = false;
+
+        end;
+
+      end;
+
+      if shouldContinue then
+
+        previewMatchup();
+
+      end;
+
+    end;
+
+    round:setStatus("Contestant selection");
+    local selectionTimeLimitSeconds = 26;
+    local currentTime = os.time();
+    ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds - 1);
+    ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = function()
+
+      return os.time() - currentTime + selectionTimeLimitSeconds - 1;
+
+    end;
+
+    delayTask = task.delay(selectionTimeLimitSeconds, previewMatchup);
 
   end);
 
