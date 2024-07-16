@@ -75,6 +75,7 @@ local function Ticker(props: TickerProps)
         local numberValue = Instance.new("NumberValue");
         numberValue:GetPropertyChangedSignal("Value"):Connect(function()
         
+          task.wait();
           setPositionYOffset(numberValue.Value);
           
         end);
@@ -105,7 +106,7 @@ local function Ticker(props: TickerProps)
     
   end, {props.round});
 
-  return React.createElement("ScrollingFrame", {
+  return if positionYOffset == 50 then nil else React.createElement("ScrollingFrame", {
     ref = scrollingFrameRef;
     BackgroundColor3 = Colors.PopupBackground;
     BackgroundTransparency = 0.15;
@@ -130,7 +131,7 @@ local function Ticker(props: TickerProps)
       PaddingLeft = UDim.new(0, absoluteWindowSizeX);
     });
     React.createElement(React.Fragment, {}, messageTextLabels); 
-  })
+  });
 
 end;
 

@@ -20,6 +20,7 @@ local function TeammateCardList(props: TeammateCardListProps)
     React.createElement("UIListLayout", {
       SortOrder = Enum.SortOrder.LayoutOrder;
       Padding = UDim.new(0, 15);
+      HorizontalAlignment = if props.layoutOrder == 2 then Enum.HorizontalAlignment.Right else nil;
     });
     React.createElement(React.Fragment, {}, props.children);
   })

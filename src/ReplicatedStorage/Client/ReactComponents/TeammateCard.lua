@@ -104,24 +104,61 @@ local function TeammateCard(props: TeammateCardProps)
     end;
 
   end, {props.contestant});
-  
+
+  local uiPaddingOffset, setUIPaddingOffset = React.useState(0);
+  local contestantBannerSizeXOffset, setContestantBannerSizeXOffset = React.useState(300);
+
   React.useEffect(function()
   
-    if roundStatus == "Contestant selection" then
+    task.spawn(function()
 
-      local numberValue = Instance.new("NumberValue");
-      numberValue:GetPropertyChangedSignal("Value"):Connect(function()
-      
-        task.wait();
-        setUIPaddingTop(numberValue.Value);
+      if roundStatus == "Contestant selection" then
 
-      end);
-      numberValue.Value = 60;
-      
-      local tween = TweenService:Create(numberValue, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 0});
-      tween:Play();
+        local numberValue = Instance.new("NumberValue");
+        numberValue:GetPropertyChangedSignal("Value"):Connect(function()
+        
+          task.wait();
+          setUIPaddingTop(numberValue.Value);
 
-    end;
+        end);
+        numberValue.Value = 60;
+        
+        local tween = TweenService:Create(numberValue, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 0});
+        tween:Play();
+
+      elseif roundStatus == "Matchup preview" then
+
+        local numberValue = Instance.new("NumberValue");
+        numberValue:GetPropertyChangedSignal("Value"):Connect(function()
+        
+          task.wait();
+          setUIPaddingOffset(numberValue.Value);
+
+        end);
+        
+        local tween = TweenService:Create(numberValue, TweenInfo.new(5, Enum.EasingStyle.Sine), {Value = 30 * (props.layoutOrder - 1) + 5});
+        local completedEvent;
+        completedEvent = tween.Completed:Connect(function()
+        
+          completedEvent:Disconnect();
+          local bannerTweenValue = Instance.new("NumberValue");
+          bannerTweenValue:GetPropertyChangedSignal("Value"):Connect(function()
+          
+            task.wait();
+            setContestantBannerSizeXOffset(bannerTweenValue.Value);
+
+          end);
+          bannerTweenValue.Value = contestantBannerSizeXOffset;
+
+          TweenService:Create(bannerTweenValue, TweenInfo.new(1 + (0.25 * (4 - props.layoutOrder)), Enum.EasingStyle.Bounce), {Value = 0}):Play();
+          TweenService:Create(numberValue, TweenInfo.new(1, Enum.EasingStyle.Sine), {Value = -60}):Play();
+
+        end);
+        tween:Play();
+        
+      end;
+
+    end)
 
   end, {roundStatus});
 
@@ -173,14 +210,19 @@ local function TeammateCard(props: TeammateCardProps)
         Rotation = if props.isRival then 2 else -2;
         BackgroundTransparency = 1;
       }, {
+        UIPadding = React.createElement("UIPadding", {
+          PaddingLeft = if not props.isRival then UDim.new(0, uiPaddingOffset) else nil;
+          PaddingRight = if props.isRival then UDim.new(0, uiPaddingOffset) else nil;
+        });
         UIListLayout = React.createElement("UIListLayout", {
           Padding = UDim.new(0, 5);
           SortOrder = Enum.SortOrder.LayoutOrder;
+          HorizontalAlignment = if props.isRival then Enum.HorizontalAlignment.Right else Enum.HorizontalAlignment.Left;
         });
         StatusLabel = React.createElement("TextLabel", {
           BackgroundTransparency = 1;
           LayoutOrder = 1;
-          Size = UDim2.new(0, 300, 0, 17);
+          Size = UDim2.new(0, contestantBannerSizeXOffset, 0, 17);
           Text = statusLabelText;
           TextTransparency = if props.contestant then transparency or 0 else 0.5 + (transparency or 0);
           TextColor3 = if props.isRival then Color3.fromRGB(255, 117, 117) else Color3.new(1, 1, 1);
@@ -197,7 +239,7 @@ local function TeammateCard(props: TeammateCardProps)
         ContestantBannerImageLabel = React.createElement("ImageLabel", {
           BackgroundColor3 = Color3.fromRGB(0, 0, 0);
           BackgroundTransparency = if props.contestant then transparency or 0 else 0.4 + (transparency or 0);
-          Size = UDim2.new(0, 300, 0, if props.round and props.round.status == "Waiting for players" then 100 else 30);
+          Size = UDim2.new(0, contestantBannerSizeXOffset, 0, if props.round and props.round.status == "Waiting for players" then 100 else 30);
           Image = "rbxassetid://15562720000";
           ScaleType = Enum.ScaleType.Tile;
           LayoutOrder = 2;

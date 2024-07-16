@@ -165,7 +165,11 @@ local function startRound()
 
       local isSuccess, message = pcall(function()
 
-        task.cancel(delayTask);
+        if coroutine.status(delayTask) ~= "running" then
+
+          task.cancel(delayTask);
+
+        end;
 
         -- Block selections.
         ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = nil;
@@ -256,6 +260,20 @@ local function startRound()
 
         round:setStatus("Matchup preview");
 
+        task.delay(7, function()
+        
+          for _, contestant in ipairs(round.contestants) do
+
+            if contestant.player then
+
+              contestant.player:LoadCharacter();
+
+            end;
+
+          end;
+
+        end);
+
       end);
 
       if not isSuccess then
@@ -281,24 +299,24 @@ local function startRound()
       -- Update the archetype.
       chosenArchetypeIDs[contestant] = archetypeID;
 
-      -- Let every team member know.
+      local shouldContinue = true;
       for _, possibleTeammate in ipairs(round.contestants) do
 
-        if possibleTeammate.teamID == contestant.teamID and possibleTeammate.player then
+        if possibleTeammate.player then
 
-          ReplicatedStorage.Shared.Events.ArchetypePrivatelyChosen:FireClient(possibleTeammate.player, contestant.ID, archetypeID);
+          -- Privately let every player teammate know about the change.
+          if possibleTeammate.teamID == contestant.teamID then
 
-        end;
+            ReplicatedStorage.Shared.Events.ArchetypePrivatelyChosen:FireClient(possibleTeammate.player, contestant.ID, archetypeID);
 
-      end;
+          end;
 
-      -- Check if every player made their selection
-      local shouldContinue = true;
-      for _, contestant in ipairs(round.contestants) do
+          -- Check if every player made their selection
+          if not chosenArchetypeIDs[possibleTeammate] then
 
-        if contestant.player and not chosenArchetypeIDs[contestant] then
+            shouldContinue = false;
 
-          shouldContinue = false;
+          end;
 
         end;
 
@@ -313,7 +331,7 @@ local function startRound()
     end;
 
     round:setStatus("Contestant selection");
-    local selectionTimeLimitSeconds = 26;
+    local selectionTimeLimitSeconds = 25;
     local currentTime = os.time();
     ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds - 1);
     ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = function()

@@ -20,7 +20,7 @@ local function MatchInitializationTimer()
 
       ReplicatedStorage.Shared.Events.ArchetypeSelectionsFinalized.OnClientEvent:Connect(function()
       
-        setCurrentSecond(nil);
+        setCurrentSecond(5);
 
       end);
 
@@ -30,9 +30,11 @@ local function MatchInitializationTimer()
 
   end, {});
 
-  local rotation, setRotation = React.useState(-360);
-  local textSize, setTextSize = React.useState(0);
-  local textTransparency, setTextTransparency = React.useState(1);
+  local textState, setTextState = React.useState({
+    rotation = -360;
+    textSize = 0;
+    textTransparency = 1;
+  });
 
   React.useEffect(function()
 
@@ -42,49 +44,40 @@ local function MatchInitializationTimer()
     
       if currentSecond >= 0 then
 
-        setRotation(-360);
-        setTextSize(0);
-        setTextTransparency(1);
-        setAnimatedSecond(currentSecond)
-
-        local targetRotationNumberValue = Instance.new("NumberValue");
-        targetRotationNumberValue.Value = -360;
-        targetRotationNumberValue:GetPropertyChangedSignal("Value"):Connect(function()
+        local changed = false;
+        local numberValue = Instance.new("NumberValue");
+        numberValue:GetPropertyChangedSignal("Value"):Connect(function()
         
-          setRotation(targetRotationNumberValue.Value);
+          task.wait();
+          if not changed then
+
+            changed = true;
+            setAnimatedSecond(currentSecond);
+
+          end;
+
+          setTextState({
+            rotation = -360 + numberValue.Value * 360;
+            textSize = 50 * numberValue.Value;
+            textTransparency = 1 - numberValue.Value;
+          });
 
         end);
-        TweenService:Create(targetRotationNumberValue, TweenInfo.new(0.75, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 0}):Play();
+        TweenService:Create(numberValue, TweenInfo.new(0.75, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 1}):Play();
 
-        local targetTextSizeNumberValue = Instance.new("NumberValue");
-        targetTextSizeNumberValue.Value = 0;
-        targetTextSizeNumberValue:GetPropertyChangedSignal("Value"):Connect(function()
-        
-          setTextSize(targetTextSizeNumberValue.Value);
+        delayTask = task.delay(1, function()
 
-        end);
-
-        TweenService:Create(targetTextSizeNumberValue, TweenInfo.new(0.75, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 50}):Play();
-
-        local targetTextTransparencyNumberValue = Instance.new("NumberValue");
-        targetTextTransparencyNumberValue.Value = 1;
-        targetTextTransparencyNumberValue:GetPropertyChangedSignal("Value"):Connect(function()
-        
-          setTextTransparency(targetTextTransparencyNumberValue.Value);
-
-        end);
-        
-        TweenService:Create(targetTextTransparencyNumberValue, TweenInfo.new(0.75, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 0}):Play();
-
-        if currentSecond > 0 then
-
-          delayTask = task.delay(1, function()
+          if currentSecond > 0 then
 
             setCurrentSecond(function(currentSecond) return if currentSecond then currentSecond - 1 else nil end);
 
-          end);
+          else
 
-        end;
+            setCurrentSecond(nil);
+
+          end;
+
+        end);
 
       end;
 
@@ -104,13 +97,20 @@ local function MatchInitializationTimer()
 
   React.useEffect(function()
   
-    if not currentSecond and textTransparency == 0 then
+    if not currentSecond and textState.textTransparency == 0 then
 
       local targetTextTransparencyNumberValue = Instance.new("NumberValue");
       targetTextTransparencyNumberValue.Value = 0;
       targetTextTransparencyNumberValue:GetPropertyChangedSignal("Value"):Connect(function()
       
-        setTextTransparency(targetTextTransparencyNumberValue.Value);
+        task.wait();
+        setTextState(function(textState) 
+          return {
+            rotation = textState.rotation;
+            textSize = textState.textSize;
+            textTransparency = targetTextTransparencyNumberValue.Value;
+          } 
+        end);
 
       end);
       
@@ -118,7 +118,7 @@ local function MatchInitializationTimer()
 
     end;
 
-  end, {currentSecond, textTransparency});
+  end, {currentSecond, textState :: any});
 
   return if animatedSecond then React.createElement("Frame", {
     BackgroundTransparency = 1;
@@ -131,9 +131,9 @@ local function MatchInitializationTimer()
       Text = animatedSecond;
       FontFace = Font.fromId(16658221428, Enum.FontWeight.Bold);
       BackgroundTransparency = 1;
-      TextTransparency = textTransparency;
-      Rotation = rotation;
-      TextSize = textSize;
+      TextTransparency = textState.textTransparency;
+      Rotation = textState.rotation;
+      TextSize = textState.textSize;
       TextColor3 = Color3.new(1, 1, 1);
       Size = UDim2.new(0, 50, 0, 50);
     });
