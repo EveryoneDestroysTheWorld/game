@@ -1,16 +1,16 @@
 local TweenService = game:GetService("TweenService");
 
-type props = ({
+type props = {
   type: "Number";
   initialValue: number?;
   goalValue: number;
   onChange: (newValue: number) -> ();
+  tweenInfo: TweenInfo?;
 } | {
   type: "Color3";
   initialValue: Color3?;
   goalValue: Color3;
   onChange: (newValue: Color3) -> ();
-}) & {
   tweenInfo: TweenInfo?;
 }
 
@@ -20,7 +20,7 @@ return function(props: props): Tween
   valueInstance:GetPropertyChangedSignal("Value"):Connect(function()
     
     task.wait();
-    props.onChange(valueInstance.Value);
+    (props.onChange :: any)(valueInstance.Value);
 
   end);
   

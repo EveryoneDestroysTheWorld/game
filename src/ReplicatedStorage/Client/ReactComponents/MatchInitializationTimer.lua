@@ -1,6 +1,6 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local TweenService = game:GetService("TweenService");
+local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 
 local function MatchInitializationTimer()
@@ -36,36 +36,38 @@ local function MatchInitializationTimer()
     textTransparency = 1;
   });
 
-  React.useEffect(function()
-
-    local delayTask;
+  React.useEffect(function(): ()
 
     if currentSecond then
     
       if currentSecond >= 0 then
 
         local changed = false;
-        local numberValue = Instance.new("NumberValue");
-        numberValue:GetPropertyChangedSignal("Value"):Connect(function()
-        
-          task.wait();
-          if not changed then
+        local tween = dataTypeTween({
+          type = "Number";
+          goalValue = 1;
+          tweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
+          onChange = function(newValue)
 
-            changed = true;
-            setAnimatedSecond(currentSecond);
+            if not changed then
+
+              changed = true;
+              setAnimatedSecond(currentSecond);
+  
+            end;
+  
+            setTextState({
+              rotation = -360 + 360 * newValue;
+              textSize = 50 * newValue;
+              textTransparency = 1 - newValue;
+            });
 
           end;
+        });
 
-          setTextState({
-            rotation = -360 + numberValue.Value * 360;
-            textSize = 50 * numberValue.Value;
-            textTransparency = 1 - numberValue.Value;
-          });
+        tween:Play();
 
-        end);
-        TweenService:Create(numberValue, TweenInfo.new(0.75, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 1}):Play();
-
-        delayTask = task.delay(1, function()
+        local delayTask = task.delay(1, function()
 
           if currentSecond > 0 then
 
@@ -79,15 +81,17 @@ local function MatchInitializationTimer()
 
         end);
 
-      end;
+        return function()
 
-    end;
+          if coroutine.status(delayTask) == "running" then
 
-    return function()
+            task.cancel(delayTask);
 
-      if delayTask then
+          end;
 
-        task.cancel(delayTask);
+          tween:Cancel();
+
+        end;
 
       end;
 
@@ -99,22 +103,22 @@ local function MatchInitializationTimer()
   
     if not currentSecond and textState.textTransparency == 0 then
 
-      local targetTextTransparencyNumberValue = Instance.new("NumberValue");
-      targetTextTransparencyNumberValue.Value = 0;
-      targetTextTransparencyNumberValue:GetPropertyChangedSignal("Value"):Connect(function()
-      
-        task.wait();
-        setTextState(function(textState) 
-          return {
-            rotation = textState.rotation;
-            textSize = textState.textSize;
-            textTransparency = targetTextTransparencyNumberValue.Value;
-          } 
-        end);
+      dataTypeTween({
+        type = "Number";
+        goalValue = 1;
+        tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Sine);
+        onChange = function(newValue)
 
-      end);
-      
-      TweenService:Create(targetTextTransparencyNumberValue, TweenInfo.new(0.5, Enum.EasingStyle.Sine), {Value = 1}):Play();
+          setTextState(function(textState) 
+            return {
+              rotation = textState.rotation;
+              textSize = textState.textSize;
+              textTransparency = newValue;
+            } 
+          end);
+
+        end;
+      }):Play();
 
     end;
 

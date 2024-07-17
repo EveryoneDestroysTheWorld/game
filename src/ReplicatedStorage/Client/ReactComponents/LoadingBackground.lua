@@ -1,6 +1,6 @@
 local Players = game:GetService("Players");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local TweenService = game:GetService("TweenService");
+local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
@@ -24,16 +24,16 @@ local function LoadingBackground(props: LoadingBackgroundProps)
         setIsVisible(true);
         task.delay(5.6, function()
         
-          local numberValue = Instance.new("NumberValue");
-          numberValue:GetPropertyChangedSignal("Value"):Connect(function()
-            
-            task.wait();
-            setSizeYScale(numberValue.Value)
+          dataTypeTween({
+            type = "Number";
+            goalValue = 1;
+            tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
+            onChange = function(newValue)
 
-          end);
-          numberValue.Value = 0;
-          
-          TweenService:Create(numberValue, TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 1}):Play();
+              setSizeYScale(newValue);
+
+            end;
+          }):Play();
 
         end);
 
@@ -41,22 +41,29 @@ local function LoadingBackground(props: LoadingBackgroundProps)
 
     end);
 
-    Players.LocalPlayer.CharacterAdded:Connect(function()
+    local characterAddedEvent = Players.LocalPlayer.CharacterAdded:Connect(function()
     
-      local numberValue = Instance.new("NumberValue");
       setAnchorPointY(1);
       setPositionYScale(1);
-      numberValue:GetPropertyChangedSignal("Value"):Connect(function()
-        
-        task.wait();
-        setSizeYScale(numberValue.Value)
+      dataTypeTween({
+        type = "Number";
+        goalValue = 0;
+        initialValue = 1;
+        tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
+        onChange = function(newValue)
 
-      end);
-      numberValue.Value = 1;
-      
-      TweenService:Create(numberValue, TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 0}):Play();
+          setSizeYScale(newValue)
+
+        end;
+      }):Play();
 
     end);
+
+    return function()
+
+      characterAddedEvent:Disconnect();
+
+    end;
 
   end, {props.round});
 

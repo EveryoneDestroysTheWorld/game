@@ -19,7 +19,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
     tagline = 18;
   });
   local titleColor, setTitleColor = React.useState(Color3.fromRGB(255, 94, 97));
-  local taglioeColor, setTaglineColor = React.useState(Color3.fromRGB(199, 199, 199));
+  local taglineColor, setTaglineColor = React.useState(Color3.fromRGB(199, 199, 199));
   React.useEffect(function()
   
     props.round.onStatusChanged:Connect(function()
@@ -28,7 +28,8 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
 
         task.delay(5.25, function()
         
-          local anchorPointTween = numberTween({
+          local anchorPointTween = dataTypeTween({
+            type = "Number";
             goalValue = 0.5;
             tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Bounce);
             onChange = function(newValue)
@@ -40,7 +41,8 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
           
           anchorPointTween.Completed:Connect(function()
           
-            numberTween({
+            dataTypeTween({
+              type = "Number";
               goalValue = 1;
               tweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
               onChange = function(newValue)
@@ -67,12 +69,31 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
     local characterAddedEvent = Players.LocalPlayer.CharacterAdded:Connect(function()
     
       local colorTween = dataTypeTween({
-        type = "Color3"
+        type = "Color3",
+        initialValue = titleColor;
+        goalValue = Color3.new(1, 1, 1);
+        onChange = function(newValue)
+
+          setTitleColor(newValue);
+
+        end;
+      });
+
+      dataTypeTween({
+        type = "Color3",
+        initialValue = titleColor;
+        goalValue = Color3.new(1, 1, 1);
+        onChange = function(newValue)
+
+          setTitleColor(newValue);
+
+        end;
       });
 
       colorTween.Completed:Connect(function()
       
-        numberTween({
+        dataTypeTween({
+          type = "Number";
           initialValue = 1;
           goalValue = 0;
           onChange = function()
@@ -82,9 +103,26 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
 
       end);
 
+      dataTypeTween({
+        type = "Color3",
+        initialValue = taglineColor;
+        goalValue = Color3.new(1, 1, 1);
+        onChange = function(newValue)
+
+          setTaglineColor(newValue);
+
+        end;
+      });
+
       colorTween:Play();
 
     end);
+
+    return function()
+
+      characterAddedEvent:Disconnect();
+
+    end;
 
   end, {props.round});
 
@@ -135,7 +173,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
         LayoutOrder = 3;
         Text = "BREAK EVERYTHING BEFORE THEY DO!!";
         FontFace = Font.fromName("PressStart2P");
-        TextColor3 = taglioeColor;
+        TextColor3 = taglineColor;
         TextSize = textSizes.tagline;
       });
     });
