@@ -49,8 +49,8 @@ local function Ticker(props: TickerProps)
     if scrollingFrameRef.current then
 
       -- Reset the position back to the beginning so the ticker seems infinite.
-      setAbsoluteWindowSizeX(scrollingFrameRef.current.AbsoluteWindowSize.X);
       game:GetService("RunService").Heartbeat:Wait();
+      setAbsoluteWindowSizeX(scrollingFrameRef.current.AbsoluteWindowSize.X);
       if canvasPosition.X >= (absoluteWindowSizeX + scrollingFrameRef.current.AbsoluteCanvasSize.X + uiListLayoutPaddingOffset) / 2 then
         
         setCanvasPosition(Vector2.new(absoluteWindowSizeX, 0));
@@ -75,7 +75,6 @@ local function Ticker(props: TickerProps)
         local numberValue = Instance.new("NumberValue");
         numberValue:GetPropertyChangedSignal("Value"):Connect(function()
         
-          task.wait();
           setPositionYOffset(numberValue.Value);
           
         end);

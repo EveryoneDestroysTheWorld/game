@@ -1,8 +1,9 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local TweenService = game:GetService("TweenService");
 local React = require(ReplicatedStorage.Shared.Packages.react);
+local Players = game:GetService("Players");
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
+local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 type ClientRound = ClientRound.ClientRound;
 
 type MatchInitializationHeaderProps = {
@@ -17,6 +18,8 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
     title = 30;
     tagline = 18;
   });
+  local titleColor, setTitleColor = React.useState(Color3.fromRGB(255, 94, 97));
+  local taglioeColor, setTaglineColor = React.useState(Color3.fromRGB(199, 199, 199));
   React.useEffect(function()
   
     props.round.onStatusChanged:Connect(function()
@@ -25,37 +28,61 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
 
         task.delay(5.25, function()
         
-          local numberValue = Instance.new("NumberValue");
-          numberValue:GetPropertyChangedSignal("Value"):Connect(function()
-            
-            task.wait();
-            setAnchorPointY(numberValue.Value);
+          local anchorPointTween = numberTween({
+            goalValue = 0.5;
+            tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Bounce);
+            onChange = function(newValue)
+
+              setAnchorPointY(newValue);
+
+            end;
+          });
+          
+          anchorPointTween.Completed:Connect(function()
+          
+            numberTween({
+              goalValue = 1;
+              tweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
+              onChange = function(newValue)
+
+                setTextSizes({
+                  subtitle = textSizes.subtitle + newValue * 6;
+                  title = textSizes.title + newValue * 30;
+                  tagline = textSizes.tagline + newValue * 6;
+                });
+
+              end;
+            }):Play();
 
           end);
           
-          local tween = TweenService:Create(numberValue, TweenInfo.new(1, Enum.EasingStyle.Bounce), {Value = 0.5});
-          tween.Completed:Connect(function()
-          
-            local n2 = Instance.new("NumberValue");
-            n2:GetPropertyChangedSignal("Value"):Connect(function()
-              
-              task.wait();
-              setTextSizes({
-                subtitle = textSizes.subtitle + n2.Value * 6;
-                title = textSizes.title + n2.Value * 30;
-                tagline = textSizes.tagline + n2.Value * 6;
-              });
-  
-            end);
-
-            TweenService:Create(n2, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 1}):Play();
-
-          end);
-          tween:Play();
+          anchorPointTween:Play();
 
         end);
 
       end;
+
+    end);
+
+    local characterAddedEvent = Players.LocalPlayer.CharacterAdded:Connect(function()
+    
+      local colorTween = dataTypeTween({
+        type = "Color3"
+      });
+
+      colorTween.Completed:Connect(function()
+      
+        numberTween({
+          initialValue = 1;
+          goalValue = 0;
+          onChange = function()
+
+          end;
+        })
+
+      end);
+
+      colorTween:Play();
 
     end);
 
@@ -98,7 +125,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
         Text = "TURF WAR";
         LayoutOrder = 2;
         FontFace = Font.fromId(11702779517, Enum.FontWeight.Heavy);
-        TextColor3 = Color3.fromRGB(255, 94, 97);
+        TextColor3 = titleColor;
         TextSize = textSizes.title;
       });
       TaglineLabel = React.createElement("TextLabel", {
@@ -108,7 +135,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
         LayoutOrder = 3;
         Text = "BREAK EVERYTHING BEFORE THEY DO!!";
         FontFace = Font.fromName("PressStart2P");
-        TextColor3 = Color3.fromRGB(199, 199, 199);
+        TextColor3 = taglioeColor;
         TextSize = textSizes.tagline;
       });
     });

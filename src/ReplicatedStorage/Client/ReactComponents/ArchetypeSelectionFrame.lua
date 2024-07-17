@@ -23,128 +23,137 @@ local function ArchetypeSelectionFrame(props: ArchetypeInformationFrameProps)
   -- Get a list of all owned archetypes.
   React.useEffect(function()
   
-    setArchetypeIDs(ReplicatedStorage.Shared.Functions.GetArchetypeIDs:InvokeServer());
-    ReplicatedStorage.Shared.Events.ArchetypePrivatelyChosen.OnClientEvent:Connect(function(contestantID, archetypeID)
-      
-      if contestantID == Players.LocalPlayer.UserId then 
+    task.spawn(function()
 
-        setConfirmedArchetypeID(archetypeID);
+      setArchetypeIDs(ReplicatedStorage.Shared.Functions.GetArchetypeIDs:InvokeServer());
 
-      end;
-  
+      ReplicatedStorage.Shared.Events.ArchetypePrivatelyChosen.OnClientEvent:Connect(function(contestantID, archetypeID)
+          
+        if contestantID == Players.LocalPlayer.UserId then 
+
+          setConfirmedArchetypeID(archetypeID);
+
+        end;
+    
+      end);
+
     end);
 
   end, {});
 
   React.useEffect(function()
   
-    local archetypeCategories = {};
-    for _, archetypeID in ipairs(archetypeIDs) do
+    task.spawn(function()
 
-      local archetype = ClientArchetype.get(archetypeID);
-      if not archetypeCategories[archetype.type] then
+      local archetypeCategories = {};
+      for _, archetypeID in ipairs(archetypeIDs) do
 
-        archetypeCategories[archetype.type] = {};        
+        local archetype = ClientArchetype.get(archetypeID);
+        if not archetypeCategories[archetype.type] then
+
+          archetypeCategories[archetype.type] = {};        
+
+        end;
+
+        table.insert(archetypeCategories[archetype.type], archetype);
 
       end;
 
-      table.insert(archetypeCategories[archetype.type], archetype);
+      local archetypeCategoryFrames = {};
+      for type, archetypes in pairs(archetypeCategories) do
 
-    end;
+        local archetypeButtons = {};
+        for _, archetype in ipairs(archetypes) do
 
-    local archetypeCategoryFrames = {};
-    for type, archetypes in pairs(archetypeCategories) do
+          table.insert(archetypeButtons, React.createElement("TextButton", {
+            ClipsDescendants = true;
+            Name = `Archetype{archetype.ID}`;
+            BackgroundTransparency = 0.55;
+            BackgroundColor3 = Color3.new(0, 0, 0);
+            Text = "";
+            Size = UDim2.new(0, 70, 0, 70);
+            [React.Event.Activated] = function()
 
-      local archetypeButtons = {};
-      for _, archetype in ipairs(archetypes) do
+              props.onSelectionChanged(archetype);
 
-        table.insert(archetypeButtons, React.createElement("TextButton", {
-          ClipsDescendants = true;
-          Name = `Archetype{archetype.ID}`;
+            end;
+          }, {
+            UICorner = React.createElement("UICorner", {
+              CornerRadius = UDim.new(1, 0);
+            });
+            UIStroke = React.createElement("UIStroke", {
+              Color = if props.selectedArchetype and props.selectedArchetype.ID == archetype.ID then Colors.DemoDemonsOrange else Colors.PopupBorder;
+              Thickness = 2;
+              ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
+            });
+            ImageLabel = React.createElement("ImageLabel", {
+              AnchorPoint = Vector2.new(0.5, 0.5);
+              Image = archetype.iconImage;
+              Position = UDim2.new(0, 20, 1, -15);
+              Size = UDim2.new(1, 15, 1, 15);
+              BackgroundTransparency = 1;
+            })
+          }));
+        end;
+        table.insert(archetypeCategoryFrames, React.createElement("Frame", {
+          Name = `{type}Frame`;
           BackgroundTransparency = 0.55;
-          BackgroundColor3 = Color3.new(0, 0, 0);
-          Text = "";
-          Size = UDim2.new(0, 70, 0, 70);
-          [React.Event.Activated] = function()
-
-            props.onSelectionChanged(archetype);
-
-          end;
-        }, {
-          UICorner = React.createElement("UICorner", {
-            CornerRadius = UDim.new(1, 0);
-          });
-          UIStroke = React.createElement("UIStroke", {
-            Color = if props.selectedArchetype and props.selectedArchetype.ID == archetype.ID then Colors.DemoDemonsOrange else Colors.PopupBorder;
-            Thickness = 2;
-            ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
-          });
-          ImageLabel = React.createElement("ImageLabel", {
-            AnchorPoint = Vector2.new(0.5, 0.5);
-            Image = archetype.iconImage;
-            Position = UDim2.new(0, 20, 1, -15);
-            Size = UDim2.new(1, 15, 1, 15);
-            BackgroundTransparency = 1;
-          })
-        }));
-      end;
-      table.insert(archetypeCategoryFrames, React.createElement("Frame", {
-        Name = `{type}Frame`;
-        BackgroundTransparency = 0.55;
-        AutomaticSize = Enum.AutomaticSize.XY;
-        BackgroundColor3 = Color3.new(0, 0, 0);
-        Size = UDim2.new();
-      }, {
-        UIListLayout = React.createElement("UIListLayout", {
-          Padding = UDim.new(0, 15);
-          SortOrder = Enum.SortOrder.LayoutOrder;
-          VerticalFlex = Enum.UIFlexAlignment.SpaceBetween;
-          VerticalAlignment = Enum.VerticalAlignment.Center;
-          HorizontalAlignment = Enum.HorizontalAlignment.Center;
-        });
-        UICorner = React.createElement("UICorner", {
-          CornerRadius = UDim.new(0, 5);
-        });
-        UIStroke = React.createElement("UIStroke", {
-          Color = Colors.PopupBorder;
-          Thickness = 1;
-        });
-        UIPadding = React.createElement("UIPadding", {
-          PaddingBottom = UDim.new(0, 15);
-          PaddingLeft = UDim.new(0, 15);
-          PaddingRight = UDim.new(0, 15);
-          PaddingTop = UDim.new(0, 15);
-        });
-        ArchetypeButtonListFrame = React.createElement("Frame", {
           AutomaticSize = Enum.AutomaticSize.XY;
-          LayoutOrder = 1;
+          BackgroundColor3 = Color3.new(0, 0, 0);
           Size = UDim2.new();
-          BackgroundTransparency = 1;
         }, {
-          React.createElement("UIListLayout", {
+          UIListLayout = React.createElement("UIListLayout", {
             Padding = UDim.new(0, 15);
             SortOrder = Enum.SortOrder.LayoutOrder;
-            FillDirection = Enum.FillDirection.Horizontal;
+            VerticalFlex = Enum.UIFlexAlignment.SpaceBetween;
             VerticalAlignment = Enum.VerticalAlignment.Center;
-            Wraps = true;
             HorizontalAlignment = Enum.HorizontalAlignment.Center;
           });
-          archetypeButtons;
-        });
-        ArchetypeClassNameLabel = React.createElement("TextLabel", {
-          Text = type:upper();
-          AutomaticSize = Enum.AutomaticSize.XY;
-          Size = UDim2.new();
-          LayoutOrder = 2;
-          TextSize = 14;
-          BackgroundTransparency = 1;
-          FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
-          TextColor3 = Colors.ParagraphText;
-        });
-      }));
+          UICorner = React.createElement("UICorner", {
+            CornerRadius = UDim.new(0, 5);
+          });
+          UIStroke = React.createElement("UIStroke", {
+            Color = Colors.PopupBorder;
+            Thickness = 1;
+          });
+          UIPadding = React.createElement("UIPadding", {
+            PaddingBottom = UDim.new(0, 15);
+            PaddingLeft = UDim.new(0, 15);
+            PaddingRight = UDim.new(0, 15);
+            PaddingTop = UDim.new(0, 15);
+          });
+          ArchetypeButtonListFrame = React.createElement("Frame", {
+            AutomaticSize = Enum.AutomaticSize.XY;
+            LayoutOrder = 1;
+            Size = UDim2.new();
+            BackgroundTransparency = 1;
+          }, {
+            React.createElement("UIListLayout", {
+              Padding = UDim.new(0, 15);
+              SortOrder = Enum.SortOrder.LayoutOrder;
+              FillDirection = Enum.FillDirection.Horizontal;
+              VerticalAlignment = Enum.VerticalAlignment.Center;
+              Wraps = true;
+              HorizontalAlignment = Enum.HorizontalAlignment.Center;
+            });
+            archetypeButtons;
+          });
+          ArchetypeClassNameLabel = React.createElement("TextLabel", {
+            Text = type:upper();
+            AutomaticSize = Enum.AutomaticSize.XY;
+            Size = UDim2.new();
+            LayoutOrder = 2;
+            TextSize = 14;
+            BackgroundTransparency = 1;
+            FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
+            TextColor3 = Colors.ParagraphText;
+          });
+        }));
 
-    end;
-    setArchetypeCategoryFrames(archetypeCategoryFrames);
+      end;
+      setArchetypeCategoryFrames(archetypeCategoryFrames);
+
+    end);
 
   end, {archetypeIDs, props.selectedArchetype});
 

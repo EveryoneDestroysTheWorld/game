@@ -2,7 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local StarterGui = game:GetService("StarterGui");
-local TweenService = game:GetService("TweenService");
+local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 local player = Players.LocalPlayer;
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local Ticker = require(script.Parent.Ticker);
@@ -150,23 +150,48 @@ local function MatchInitializationScreen()
 
   React.useEffect(function()
   
-    local numberValue = Instance.new("NumberValue");
-    numberValue:GetPropertyChangedSignal("Value"):Connect(function()
-      
-      task.wait();
-      setUIPaddingRightOffset(numberValue.Value);
+    dataTypeTween({
+      type = "Number";
+      initialValue = uiPaddingRightOffset;
+      goalValue = if shouldShowArchetypeInformation then -300 else 0;
+      tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
+      onChange = function(newValue)
 
-    end);
-    numberValue.Value = uiPaddingRightOffset;
-    
-    local goalTransparency = if shouldShowArchetypeInformation then -300 else 0;
-    local tween = TweenService:Create(numberValue, TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = goalTransparency});
-    tween:Play();
+        setUIPaddingRightOffset(newValue);
+
+      end;
+    }):Play();
 
   end, {shouldShowArchetypeInformation});
 
+  local backgroundTransparency, setBackgroundTransparency = React.useState(0.4);
+  React.useEffect(function()
+  
+    local characterAddedEvent = Players.LocalPlayer.CharacterAdded:Connect(function()
+    
+      dataTypeTween({
+        type = "Number";
+        initialValue = backgroundTransparency;
+        goalValue = 1;
+        onChange = function(newValue)
+
+          setBackgroundTransparency(newValue);
+
+        end;
+      }):Play();
+
+    end);
+
+    return function()
+
+      characterAddedEvent:Disconnect();
+
+    end;
+
+  end, {});
+
   return React.createElement("Frame", {
-    BackgroundTransparency = 0.4;
+    BackgroundTransparency = backgroundTransparency;
     BackgroundColor3 = Color3.fromRGB(4, 4, 4);
     BorderSizePixel = 0;
     Size = UDim2.new(1, 0, 1, 0);

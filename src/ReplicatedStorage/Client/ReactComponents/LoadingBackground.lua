@@ -13,6 +13,7 @@ local function LoadingBackground(props: LoadingBackgroundProps)
 
   local isVisible, setIsVisible = React.useState(false);
   local sizeYScale, setSizeYScale = React.useState(0);
+  local anchorPointY, setAnchorPointY = React.useState(0);
   local positionYScale, setPositionYScale = React.useState(0);
   React.useEffect(function()
   
@@ -43,20 +44,24 @@ local function LoadingBackground(props: LoadingBackgroundProps)
     Players.LocalPlayer.CharacterAdded:Connect(function()
     
       local numberValue = Instance.new("NumberValue");
+      setAnchorPointY(1);
+      setPositionYScale(1);
       numberValue:GetPropertyChangedSignal("Value"):Connect(function()
         
         task.wait();
-        setPositionYScale(numberValue.Value)
+        setSizeYScale(numberValue.Value)
 
       end);
+      numberValue.Value = 1;
       
-      TweenService:Create(numberValue, TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 1}):Play();
+      TweenService:Create(numberValue, TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 0}):Play();
 
     end);
 
   end, {props.round});
 
   return if isVisible then React.createElement("Frame", {
+    AnchorPoint = Vector2.new(0, anchorPointY);
     BackgroundColor3 = Color3.new(0, 0, 0);
     Size = UDim2.new(1, 0, sizeYScale, 0);
     Position = UDim2.new(0, 0, positionYScale, 0);
