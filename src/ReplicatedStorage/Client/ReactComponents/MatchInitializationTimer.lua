@@ -83,7 +83,7 @@ local function MatchInitializationTimer()
 
         return function()
 
-          if coroutine.status(delayTask) == "running" then
+          if coroutine.status(delayTask) == "suspended" then
 
             task.cancel(delayTask);
 

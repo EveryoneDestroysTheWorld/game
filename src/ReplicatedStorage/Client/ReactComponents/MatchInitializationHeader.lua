@@ -20,6 +20,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
   });
   local titleColor, setTitleColor = React.useState(Color3.fromRGB(255, 94, 97));
   local taglineColor, setTaglineColor = React.useState(Color3.fromRGB(199, 199, 199));
+  local textTransparency, setTextTransparency = React.useState(0);
   React.useEffect(function()
   
     props.round.onStatusChanged:Connect(function()
@@ -68,17 +69,6 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
 
     local characterAddedEvent = Players.LocalPlayer.CharacterAdded:Connect(function()
     
-      local colorTween = dataTypeTween({
-        type = "Color3",
-        initialValue = titleColor;
-        goalValue = Color3.new(1, 1, 1);
-        onChange = function(newValue)
-
-          setTitleColor(newValue);
-
-        end;
-      });
-
       dataTypeTween({
         type = "Color3",
         initialValue = titleColor;
@@ -88,20 +78,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
           setTitleColor(newValue);
 
         end;
-      });
-
-      colorTween.Completed:Connect(function()
-      
-        dataTypeTween({
-          type = "Number";
-          initialValue = 1;
-          goalValue = 0;
-          onChange = function()
-
-          end;
-        })
-
-      end);
+      }):Play();
 
       dataTypeTween({
         type = "Color3",
@@ -112,9 +89,21 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
           setTaglineColor(newValue);
 
         end;
-      });
+      }):Play();
 
-      colorTween:Play();
+      task.delay(2, function()
+      
+        dataTypeTween({
+          type = "Number";
+          goalValue = 1;
+          onChange = function(newValue)
+
+            setTextTransparency(newValue);
+
+          end;
+        }):Play();
+
+      end);
 
     end);
 
@@ -151,6 +140,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
         AutomaticSize = Enum.AutomaticSize.XY;
         Size = UDim2.new();
         Text = "YOU'RE IN A";
+        TextTransparency = textTransparency;
         LayoutOrder = 1;
         FontFace = Font.fromId(11702779517, Enum.FontWeight.Bold);
         TextColor3 = Color3.fromRGB(255, 255, 255);
@@ -161,6 +151,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
         AutomaticSize = Enum.AutomaticSize.XY;
         Size = UDim2.new();
         Text = "TURF WAR";
+        TextTransparency = textTransparency;
         LayoutOrder = 2;
         FontFace = Font.fromId(11702779517, Enum.FontWeight.Heavy);
         TextColor3 = titleColor;
@@ -170,6 +161,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
         BackgroundTransparency = 1;
         AutomaticSize = Enum.AutomaticSize.XY;
         Size = UDim2.new();
+        TextTransparency = textTransparency;
         LayoutOrder = 3;
         Text = "BREAK EVERYTHING BEFORE THEY DO!!";
         FontFace = Font.fromName("PressStart2P");

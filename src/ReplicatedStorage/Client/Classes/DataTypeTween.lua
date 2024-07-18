@@ -16,10 +16,9 @@ type props = {
 
 return function(props: props): Tween
 
-  local valueInstance = Instance.new(`{type}Value`);
+  local valueInstance = Instance.new(`{props.type}Value`);
   valueInstance:GetPropertyChangedSignal("Value"):Connect(function()
     
-    task.wait();
     (props.onChange :: any)(valueInstance.Value);
 
   end);

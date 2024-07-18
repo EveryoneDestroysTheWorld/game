@@ -9,7 +9,9 @@ local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype
 local Colors = require(ReplicatedStorage.Client.Colors);
 type ClientArchetype = ClientArchetype.ClientArchetype;
 local Players = game:GetService("Players");
-local TweenService = game:GetService("TweenService");
+local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
+local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
+
 
 type TeammateCardProps = {
   contestant: ClientContestant?;
@@ -105,62 +107,120 @@ local function TeammateCard(props: TeammateCardProps)
 
   end, {props.contestant});
 
-  local uiPaddingOffset, setUIPaddingOffset = React.useState(0);
-  local contestantBannerSizeXOffset, setContestantBannerSizeXOffset = React.useState(300);
 
+  local contestantBannerSizeXOffset = React.useState(300);
+  
+  local avatarUIPaddingRef = React.useRef(nil);
+  local tcfUIPaddingRef = React.useRef(nil);
+  local statusLabelRef = React.useRef(nil);
+  local contestantBannerImageLabelRef = React.useRef(nil);
   React.useEffect(function()
   
     task.spawn(function()
 
-      if roundStatus == "Contestant selection" then
+      local avatarUIPadding: UIPadding? = avatarUIPaddingRef.current;
+      local tcfUIPadding: UIPadding? = tcfUIPaddingRef.current;
+      if avatarUIPadding and tcfUIPadding then
 
-        local numberValue = Instance.new("NumberValue");
-        numberValue:GetPropertyChangedSignal("Value"):Connect(function()
+        if roundStatus == "Contestant selection" then
+
+          dataTypeTween({
+            type = "Number";
+            tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
+            initialValue = 60;
+            goalValue = 0;
+            onChange = function(newValue)
+
+              avatarUIPadding.PaddingTop = UDim.new(0, newValue);
+
+            end;
+          }):Play();
+
+        elseif roundStatus == "Matchup preview" then
+
+        local goalValue = 30 * (props.layoutOrder - 1) + 5;
+        dataTypeTween({
+          type = "Number";
+          tweenInfo = TweenInfo.new(3, Enum.EasingStyle.Sine);
+          goalValue = goalValue;
+          onChange = function(newValue)
+
+            if props.isRival then
+
+              tcfUIPadding.PaddingRight = UDim.new(0, newValue);
+
+            else
+
+              tcfUIPadding.PaddingLeft = UDim.new(0, newValue);
+
+            end;
+
+          end;
+        }):Play();
+
+        task.delay(5, function()
         
-          task.wait();
-          setUIPaddingTop(numberValue.Value);
+          dataTypeTween({
+            type = "Number";
+            initialValue = contestantBannerSizeXOffset;
+            tweenInfo = TweenInfo.new(1 + (0.25 * (4 - props.layoutOrder)), Enum.EasingStyle.Bounce);
+            goalValue = 0;
+            onChange = function(newValue)
+
+              local contestantBannerImageLabel: ImageLabel? = contestantBannerImageLabelRef.current;
+              local statusLabel: TextLabel? = statusLabelRef.current;
+              if contestantBannerImageLabel and statusLabel then 
+
+                contestantBannerImageLabel.Size = UDim2.new(contestantBannerImageLabel.Size.X.Scale, newValue, contestantBannerImageLabel.Size.Y.Scale, contestantBannerImageLabel.Size.Y.Offset);
+                statusLabel.Size = UDim2.new(statusLabel.Size.X.Scale, newValue, statusLabel.Size.Y.Scale, statusLabel.Size.Y.Offset);
+  
+              end;
+
+            end;
+          }):Play();
+
+          dataTypeTween({
+            type = "Number";
+            initialValue = goalValue;
+            tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Sine);
+            goalValue = -60;
+            onChange = function(newValue)
+
+              if props.isRival then
+
+                tcfUIPadding.PaddingRight = UDim.new(0, newValue);
+  
+              else
+  
+                tcfUIPadding.PaddingLeft = UDim.new(0, newValue);
+  
+              end;
+  
+            end;
+          }):Play();
 
         end);
-        numberValue.Value = 60;
         
-        local tween = TweenService:Create(numberValue, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = 0});
-        tween:Play();
+        end;
 
-      elseif roundStatus == "Matchup preview" then
-
-        local numberValue = Instance.new("NumberValue");
-        numberValue:GetPropertyChangedSignal("Value"):Connect(function()
-        
-          task.wait();
-          setUIPaddingOffset(numberValue.Value);
-
-        end);
-        
-        local tween = TweenService:Create(numberValue, TweenInfo.new(5, Enum.EasingStyle.Sine), {Value = 30 * (props.layoutOrder - 1) + 5});
-        local completedEvent;
-        completedEvent = tween.Completed:Connect(function()
-        
-          completedEvent:Disconnect();
-          local bannerTweenValue = Instance.new("NumberValue");
-          bannerTweenValue:GetPropertyChangedSignal("Value"):Connect(function()
-          
-            task.wait();
-            setContestantBannerSizeXOffset(bannerTweenValue.Value);
-
-          end);
-          bannerTweenValue.Value = contestantBannerSizeXOffset;
-
-          TweenService:Create(bannerTweenValue, TweenInfo.new(1 + (0.25 * (4 - props.layoutOrder)), Enum.EasingStyle.Bounce), {Value = 0}):Play();
-          TweenService:Create(numberValue, TweenInfo.new(1, Enum.EasingStyle.Sine), {Value = -60}):Play();
-
-        end);
-        tween:Play();
-        
       end;
 
     end)
 
-  end, {roundStatus});
+  end, {roundStatus, props.isRival :: any});
+
+  React.useEffect(function()
+  
+    local contestantBannerImageLabel: ImageLabel? = contestantBannerImageLabelRef.current;
+    local statusLabel: TextLabel? = statusLabelRef.current;
+    if contestantBannerImageLabel and statusLabel then
+
+      contestantBannerImageLabel.Size = UDim2.new(0, contestantBannerSizeXOffset, 0, if props.round and props.round.status == "Waiting for players" then 100 else 30);
+      statusLabel.Size = UDim2.new(0, contestantBannerSizeXOffset, 0, 17)
+
+    end;
+
+  end, {props.round});
 
   local transparency = if props.uiPaddingRightOffset and props.uiPaddingRightOffset ~= 0 then props.uiPaddingRightOffset / -300 else nil;
 
@@ -211,8 +271,7 @@ local function TeammateCard(props: TeammateCardProps)
         BackgroundTransparency = 1;
       }, {
         UIPadding = React.createElement("UIPadding", {
-          PaddingLeft = if not props.isRival then UDim.new(0, uiPaddingOffset) else nil;
-          PaddingRight = if props.isRival then UDim.new(0, uiPaddingOffset) else nil;
+          ref = tcfUIPaddingRef;
         });
         UIListLayout = React.createElement("UIListLayout", {
           Padding = UDim.new(0, 5);
@@ -222,7 +281,7 @@ local function TeammateCard(props: TeammateCardProps)
         StatusLabel = React.createElement("TextLabel", {
           BackgroundTransparency = 1;
           LayoutOrder = 1;
-          Size = UDim2.new(0, contestantBannerSizeXOffset, 0, 17);
+          ref = statusLabelRef;
           Text = statusLabelText;
           TextTransparency = if props.contestant then transparency or 0 else 0.5 + (transparency or 0);
           TextColor3 = if props.isRival then Color3.fromRGB(255, 117, 117) else Color3.new(1, 1, 1);
@@ -239,7 +298,7 @@ local function TeammateCard(props: TeammateCardProps)
         ContestantBannerImageLabel = React.createElement("ImageLabel", {
           BackgroundColor3 = Color3.fromRGB(0, 0, 0);
           BackgroundTransparency = if props.contestant then transparency or 0 else 0.4 + (transparency or 0);
-          Size = UDim2.new(0, contestantBannerSizeXOffset, 0, if props.round and props.round.status == "Waiting for players" then 100 else 30);
+          ref = contestantBannerImageLabelRef;
           Image = "rbxassetid://15562720000";
           ScaleType = Enum.ScaleType.Tile;
           LayoutOrder = 2;
@@ -345,7 +404,8 @@ local function TeammateCard(props: TeammateCardProps)
               Size = UDim2.new(0, 60, 0, 60);
             }, {
               UIPadding = React.createElement("UIPadding", {
-                PaddingTop = UDim.new(0, uiPaddingTop);
+                ref = avatarUIPaddingRef;
+                PaddingTop = UDim.new(0, 0);
               });
               AvatarImageLabel = React.createElement("ImageLabel", {
                 Size = UDim2.new(1, 0, 1, 0);
