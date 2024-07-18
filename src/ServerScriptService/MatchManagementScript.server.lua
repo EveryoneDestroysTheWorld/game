@@ -66,7 +66,6 @@ local expectedPlayerIDs = {904459813};
 
 local function startRound()
 
-  -- TODO: Wrap this entire thing in a pcall and send a signal if the thing fails
   local isSuccess, message = pcall(function()
 
     -- Create required bot contestants.
@@ -267,6 +266,12 @@ local function startRound()
             if contestant.player then
 
               contestant.player:LoadCharacter();
+
+            else
+
+              local character = ServerStorage.NPCRigs.Rig:Clone();
+              character.Parent = workspace;
+              contestant.character = character;
 
             end;
 
