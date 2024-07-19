@@ -266,13 +266,14 @@ local function startRound()
             if contestant.player then
 
               contestant.player:LoadCharacter();
-              contestant.character = contestant.player.Character;
+              contestant:updateCharacter(contestant.player.Character);
 
             else
 
               local character = ServerStorage.NPCRigs.Rig:Clone();
+              character.Name = contestant.name;
               character.Parent = workspace;
-              contestant.character = character;
+              contestant:updateCharacter(character);
 
             end;
 

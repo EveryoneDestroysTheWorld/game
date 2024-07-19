@@ -4,6 +4,8 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 local DestructionBar = require(ReplicatedStorage.Client.ReactComponents.DestructionBar);
 local StatBarContainer = require(ReplicatedStorage.Client.ReactComponents.StatBarContainer);
+local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
+type ClientRound = ClientRound.ClientRound;
 
 local popupContainer = nil;
 local player = Players.LocalPlayer;

@@ -37,9 +37,11 @@ export type RoundEvents = {
 
 export type ClientRound = typeof(setmetatable({}, ClientRound)) & RoundProperties & RoundEvents;
 
+local defaultRound: ClientRound;
+
 function ClientRound.new(properties: RoundProperties): ClientRound
 
-  local round = properties;
+  local round = setmetatable(properties, ClientRound);
 
   -- Set up events.
   local events: {[string]: BindableEvent} = {};
@@ -92,8 +94,32 @@ function ClientRound.new(properties: RoundProperties): ClientRound
 
   end);
 
-  return setmetatable(round, ClientRound) :: ClientRound;
+  return round :: ClientRound;
   
 end
+
+function ClientRound.get(): ClientRound
+
+  if defaultRound then
+
+    return defaultRound;
+
+  end;
+
+  local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
+
+  local contestants = {}
+  for _, contestant in ipairs(roundConstructorProperties.contestants) do
+
+    table.insert(contestants, ClientContestant.new(contestant));
+
+  end;
+  roundConstructorProperties.contestants = contestants;
+
+  local round = ClientRound.new(roundConstructorProperties);
+  defaultRound = round;
+  return round;
+
+end;
 
 return ClientRound;

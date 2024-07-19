@@ -55,6 +55,7 @@ export type ContestantMethods = {
   convertToClient: (self: ServerContestant) -> {any};
   disqualify: (self: ServerContestant) -> ();
   updateArchetypeID: (self: ServerContestant, newArchetypeID: number) -> ();
+  updateCharacter: (self: ServerContestant, newCharacter: Model?) -> ();
   updateHealth: (self: ServerContestant, newHealth: number, cause: Cause?) -> ();
   toString: (self: ServerContestant) -> string;
 }
@@ -77,7 +78,7 @@ function ServerContestant.new(properties: ContestantProperties): ServerContestan
   local contestant = setmetatable(properties, ServerContestant) :: ServerContestant;
 
   -- Set up events.
-  local eventNames = {"onDisqualified", "onHealthUpdated", "onArchetypeUpdated"};
+  local eventNames = {"onDisqualified", "onHealthUpdated", "onArchetypeUpdated", "onCharacterUpdated"};
   events[contestant] = {};
   for _, eventName in ipairs(eventNames) do
 
@@ -123,6 +124,14 @@ function ServerContestant.__index:updateHealth(newHealth: number, cause: Cause?)
   humanoid:SetAttribute("CurrentHealth", newHealth);
 
   events[self].onHealthUpdated:Fire(newHealth, oldHealth, cause);
+
+end;
+
+function ServerContestant.__index:updateCharacter(newCharacter: Model?): ()
+
+  self.character = newCharacter;
+  ReplicatedStorage.Shared.Events.CharacterUpdated:FireAllClients(self.ID, if newCharacter then newCharacter.Name else nil);
+  events[self].onCharacterUpdated:Fire(newCharacter);
 
 end;
 
