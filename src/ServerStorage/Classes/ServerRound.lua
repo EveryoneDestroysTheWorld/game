@@ -131,7 +131,7 @@ function ServerRound.fromPrivateServerID(privateServerID: number): ServerRound
 
 end;
 
-function ServerRound.__index:start(stageModel: Model): ()
+function ServerRound.__index:start(): ()
 
   assert(not self.timeStarted, "The round has already started.");
 
@@ -148,7 +148,7 @@ function ServerRound.__index:start(stageModel: Model): ()
 
       if contestant.archetypeID then
 
-        local archetype = ServerArchetype.get(contestant.archetypeID).new(contestant, self, stageModel);
+        local archetype = ServerArchetype.get(contestant.archetypeID).new(contestant, self, self.stage.model);
 
         local actions = {};
         for _, actionID in ipairs(archetype.actionIDs) do

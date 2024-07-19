@@ -266,6 +266,7 @@ local function startRound()
             if contestant.player then
 
               contestant.player:LoadCharacter();
+              contestant.character = contestant.player.Character;
 
             else
 
@@ -276,6 +277,8 @@ local function startRound()
             end;
 
           end;
+
+          round:start(round.stage.model :: Model);
 
         end);
 
