@@ -2,65 +2,105 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local Colors = require(ReplicatedStorage.Client.Colors);
-local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
+
+local function CircleCorner()
+
+  return React.createElement("UICorner", {
+    CornerRadius = UDim.new(1, 0);
+  });
+
+end;
+
+local function CircleFilling()
+
+  return React.createElement("Frame", {
+    BackgroundColor3 = Color3.new(1, 1, 1);
+    AnchorPoint = Vector2.new(0.5, 0.5);
+    Position = UDim2.new(0.5, 0, 0.5, 0);
+    Size = UDim2.new(0, 20, 0, 20);
+    BorderSizePixel = 0;
+  }, {
+    UICorner = React.createElement(CircleCorner);
+  });
+
+end;
+
+local function HorizontalUIListLayout()
+
+  return React.createElement("UIListLayout", {
+    SortOrder = Enum.SortOrder.LayoutOrder;
+    FillDirection = Enum.FillDirection.Horizontal;
+    Name = "UIListLayout";
+    Padding = UDim.new(0, 5);
+    VerticalAlignment = Enum.VerticalAlignment.Center;
+    HorizontalAlignment = Enum.HorizontalAlignment.Center;
+  });
+
+end;
+
+local function ProgressDot()
+
+  return React.createElement("Frame", {
+    BorderSizePixel = 0;
+    BackgroundColor3 = Color3.new(1, 1, 1);
+    BackgroundTransparency = 0.7;
+    Size = UDim2.new(0, 7, 0, 7);
+  }, {
+    CircleCorner = React.createElement(CircleCorner);
+  });
+
+end;
+
+local function TeamDot(props: {teamNumber: number})
+
+  return React.createElement("Frame", {
+    BackgroundColor3 = if props.teamNumber == 1 then Colors.DemoDemonsOrange else Colors.DemoDemonsRed;
+    BackgroundTransparency = 0.2;
+    Size = UDim2.new(0, 40, 0, 40);
+    BorderSizePixel = 0;
+    LayoutOrder = props.teamNumber + (props.teamNumber - 1);
+  }, {
+    UICorner = React.createElement(CircleCorner);
+    CircleFilling = React.createElement(CircleFilling);
+  });
+
+end;
 
 local function DestructionBar()
 
   -- Animate the stat bar.
-  local containerRef = React.useRef(nil :: Frame?)
-  local team1DestructionRef = React.useRef(nil :: Frame?);
-  local team2DestructionRef = React.useRef(nil :: Frame?);
+  local progressDots, setProgressDots = React.useState({});
   React.useEffect(function()
   
-    local container = containerRef.current;
-    local team1Destruction = team1DestructionRef.current;
-    local team2Destruction = team2DestructionRef.current;
-    if container and team1Destruction and team2Destruction then
+    if #progressDots ~= 41 then
 
-      container.Size = UDim2.new(0, 0, 0, 25);
-      team1Destruction.Size = UDim2.new(0, 0, 1, 0);
-      team2Destruction.Size = UDim2.new(0, 0, 1, 0);
+      local newProgressDots = table.clone(progressDots);
+      table.insert(newProgressDots, React.createElement(ProgressDot));
+      setProgressDots(newProgressDots);
+      task.wait(0.025);
 
-      dataTypeTween({
-        type = "Number";
-        goalValue = 500;
-        onChange = function(newValue: number)
+    end
 
-          container.Size = UDim2.new(container.Size.X.Scale, newValue, container.Size.Y.Scale, container.Size.Y.Offset);
-
-        end;
-      }):Play();
-
-    end;
-
-  end, {});
+  end, {progressDots});
 
   return React.createElement("Frame", {
     AnchorPoint = Vector2.new(0.5, 0);
-    Position = UDim2.new(0.5, 0, 0, 22);
-    BackgroundColor3 = Color3.new(1, 1, 1);
-    BorderSizePixel = 0;
-    BackgroundTransparency = 0.55;
-    ref = containerRef;
+    AutomaticSize = Enum.AutomaticSize.XY;
+    Position = UDim2.new(0.5, 0, 0, 15);
+    BackgroundTransparency = 1;
   }, {
-    UIListLayout = React.createElement("UIListLayout", {
-      SortOrder = Enum.SortOrder.LayoutOrder;
-      FillDirection = Enum.FillDirection.Horizontal;
+    UIListLayout = React.createElement(HorizontalUIListLayout);
+    Team1Destruction = React.createElement(TeamDot, {teamNumber = 1});
+    ProgressBar = React.createElement("Frame", {
+      BackgroundTransparency = 1;
+      AutomaticSize = Enum.AutomaticSize.XY;
+      Size = UDim2.new();
+      LayoutOrder = 2;
+    }, {
+      React.createElement(HorizontalUIListLayout);
+      progressDots;
     });
-    Team1Destruction = React.createElement("Frame", {
-      BackgroundColor3 = Colors.DemoDemonsOrange;
-      LayoutOrder = 1;
-      BackgroundTransparency = 0.5;
-      BorderSizePixel = 0;
-      ref = team1DestructionRef;
-    });
-    Team2Destruction = React.createElement("Frame", {
-      BackgroundColor3 = Colors.DemoDemonsRed;
-      LayoutOrder = 1;
-      BackgroundTransparency = 0.5;
-      BorderSizePixel = 0;
-      ref = team2DestructionRef;
-    });
+    Team2Destruction = React.createElement(TeamDot, {teamNumber = 2});
   });
 
 end;
