@@ -10,14 +10,14 @@ type HeadBarContainerProps = {
 }
 
 local function HeadBarContainer(props: HeadBarContainerProps)
-  
+
   return React.createElement(React.Fragment, {}, {
     UIListLayout = React.createElement("UIListLayout", {
       SortOrder = Enum.SortOrder.LayoutOrder;
       Padding = UDim.new(0.1, 0);
     });
-    NameHeadBar = React.createElement(NameHeadBar);
-    HealthHeadBar = React.createElement(HealthHeadBar);
+    NameHeadBar = React.createElement(NameHeadBar, {contestant = props.contestant});
+    HealthHeadBar = React.createElement(HealthHeadBar, {contestant = props.contestant});
   });
 
 end

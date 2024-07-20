@@ -48,6 +48,7 @@ local function HealthHeadBar(props: HealthHeadBar)
     BackgroundTransparency = 0.7;
     BorderSizePixel = 0;
     LayoutOrder = 2;
+    Visible = sizeXScale < 1;
   }, {
     CurrentHealth = React.createElement("Frame", {
       Size = UDim2.new(sizeXScale, 0, 1, 0);

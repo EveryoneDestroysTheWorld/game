@@ -122,7 +122,11 @@ function ServerContestant.__index:updateHealth(newHealth: number, cause: Cause?)
 
   local oldHealth = humanoid:GetAttribute("CurrentHealth");
   humanoid:SetAttribute("CurrentHealth", newHealth);
-
+  ReplicatedStorage.Shared.Events.HealthUpdated:FireAllClients(self.ID, newHealth, if cause then {
+    contestantID = cause.contestant.ID;
+    actionID = cause.actionID;
+    archetypeID = cause.archetypeID;
+  } else nil);
   events[self].onHealthUpdated:Fire(newHealth, oldHealth, cause);
 
 end;

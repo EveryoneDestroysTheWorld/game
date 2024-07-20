@@ -20,6 +20,12 @@ export type ClientContestantProperties = {
   
 }
 
+export type Cause = {
+  archetypeID: number;
+  contestantID: number;
+  actionID: number?;
+}
+
 export type ClientContestantMethods = {
 }
 
@@ -84,6 +90,16 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
 
     end;
     
+  end);
+
+  ReplicatedStorage.Shared.Events.HealthUpdated.OnClientEvent:Connect(function(contestantID: number, newHealth: number, cause: Cause?)
+  
+    if contestantID == contestant.ID then
+
+      events[contestant].onHealthUpdated:Fire(newHealth, cause);
+
+    end;
+
   end);
 
   return contestant;

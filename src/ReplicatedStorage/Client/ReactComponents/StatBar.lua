@@ -70,16 +70,16 @@ local function StatBar(props: StatBarProps)
         local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
         if humanoid then
 
-          local current = character:GetAttribute(`Current{props.type}`) or 0;
-          local base = character:GetAttribute(`Base{props.type}`) or 0;
+          local current = humanoid:GetAttribute(`Current{props.type}`) or 0;
+          local base = humanoid:GetAttribute(`Base{props.type}`) or 0;
           currentStatBar.Size = UDim2.new(math.min(current, 100) / base, 0, 1, 0);
 
         end;
   
       end;
   
-      local characterAddedEvent = Players.LocalPlayer.CharacterAdded:Connect(function(character)
-      
+      local function listenToCharacter(character: Model)
+
         local humanoid = character:FindFirstChild("Humanoid");
         if humanoid then
   
@@ -87,9 +87,22 @@ local function StatBar(props: StatBarProps)
           humanoid:GetAttributeChangedSignal(`Base{props.type}`):Connect(updateBar);
   
         end;
+
+      end;
+
+      local characterAddedEvent = Players.LocalPlayer.CharacterAdded:Connect(function(character)
+      
+        listenToCharacter(character);
   
       end);
+
+      local character = Players.LocalPlayer.Character;
+      if character then
+
+        listenToCharacter(character);
   
+      end;
+
       return function()
   
         characterAddedEvent:Disconnect();
@@ -126,7 +139,7 @@ local function StatBar(props: StatBarProps)
       BackgroundColor3 = Color3.new(1, 1, 1);
       BorderSizePixel = 0;
       AnchorPoint = Vector2.new(if isHealthBar then 1 else 0, 0);
-      BackgroundTransparency = 0.5;
+      BackgroundTransparency = 0.7;
       Size = UDim2.new(1, 0, 0, 5);
       LayoutOrder = 2;
     }, {

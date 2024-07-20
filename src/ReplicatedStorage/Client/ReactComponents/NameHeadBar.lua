@@ -24,6 +24,7 @@ local function HealthHeadBar(props: HealthHeadBarProps)
     TextScaled = true;
     BorderSizePixel = 0;
     BackgroundTransparency = 1;
+    TextColor3 = Color3.new(1, 1, 1);
     TextYAlignment = Enum.TextYAlignment.Bottom;
     LayoutOrder = 1;
   }, {

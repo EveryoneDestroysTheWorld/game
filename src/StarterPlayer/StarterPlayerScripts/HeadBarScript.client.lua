@@ -7,11 +7,18 @@ type ClientRound = ClientRound.ClientRound;
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
 local HeadBarContainer = require(ReplicatedStorage.Client.ReactComponents.HeadBarContainer);
+local Players = game:GetService("Players");
 
 local round = ClientRound.fromServerRound();
 local events = {};
 
 local function initializeContestant(contestant: ClientContestant): ()
+
+  if contestant.player and contestant.player == Players.LocalPlayer then
+
+    return;
+
+  end;
 
   if events[contestant] then
 
@@ -26,7 +33,7 @@ local function initializeContestant(contestant: ClientContestant): ()
 
       local headBarContainerGUI = Instance.new("BillboardGui");
       headBarContainerGUI.AlwaysOnTop = true;
-      headBarContainerGUI.MaxDistance = 50;
+      headBarContainerGUI.MaxDistance = 100;
       headBarContainerGUI.Size = UDim2.new(5, 0, 1, 0);
       headBarContainerGUI.SizeOffset = Vector2.new(0, 2.5);
       headBarContainerGUI.Name = "HeadBarContainerGUI";
