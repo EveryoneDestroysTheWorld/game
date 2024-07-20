@@ -1,3 +1,4 @@
+--!strict
 local Players = game:GetService("Players");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);

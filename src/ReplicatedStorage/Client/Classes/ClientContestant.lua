@@ -20,6 +20,12 @@ export type ClientContestantProperties = {
   
 }
 
+export type Cause = {
+  archetypeID: number;
+  contestantID: number;
+  actionID: number?;
+}
+
 export type ClientContestantMethods = {
 }
 
@@ -28,6 +34,7 @@ export type ClientContestantEvents = {
   onHealthUpdated: RBXScriptSignal;
   onArchetypePrivatelyChosen: RBXScriptSignal;
   onArchetypeUpdated: RBXScriptSignal;
+  onCharacterUpdated: RBXScriptSignal;
 }
 
 local ClientContestant = {
@@ -42,7 +49,7 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
   local contestant = setmetatable(properties, ClientContestant) :: ClientContestant;
 
   -- Set up events.
-  local eventNames = {"onDisqualified", "onHealthUpdated", "onArchetypePrivatelyChosen", "onArchetypeUpdated"};
+  local eventNames = {"onDisqualified", "onHealthUpdated", "onArchetypePrivatelyChosen", "onArchetypeUpdated", "onCharacterUpdated"};
   events[contestant] = {};
   for _, eventName in ipairs(eventNames) do
 
@@ -62,6 +69,18 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
     
   end);
 
+  ReplicatedStorage.Shared.Events.CharacterUpdated.OnClientEvent:Connect(function(contestantID: number, characterName: string?)
+
+    if contestantID == contestant.ID then
+
+      local character = workspace:FindFirstChild(characterName);
+      contestant.character = character;
+      events[contestant].onCharacterUpdated:Fire(character);
+
+    end;
+
+  end);
+
   ReplicatedStorage.Shared.Events.ContestantArchetypeUpdated.OnClientEvent:Connect(function(contestantID: number, archetypeID: number)
   
     if contestantID == contestant.ID then
@@ -71,6 +90,16 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
 
     end;
     
+  end);
+
+  ReplicatedStorage.Shared.Events.HealthUpdated.OnClientEvent:Connect(function(contestantID: number, newHealth: number, cause: Cause?)
+  
+    if contestantID == contestant.ID then
+
+      events[contestant].onHealthUpdated:Fire(newHealth, cause);
+
+    end;
+
   end);
 
   return contestant;

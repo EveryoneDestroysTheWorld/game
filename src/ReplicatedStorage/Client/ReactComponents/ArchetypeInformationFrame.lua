@@ -1,3 +1,4 @@
+--!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype);

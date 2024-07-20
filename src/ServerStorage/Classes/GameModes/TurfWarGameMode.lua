@@ -252,7 +252,8 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
         humanoid:SetAttribute("CurrentHealth", 100);
         humanoid:SetAttribute("BaseHealth", 100);
-        humanoid:SetAttribute("Stamina", 100);
+        humanoid:SetAttribute("CurrentStamina", 100);
+        humanoid:SetAttribute("BaseStamina", 100);
 
         table.insert(events, humanoid:GetAttributeChangedSignal("CurrentHealth"):Connect(function()
         

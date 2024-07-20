@@ -12,8 +12,6 @@ local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype);
 type ClientArchetype = ClientArchetype.ClientArchetype;
-local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
-type ClientContestant = ClientContestant.ClientContestant;
 local ArchetypeInformationFrame = require(script.Parent.ArchetypeInformationFrame);
 local ArchetypeSelectionFrame = require(script.Parent.ArchetypeSelectionFrame);
 local MatchInitializationHeader = require(script.Parent.MatchInitializationHeader);
@@ -45,22 +43,12 @@ local function MatchInitializationScreen()
   
     task.spawn(function()
     
-      local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
-
-      local contestants = {}
-      for _, contestant in ipairs(roundConstructorProperties.contestants) do
-  
-        table.insert(contestants, ClientContestant.new(contestant));
-  
-      end;
-      roundConstructorProperties.contestants = contestants;
-  
-      local round = ClientRound.new(roundConstructorProperties);
-      setRound(round);
+      setRound(ClientRound.fromServerRound());
 
     end);
 
   end, {});
+
 
   local uiPaddingRightOffset, setUIPaddingRightOffset = React.useState(0);
   React.useEffect(function(): ()
@@ -119,13 +107,13 @@ local function MatchInitializationScreen()
         setRivalTeammateCards(newRivalTeammateCards);
 
       end;
-
-      -- Use task.spawn to prevent blocking of other effects.
-      task.spawn(function() updateTeamLists() end);
     
       -- Listen for updates.
       local e1 = round.onContestantAdded:Connect(updateTeamLists);
       local e2 = round.onContestantRemoved:Connect(updateTeamLists);
+
+      -- Use task.spawn to prevent blocking of other effects.
+      task.spawn(updateTeamLists);
 
       local function checkRoundStatus()
 
