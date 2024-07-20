@@ -1,3 +1,4 @@
+--!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype);
@@ -69,7 +70,7 @@ end);
 while not pcall(function()
 
   local resetBindable = Instance.new("BindableEvent")
-  resetBindable.Event:connect(function()
+  resetBindable.Event:Connect(function()
 
     ReplicatedStorage.Shared.Events.ResetButtonPressed:FireServer();
 

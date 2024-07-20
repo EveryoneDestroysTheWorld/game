@@ -1,3 +1,4 @@
+--!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
@@ -20,7 +21,7 @@ local function HealthHeadBar(props: HealthHeadBar)
 
         local baseHealth = humanoid:GetAttribute("BaseHealth");
         local currentHealth = humanoid:GetAttribute("CurrentHealth");
-        if baseHealth and currentHealth then
+        if typeof(baseHealth) == "number" and typeof(currentHealth) == "number" then
 
           setSizeXScale(currentHealth / baseHealth);
           return;

@@ -1,4 +1,4 @@
-
+--!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local Players = game:GetService("Players");
@@ -49,9 +49,9 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
               onChange = function(newValue)
 
                 setTextSizes({
-                  subtitle = textSizes.subtitle + newValue * 6;
-                  title = textSizes.title + newValue * 30;
-                  tagline = textSizes.tagline + newValue * 6;
+                  subtitle = textSizes.subtitle + 6 * newValue;
+                  title = textSizes.title + 30 * newValue;
+                  tagline = textSizes.tagline + 6 * newValue;
                 });
 
               end;

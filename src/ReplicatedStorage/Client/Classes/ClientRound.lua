@@ -37,7 +37,7 @@ export type RoundEvents = {
 
 export type ClientRound = typeof(setmetatable({}, ClientRound)) & RoundProperties & RoundEvents;
 
-local defaultRound: ClientRound;
+local serverRound: ClientRound;
 
 function ClientRound.new(properties: RoundProperties): ClientRound
 
@@ -98,11 +98,13 @@ function ClientRound.new(properties: RoundProperties): ClientRound
   
 end
 
-function ClientRound.get(): ClientRound
+-- Creates a ClientRound object from the current round.
+-- Returns a new or cached ClientRound.
+function ClientRound.fromServerRound(): ClientRound
 
-  if defaultRound then
+  if serverRound then
 
-    return defaultRound;
+    return serverRound;
 
   end;
 
@@ -117,7 +119,7 @@ function ClientRound.get(): ClientRound
   roundConstructorProperties.contestants = contestants;
 
   local round = ClientRound.new(roundConstructorProperties);
-  defaultRound = round;
+  serverRound = round;
   return round;
 
 end;

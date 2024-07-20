@@ -43,7 +43,7 @@ local function MatchInitializationScreen()
   
     task.spawn(function()
     
-      setRound(ClientRound.get());
+      setRound(ClientRound.fromServerRound());
 
     end);
 
