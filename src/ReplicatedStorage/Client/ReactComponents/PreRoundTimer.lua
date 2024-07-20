@@ -132,8 +132,10 @@ local function PreRoundTimer(props: PreRoundTimerProps)
     "CAUSE A HAPPY ACCIDENT"
   }
 
+  local message = React.useState(messages[math.random(1, #messages)]);
+
   return if animatedSecond then React.createElement("TextLabel", {
-    Text = if animatedSecond == 0 then messages[#messages] else animatedSecond;
+    Text = if animatedSecond == 0 then message else animatedSecond;
     AnchorPoint = Vector2.new(0.5, 0.5);
     Position = UDim2.new(0.5, 0, 0.5, 0);
     FontFace = Font.fromName("BuilderSans", Enum.FontWeight.Bold);

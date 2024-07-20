@@ -275,6 +275,15 @@ local function startRound()
             local character = ServerStorage.NPCRigs.Rig:Clone();
             character.Name = contestant.name;
             character.Parent = workspace;
+            for _, part in ipairs(character:GetDescendants()) do
+
+              if part:IsA("BasePart") then
+
+                part:SetNetworkOwner(nil);
+
+              end;
+
+            end;
             contestant:updateCharacter(character);
 
           end;
