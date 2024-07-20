@@ -9,6 +9,7 @@ type ServerAction = ServerAction.ServerAction;
 local RocketFeetClientAction = require(ReplicatedStorage.Client.Classes.Actions.RocketFeetClientAction);
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
+local ServerStorage = game:GetService("ServerStorage");
 
 local RocketFeetServerAction = {
   ID = RocketFeetClientAction.ID;
@@ -78,8 +79,8 @@ function RocketFeetServerAction.new(contestant: ServerContestant, round: ServerR
             end;
             local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
             if basePartCurrentDurability and basePartCurrentDurability > 0 then
-    
-              basePart:SetAttribute("CurrentDurability", basePartCurrentDurability - 35);
+
+              ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, contestant);
     
             end;
 
