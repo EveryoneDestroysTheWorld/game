@@ -23,10 +23,12 @@ local function setupGUI()
     popupContainer.ResetOnSpawn = false;
     popupContainer.DisplayOrder = 1;
     popupContainer.Enabled = true;
+
+    local round = ClientRound.fromServerRound();
   
     local root = ReactRoblox.createRoot(popupContainer);
     root:render(React.createElement(React.Fragment, {}, {
-      DestructionBar = React.createElement(DestructionBar);
+      DestructionBar = React.createElement(DestructionBar, {round = round});
       StatBarContainer = React.createElement(StatBarContainer);
     }));
 

@@ -9,6 +9,7 @@ type ServerAction = ServerAction.ServerAction;
 local ExplosivePunchClientAction = require(ReplicatedStorage.Client.Classes.Actions.ExplosivePunchClientAction);
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
+local ServerStorage = game:GetService("ServerStorage");
 
 local ExplosivePunchServerAction = {
   ID = ExplosivePunchClientAction.ID;
@@ -90,11 +91,16 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant, round: Ser
               local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
               if enemyHumanoid then
 
-                local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 15;
-                possibleEnemyContestant:updateHealth(newHealth, {
-                  contestant = contestant;
-                  actionID = ExplosivePunchServerAction.ID;
-                });
+                local currentHealth = enemyHumanoid:GetAttribute("CurrentHealth") :: number?;
+                if currentHealth then
+
+                  local newHealth = currentHealth - 15;
+                  possibleEnemyContestant:updateHealth(newHealth, {
+                    contestant = contestant;
+                    actionID = ExplosivePunchServerAction.ID;
+                  });
+
+                end
 
               end;
 
@@ -104,10 +110,10 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant, round: Ser
 
         end;
         
-        local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
+        local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability") :: number?;
         if basePartCurrentDurability and basePartCurrentDurability > 0 then
 
-          basePart:SetAttribute("CurrentDurability", basePartCurrentDurability - 35);
+          ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, contestant);
 
         end;
 
