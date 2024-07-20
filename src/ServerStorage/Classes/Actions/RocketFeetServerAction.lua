@@ -39,7 +39,7 @@ function RocketFeetServerAction.new(contestant: ServerContestant, round: ServerR
       local humanoid = contestant.character:FindFirstChild("Humanoid");
       assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.character}'s Humanoid`);
 
-      if humanoid:GetAttribute("Stamina") >= 10 then
+      if humanoid:GetAttribute("CurrentStamina") >= 10 then
 
         for _, explosivePart in ipairs({leftFootExplosivePart, rightFootExplosivePart}) do
 
@@ -106,7 +106,7 @@ function RocketFeetServerAction.new(contestant: ServerContestant, round: ServerR
         end;
 
         -- Reduce the player's stamina.
-        humanoid:SetAttribute("Stamina", humanoid:GetAttribute("Stamina") - 10);
+        humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") - 10);
 
       end;
   
