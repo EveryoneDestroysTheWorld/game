@@ -259,29 +259,33 @@ local function startRound()
 
         round:setStatus("Matchup preview");
 
-        task.delay(7, function()
+        task.wait(7);
         
-          for _, contestant in ipairs(round.contestants) do
+        round:setStatus("Stage preview");
 
-            if contestant.player then
+        for _, contestant in ipairs(round.contestants) do
 
-              contestant.player:LoadCharacter();
-              contestant:updateCharacter(contestant.player.Character);
+          if contestant.player then
 
-            else
+            contestant.player:LoadCharacter();
+            contestant:updateCharacter(contestant.player.Character);
 
-              local character = ServerStorage.NPCRigs.Rig:Clone();
-              character.Name = contestant.name;
-              character.Parent = workspace;
-              contestant:updateCharacter(character);
+          else
 
-            end;
+            local character = ServerStorage.NPCRigs.Rig:Clone();
+            character.Name = contestant.name;
+            character.Parent = workspace;
+            contestant:updateCharacter(character);
 
           end;
 
-          round:start(round.stage.model :: Model);
+        end;
 
-        end);
+        task.wait(3);
+        round:setStatus("Pre-round countdown");
+        task.wait(3);
+        round:setStatus("Active");
+        round:start(round.stage.model :: Model);
 
       end);
 
