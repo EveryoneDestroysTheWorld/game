@@ -126,8 +126,14 @@ local function PreRoundTimer(props: PreRoundTimerProps)
 
   end, {currentSecond, textState :: any});
 
+  local messages = {
+    "GO! DO A CRIME";
+    "DO THE THING";
+    "CAUSE A HAPPY ACCIDENT"
+  }
+
   return if animatedSecond then React.createElement("TextLabel", {
-    Text = if animatedSecond == 0 then "GO! DO A CRIME" else animatedSecond;
+    Text = if animatedSecond == 0 then messages[#messages] else animatedSecond;
     AnchorPoint = Vector2.new(0.5, 0.5);
     Position = UDim2.new(0.5, 0, 0.5, 0);
     FontFace = Font.fromName("BuilderSans", Enum.FontWeight.Bold);
