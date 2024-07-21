@@ -61,6 +61,7 @@ export type ServerRoundEvents = {
   onStatusChanged: RBXScriptSignal;
   onContestantAdded: RBXScriptSignal;
   onContestantRemoved: RBXScriptSignal;
+  onTimeStartedChanged: RBXScriptSignal;
 }
 
 export type ServerRoundMethods = {
@@ -90,7 +91,7 @@ function ServerRound.new(properties: ServerRoundConstructorProperties & {stage: 
   round.stage = properties.stage or Stage.fromID(properties.stageID);
 
   events[round] = {};
-  for _, eventName in ipairs({"onStopped", "onEnded", "onHoldRelease", "onContestantAdded", "onContestantRemoved", "onStatusChanged"}) do
+  for _, eventName in ipairs({"onTimeStartedChanged", "onStopped", "onEnded", "onHoldRelease", "onContestantAdded", "onContestantRemoved", "onStatusChanged"}) do
 
     events[round][eventName] = Instance.new("BindableEvent");
     (round :: {})[eventName] = events[round][eventName].Event;
@@ -179,6 +180,7 @@ function ServerRound.__index:start(): ()
   end;
 
   self.timeStarted = DateTime.now().UnixTimestampMillis;
+  events[self].onTimeStartedChanged:Fire();
 
   -- Start a timer.
   local timer = task.delay(self.duration, function()
@@ -194,6 +196,8 @@ function ServerRound.__index:start(): ()
     task.cancel(timer);
 
   end);
+
+  ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(self.ID, self.timeStarted);
 
 end;
 
