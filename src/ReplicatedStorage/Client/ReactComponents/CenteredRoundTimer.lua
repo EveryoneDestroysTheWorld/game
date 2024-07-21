@@ -15,6 +15,7 @@ local function CenteredRoundTimer(props: CenteredRoundTimerProps)
   local animatedSecond: number?, setAnimatedSecond = React.useState(nil :: number?);
   local remainingDuration: number?, setRemainingDuration = React.useState(nil :: number?);
   local isFinalCountdown: boolean, setIsFinalCountdown = React.useState(false);
+  local didRoundStop, setDidRoundStop = React.useState(false);
 
   React.useEffect(function()
 
@@ -36,13 +37,19 @@ local function CenteredRoundTimer(props: CenteredRoundTimerProps)
 
       end);
 
+      props.round.onStopped:Connect(function()
+      
+        setDidRoundStop(true);
+
+      end);
+
     end);
 
   end, {props.round});
 
   React.useEffect(function()
   
-    if remainingDuration then
+    if remainingDuration and not didRoundStop then
 
       if remainingDuration > 6 then
 
@@ -71,7 +78,7 @@ local function CenteredRoundTimer(props: CenteredRoundTimerProps)
 
   React.useEffect(function(): ()
 
-    if currentSecond then
+    if currentSecond and not didRoundStop then
     
       if currentSecond >= 0 then
 

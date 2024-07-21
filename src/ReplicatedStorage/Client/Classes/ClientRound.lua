@@ -32,6 +32,7 @@ export type RoundEvents = {
   onContestantAdded: RBXScriptSignal;
   onContestantRemoved: RBXScriptSignal;
   onEnded: RBXScriptSignal;
+  onStopped: RBXScriptSignal;
   onStatusChanged: RBXScriptSignal;
   onStarted: RBXScriptSignal;
 }
@@ -46,7 +47,7 @@ function ClientRound.new(properties: RoundProperties): ClientRound
 
   -- Set up events.
   local events: {[string]: BindableEvent} = {};
-  local eventNames = {"onStarted", "onEnded", "onStatusChanged", "onContestantAdded", "onContestantRemoved"};
+  local eventNames = {"onStopped", "onStarted", "onEnded", "onStatusChanged", "onContestantAdded", "onContestantRemoved"};
   for _, eventName in ipairs(eventNames) do
 
     events[eventName] = Instance.new("BindableEvent");
@@ -101,6 +102,16 @@ function ClientRound.new(properties: RoundProperties): ClientRound
 
       round.timeStarted = startTime;
       events.onStarted:Fire();
+
+    end;
+
+  end);
+
+  ReplicatedStorage.Shared.Events.RoundStopped.OnClientEvent:Connect(function(roundID: string)
+  
+    if roundID == round.ID then
+
+      events.onStopped:Fire();
 
     end;
 

@@ -12,6 +12,7 @@ type RoundTimerProps = {
 local function RoundTimer(props: RoundTimerProps)
 
   local secondsLeft, setSecondsLeft = React.useState(nil);
+  local didRoundStop, setDidRoundStop = React.useState(false);
 
   React.useEffect(function()
 
@@ -31,6 +32,12 @@ local function RoundTimer(props: RoundTimerProps)
 
       props.round.onStatusChanged:Connect(check);
 
+      props.round.onStopped:Connect(function()
+      
+        setDidRoundStop(true);
+
+      end);
+
       check();
 
     end);
@@ -41,7 +48,7 @@ local function RoundTimer(props: RoundTimerProps)
 
     task.delay(1, function()
     
-      if secondsLeft and secondsLeft > 0 then
+      if secondsLeft and secondsLeft > 0 and not didRoundStop then
 
         setSecondsLeft(secondsLeft - 1);
   
