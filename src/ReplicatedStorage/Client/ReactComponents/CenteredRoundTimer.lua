@@ -5,14 +5,16 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 
-type PreRoundTimerProps = {
+type CenteredRoundTimerProps = {
   round: ClientRound;
 }
 
-local function PreRoundTimer(props: PreRoundTimerProps)
+local function CenteredRoundTimer(props: CenteredRoundTimerProps)
 
   local currentSecond: number?, setCurrentSecond = React.useState(nil :: number?);
   local animatedSecond: number?, setAnimatedSecond = React.useState(nil :: number?);
+  local remainingDuration: number?, setRemainingDuration = React.useState(nil :: number?);
+  local isFinalCountdown: boolean, setIsFinalCountdown = React.useState(false);
 
   React.useEffect(function()
 
@@ -28,9 +30,38 @@ local function PreRoundTimer(props: PreRoundTimerProps)
 
       end);
 
+      props.round.onStarted:Connect(function()
+
+        setRemainingDuration(props.round.duration);
+
+      end);
+
     end);
 
   end, {props.round});
+
+  React.useEffect(function()
+  
+    if remainingDuration then
+
+      if remainingDuration > 6 then
+
+        task.delay(1, function()
+        
+          setRemainingDuration(remainingDuration - 1);
+
+        end);
+
+      elseif remainingDuration == 6 then
+
+        setCurrentSecond(remainingDuration - 1);
+        setIsFinalCountdown(true);
+
+      end;
+
+    end;
+
+  end, {remainingDuration});
 
   local textState, setTextState = React.useState({
     rotation = -360;
@@ -134,7 +165,7 @@ local function PreRoundTimer(props: PreRoundTimerProps)
 
   local message = React.useState(messages[math.random(1, #messages)]);
 
-  return if animatedSecond then React.createElement("TextLabel", {
+  return if animatedSecond and (animatedSecond > 0 or not isFinalCountdown) then React.createElement("TextLabel", {
     Text = if animatedSecond == 0 then message else animatedSecond;
     AnchorPoint = Vector2.new(0.5, 0.5);
     Position = UDim2.new(0.5, 0, 0.5, 0);
@@ -149,9 +180,9 @@ local function PreRoundTimer(props: PreRoundTimerProps)
       Color = Color3.new(1, 1, 1);
       Thickness = 1;
       Transparency = textState.transparency;
-    })
+    });
   }) else nil;
 
 end;
 
-return PreRoundTimer;
+return CenteredRoundTimer;
