@@ -72,3 +72,6 @@ Christian "Sudobeast" Toney
     </tr>
   </tbody>
 </table>
+
+## Developed and published by
+Beastslash LLC
