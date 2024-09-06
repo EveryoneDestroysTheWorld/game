@@ -11,6 +11,7 @@ type ClientAction = ClientAction.ClientAction;
 
 local ExplosivePunchAction = {
   ID = 1;
+  iconImage = "rbxassetid://17771917538";
   name = "Explosive Punch";
   description = "Land explosive punches to your enemies.";
 };
@@ -34,6 +35,7 @@ function ExplosivePunchAction.new(): ClientAction
 
   local action = ClientAction.new({
     ID = ExplosivePunchAction.ID;
+    iconImage = ExplosivePunchAction.iconImage;
     name = ExplosivePunchAction.name;
     description = ExplosivePunchAction.description;
     activate = activate;

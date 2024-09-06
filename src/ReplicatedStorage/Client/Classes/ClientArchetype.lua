@@ -12,6 +12,8 @@ export type ClientArchetypeProperties = {
 
   type: "Fighter" | "Defender" | "Destroyer" | "Supporter";
 
+  iconImage: string;
+
   actionIDs: {number};
 
   breakdown: (self: ClientArchetype) -> ();

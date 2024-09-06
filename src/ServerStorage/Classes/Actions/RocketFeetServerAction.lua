@@ -7,8 +7,9 @@ type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
 local RocketFeetClientAction = require(ReplicatedStorage.Client.Classes.Actions.RocketFeetClientAction);
-local Round = require(script.Parent.Parent.Round);
-type Round = Round.Round;
+local ServerRound = require(script.Parent.Parent.ServerRound);
+type ServerRound = ServerRound.ServerRound;
+local ServerStorage = game:GetService("ServerStorage");
 
 local RocketFeetServerAction = {
   ID = RocketFeetClientAction.ID;
@@ -16,7 +17,7 @@ local RocketFeetServerAction = {
   description = RocketFeetClientAction.description;
 };
 
-function RocketFeetServerAction.new(contestant: ServerContestant, round: Round): ServerAction
+function RocketFeetServerAction.new(contestant: ServerContestant, round: ServerRound): ServerAction
 
   local leftFootExplosivePart = Instance.new("Part");
   leftFootExplosivePart.Name = "LeftFootExplosivePart";
@@ -39,7 +40,7 @@ function RocketFeetServerAction.new(contestant: ServerContestant, round: Round):
       local humanoid = contestant.character:FindFirstChild("Humanoid");
       assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.character}'s Humanoid`);
 
-      if humanoid:GetAttribute("Stamina") >= 10 then
+      if humanoid:GetAttribute("CurrentStamina") >= 10 then
 
         for _, explosivePart in ipairs({leftFootExplosivePart, rightFootExplosivePart}) do
 
@@ -78,8 +79,8 @@ function RocketFeetServerAction.new(contestant: ServerContestant, round: Round):
             end;
             local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
             if basePartCurrentDurability and basePartCurrentDurability > 0 then
-    
-              basePart:SetAttribute("CurrentDurability", basePartCurrentDurability - 35);
+
+              ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, contestant);
     
             end;
 
@@ -106,7 +107,7 @@ function RocketFeetServerAction.new(contestant: ServerContestant, round: Round):
         end;
 
         -- Reduce the player's stamina.
-        humanoid:SetAttribute("Stamina", humanoid:GetAttribute("Stamina") - 10);
+        humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") - 10);
 
       end;
   

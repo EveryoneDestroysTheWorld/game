@@ -7,8 +7,9 @@ type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
 local ExplosivePunchClientAction = require(ReplicatedStorage.Client.Classes.Actions.ExplosivePunchClientAction);
-local Round = require(script.Parent.Parent.Round);
-type Round = Round.Round;
+local ServerRound = require(script.Parent.Parent.ServerRound);
+type ServerRound = ServerRound.ServerRound;
+local ServerStorage = game:GetService("ServerStorage");
 
 local ExplosivePunchServerAction = {
   ID = ExplosivePunchClientAction.ID;
@@ -16,7 +17,7 @@ local ExplosivePunchServerAction = {
   description = ExplosivePunchClientAction.description;
 };
 
-function ExplosivePunchServerAction.new(contestant: ServerContestant, round: Round): ServerAction
+function ExplosivePunchServerAction.new(contestant: ServerContestant, round: ServerRound): ServerAction
 
   assert(contestant.character, "No character");
 
@@ -90,11 +91,16 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant, round: Rou
               local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
               if enemyHumanoid then
 
-                local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 15;
-                possibleEnemyContestant:updateHealth(newHealth, {
-                  contestant = contestant;
-                  actionID = ExplosivePunchServerAction.ID;
-                });
+                local currentHealth = enemyHumanoid:GetAttribute("CurrentHealth") :: number?;
+                if currentHealth then
+
+                  local newHealth = currentHealth - 15;
+                  possibleEnemyContestant:updateHealth(newHealth, {
+                    contestant = contestant;
+                    actionID = ExplosivePunchServerAction.ID;
+                  });
+
+                end
 
               end;
 
@@ -104,10 +110,10 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant, round: Rou
 
         end;
         
-        local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
+        local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability") :: number?;
         if basePartCurrentDurability and basePartCurrentDurability > 0 then
 
-          basePart:SetAttribute("CurrentDurability", basePartCurrentDurability - 35);
+          ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, contestant);
 
         end;
 

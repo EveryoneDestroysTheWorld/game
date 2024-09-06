@@ -6,9 +6,9 @@ local PathfindingService = game:GetService("PathfindingService");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local ExplosiveMimicClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.ExplosiveMimicClientArchetype);
-local Round = require(script.Parent.Parent.Round);
+local ServerRound = require(script.Parent.Parent.ServerRound);
 local ServerAction = require(script.Parent.Parent.ServerAction);
-type Round = Round.Round;
+type ServerRound = ServerRound.ServerRound;
 type ServerContestant = ServerContestant.ServerContestant;
 type ServerArchetype = ServerArchetype.ServerArchetype;
 type ServerAction = ServerAction.ServerAction;
@@ -21,7 +21,7 @@ local ExplosiveMimicServerArchetype = {
   type = ExplosiveMimicClientArchetype.type;
 };
 
-function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: Round, stageModel: Model): ServerArchetype
+function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: ServerRound, stageModel: Model): ServerArchetype
 
   -- Set up the self-destruct.
   local disqualificationEvent = contestant.onDisqualified:Connect(function()
@@ -107,7 +107,18 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
         if humanoid and humanoid:IsA("Humanoid") and changedEvent then
 
+          humanoid.AutomaticScalingEnabled = false;
+          for _, part in ipairs(contestant.character:GetDescendants()) do
+
+            if part:IsA("BasePart") then
+
+              part:SetNetworkOwner(nil);
+
+            end;
+
+          end;
           humanoid.Health = 0;
+          humanoid:ChangeState(Enum.HumanoidStateType.Dead)
           changedEvent:Disconnect();
 
         end;
@@ -207,7 +218,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
       local humanoid = character:FindFirstChild("Humanoid") :: Humanoid?;
       local head = character:FindFirstChild("Head") :: BasePart?;
-      if not humanoid or not head then continue; end;
+      if not humanoid or not head or humanoid.Health == 0 then continue; end;
 
       local defaultRaycastParams: RaycastParams = RaycastParams.new();
       defaultRaycastParams.FilterType = Enum.RaycastFilterType.Exclude;
@@ -220,7 +231,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
         for _, possibleEnemyContestant in ipairs(round.contestants) do
 
           -- TODO: Check if the contestant is on a different team (when teams are implemented).
-          local isOnSameTeam = possibleEnemyContestant == contestant;
+          local isOnSameTeam = possibleEnemyContestant == contestant or (possibleEnemyContestant.teamID and possibleEnemyContestant.teamID == contestant.teamID);
           local possibleEnemyCharacter = possibleEnemyContestant.character;
           if not possibleEnemyContestant.isDisqualified and not isOnSameTeam and possibleEnemyCharacter then
 

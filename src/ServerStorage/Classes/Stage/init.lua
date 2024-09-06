@@ -9,6 +9,7 @@ local DataStore = {
   StageMetadata = DataStoreService:GetDataStore("StageMetadata");
   StageBuildData = DataStoreService:GetDataStore("StageBuildData");
   PublishedStages = DataStoreService:GetOrderedDataStore("PublishedStages");
+  PrivateServerStages = DataStoreService:GetDataStore("PrivateServerStages");
 };
 local ServerScriptService = game:GetService("ServerScriptService");
 local HttpService = game:GetService("HttpService");
@@ -23,8 +24,8 @@ type StageMemberObject = {
   role: "Admin";
 };
 
-type StageProperties = {
-  
+type StageConstructorProperties = {
+
   -- The stage's unique ID.
   ID: string?;
   
@@ -48,6 +49,12 @@ type StageProperties = {
 
   -- The stage's members.
   members: {StageMemberObject};
+
+};
+
+type StageProperties = StageConstructorProperties & {
+
+  model: Model?;
   
 }
 
@@ -114,7 +121,7 @@ function Stage.new(properties: StageProperties): Stage
   for _, eventName in ipairs({"onMetadataUpdate", "onBuildDataUpdate", "onBuildDataUpdateProgressChanged", "onDelete", "onStageBuildDataDownloadProgressChanged"}) do
 
     events[eventName] = Instance.new("BindableEvent");
-    stage[eventName] = events[eventName].Event;
+    (stage :: {})[eventName] = events[eventName].Event;
 
   end
 
@@ -396,6 +403,8 @@ function Stage.__index:download(): Model
     end;
 
   end;
+
+  self.model = stageModel;
 
   return stageModel;
 
