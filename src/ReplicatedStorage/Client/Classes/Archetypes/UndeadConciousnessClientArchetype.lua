@@ -1,7 +1,7 @@
 --!strict
 local ClientArchetype = require(script.Parent.Parent.ClientArchetype);
-local Contestant = require(script.Parent.Parent.Contestant);
-type Contestant = Contestant.Contestant;
+local ClientContestant = require(script.Parent.Parent.ClientContestant);
+type ClientContestant = ClientContestant.ClientContestant;
 type ClientArchetype = ClientArchetype.ClientArchetype;
 local UndeadConciousnessClientArchetype = {
   ID = 1;
@@ -10,7 +10,7 @@ local UndeadConciousnessClientArchetype = {
   actionIDs = {};
   type = "Supporter" :: "Supporter";
 };
-function UndeadConciousnessClientArchetype.new(contestant: Contestant): ClientArchetype
+function UndeadConciousnessClientArchetype.new(contestant: ClientContestant): ClientArchetype
 
   local function breakdown(self: ClientArchetype)
 
@@ -22,6 +22,7 @@ function UndeadConciousnessClientArchetype.new(contestant: Contestant): ClientAr
     description = UndeadConciousnessClientArchetype.description;
     actionIDs = UndeadConciousnessClientArchetype.actionIDs;
     type = UndeadConciousnessClientArchetype.type;
+    iconImage = "rbxassetid://130983727429334";
     breakdown = breakdown;
   });
 

@@ -3,9 +3,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local UndeadConciousnessClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.UndeadConciousnessClientArchetype);
-local Round = require(script.Parent.Parent.Round);
+local ServerRound = require(script.Parent.Parent.ServerRound);
 local ServerAction = require(script.Parent.Parent.ServerAction);
-type Round = Round.Round;
+type ServerRound = ServerRound.ServerRound;
 type ServerContestant = ServerContestant.ServerContestant;
 type ServerArchetype = ServerArchetype.ServerArchetype;
 type ServerAction = ServerAction.ServerAction;
@@ -18,7 +18,7 @@ local UndeadConciousnessServerArchetype = {
   type = UndeadConciousnessClientArchetype.type;
 };
 
-function UndeadConciousnessServerArchetype.new(contestant: ServerContestant, round: Round, stageModel: Model): ServerArchetype
+function UndeadConciousnessServerArchetype.new(contestant: ServerContestant, round: ServerRound, stageModel: Model): ServerArchetype
 
   -- Set up the self-destruct.
   local isContestantStunned = false;
