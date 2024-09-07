@@ -123,7 +123,7 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
               restorablePart.Parent = restorablePartsModel;
 
               local proximityPrompt = Instance.new("ProximityPrompt");
-              proximityPrompt.HoldDuration = 1.25;
+              proximityPrompt.HoldDuration = 0;
               proximityPrompt.MaxActivationDistance = 40;
               proximityPrompt.RequiresLineOfSight = false;
               proximityPrompt.ObjectText = `Destroyed{if destroyerName then ` by {destroyerName}` else ""}`;
