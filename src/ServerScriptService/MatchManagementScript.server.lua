@@ -1,11 +1,6 @@
 --!strict
 -- Profile.lua
-<<<<<<< HEAD
 -- Writers: Christian "Sudobeast" Toney and Hati :))))
-=======
--- Written by Christian "Sudobeast" Toney
--- Edits by Hati :))))
->>>>>>> main
 -- This script controls the round and lobby management stuff.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
