@@ -11,6 +11,7 @@ Christian "Sudobeast" Toney
 ### Gameplay Designers
 * Christian "Sudobeast" Toney
 * Dylan "Quintt" Provenzano
+* hati_bati
 * InkyTheBlue
 * naz
 
