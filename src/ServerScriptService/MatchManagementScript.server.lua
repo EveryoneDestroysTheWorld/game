@@ -1,4 +1,9 @@
 --!strict
+-- Profile.lua
+-- Written by Christian "Sudobeast" Toney
+-- Edits by Hati :))))
+-- This script controls the round and lobby management stuff.
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local Players = game:GetService("Players");
@@ -62,7 +67,7 @@ ReplicatedStorage.Shared.Functions.GetRound.OnServerInvoke = function()
 end;
 
 -- Get the match info.
-local expectedPlayerIDs = {904459813};
+local expectedPlayerIDs = {};  --- edit
 
 local function startRound()
 
@@ -353,7 +358,7 @@ local function startRound()
     end;
 
     round:setStatus("Contestant selection");
-    local selectionTimeLimitSeconds = 25;
+    local selectionTimeLimitSeconds = 25; 
     local currentTime = os.time();
     ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds - 1);
     ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = function()
@@ -382,7 +387,7 @@ local function checkPlayerList(player: Player)
     if playerID == player.UserId then
 
       -- Verify that the player has at least one archetype.
-      local profile = Profile.fromID(playerID);
+      local profile = Profile.fromID(playerID, true);    --- edit
       round:addContestant(ServerContestant.new({
         ID = player.UserId;
         player = player;
@@ -393,7 +398,8 @@ local function checkPlayerList(player: Player)
         isDisqualified = false;
         teamID = 1;
       }));
-
+    else
+      warn("PlayerID doesn't exist, something went wrong")
       break;
 
     end;
@@ -410,20 +416,19 @@ local function checkPlayerList(player: Player)
     end;
 
   end;
-
   -- We have all expected players, so start the round.
   startRound();
 
 end;
 
 Players.PlayerAdded:Connect(function(player)
-
+table.insert(expectedPlayerIDs, player.UserId )  --- added
   checkPlayerList(player);
-
+  
 end);
 
 for _, player in ipairs(Players:GetPlayers()) do
-
+  table.insert(expectedPlayerIDs, player.UserId ) --- added
   checkPlayerList(player);
 
 end;
