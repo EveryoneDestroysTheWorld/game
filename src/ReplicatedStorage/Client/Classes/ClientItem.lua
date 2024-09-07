@@ -21,7 +21,7 @@ export type ClientItem = ClientItemProperties & ClientItemEvents;
 
 function ClientItem.new(properties: ClientItemProperties): ClientItem
 
-  local action = properties;
+  local item = properties;
 
   -- Set up events.
   local events: {[string]: BindableEvent} = {};
@@ -29,24 +29,24 @@ function ClientItem.new(properties: ClientItemProperties): ClientItem
   for _, eventName in ipairs(eventNames) do
 
     events[eventName] = Instance.new("BindableEvent");
-    action[eventName] = events[eventName].Event;
+    item[eventName] = events[eventName].Event;
 
   end
 
-  return action :: ClientItem;
+  return item :: ClientItem;
   
 end
 
 function ClientItem.get(itemID: number): ClientItem
 
-  for _, instance in ipairs(script.Parent.Actions:GetChildren()) do
+  for _, instance in ipairs(script.Parent.Items:GetChildren()) do
   
     if instance:IsA("ModuleScript") then
   
-      local action = require(instance) :: any;
-      if action.ID == itemID then
+      local item = require(instance) :: any;
+      if item.ID == itemID then
   
-        return action.new();
+        return item.new();
   
       end;
   
@@ -54,7 +54,7 @@ function ClientItem.get(itemID: number): ClientItem
   
   end;
 
-  error(`Couldn't find action from ID {itemID}.`);
+  error(`Couldn't find item from ID {itemID}.`);
 
 end;
 
