@@ -27,8 +27,9 @@ Christian "Sudobeast" Toney
 Christian "Sudobeast" Toney
 
 ## Technology Team
-### Programmer
-Christian "Sudobeast" Toney
+### Programmers
+* Christian "Sudobeast" Toney
+* hati_bati
 
 ## Visual Team
 ### Builder
