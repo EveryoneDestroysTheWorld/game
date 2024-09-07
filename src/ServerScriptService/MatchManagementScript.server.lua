@@ -381,9 +381,9 @@ local function startRound()
 end;
 
 local function checkPlayerList(player: Player)
-print(expectedPlayerIDs)  --- 
+
   for index, playerID in ipairs(expectedPlayerIDs) do
-    print(playerID)  -----
+
     if playerID == player.UserId then
 
       -- Verify that the player has at least one archetype.
@@ -424,9 +424,11 @@ end;
 Players.PlayerAdded:Connect(function(player)
 table.insert(expectedPlayerIDs, player.UserId )  --- added
   checkPlayerList(player);
+  
 end);
 
 for _, player in ipairs(Players:GetPlayers()) do
   table.insert(expectedPlayerIDs, player.UserId ) --- added
   checkPlayerList(player);
+
 end;
