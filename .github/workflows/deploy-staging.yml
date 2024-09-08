@@ -30,7 +30,8 @@ jobs:
           ROBLOX_UNIVERSE_ID: ${{ env.ROBLOX_UNIVERSE_ID }}
           ROBLOX_PLACE_ID: ${{ env.ROBLOX_PLACE_ID }}
         run: | 
-          curl -X POST "https://apis.roblox.com/universes/v1/""$ROBLOX_UNIVERSE_ID""/places/""$ROBLOX_PLACE_ID""/versions?versionType=Published" \
+          curl --verbose --request POST  \
           -H "x-api-key: ""$ROBLOX_API_KEY""" \
           -H "Content-Type: application/xml" \
-          --data-binary @build.rbxl
+          --data-binary @build.rbxl \
+          'https://apis.roblox.com/universes/v1/""$ROBLOX_UNIVERSE_ID""/places/""$ROBLOX_PLACE_ID""/versions?versionType=Published'
