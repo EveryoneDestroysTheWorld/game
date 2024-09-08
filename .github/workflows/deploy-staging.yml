@@ -32,7 +32,7 @@ jobs:
           ROBLOX_PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
         run: | 
           curl --verbose  \
-          -H 'x-api-key: $ROBLOX_API_KEY' \
+          -H "x-api-key: $ROBLOX_API_KEY" \
           -H "Content-Type: application/xml" \
           --data-binary @build.rbxl \
           'https://apis.roblox.com/universes/v1/""$ROBLOX_UNIVERSE_ID""/places/""$ROBLOX_PLACE_ID""/versions?versionType=Published'
