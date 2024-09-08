@@ -18,24 +18,36 @@ local TakeFlightServerAction = {
   description = TakeFlightClientAction.description;
 };
 
-local function animateFlightStart(humanoid)
-  
-  local animationTracks = {};
-  local flyAnimationRight = Instance.new("Animation");
-  local flyAnimationLeft = Instance.new("Animation");
-  flyAnimationRight.AnimationId = "rbxassetid://87777396509498";
-  flyAnimationLeft.AnimationId = "rbxassetid://72026942510156";
-  local animatorR = humanoid.Parent.WingProp.WingsPropRight:FindFirstChild("AnimationController");
-  local animatorL = humanoid.Parent.WingProp.WingsPropLeft:FindFirstChild("AnimationController");
-  animationTracks["Right"] = animatorR:LoadAnimation(flyAnimationRight);
-  animationTracks["Right"]:Play(0,100,1.8);
-  animationTracks["Left"] = animatorL:LoadAnimation(flyAnimationLeft);
-  animationTracks["Left"]:Play(0,100,1.8);
-  return animationTracks
+local function animateFlight(humanoid,animations, animData,state)
+
+  animations["Right"]:Play(animData.X,animData.Y,animData.Z);
+  animations["Left"]:Play(animData.X,animData.Y,animData.Z);
+
+  if state and state == "EndFlight" then
+   -- task.wait(0.1)
+    animations["RightIdle"]:Stop(0.1)
+    animations["LeftIdle"]:Stop(0.1)
+    animations["Idle"]:Stop(0.1)
+    print("Ending flight")
+    print(animations["End"])
+    animations["End"]:Play(0.1,1,0.8)
+    task.wait(0.3)
+    animations["End"]:AdjustWeight(0.01,0.5)
+  else
+    animations["Start"]:Play(0.1,1,1.8)
+    task.wait(0.5)
+    animations["Start"]:AdjustWeight(0.01,0.5)
+    animations["Idle"]:Play(0.5,1,1.2)
+    animations["RightIdle"]:Play(0.5,1,1.2)
+    animations["LeftIdle"]:Play(0.5,1,1.2)
+
+
+  end
+  return animations
 end
 
 local function flightStart(primaryPart)
-
+--perhaps some of this could be clientside
   local linearVelocity = Instance.new("LinearVelocity");
   linearVelocity.VelocityConstraintMode = "Line"
   linearVelocity.LineDirection = Vector3.new(0, 1, 0);
@@ -43,30 +55,104 @@ local function flightStart(primaryPart)
   linearVelocity.MaxForce = math.huge;
   linearVelocity.Parent = primaryPart;
   linearVelocity.Attachment0 = primaryPart:FindFirstChild("RootAttachment") :: Attachment;
-
+  linearVelocity:SetAttribute("PlayerControls", false)
   task.wait(0.3)
 
   linearVelocity.LineVelocity = 50;
 
   local tween = TweenService:Create(linearVelocity, TweenInfo.new(1.0, Enum.EasingStyle.Sine), {LineVelocity = 0})
 tween:Play()
+task.wait(0.6)
+linearVelocity.VelocityConstraintMode = "Vector"
+linearVelocity.VectorVelocity = Vector3.new(0,0,0)
+linearVelocity:SetAttribute("PlayerControls", true)
+local humanoid = primaryPart.Parent.Humanoid
+repeat 
+  task.wait(0.25)
+  humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") - 2)
+until linearVelocity:GetAttribute("PlayerControls") == false
+return
+end
 
-  task.delay(0.8, function()
+local function flightEnd(primaryPart)
+local linearVelocity = primaryPart:FindFirstChild("LinearVelocity")
+linearVelocity:SetAttribute("PlayerControls", false)
   
+linearVelocity.VelocityConstraintMode = "Line"
+  linearVelocity.LineDirection = Vector3.new(0, 1, 0);
+  linearVelocity.LineVelocity = 15
+  linearVelocity.MaxForce = math.huge;
+  linearVelocity.Parent = primaryPart;
+  linearVelocity.Attachment0 = primaryPart:FindFirstChild("RootAttachment") :: Attachment;
+  
+  task.wait(0.15)
+  linearVelocity.LineDirection = primaryPart.CFrame.LookVector
+  linearVelocity.LineVelocity = 30;
+  task.delay(0.1, function()
+          
     linearVelocity:Destroy();
 
   end);
 
+end
+
+local function preloadAnims(char, animations)
+  
+  local humanoid = char.Humanoid
 
 
-return
+  local animator = humanoid:FindFirstChild("Animator")
+  local animatorR = humanoid.Parent.WingProp.WingsPropRight:FindFirstChild("AnimationController");
+  local animatorL = humanoid.Parent.WingProp.WingsPropLeft:FindFirstChild("AnimationController");
+local anims = {}
+
+-- usually would have a for i here, but since different animators are used this way is easier
+  anims["Right"] = Instance.new("Animation");
+  anims["Right"].AnimationId = "rbxassetid://87777396509498";
+  animations["Right"] = animatorR:LoadAnimation(anims["Right"]);
+  
+  anims["RightIdle"] = Instance.new("Animation");
+  anims["RightIdle"].AnimationId = "rbxassetid://112159869158031";
+  animations["RightIdle"] = animatorR:LoadAnimation(anims["RightIdle"]);
+
+  anims["Left"] = Instance.new("Animation");
+  anims["Left"].AnimationId = "rbxassetid://72026942510156";
+  animations["Left"] = animatorL:LoadAnimation(anims["Left"]);
+
+  anims["LeftIdle"] = Instance.new("Animation");
+  anims["LeftIdle"].AnimationId = "rbxassetid://73990987512197";
+  animations["LeftIdle"] = animatorL:LoadAnimation(anims["LeftIdle"]);
+  
+  anims["End"] = Instance.new("Animation");
+  anims["End"].AnimationId = "rbxassetid://101417868579212";
+  animations["End"] = animator:LoadAnimation(anims["End"])
+
+  anims["Start"] = Instance.new("Animation");
+  anims["Start"].AnimationId = "rbxassetid://92928175332389";
+  animations["Start"] = animator:LoadAnimation(anims["Start"])
+
+  anims["Idle"] = Instance.new("Animation");
+  anims["Idle"].AnimationId = "rbxassetid://109371600216543";
+  animations["Idle"] = animator:LoadAnimation(anims["Idle"]);
+  
+    return animations
 end
 
 
-
-
 function TakeFlightServerAction.new(contestant: ServerContestant, round: ServerRound): ServerAction
+print("preloading animations")
 
+local animations = {
+  "Right, 87777396509498",
+  "RightIdle, 112159869158031",
+  "Left, 72026942510156",
+  "LeftIdle, 73990987512197",
+  "End, 101417868579212",
+  "Start, 92928175332389",
+  "Idle, 109371600216543"
+    };
+
+local anims = preloadAnims(contestant.character, animations)
 
   local action: ServerAction = nil;
 
@@ -77,18 +163,27 @@ function TakeFlightServerAction.new(contestant: ServerContestant, round: ServerR
       local humanoid = contestant.character:FindFirstChild("Humanoid");
       assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.character}'s Humanoid`);
 
-      if humanoid:GetAttribute("CurrentStamina") >= 10 then
-        
 
 
 
-        -- Activate double jump.
         local primaryPart = contestant.character.PrimaryPart;
         if humanoid:GetState() == Enum.HumanoidStateType.Freefall and primaryPart then
-          local animationTracks = animateFlightStart(humanoid)
-          flightStart(primaryPart)
- -- Reduce the player's stamina.
- humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") - 10);
+          local animationTracks
+          if not primaryPart:FindFirstChild("LinearVelocity") then
+            if humanoid:GetAttribute("CurrentStamina") >= 10 then
+             -- Reduce the player's stamina.
+ humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") - 10)
+            local animData = Vector3.new(0,100,1.8)
+            coroutine.wrap(flightStart)(primaryPart)
+            anims = animateFlight(humanoid, anims, animData)
+            end
+          else
+            local animData = Vector3.new(0,100,2.5)
+            coroutine.wrap(flightEnd)(primaryPart)
+            anims = animateFlight(humanoid, anims, animData, "EndFlight")
+            
+          end
+ 
         end;
 
        
@@ -97,7 +192,6 @@ function TakeFlightServerAction.new(contestant: ServerContestant, round: ServerR
   
     end;
 
-  end;
 
   local executeActionRemoteFunction: RemoteFunction? = nil;
 
@@ -109,39 +203,12 @@ function TakeFlightServerAction.new(contestant: ServerContestant, round: ServerR
 
     end
 
-    leftFootExplosivePart:Destroy();
-    rightFootExplosivePart:Destroy();
+    contestant.character.WingProp:Destroy()
 
   end;
 
-  if contestant.character then
 
-    -- Create the explosive attachments on both feet of the player.
-    local humanoid = contestant.character:FindFirstChild("Humanoid");
-    assert(humanoid and humanoid:IsA("Humanoid"), "Couldn't find contestant's humanoid");
 
-    local isHumanoidR15 = humanoid.RigType == Enum.HumanoidRigType.R15;
-    local leftFoot = contestant.character:FindFirstChild(if isHumanoidR15 then "LeftFoot" else "LeftLeg");
-    local rightFoot = contestant.character:FindFirstChild(if isHumanoidR15 then "RightFoot" else "RightLeg");
-    for _, footInfo in ipairs({{leftFoot, leftFootExplosivePart}, {rightFoot, rightFootExplosivePart}}) do
-
-      local foot = footInfo[1];
-      local explosivePart = footInfo[2];
-      if foot and foot:IsA("BasePart") and explosivePart and explosivePart:IsA("BasePart") then
-
-        local explosiveWeldConstraint = Instance.new("WeldConstraint");
-        explosiveWeldConstraint.Part0 = explosivePart;
-        explosiveWeldConstraint.Part1 = foot;
-        explosiveWeldConstraint.Parent = explosivePart;
-
-        explosivePart.Position = foot.CFrame.Position - (if not isHumanoidR15 then Vector3.new(0, foot.Size.Y / 2 + explosivePart.Size.Y / 2, 0) else Vector3.zero);
-        explosivePart.Parent = contestant.character;
-
-      end;
-    
-    end;
-
-  end;
 
   action = ServerAction.new({
     name = TakeFlightServerAction.name;

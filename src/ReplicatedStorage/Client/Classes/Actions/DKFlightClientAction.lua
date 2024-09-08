@@ -2,6 +2,8 @@
 -- Writer: Hati ---- Heavily modified edit of ExplosivePunch
 -- Designer: Christian Toney (Sudobeast)
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 local ClientAction = require(script.Parent.Parent.ClientAction);
@@ -10,74 +12,111 @@ local ActionButton = require(script.Parent.Parent.Parent.ReactComponents.ActionB
 type ClientAction = ClientAction.ClientAction;
 
 local TakeFlightAction = {
-  ID = 6;
-  iconImage = "rbxassetid://17771917538";
-  name = "Take Flight";
-  description = "You are great at flying! I'm suprised those wings can carry you.";
+	ID = 6;
+	iconImage = "rbxassetid://17771917538";
+	name = "Take Flight";
+	description = "You are great at flying! I'm suprised those wings can carry you.";
 };
 
+local activeState = false
+local function flightControls()
+	activeState = true
+	local linearVelocity = Players.LocalPlayer.Character.HumanoidRootPart:WaitForChild("LinearVelocity")
+	local humanoid = Players.LocalPlayer.Character.Humanoid
+	-- this waits for the controls to be enabled by the server
+	print("Player client found the linearVelocity")
+	linearVelocity:SetAttribute("PlayerControls", false)
+	local connection
+	local conncetion2
+	connection = linearVelocity.AttributeChanged:Connect(function()
+		print("Player client found the AttributeChange")
+		connection:Disconnect()
+		connection = linearVelocity.AttributeChanged:Connect(function()
+			connection:Disconnect()
+			connection2:Disconnect()
+			activeState = false
+		end)
+		local verticalVelocity = 0
+		connection2 = RunService.RenderStepped:Connect(function(step)
+			if humanoid.Jump == true then
+				verticalVelocity = 0.8
+			else
+				verticalVelocity = 0
+			end
+			local value = (humanoid.MoveDirection) + Vector3.new(0,verticalVelocity,0)
+				local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.5, Enum.EasingStyle.Sine), {VectorVelocity = value * 20})
+			tween:Play()
+		end)
+	end)
+
+
+end
 function TakeFlightAction.new(): ClientAction
 
-  local player = Players.LocalPlayer;
-  local remoteName: string;
+	local player = Players.LocalPlayer;
+	local remoteName: string;
 
-  local function breakdown(self: ClientAction)
+	local function breakdown(self: ClientAction)
 
-    ContextActionService:UnbindAction("ActivateTakeFlight");
-
-  end;
-
-  local function activate(self: ClientAction)
-
-    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
-
-  end;
-
-  local action = ClientAction.new({
-    ID = TakeFlightAction.ID;
-    iconImage = TakeFlightAction.iconImage;
-    name = TakeFlightAction.name;
-    description = TakeFlightAction.description;
-    activate = activate;
-    breakdown = breakdown;
-  });
-local allowedToToggle = true
-  ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
-    onActivate = function()
-      action:activate();
-      allowedToToggle = false
-task.wait(1)
-allowedToToggle = true
-
-    end;
-    shortcutCharacter = "L";
-    iconImage = "rbxassetid://17771917538";
-  }));
-  
-  remoteName = `{player.UserId}_{action.ID}`;
-local debounce = false
-  local function checkJump(_, inputState: Enum.UserInputState)
-		if inputState == Enum.UserInputState.Begin and allowedToToggle == true then
-			if debounce == false then
-				debounce = true
-        task.wait(0.4)
-        if debounce == true and Players.LocalPlayer.Character.Humanoid.Jump == true  then
-          debounce = false
-				action:activate();
-        end
-			else
-        debounce = false
-				action:activate();
-			end
-
-
-		end;
+		ContextActionService:UnbindAction("ActivateTakeFlight");
 
 	end;
 
-  ContextActionService:BindActionAtPriority("ActivateTakeFlight", checkJump, false, 2, Enum.KeyCode.Space);
+	local function activate(self: ClientAction)
+		if Players.LocalPlayer.Character.Humanoid:GetAttribute("CurrentStamina") >= 10 then
+			coroutine.wrap(flightControls)()
+		end
+		ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
+end;
 
-  return action;
+local action = ClientAction.new({
+	ID = TakeFlightAction.ID;
+	iconImage = TakeFlightAction.iconImage;
+	name = TakeFlightAction.name;
+	description = TakeFlightAction.description;
+	activate = activate;
+	breakdown = breakdown;
+});
+local allowedToToggle = true
+ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
+	onActivate = function()
+		action:activate();
+		flightControls()
+		allowedToToggle = false
+		task.wait(1)
+		allowedToToggle = true
+
+	end;
+	shortcutCharacter = "L";
+	iconImage = "rbxassetid://17771917538";
+}));
+
+remoteName = `{player.UserId}_{action.ID}`;
+local debounce = false
+local function checkJump(_, inputState: Enum.UserInputState)
+	if inputState == Enum.UserInputState.Begin and allowedToToggle == true then
+		if debounce == false then
+			debounce = true
+			if activeState == false then
+				task.wait(0.4)
+				if debounce == true and Players.LocalPlayer.Character.Humanoid.Jump == true  then
+					debounce = false
+					action:activate();
+				end
+			end
+		else
+			debounce = false
+			action:activate();
+		end
+
+
+	end;
+
+end;
+
+ContextActionService:BindActionAtPriority("ActivateTakeFlight", checkJump, false, 2, Enum.KeyCode.Space);
+
+return action;
 
 end
 
