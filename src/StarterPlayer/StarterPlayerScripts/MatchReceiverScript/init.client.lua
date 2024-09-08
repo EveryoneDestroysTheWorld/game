@@ -18,7 +18,6 @@ local currentActions: {ClientAction} = {};
 local player = Players.LocalPlayer;
 local actionButtonContainer = Instance.new("ScreenGui");
 actionButtonContainer.Name = "ActionButtonContainerGUI";
-actionButtonContainer.Parent = player:WaitForChild("PlayerGui");
 actionButtonContainer.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
 actionButtonContainer.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets;
 actionButtonContainer.ResetOnSpawn = false;
@@ -30,6 +29,7 @@ local root = ReactRoblox.createRoot(actionButtonContainer);
 ReplicatedStorage.Shared.Functions.InitializeInventory.OnClientInvoke = function(archetypeID: number)
 
   -- Set up the action container GUI.
+  actionButtonContainer.Parent = player:WaitForChild("PlayerGui");
   root:render(React.createElement(ActionButtonContainer));
 
   -- Set up the archetype and actions.
@@ -49,7 +49,7 @@ end;
 ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function()
 
   -- Remove the GUI.
-  root:unmount();
+  actionButtonContainer:Destroy();
 
   -- Breakdown the archetype and actions.
   if currentArchetype then
@@ -77,7 +77,7 @@ ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function()
   roundResultsGUI.Enabled = true;
 
   local roundResultsGUIRoot = ReactRoblox.createRoot(roundResultsGUI);
-  roundResultsGUIRoot:render(RoundResultsWindow);
+  roundResultsGUIRoot:render(React.createElement(RoundResultsWindow));
 
 end);
 

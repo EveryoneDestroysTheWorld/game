@@ -9,11 +9,11 @@ type ClientRound = ClientRound.ClientRound;
 local filterTable = require(ReplicatedStorage.Shared.Modules.FilterTable);
 local PersonalStatsFrame = require(script.Parent.PersonalStatsFrame);
 
-export type RoundResultsWindowProperties = {
-  round: ClientRound;
-}
+export type RoundResultsWindowProperties = {}
 
 local function RoundResultsWindow(props: RoundResultsWindowProperties)
+
+  local round = React.useState(ClientRound.fromServerRound());
 
   local function getDestructionBlocks()
 
@@ -100,11 +100,11 @@ local function RoundResultsWindow(props: RoundResultsWindowProperties)
       }, {
         AllyTeamFrame = React.createElement(TeamFrame, {
           teamID = 1;
-          contestants = filterTable(props.round.contestants, function(contestant) return contestant.teamID == 1 end);
+          contestants = filterTable(round.contestants, function(contestant) return contestant.teamID == 1 end);
         });
         EnemyTeamFrame = React.createElement(TeamFrame, {
           teamID = 2;
-          contestants = filterTable(props.round.contestants, function(contestant) return contestant.teamID == 2 end);
+          contestants = filterTable(round.contestants, function(contestant) return contestant.teamID == 2 end);
         });
       });
     });

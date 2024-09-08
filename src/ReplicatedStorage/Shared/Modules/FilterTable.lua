@@ -7,7 +7,7 @@ return function<Item>(unfilteredTable: {Item}, iterator: (item: Item) -> boolean
 
     if iterator(item) then
 
-      table.insert(unfilteredTable, item);
+      table.insert(filteredTable, item);
 
     end;
 
