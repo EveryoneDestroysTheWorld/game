@@ -39,8 +39,8 @@ local function MatchInitializationScreen()
   local round = React.useState(ClientRound.fromServerRound());
   local shouldShowArchetypeInformation, setShouldShowArchetypeInformation = React.useState(false);
   local selectedArchetype: ClientArchetype, setSelectedArchetype = React.useState(nil :: ClientArchetype?);
-  local uiPaddingRightOffset, setUIPaddingRightOffset = React.useState(0);
 
+  local uiPaddingRightOffset, setUIPaddingRightOffset = React.useState(0);
   React.useEffect(function(): ()
 
     if round then
@@ -52,7 +52,7 @@ local function MatchInitializationScreen()
         local newRivalTeammateCards = {};
 
         local ownTeamID: number?;
-        for _, contestant in ipairs(round.contestants) do
+        for _, contestant in round.contestants do
 
           if contestant.ID == player.UserId then
 
@@ -63,7 +63,7 @@ local function MatchInitializationScreen()
 
         end;
 
-        for _, contestant in ipairs(round.contestants) do
+        for _, contestant in round.contestants do
 
           local isRival = contestant.ID ~= player.UserId and not ownTeamID or contestant.teamID ~= ownTeamID;
           local selectedTable = if isRival then newRivalTeammateCards else newAllyTeammateCards;
@@ -80,7 +80,7 @@ local function MatchInitializationScreen()
         end;
 
         -- Fill in the blank slots.
-        for ti, t in ipairs({newAllyTeammateCards, newRivalTeammateCards}) do
+        for ti, t in {newAllyTeammateCards, newRivalTeammateCards} do
 
           for i = #t + 1, 4 do
 

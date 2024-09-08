@@ -254,6 +254,7 @@ local function startRound()
             end;
 
             -- Choose a random archetype for those who didn't choose.
+            print(ownedArchetypeIDs);
             local selectedArchetypeIndex = math.random(1, #ownedArchetypeIDs);
             chosenArchetypeID = ownedArchetypeIDs[selectedArchetypeIndex];
 
@@ -352,6 +353,7 @@ local function startRound()
 
       if shouldContinue then
 
+        print('chosen')
         previewMatchup();
 
       end;
