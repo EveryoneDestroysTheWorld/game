@@ -2,7 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local Colors = require(ReplicatedStorage.Client.Colors);
-local Button = require(script.Parent.Button);
+local Button = require(ReplicatedStorage.Client.ReactComponents.Button);
 local TweenService = game:GetService("TweenService");
 
 local function CheckeredBackgroundImageLabel(props: {LayoutOrder: number})

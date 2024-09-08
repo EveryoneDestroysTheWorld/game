@@ -15,6 +15,7 @@ type ServerContestant = ServerContestant.ServerContestant;
 local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
 type ServerArchetype = ServerArchetype.ServerArchetype;
 local Profile = require(ServerStorage.Classes.Profile);
+local RunService = game:GetService("RunService");
 
 -- Initialize the round.
 local round;
@@ -67,7 +68,7 @@ ReplicatedStorage.Shared.Functions.GetRound.OnServerInvoke = function()
 end;
 
 -- Get the match info.
-local expectedPlayerIDs = {};  --- edit
+local expectedPlayerIDs = {};
 
 local function startRound()
 
@@ -253,6 +254,7 @@ local function startRound()
             end;
 
             -- Choose a random archetype for those who didn't choose.
+            print(ownedArchetypeIDs);
             local selectedArchetypeIndex = math.random(1, #ownedArchetypeIDs);
             chosenArchetypeID = ownedArchetypeIDs[selectedArchetypeIndex];
 
@@ -351,6 +353,7 @@ local function startRound()
 
       if shouldContinue then
 
+        print('chosen')
         previewMatchup();
 
       end;
@@ -396,10 +399,12 @@ local function checkPlayerList(player: Player)
         profile = profile;
         isBot = false;
         isDisqualified = false;
-        teamID = 1;
+        teamID = 1; -- TODO: Fix this
       }));
+
     else
-      warn("PlayerID doesn't exist, something went wrong")
+
+      warn("PlayerID doesn't exist, something went wrong");
       break;
 
     end;
@@ -416,19 +421,27 @@ local function checkPlayerList(player: Player)
     end;
 
   end;
+
   -- We have all expected players, so start the round.
   startRound();
 
 end;
 
-Players.PlayerAdded:Connect(function(player)
-table.insert(expectedPlayerIDs, player.UserId )  --- added
-  checkPlayerList(player);
-  
-end);
+local shouldUseStudioPlayers = true;
+if shouldUseStudioPlayers and RunService:IsStudio() then
 
-for _, player in ipairs(Players:GetPlayers()) do
-  table.insert(expectedPlayerIDs, player.UserId ) --- added
-  checkPlayerList(player);
+  Players.PlayerAdded:Connect(function(player)
+
+    table.insert(expectedPlayerIDs, player.UserId)
+    checkPlayerList(player);
+    
+  end);
+
+  for _, player in ipairs(Players:GetPlayers()) do
+
+    table.insert(expectedPlayerIDs, player.UserId)
+    checkPlayerList(player);
+
+  end;
 
 end;
