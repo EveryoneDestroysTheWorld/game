@@ -166,9 +166,13 @@ local function startRound()
 
     local delayTask = nil;
     local chosenArchetypeIDs = {};
+    local isPreviewing = false;
     local function previewMatchup()
 
       local isSuccess, message = pcall(function()
+
+        assert(not isPreviewing);
+        isPreviewing = true;
 
         if coroutine.status(delayTask) ~= "running" then
 
@@ -350,7 +354,7 @@ local function startRound()
 
       end;
 
-      if shouldContinue then
+      if shouldContinue and not isPreviewing then
 
         previewMatchup();
 

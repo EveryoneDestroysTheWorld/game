@@ -168,6 +168,8 @@ local function MatchInitializationScreen()
 
   end, {});
 
+  local isConfirmingArchetype, setIsConfirmingArchetype = React.useState(false);
+
   return React.createElement("Frame", {
     BackgroundTransparency = backgroundTransparency;
     BackgroundColor3 = Color3.fromRGB(4, 4, 4);
@@ -210,6 +212,7 @@ local function MatchInitializationScreen()
         });
       });
       ArchetypeSelectionFrame = if shouldShowArchetypeInformation then React.createElement(ArchetypeSelectionFrame, {
+        isConfirmingArchetype = isConfirmingArchetype;
         selectedArchetype = selectedArchetype;
         onSelectionChanged = function(newSelectedArchetype)
 
@@ -218,7 +221,20 @@ local function MatchInitializationScreen()
         end;
         onSelectionConfirmed = function()
 
-          ReplicatedStorage.Shared.Functions.ChooseArchetype:InvokeServer(selectedArchetype.ID);
+          setIsConfirmingArchetype(true);
+
+          local didConfirmArchetype, errorMessage = pcall(function()
+            
+            ReplicatedStorage.Shared.Functions.ChooseArchetype:InvokeServer(selectedArchetype.ID);
+
+          end);
+
+          if not didConfirmArchetype then
+
+            warn(`Couldn't confirm archetype: {errorMessage}`);
+            setIsConfirmingArchetype(false);
+
+          end;
 
         end;
       }) else nil;
