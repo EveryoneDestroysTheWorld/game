@@ -1,0 +1,31 @@
+on:
+  push: 
+    branches: 
+    - staging
+
+jobs:
+  game-deploy:
+    name: Deploy game to staging environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Set up Foreman
+        uses: Roblox/setup-foreman@v3.1.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build project
+        run: rojo build -o build.rbxl
+
+      - name: Deploy game to staging environment
+        run: | 
+          curl --verbose --location POST "https://apis.roblox.com/universes/v1/$ROBLOX_UNIVERSE_ID/places/$ROBLOX_PLACE_ID/versions?versionType=Published" \
+          --header "x-api-key: $ROBLOX_API_KEY" \
+          --header 'Content-Type: application/xml' \
+          --data-binary @build.rbxl
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          ROBLOX_UNIVERSE_ID: ${{ env.ROBLOX_UNIVERSE_ID }}
+          ROBLOX_PLACE_ID: ${{ env.ROBLOX_PLACE_ID }}
