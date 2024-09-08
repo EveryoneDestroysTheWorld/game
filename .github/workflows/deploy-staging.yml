@@ -31,7 +31,7 @@ jobs:
           ROBLOX_UNIVERSE_ID: ${{ vars.ROBLOX_UNIVERSE_ID }}
           ROBLOX_PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
         run: | 
-          curl -V  \
+          curl --verbose  \
           -H 'x-api-key: $ROBLOX_API_KEY' \
           -H "Content-Type: application/xml" \
           --data-binary @build.rbxl \
