@@ -3,6 +3,9 @@
   "servePlaceIds": [17711502472],
   "tree": {
     "$className": "DataModel",
+    "Workspace": {
+      "$path": "src/Workspace"
+    },
     "ReplicatedStorage": {
       "Client": {
         "$path": "src/ReplicatedStorage/Client"
