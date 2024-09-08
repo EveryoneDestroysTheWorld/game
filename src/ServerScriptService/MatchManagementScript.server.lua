@@ -29,7 +29,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
       stageID = Stage.random().ID :: string;
       gameModeID = 1;
       contestantIDs = {};
-      duration = 180;
+      duration = 10;
       status = "Waiting for players" :: "Waiting for players";
     });
 
