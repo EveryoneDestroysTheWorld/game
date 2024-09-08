@@ -7,7 +7,7 @@ type ClientArchetype = ClientArchetype.ClientArchetype;
 local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
 type ClientAction = ClientAction.ClientAction;
 local Colors = require(ReplicatedStorage.Client.Colors);
-local Button = require(script.Parent.Button);
+local Button = require(ReplicatedStorage.Client.ReactComponents.Button);
 
 type ArchetypeInformationFrameProps = {
   selectedArchetype: ClientArchetype?;

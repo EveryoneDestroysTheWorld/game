@@ -10,8 +10,6 @@ local Colors = require(ReplicatedStorage.Client.Colors);
 type ClientArchetype = ClientArchetype.ClientArchetype;
 local Players = game:GetService("Players");
 local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
-local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
-
 
 type TeammateCardProps = {
   contestant: ClientContestant?;
@@ -45,7 +43,6 @@ end;
 
 local function TeammateCard(props: TeammateCardProps)
 
-  local uiPaddingTop, setUIPaddingTop = React.useState(60);
   local roundStatus: ClientRound.RoundStatus?, setRoundStatus = React.useState(if props.round then props.round.status else nil);
   local rivalMessage, setRivalMessage = React.useState("");
   local archetypeID, setArchetypeID = React.useState(if props.contestant then props.contestant.archetypeID else nil);
