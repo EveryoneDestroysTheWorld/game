@@ -17,6 +17,9 @@
         }
       }
     },
+    "Lighting": {
+      "$path": "src/Lighting"
+    },
     "ServerScriptService": {
       "$path": "src/ServerScriptService"
     },
