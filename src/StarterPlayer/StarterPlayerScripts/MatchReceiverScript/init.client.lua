@@ -9,6 +9,7 @@ local ActionButtonContainer = require(ReplicatedStorage.Client.ReactComponents.A
 local StarterGui = game:GetService("StarterGui");
 type ClientArchetype = ClientArchetype.ClientArchetype;
 type ClientAction = ClientAction.ClientAction;
+local RoundResultsWindow = require(script.ReactComponents.RoundResultsWindow);
 
 local currentArchetype: ClientArchetype = nil;
 local currentActions: {ClientAction} = {};
@@ -64,6 +65,19 @@ ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function()
     print(`Action disabled: {action.name}`);
 
   end;
+
+  -- Add the round results GUI.
+  local roundResultsGUI = Instance.new("ScreenGui");
+  roundResultsGUI.Name = "RoundResultsGUI";
+  roundResultsGUI.Parent = player:WaitForChild("PlayerGui");
+  roundResultsGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+  roundResultsGUI.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets;
+  roundResultsGUI.ResetOnSpawn = false;
+  roundResultsGUI.DisplayOrder = 1;
+  roundResultsGUI.Enabled = true;
+
+  local roundResultsGUIRoot = ReactRoblox.createRoot(roundResultsGUI);
+  roundResultsGUIRoot:render(RoundResultsWindow);
 
 end);
 

@@ -36,21 +36,11 @@ local function MatchInitializationScreen()
   -- Get teammate cards to show to the player.
   local allyTeammateCards, setAllyTeammateCards = React.useState({});
   local rivalTeammateCards, setRivalTeammateCards = React.useState({});
-  local round, setRound = React.useState(nil :: ClientRound?);
+  local round = React.useState(ClientRound.fromServerRound());
   local shouldShowArchetypeInformation, setShouldShowArchetypeInformation = React.useState(false);
   local selectedArchetype: ClientArchetype, setSelectedArchetype = React.useState(nil :: ClientArchetype?);
-  React.useEffect(function()
-  
-    task.spawn(function()
-    
-      setRound(ClientRound.fromServerRound());
-
-    end);
-
-  end, {});
-
-
   local uiPaddingRightOffset, setUIPaddingRightOffset = React.useState(0);
+
   React.useEffect(function(): ()
 
     if round then
