@@ -11,8 +11,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
 
-      - name: Set up Foreman
-        uses: Roblox/setup-foreman@v3.1.0
+      - name: Set up Aftman
+        uses: ok-nick/setup-aftman@v0.4.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
