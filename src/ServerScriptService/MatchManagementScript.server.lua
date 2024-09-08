@@ -141,7 +141,7 @@ local function startRound()
       -- Verify that the player has the default archetypes.
       local archetypeIDs = contestant.profile:getArchetypeIDs();
       local newArchetypeIDs: {number}? = nil;
-      for i = 1, 1 do
+      for i = 1, 4 do
 
         if not table.find(archetypeIDs, i) then
 
