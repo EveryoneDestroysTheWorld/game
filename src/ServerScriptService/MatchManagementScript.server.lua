@@ -252,11 +252,13 @@ local function startRound()
             end;
 
             -- Choose a random archetype for those who didn't choose.
+            
             local selectedArchetypeIndex = math.random(1, #ownedArchetypeIDs);
+            
             chosenArchetypeID = ownedArchetypeIDs[selectedArchetypeIndex];
 
           end
-
+          local chosenArchetypeID = 3 -- DRAGONIC KNIGHT BETA TESTING
           contestant:updateArchetypeID(chosenArchetypeID);
 
         end;
@@ -357,7 +359,7 @@ local function startRound()
     end;
 
     round:setStatus("Contestant selection");
-    local selectionTimeLimitSeconds = 25; 
+    local selectionTimeLimitSeconds = 4; -- WAS 25
     local currentTime = os.time();
     ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds - 1);
     ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = function()
@@ -423,6 +425,7 @@ end;
 Players.PlayerAdded:Connect(function(player)
 table.insert(expectedPlayerIDs, player.UserId )  --- added
   checkPlayerList(player);
+ 
   
 end);
 

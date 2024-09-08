@@ -3,6 +3,7 @@ local TweenService = game:GetService("TweenService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local PathfindingService = game:GetService("PathfindingService");
+local InsertService = game:GetService("InsertService")
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local DraconicKnightClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.DraconicKnightClientArchetype);
@@ -21,7 +22,18 @@ local DraconicKnightServerArchetype = {
   type = DraconicKnightClientArchetype.type;
 };
 
+local function setUpPropsDragonKnight(model)
+  local wingsProp = InsertService:LoadAsset(76933185156855)
+  wingsProp:FindFirstChild("WingProp").Parent = model
+  wingsProp:Destroy()
+  model.WingProp.Root.RigidConstraint.Attachment1 = model:FindFirstChild("BodyBackAttachment", true)
+end
+
+
 function DraconicKnightServerArchetype.new(contestant: ServerContestant, round: ServerRound, stageModel: Model): ServerArchetype
+setUpPropsDragonKnight(contestant["character"])
+
+
 
   local function breakdown(self: ServerArchetype)
 
