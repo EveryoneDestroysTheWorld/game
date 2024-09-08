@@ -7,6 +7,7 @@ type ClientContestant = ClientContestant.ClientContestant;
 local ContestantCardFrame = require(script.Parent.ContestantCardFrame);
 
 export type TeamFrameProperties = {
+  teamID: number;
   contestants: {ClientContestant};
 }
 
@@ -29,7 +30,7 @@ local function TeamFrame(props: TeamFrameProperties)
   end;
 
   return React.createElement("Frame", {
-
+    LayoutOrder = props.teamID;
   }, {
     UIListLayout = React.createElement("UIListLayout", {
       Padding = UDim.new(0, 5);

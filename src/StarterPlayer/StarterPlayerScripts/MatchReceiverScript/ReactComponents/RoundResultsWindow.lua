@@ -4,8 +4,16 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local TeamFrame = require(script.Parent.TeamFrame);
+local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
+type ClientRound = ClientRound.ClientRound;
+local filterTable = require(ReplicatedStorage.Shared.Modules.FilterTable);
+local PersonalStatsFrame = require(script.Parent.PersonalStatsFrame);
 
-local function RoundResultsWindow()
+export type RoundResultsWindowProperties = {
+  round: ClientRound;
+}
+
+local function RoundResultsWindow(props: RoundResultsWindowProperties)
 
   local function getDestructionBlocks()
 
@@ -36,6 +44,8 @@ local function RoundResultsWindow()
     Header = React.createElement("Frame", {
       BackgroundTransparency = 1;
       LayoutOrder = 1;
+      Size = UDim2.new(1, 0, 0, 0);
+      AutomaticSize = Enum.AutomaticSize.Y;
     }, {
       LeftSection = React.createElement("Frame", {
         BackgroundTransparency = 1;
@@ -58,7 +68,7 @@ local function RoundResultsWindow()
         Size = UDim2.new(0.5, 0, 1, 0);
       }, {
         PersonalRoundStatus = React.createElement("TextLabel", {
-          Text = "WIN";
+          Text = "DRAW";
           Size = UDim2.new();
           AutomaticSize = Enum.AutomaticSize.XY;
           BackgroundTransparency = 1;
@@ -69,18 +79,33 @@ local function RoundResultsWindow()
           AutomaticSize = Enum.AutomaticSize.Y;
         }, getDestructionBlocks());
         DestructionTextLabel = React.createElement("TextLabel", {
-          Text = `% DESTROYED BY TEAM`
+          Text = `0% DESTROYED BY TEAM`
         });
       });
     });
     Content = React.createElement("Frame", {
       BackgroundTransparency = 1;
       LayoutOrder = 2;
+      Size = UDim2.new(1, 0, 0, 0);
+      AutomaticSize = Enum.AutomaticSize.Y;
     }, {
-      PersonalStatsFrame = React.createElement("Frame");
-      LeaderboardFrame = React.createElement("Frame", {}, {
-        AllyTeamFrame = React.createElement(TeamFrame);
-        EnemyTeamFrame = React.createElement(TeamFrame);
+      UIFlexItem = React.createElement("UIFlexItem", {
+        FlexMode = Enum.UIFlexMode.Fill;
+      });
+      PersonalStatsFrame = React.createElement(PersonalStatsFrame);
+      LeaderboardFrame = React.createElement("Frame", {
+        BackgroundTransparency = 1;
+        Size = UDim2.new();
+        AutomaticSize = Enum.AutomaticSize.XY;
+      }, {
+        AllyTeamFrame = React.createElement(TeamFrame, {
+          teamID = 1;
+          contestants = filterTable(props.round.contestants, function(contestant) return contestant.teamID == 1 end);
+        });
+        EnemyTeamFrame = React.createElement(TeamFrame, {
+          teamID = 2;
+          contestants = filterTable(props.round.contestants, function(contestant) return contestant.teamID == 2 end);
+        });
       });
     });
     ControlsFrame = React.createElement("Frame", {

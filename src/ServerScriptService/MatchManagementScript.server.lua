@@ -29,7 +29,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
       stageID = Stage.random().ID :: string;
       gameModeID = 1;
       contestantIDs = {};
-      duration = 180;
+      duration = 10;
       status = "Waiting for players" :: "Waiting for players";
     });
 
@@ -254,7 +254,6 @@ local function startRound()
             end;
 
             -- Choose a random archetype for those who didn't choose.
-            print(ownedArchetypeIDs);
             local selectedArchetypeIndex = math.random(1, #ownedArchetypeIDs);
             chosenArchetypeID = ownedArchetypeIDs[selectedArchetypeIndex];
 
@@ -353,7 +352,6 @@ local function startRound()
 
       if shouldContinue then
 
-        print('chosen')
         previewMatchup();
 
       end;
