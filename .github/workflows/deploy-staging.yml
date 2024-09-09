@@ -2,12 +2,11 @@ name: Publish to staging environment
 
 on:
   push: 
-    branches: 
-    - staging
+    branches: [staging]
 
 jobs:
-  game-deploy:
-    name: Publish to staging environment
+  build:
+    name: Build
     environment: Staging
     runs-on: ubuntu-latest
     steps:
@@ -22,10 +21,15 @@ jobs:
       - name: Install Wally packages
         run: wally install
 
-      - name: Build project
+      - name: Build Rojo project
         run: rojo build -o build.rbxl
-
-      - name: Deploy game to staging environment
+        
+  deploy:
+    name: Deploy
+    environment: Staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST to Roblox API
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
           ROBLOX_UNIVERSE_ID: ${{ vars.ROBLOX_UNIVERSE_ID }}
