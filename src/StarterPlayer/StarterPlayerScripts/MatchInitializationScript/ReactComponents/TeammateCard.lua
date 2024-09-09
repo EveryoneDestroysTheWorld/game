@@ -113,68 +113,66 @@ local function TeammateCard(props: TeammateCardProps)
 
         elseif roundStatus == "Matchup preview" then
 
-        local goalValue = 30 * (props.layoutOrder - 1) + 5;
-        dataTypeTween({
-          type = "Number";
-          tweenInfo = TweenInfo.new(3, Enum.EasingStyle.Sine);
-          goalValue = goalValue;
-          onChange = function(newValue)
-
-            if props.isRival then
-
-              tcfUIPadding.PaddingRight = UDim.new(0, newValue);
-
-            else
-
-              tcfUIPadding.PaddingLeft = UDim.new(0, newValue);
-
-            end;
-
-          end;
-        }):Play();
-
-        task.delay(5, function()
-        
+          local goalValue = 10 * (props.layoutOrder - 1) + 5;
           dataTypeTween({
             type = "Number";
-            initialValue = contestantBannerSizeXOffset;
-            tweenInfo = TweenInfo.new(1 + (0.25 * (4 - props.layoutOrder)), Enum.EasingStyle.Bounce);
-            goalValue = 0;
-            onChange = function(newValue)
-
-              local contestantBannerImageLabel: ImageLabel? = contestantBannerImageLabelRef.current;
-              local statusLabel: TextLabel? = statusLabelRef.current;
-              if contestantBannerImageLabel and statusLabel then 
-
-                contestantBannerImageLabel.Size = UDim2.new(contestantBannerImageLabel.Size.X.Scale, newValue, contestantBannerImageLabel.Size.Y.Scale, contestantBannerImageLabel.Size.Y.Offset);
-                statusLabel.Size = UDim2.new(statusLabel.Size.X.Scale, newValue, statusLabel.Size.Y.Scale, statusLabel.Size.Y.Offset);
-  
-              end;
-
-            end;
-          }):Play();
-
-          dataTypeTween({
-            type = "Number";
-            initialValue = goalValue;
-            tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Sine);
-            goalValue = -60;
+            tweenInfo = TweenInfo.new(3, Enum.EasingStyle.Sine);
+            goalValue = goalValue;
             onChange = function(newValue)
 
               if props.isRival then
 
                 tcfUIPadding.PaddingRight = UDim.new(0, newValue);
-  
+
               else
-  
+
                 tcfUIPadding.PaddingLeft = UDim.new(0, newValue);
-  
+
               end;
-  
+
             end;
           }):Play();
 
-        end);
+          task.delay(5, function()
+          
+            dataTypeTween({
+              type = "Number";
+              initialValue = contestantBannerSizeXOffset;
+              tweenInfo = TweenInfo.new(1 + (0.25 * (4 - props.layoutOrder)), Enum.EasingStyle.Bounce);
+              goalValue = 0;
+              onChange = function(newValue)
+
+                local contestantBannerImageLabel: ImageLabel? = contestantBannerImageLabelRef.current;
+                if contestantBannerImageLabel then 
+
+                  contestantBannerImageLabel.Size = UDim2.new(contestantBannerImageLabel.Size.X.Scale, newValue, contestantBannerImageLabel.Size.Y.Scale, contestantBannerImageLabel.Size.Y.Offset);
+    
+                end;
+
+              end;
+            }):Play();
+
+            dataTypeTween({
+              type = "Number";
+              initialValue = goalValue;
+              tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Sine);
+              goalValue = -60;
+              onChange = function(newValue)
+
+                if props.isRival then
+
+                  tcfUIPadding.PaddingRight = UDim.new(0, newValue);
+    
+                else
+    
+                  tcfUIPadding.PaddingLeft = UDim.new(0, newValue);
+    
+                end;
+    
+              end;
+            }):Play();
+
+          end);
         
         end;
 
@@ -187,11 +185,9 @@ local function TeammateCard(props: TeammateCardProps)
   React.useEffect(function()
   
     local contestantBannerImageLabel: ImageLabel? = contestantBannerImageLabelRef.current;
-    local statusLabel: TextLabel? = statusLabelRef.current;
-    if contestantBannerImageLabel and statusLabel then
+    if contestantBannerImageLabel then
 
       contestantBannerImageLabel.Size = UDim2.new(0, contestantBannerSizeXOffset, 0, 10);
-      statusLabel.Size = UDim2.new(0, contestantBannerSizeXOffset, 0, 17)
 
     end;
 
@@ -273,8 +269,8 @@ local function TeammateCard(props: TeammateCardProps)
         ContestantBannerImageLabel = React.createElement("ImageLabel", {
           BackgroundColor3 = Color3.fromRGB(0, 0, 0);
           BackgroundTransparency = if props.contestant then 0 else 0.4;
-          Size = UDim2.new(0, 100, 0, 10);
           Image = "rbxassetid://15562720000";
+          ref = contestantBannerImageLabelRef;
           ScaleType = Enum.ScaleType.Tile;
           LayoutOrder = 2;
           TileSize = UDim2.new(0, 28, 0, 28);

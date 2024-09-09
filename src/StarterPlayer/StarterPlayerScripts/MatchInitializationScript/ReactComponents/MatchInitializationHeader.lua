@@ -16,7 +16,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
   local textSizes, setTextSizes = React.useState({
     subtitle = 8;
     title = 10;
-    tagline = 8;
+    tagline = 7;
   });
   local titleColor, setTitleColor = React.useState(Color3.fromRGB(255, 94, 97));
   local taglineColor, setTaglineColor = React.useState(Color3.fromRGB(199, 199, 199));
@@ -49,9 +49,9 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
               onChange = function(newValue)
 
                 setTextSizes({
-                  subtitle = textSizes.subtitle + 6 * newValue;
-                  title = textSizes.title + 30 * newValue;
-                  tagline = textSizes.tagline + 6 * newValue;
+                  subtitle = textSizes.subtitle + 2 * newValue;
+                  title = textSizes.title + 5 * newValue;
+                  tagline = textSizes.tagline + 2 * newValue;
                 });
 
               end;
