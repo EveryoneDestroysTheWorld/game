@@ -3,6 +3,7 @@ name: Publish to staging environment
 on:
   push: 
     branches: [staging]
+  workflow_dispatch:
 
 jobs:
   build:
