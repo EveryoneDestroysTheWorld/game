@@ -28,6 +28,7 @@ jobs:
     name: Deploy
     environment: Staging
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: POST to Roblox API
         env:
