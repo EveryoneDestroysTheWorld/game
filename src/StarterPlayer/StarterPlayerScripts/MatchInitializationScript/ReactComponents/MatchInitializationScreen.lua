@@ -104,7 +104,6 @@ local function MatchInitializationScreen()
 
       local function checkRoundStatus()
 
-        print(round.status == "Contestant selection")
         setShouldShowArchetypeInformation(round.status == "Contestant selection");
 
       end;
