@@ -3,34 +3,14 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local TeamFrame = require(script.Parent.TeamFrame);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
-local filterTable = require(ReplicatedStorage.Shared.Modules.FilterTable);
-local PersonalStatsFrame = require(script.Parent.PersonalStatsFrame);
+local RoundResultsHeaderFrame = require(script.Parent.RoundResultsHeaderFrame);
+local RoundResultsContentFrame = require(script.Parent.RoundResultsContentFrame);
 
-export type RoundResultsWindowProperties = {}
-
-local function RoundResultsWindow(props: RoundResultsWindowProperties)
+local function RoundResultsWindow()
 
   local round = React.useState(ClientRound.fromServerRound());
-
-  local function getDestructionBlocks()
-
-    local destructionBlocks = {};
-
-    for i = 1, 20 do
-
-      table.insert(destructionBlocks, React.createElement("Frame", {
-        BorderSizePixel = 0;
-        Size = UDim2.new(0, 20, 1, 0);
-      }))
-
-    end;
-
-    return destructionBlocks;
-
-  end;
 
   return React.createElement("Frame", {
     Size = UDim2.new(1, 0, 1, 0);
@@ -41,73 +21,8 @@ local function RoundResultsWindow(props: RoundResultsWindowProperties)
     UIListLayout = React.createElement("UIListLayout", {
       SortOrder = Enum.SortOrder.LayoutOrder;
     });
-    Header = React.createElement("Frame", {
-      BackgroundTransparency = 1;
-      LayoutOrder = 1;
-      Size = UDim2.new(1, 0, 0, 0);
-      AutomaticSize = Enum.AutomaticSize.Y;
-    }, {
-      LeftSection = React.createElement("Frame", {
-        BackgroundTransparency = 1;
-        Size = UDim2.new(0.5, 0, 1, 0);
-      }, {
-        GameModeName = React.createElement("TextLabel", {
-          BackgroundTransparency = 1;
-          AutomaticSize = Enum.AutomaticSize.XY;
-          Text = "TURF WAR";
-        });
-        StageName = React.createElement("TextLabel", {
-          BackgroundTransparency = 1;
-          AutomaticSize = Enum.AutomaticSize.XY;
-          Text = "Prototype Stage";
-        });
-      });
-      RightSection = React.createElement("Frame", {
-        AnchorPoint = Vector2.new(1, 0);
-        Position = UDim2.new(1, 0, 0, 0);
-        Size = UDim2.new(0.5, 0, 1, 0);
-      }, {
-        PersonalRoundStatus = React.createElement("TextLabel", {
-          Text = "DRAW";
-          Size = UDim2.new();
-          AutomaticSize = Enum.AutomaticSize.XY;
-          BackgroundTransparency = 1;
-        });
-        DestructionPercentage = React.createElement("Frame", {
-          BackgroundTransparency = 1;
-          Size = UDim2.new(1, 0, 0, 0);
-          AutomaticSize = Enum.AutomaticSize.Y;
-        }, getDestructionBlocks());
-        DestructionTextLabel = React.createElement("TextLabel", {
-          Text = `0% DESTROYED BY TEAM`
-        });
-      });
-    });
-    Content = React.createElement("Frame", {
-      BackgroundTransparency = 1;
-      LayoutOrder = 2;
-      Size = UDim2.new(1, 0, 0, 0);
-      AutomaticSize = Enum.AutomaticSize.Y;
-    }, {
-      UIFlexItem = React.createElement("UIFlexItem", {
-        FlexMode = Enum.UIFlexMode.Fill;
-      });
-      PersonalStatsFrame = React.createElement(PersonalStatsFrame);
-      LeaderboardFrame = React.createElement("Frame", {
-        BackgroundTransparency = 1;
-        Size = UDim2.new();
-        AutomaticSize = Enum.AutomaticSize.XY;
-      }, {
-        AllyTeamFrame = React.createElement(TeamFrame, {
-          teamID = 1;
-          contestants = filterTable(round.contestants, function(contestant) return contestant.teamID == 1 end);
-        });
-        EnemyTeamFrame = React.createElement(TeamFrame, {
-          teamID = 2;
-          contestants = filterTable(round.contestants, function(contestant) return contestant.teamID == 2 end);
-        });
-      });
-    });
+    Header = React.createElement(RoundResultsHeaderFrame, {round = round});
+    Content = React.createElement(RoundResultsContentFrame, {round = round});
     ControlsFrame = React.createElement("Frame", {
       BackgroundTransparency = 1;
       LayoutOrder = 3;

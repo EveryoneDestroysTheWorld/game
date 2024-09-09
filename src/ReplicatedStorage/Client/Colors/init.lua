@@ -1,6 +1,7 @@
 return {
   DemoDemonsOrange = Color3.fromRGB(255, 184, 69);
   DemoDemonsRed = Color3.fromRGB(254, 72, 87);
+  DemoDemonsGreen = Color3.fromRGB(80, 245, 136);
   PopupBackground = Color3.fromRGB(5, 7, 18);
   PopupBorder = Color3.fromRGB(49, 49, 49);
   TaglineText = Color3.fromRGB(172, 172, 172);
