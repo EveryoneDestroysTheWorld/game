@@ -33,7 +33,7 @@ local function ArchetypeSelectionButton(props: ArchetypeSelectionButtonProps)
     });
     UIStroke = React.createElement("UIStroke", {
       Color = if props.isSelected then Colors.DemoDemonsOrange else Colors.PopupBorder;
-      Thickness = 2;
+      Thickness = 1;
       ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
       Transparency = if props.isDisabled then 0.6 else 0;
     });

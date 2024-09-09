@@ -115,7 +115,7 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
   }, {
     UIListLayout = React.createElement("UIListLayout", {
       SortOrder = Enum.SortOrder.LayoutOrder;
-      Padding = UDim.new(0, 15);
+      Padding = UDim.new(0, 5);
     });
     UISizeConstraint = React.createElement("UISizeConstraint", {
       MaxSize = Vector2.new(350, math.huge);
@@ -128,14 +128,14 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
     }, {
       UIListLayout = React.createElement("UIListLayout", {
         SortOrder = Enum.SortOrder.LayoutOrder;
-        Padding = UDim.new(0, 5);
+        Padding = UDim.new(0, 2);
       });
       ArchetypeClassTextLabel = if props.selectedArchetype then React.createElement("TextLabel", {
         LayoutOrder = 1;
         BackgroundTransparency = 1;
         AutomaticSize = Enum.AutomaticSize.XY;
         TextColor3 = Colors.HeadingText;
-        TextSize = 14;
+        TextSize = 7;
         Text = props.selectedArchetype.type:upper();
         FontFace = Font.fromId(11702779517);
         TextXAlignment = Enum.TextXAlignment.Left;
@@ -150,86 +150,86 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
         FontFace = Font.fromId(11702779517, Enum.FontWeight.Heavy);
         TextXAlignment = Enum.TextXAlignment.Left;
       });
-      ArchetypeDescriptionTextLabel = React.createElement("TextLabel", {
-        BackgroundTransparency = 1;
-        AutomaticSize = Enum.AutomaticSize.XY;
-        LayoutOrder = 3;
-        Text = if props.selectedArchetype then props.selectedArchetype.description else "Let's take a looksie here...";
-        TextWrapped = true;
-        TextSize = 8;
-        TextColor3 = Colors.ParagraphText;
-        FontFace = Font.fromId(11702779517, Enum.FontWeight.Medium);
-        TextXAlignment = Enum.TextXAlignment.Left;
-      });
+      -- ArchetypeDescriptionTextLabel = React.createElement("TextLabel", {
+      --   BackgroundTransparency = 1;
+      --   AutomaticSize = Enum.AutomaticSize.XY;
+      --   LayoutOrder = 3;
+      --   Text = if props.selectedArchetype then props.selectedArchetype.description else "Let's take a looksie here...";
+      --   TextWrapped = true;
+      --   TextSize = 8;
+      --   TextColor3 = Colors.ParagraphText;
+      --   FontFace = Font.fromId(11702779517, Enum.FontWeight.Medium);
+      --   TextXAlignment = Enum.TextXAlignment.Left;
+      -- });
     });
-    SecondaryMetadataFrame = React.createElement("Frame", {
-      BackgroundTransparency = 1;
-      LayoutOrder = 2;
-      AutomaticSize = Enum.AutomaticSize.XY;
-    }, {
-      UIListLayout = React.createElement("UIListLayout", {
-        SortOrder = Enum.SortOrder.LayoutOrder;
-        Padding = UDim.new(0, 5);
-      });
-      ActionListFrame = React.createElement("Frame", {
-        BackgroundTransparency = 1;
-        LayoutOrder = 1;
-        AutomaticSize = Enum.AutomaticSize.XY;
-        Size = UDim2.new();
-      }, {
-        React.createElement("UIListLayout", {
-          Name = "UIListLayout";
-          SortOrder = Enum.SortOrder.LayoutOrder;
-          FillDirection = Enum.FillDirection.Horizontal;
-          Padding = UDim.new(0, 5);
-        });
-        actionTextButtons;
-      });
-      ActionInformationFrame = if selectedAction then React.createElement("Frame", {
-        BackgroundTransparency = 0.55;
-        BackgroundColor3 = Color3.new(0, 0, 0);
-        LayoutOrder = 2;
-        AutomaticSize = Enum.AutomaticSize.XY;
-        Size = UDim2.new();
-      }, {
-        UIListLayout = React.createElement("UIListLayout", {
-          SortOrder = Enum.SortOrder.LayoutOrder;
-          Padding = UDim.new(0, 5);
-        });
-        UICorner = React.createElement("UICorner", {
-          CornerRadius = UDim.new(0, 5);
-        });
-        UIPadding = React.createElement("UIPadding", {
-          PaddingBottom = UDim.new(0, 15);
-          PaddingLeft = UDim.new(0, 15);
-          PaddingRight = UDim.new(0, 15);
-          PaddingTop = UDim.new(0, 15);
-        });
-        UIStroke = React.createElement("UICorner", {
-          Color = Color3.fromRGB(49, 49, 49);
-        });
-        ActionNameTextLabel = React.createElement("TextLabel", {
-          BackgroundTransparency = 1;
-          Text = selectedAction.name:upper();
-          AutomaticSize = Enum.AutomaticSize.XY;
-          Size = UDim2.new();
-          FontFace = Font.fromId(11702779517, Enum.FontWeight.Bold);
-          TextColor3 = Colors.HeadingText;
-          TextSize = 17;
-          TextXAlignment = Enum.TextXAlignment.Left;
-        });
-        ActionDescriptionTextLabel = React.createElement("TextLabel", {
-          BackgroundTransparency = 1;
-          AutomaticSize = Enum.AutomaticSize.XY;
-          Text = selectedAction.description;
-          FontFace = Font.fromId(11702779517);
-          Size = UDim2.new();
-          TextColor3 = Colors.ParagraphText;
-          TextSize = 14;
-          TextXAlignment = Enum.TextXAlignment.Left;
-        });
-      }) else nil;
-    });
+    -- SecondaryMetadataFrame = React.createElement("Frame", {
+    --   BackgroundTransparency = 1;
+    --   LayoutOrder = 2;
+    --   AutomaticSize = Enum.AutomaticSize.XY;
+    -- }, {
+    --   UIListLayout = React.createElement("UIListLayout", {
+    --     SortOrder = Enum.SortOrder.LayoutOrder;
+    --     Padding = UDim.new(0, 5);
+    --   });
+    --   ActionListFrame = React.createElement("Frame", {
+    --     BackgroundTransparency = 1;
+    --     LayoutOrder = 1;
+    --     AutomaticSize = Enum.AutomaticSize.XY;
+    --     Size = UDim2.new();
+    --   }, {
+    --     React.createElement("UIListLayout", {
+    --       Name = "UIListLayout";
+    --       SortOrder = Enum.SortOrder.LayoutOrder;
+    --       FillDirection = Enum.FillDirection.Horizontal;
+    --       Padding = UDim.new(0, 5);
+    --     });
+    --     actionTextButtons;
+    --   });
+    --   ActionInformationFrame = if selectedAction then React.createElement("Frame", {
+    --     BackgroundTransparency = 0.55;
+    --     BackgroundColor3 = Color3.new(0, 0, 0);
+    --     LayoutOrder = 2;
+    --     AutomaticSize = Enum.AutomaticSize.XY;
+    --     Size = UDim2.new();
+    --   }, {
+    --     UIListLayout = React.createElement("UIListLayout", {
+    --       SortOrder = Enum.SortOrder.LayoutOrder;
+    --       Padding = UDim.new(0, 5);
+    --     });
+    --     UICorner = React.createElement("UICorner", {
+    --       CornerRadius = UDim.new(0, 5);
+    --     });
+    --     UIPadding = React.createElement("UIPadding", {
+    --       PaddingBottom = UDim.new(0, 15);
+    --       PaddingLeft = UDim.new(0, 15);
+    --       PaddingRight = UDim.new(0, 15);
+    --       PaddingTop = UDim.new(0, 15);
+    --     });
+    --     UIStroke = React.createElement("UICorner", {
+    --       Color = Color3.fromRGB(49, 49, 49);
+    --     });
+    --     ActionNameTextLabel = React.createElement("TextLabel", {
+    --       BackgroundTransparency = 1;
+    --       Text = selectedAction.name:upper();
+    --       AutomaticSize = Enum.AutomaticSize.XY;
+    --       Size = UDim2.new();
+    --       FontFace = Font.fromId(11702779517, Enum.FontWeight.Bold);
+    --       TextColor3 = Colors.HeadingText;
+    --       TextSize = 17;
+    --       TextXAlignment = Enum.TextXAlignment.Left;
+    --     });
+    --     ActionDescriptionTextLabel = React.createElement("TextLabel", {
+    --       BackgroundTransparency = 1;
+    --       AutomaticSize = Enum.AutomaticSize.XY;
+    --       Text = selectedAction.description;
+    --       FontFace = Font.fromId(11702779517);
+    --       Size = UDim2.new();
+    --       TextColor3 = Colors.ParagraphText;
+    --       TextSize = 14;
+    --       TextXAlignment = Enum.TextXAlignment.Left;
+    --     });
+    --   }) else nil;
+    -- });
   });
 
 end;
