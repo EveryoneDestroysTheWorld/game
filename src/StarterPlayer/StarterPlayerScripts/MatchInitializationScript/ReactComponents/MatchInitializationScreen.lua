@@ -39,7 +39,6 @@ local function MatchInitializationScreen()
   local shouldShowArchetypeInformation, setShouldShowArchetypeInformation = React.useState(false);
   local selectedArchetype: ClientArchetype, setSelectedArchetype = React.useState(nil :: ClientArchetype?);
 
-  local uiPaddingRightOffset, setUIPaddingRightOffset = React.useState(0);
   React.useEffect(function(): ()
 
     if round then
@@ -71,7 +70,6 @@ local function MatchInitializationScreen()
             isRival = isRival;
             layoutOrder = #selectedTable + 1;
             round = round;
-            uiPaddingRightOffset = if isRival then uiPaddingRightOffset else nil;
           })
 
           table.insert(selectedTable, teammateCard);
@@ -106,6 +104,7 @@ local function MatchInitializationScreen()
 
       local function checkRoundStatus()
 
+        print(round.status == "Contestant selection")
         setShouldShowArchetypeInformation(round.status == "Contestant selection");
 
       end;
@@ -123,23 +122,7 @@ local function MatchInitializationScreen()
 
     end;
 
-  end, {round, uiPaddingRightOffset :: any});
-
-  React.useEffect(function()
-  
-    dataTypeTween({
-      type = "Number";
-      initialValue = uiPaddingRightOffset;
-      goalValue = if shouldShowArchetypeInformation then -300 else 0;
-      tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
-      onChange = function(newValue)
-
-        setUIPaddingRightOffset(newValue);
-
-      end;
-    }):Play();
-
-  end, {shouldShowArchetypeInformation});
+  end, {round});
 
   local backgroundTransparency, setBackgroundTransparency = React.useState(0.4);
   React.useEffect(function()
@@ -196,18 +179,16 @@ local function MatchInitializationScreen()
         Position = UDim2.new(0.5, 0, 0.5, 0);
         Size = UDim2.new(1, 0, 0, 0);
       }, {
-        UIPadding = React.createElement("UIPadding", {
-          PaddingRight = UDim.new(0, uiPaddingRightOffset);
-        });
         AllyTeammateCardList = React.createElement(TeammateCardList, {
           layoutOrder = 1;
         }, allyTeammateCards);
         RivalTeammateCardList = React.createElement(TeammateCardList, {
           layoutOrder = 2;
+          shouldHide = shouldShowArchetypeInformation;
         }, rivalTeammateCards);
         ArchetypeInformationFrame = React.createElement(ArchetypeInformationFrame, {
-          uiPaddingRightOffset = uiPaddingRightOffset;
           selectedArchetype = selectedArchetype;
+          shouldHide = not shouldShowArchetypeInformation;
         });
       });
       -- ArchetypeSelectionFrame = if shouldShowArchetypeInformation then React.createElement(ArchetypeSelectionFrame, {

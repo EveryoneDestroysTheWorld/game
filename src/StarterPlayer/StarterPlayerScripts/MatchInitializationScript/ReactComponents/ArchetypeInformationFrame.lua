@@ -7,10 +7,11 @@ local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
 type ClientAction = ClientAction.ClientAction;
 local Colors = require(ReplicatedStorage.Client.Colors);
 local ActionButton = require(ReplicatedStorage.Client.ReactComponents.ActionButton);
+local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 
 type ArchetypeInformationFrameProps = {
   selectedArchetype: ClientArchetype?;
-  uiPaddingRightOffset: number;
+  shouldHide: boolean;
 }
 
 local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
@@ -51,11 +52,64 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
 
   end, {props.selectedArchetype :: any, selectedAction});
 
-  return React.createElement(if props.uiPaddingRightOffset ~= -300 then "CanvasGroup" else "Frame", {
-    AnchorPoint = Vector2.new(1, 0);
-    GroupTransparency = if props.uiPaddingRightOffset ~= -300 then 1 - props.uiPaddingRightOffset / -300 else nil;
-    Position = UDim2.new(1, -300, 0, 0);
+  local containerRef = React.useRef(nil :: GuiObject?);
+  local isTweening, setIsTweening = React.useState(false);
+  local finalTweenPosition, setFinalTweenPosition = React.useState(nil :: UDim2?)
+  React.useEffect(function(): ()
+  
+    local container = containerRef.current;
+    if container then
+
+      setIsTweening(true);
+
+      local tween = dataTypeTween({
+        type = "Number";
+        goalValue = if props.shouldHide then 300 else 0;
+        initialValue = if props.shouldHide then 0 else -300;
+        tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
+        onChange = function(newValue: number)
+
+          -- Using containerRef just in case the type of element changes.
+          container = containerRef.current;
+          if container then
+
+            print(props.shouldHide);
+            container.Position = UDim2.new(1, newValue, 0.5, 0);
+            if container:IsA("CanvasGroup") then
+
+              container.GroupTransparency = math.abs(newValue) / 300;
+
+            end;
+
+          end;
+
+        end;
+      });
+      
+      tween.Completed:Once(function()
+      
+        setFinalTweenPosition(container.Position);
+        setIsTweening(false);
+
+      end);
+
+      tween:Play();
+
+      return function()
+
+        tween:Cancel();
+
+      end;
+
+    end;
+
+  end, {props.shouldHide});
+
+  return React.createElement(if isTweening then "CanvasGroup" else "Frame", {
+    AnchorPoint = Vector2.new(1, 0.5);
     BackgroundTransparency = 1;
+    ref = containerRef;
+    Position = if isTweening then nil else finalTweenPosition;
     AutomaticSize = Enum.AutomaticSize.XY;
     LayoutOrder = 2;
   }, {
@@ -90,7 +144,7 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
         BackgroundTransparency = 1;
         AutomaticSize = Enum.AutomaticSize.XY;
         LayoutOrder = 2;
-        TextSize = 30;
+        TextSize = 10;
         Text = if props.selectedArchetype then props.selectedArchetype.name:upper() else "CHOOSE AN ARCHETYPE";
         TextColor3 = Colors.HeadingText;
         FontFace = Font.fromId(11702779517, Enum.FontWeight.Heavy);
@@ -102,7 +156,7 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
         LayoutOrder = 3;
         Text = if props.selectedArchetype then props.selectedArchetype.description else "Let's take a looksie here...";
         TextWrapped = true;
-        TextSize = 14;
+        TextSize = 8;
         TextColor3 = Colors.ParagraphText;
         FontFace = Font.fromId(11702779517, Enum.FontWeight.Medium);
         TextXAlignment = Enum.TextXAlignment.Left;

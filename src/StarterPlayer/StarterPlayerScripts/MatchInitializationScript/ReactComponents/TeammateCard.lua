@@ -17,7 +17,6 @@ type TeammateCardProps = {
   layoutOrder: number;
   isRival: boolean;
   round: ClientRound?;
-  uiPaddingRightOffset: number?;
 }
 
 local function TeammateCard(props: TeammateCardProps)
@@ -198,8 +197,6 @@ local function TeammateCard(props: TeammateCardProps)
 
   end, {props.round});
 
-  local transparency = if props.uiPaddingRightOffset and props.uiPaddingRightOffset ~= 0 then props.uiPaddingRightOffset / -300 else nil;
-
   local statusLabelText = "Waiting for players...";
   if props.contestant then
 
@@ -261,7 +258,7 @@ local function TeammateCard(props: TeammateCardProps)
           AutomaticSize = Enum.AutomaticSize.XY;
           Size = UDim2.new();
           Text = statusLabelText;
-          TextTransparency = if props.contestant then transparency or 0 else 0.5 + (transparency or 0);
+          TextTransparency = if props.contestant then 0 else 0.5;
           TextColor3 = if props.isRival then Color3.fromRGB(255, 117, 117) else Color3.new(1, 1, 1);
           TextSize = 8;
           FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
@@ -275,13 +272,13 @@ local function TeammateCard(props: TeammateCardProps)
         });
         ContestantBannerImageLabel = React.createElement("ImageLabel", {
           BackgroundColor3 = Color3.fromRGB(0, 0, 0);
-          BackgroundTransparency = if props.contestant then transparency or 0 else 0.4 + (transparency or 0);
+          BackgroundTransparency = if props.contestant then 0 else 0.4;
           Size = UDim2.new(0, 100, 0, 10);
           Image = "rbxassetid://15562720000";
           ScaleType = Enum.ScaleType.Tile;
           LayoutOrder = 2;
           TileSize = UDim2.new(0, 28, 0, 28);
-          ImageTransparency = if props.contestant or (props.round and props.round.status ~= "Waiting for players") then transparency or 0 else 1;
+          ImageTransparency = if props.contestant or (props.round and props.round.status ~= "Waiting for players") then 0 else 1;
         }, {
           UICorner = React.createElement("UICorner", {
             CornerRadius = if props.round and props.round.status ~= "Waiting for players" then UDim.new(1, 0) else UDim.new(0, 5);
@@ -313,7 +310,7 @@ local function TeammateCard(props: TeammateCardProps)
           }) else nil;
           ContestantInformationContainerFrame = if props.contestant then React.createElement("Frame", {
             BackgroundColor3 = Color3.new(0, 0, 0);
-            BackgroundTransparency = 0.4 + (transparency or 0);
+            BackgroundTransparency = 0.4;
             Size = UDim2.new(1, 0, 1, 0);
           }, {
             UICorner = React.createElement("UICorner", {
@@ -353,12 +350,10 @@ local function TeammateCard(props: TeammateCardProps)
               DisplayNameLabel = React.createElement(NameLabel, {
                 name = props.contestant.name;
                 type = "Display Name";
-                TextTransparency = transparency;
               });
               UsernameLabel = if props.round and props.round.status == "Waiting for players" and props.contestant.player then React.createElement(NameLabel, {
                 name = props.contestant.player.Name;
                 type = "Username";
-                TextTransparency = transparency;
               }) else nil;
             });
             ReadyIndicationImageLabelContainer = if props.round and props.round.status == "Waiting for players" and props.contestant then React.createElement("Frame", {
@@ -371,7 +366,6 @@ local function TeammateCard(props: TeammateCardProps)
               ReadyIndicationImageLabel = React.createElement("ImageLabel", {
                 Size = UDim2.new(1, 0, 1, 0);
                 Image = "rbxassetid://17571806169";
-                ImageTransparency = transparency;
                 BackgroundTransparency = 1;
               });
             }) else nil;
@@ -382,7 +376,6 @@ local function TeammateCard(props: TeammateCardProps)
               ref = avatarImageLabelRef;
               Image = if props.contestant.player then Players:GetUserThumbnailAsync(props.contestant.player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420) else "rbxassetid://18458164991";
               BackgroundTransparency = 1;
-              ImageTransparency = transparency;
               LayoutOrder = if props.isRival then 1 else 2;
             }) else nil;
           }) else nil;
