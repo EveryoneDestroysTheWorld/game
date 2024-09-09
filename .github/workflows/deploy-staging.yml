@@ -25,8 +25,9 @@ jobs:
         run: rojo build -o build.rbxl
 
       - name: Upload project
-        uses: actions/upload-artifact@v3.2.1-node20
+        uses: actions/upload-artifact@v4.4.0
         with:
+          name: build.rbxl
           path: build.rbxl
         
   deploy:
@@ -38,7 +39,7 @@ jobs:
       - name: Download project
         uses: actions/download-artifact@v4.1.8
         with:
-          path: build.rbxl
+          name: build.rbxl
 
       - name: POST to Roblox API
         env:
