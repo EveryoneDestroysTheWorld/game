@@ -23,6 +23,11 @@ jobs:
 
       - name: Build Rojo project
         run: rojo build -o build.rbxl
+
+      - name: Upload project
+        uses: actions/upload-artifact@v3.2.1-node20
+        with:
+          path: build.rbxl
         
   deploy:
     name: Deploy
@@ -30,6 +35,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Download project
+        uses: actions/download-artifact@v4.1.8
+        with:
+          path: build.rbxl
+
       - name: POST to Roblox API
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
