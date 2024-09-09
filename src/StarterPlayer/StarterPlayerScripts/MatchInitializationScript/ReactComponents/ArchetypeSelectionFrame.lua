@@ -63,6 +63,8 @@ local function ArchetypeSelectionFrame(props: ArchetypeInformationFrameProps)
       type = type;
       archetypes = archetypes;
       isDisabled = props.isConfirmingArchetype;
+      selectedArchetype = props.selectedArchetype;
+      onArchetypeSelected = props.onSelectionChanged;
     });
 
   end;
@@ -76,12 +78,13 @@ local function ArchetypeSelectionFrame(props: ArchetypeInformationFrameProps)
   }, {
     UIListLayout = React.createElement("UIListLayout", {
       SortOrder = Enum.SortOrder.LayoutOrder;
-      Padding = UDim.new(0, 15);
+      Padding = UDim.new(0, 5);
       HorizontalAlignment = Enum.HorizontalAlignment.Center;
     });
     ConfirmButton = React.createElement(Button, {
       text = "CONFIRM";
       LayoutOrder = 1;
+      textSize = 8;
       isDisabled = props.isConfirmingArchetype or props.selectedArchetype == nil or props.selectedArchetype.ID == confirmedArchetypeID;
       onClick = function()
 
@@ -98,7 +101,7 @@ local function ArchetypeSelectionFrame(props: ArchetypeInformationFrameProps)
       UIListLayout = React.createElement("UIListLayout", {
         SortOrder = Enum.SortOrder.LayoutOrder;
         FillDirection = Enum.FillDirection.Horizontal;
-        Padding = UDim.new(0, 15);
+        Padding = UDim.new(0, 5);
         HorizontalAlignment = Enum.HorizontalAlignment.Center;
       });
       ArchetypeCategoryFrames = React.createElement(React.Fragment, {}, archetypeCategoryFrames);

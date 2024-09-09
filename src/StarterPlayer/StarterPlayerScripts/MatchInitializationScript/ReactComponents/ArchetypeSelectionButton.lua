@@ -21,7 +21,7 @@ local function ArchetypeSelectionButton(props: ArchetypeSelectionButtonProps)
     BackgroundTransparency = 0.55;
     BackgroundColor3 = Color3.new(0, 0, 0);
     Text = "";
-    Size = UDim2.new(0, 70, 0, 70);
+    Size = UDim2.new(0, 20, 0, 20);
     [React.Event.Activated] = function()
 
       props.onSelect();
@@ -40,8 +40,8 @@ local function ArchetypeSelectionButton(props: ArchetypeSelectionButtonProps)
     ImageLabel = React.createElement("ImageLabel", {
       AnchorPoint = Vector2.new(0.5, 0.5);
       Image = props.archetype.iconImage;
-      Position = UDim2.new(0, 20, 1, -15);
-      Size = UDim2.new(1, 15, 1, 15);
+      Position = UDim2.new(0, 7, 1, -7);
+      Size = UDim2.new(1, 0, 1, 0);
       BackgroundTransparency = 1;
       ImageTransparency = if props.isDisabled then 0.6 else 0; 
     })

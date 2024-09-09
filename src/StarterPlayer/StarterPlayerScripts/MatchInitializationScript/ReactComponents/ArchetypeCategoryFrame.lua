@@ -11,6 +11,7 @@ local ArchetypeSelectionButton = require(script.Parent.ArchetypeSelectionButton)
 type ArchetypeCategoryFrameProps = {
   type: string;
   archetypes: {ClientArchetype};
+  selectedArchetype: ClientArchetype?;
   onArchetypeSelected: (ClientArchetype) -> ();
   isDisabled: boolean;
 }
@@ -22,6 +23,7 @@ local function ArchetypeCategoryFrame(props: ArchetypeCategoryFrameProps)
 
     archetypeButtons[`Archetype{archetype.ID}`] = React.createElement(ArchetypeSelectionButton, {
       archetype = archetype;
+      isSelected = props.selectedArchetype and archetype.ID == props.selectedArchetype.ID;
       onSelect = function()
 
         props.onArchetypeSelected(archetype);
@@ -52,10 +54,10 @@ local function ArchetypeCategoryFrame(props: ArchetypeCategoryFrameProps)
       Thickness = 1;
     });
     UIPadding = React.createElement("UIPadding", {
-      PaddingBottom = UDim.new(0, 15);
-      PaddingLeft = UDim.new(0, 15);
-      PaddingRight = UDim.new(0, 15);
-      PaddingTop = UDim.new(0, 15);
+      PaddingBottom = UDim.new(0, 5);
+      PaddingLeft = UDim.new(0, 5);
+      PaddingRight = UDim.new(0, 5);
+      PaddingTop = UDim.new(0, 5);
     });
     ArchetypeButtonListFrame = React.createElement("Frame", {
       AutomaticSize = Enum.AutomaticSize.XY;
@@ -73,16 +75,16 @@ local function ArchetypeCategoryFrame(props: ArchetypeCategoryFrameProps)
       });
       ArchetypeButtonList = React.createElement(React.Fragment, {}, archetypeButtons);
     });
-    ArchetypeClassNameLabel = React.createElement("TextLabel", {
-      Text = props.type:upper();
-      AutomaticSize = Enum.AutomaticSize.XY;
-      Size = UDim2.new();
-      LayoutOrder = 2;
-      TextSize = 14;
-      BackgroundTransparency = 1;
-      FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
-      TextColor3 = Colors.ParagraphText;
-    });
+    -- ArchetypeClassNameLabel = React.createElement("TextLabel", {
+    --   Text = props.type:upper();
+    --   AutomaticSize = Enum.AutomaticSize.XY;
+    --   Size = UDim2.new();
+    --   LayoutOrder = 2;
+    --   TextSize = 14;
+    --   BackgroundTransparency = 1;
+    --   FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
+    --   TextColor3 = Colors.ParagraphText;
+    -- });
   });
 
 end;
