@@ -17,6 +17,11 @@
         }
       }
     },
+    "Players": {
+      "$properties": {
+        "CharacterAutoLoads": false
+      }
+    },
     "Lighting": {
       "$path": "src/Lighting"
     },
