@@ -20,8 +20,12 @@ local TakeFlightAction = {
 
 local activeState = false
 local function flightControls()
+	local flightControlsConnect
+	flightControlsConnect = Players.LocalPlayer.Character.HumanoidRootPart.ChildAdded:Connect(function(child)
+		if child.Name == "LinearVelocity" then
+			flightControlsConnect:Disconnect()
 	activeState = true
-	local linearVelocity = Players.LocalPlayer.Character.HumanoidRootPart:WaitForChild("LinearVelocity")
+	local linearVelocity = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChildChild("LinearVelocity")
 	local humanoid = Players.LocalPlayer.Character.Humanoid
 	-- this waits for the controls to be enabled by the server
 	print("Player client found the linearVelocity")
@@ -35,6 +39,7 @@ local function flightControls()
 			connection:Disconnect()
 			connection2:Disconnect()
 			activeState = false
+			flightControls()
 		end)
 		local verticalVelocity = 0
 		connection2 = RunService.RenderStepped:Connect(function(step)
@@ -48,11 +53,12 @@ local function flightControls()
 			tween:Play()
 		end)
 	end)
-
-
 end
-function TakeFlightAction.new(): ClientAction
+end)
+end
 
+function TakeFlightAction.new(): ClientAction
+	flightControls()
 	local player = Players.LocalPlayer;
 	local remoteName: string;
 
@@ -63,9 +69,6 @@ function TakeFlightAction.new(): ClientAction
 	end;
 
 	local function activate(self: ClientAction)
-		if Players.LocalPlayer.Character.Humanoid:GetAttribute("CurrentStamina") >= 10 then
-			coroutine.wrap(flightControls)()
-		end
 		ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
 end;
 
