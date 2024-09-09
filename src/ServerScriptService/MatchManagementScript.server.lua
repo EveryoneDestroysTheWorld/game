@@ -363,7 +363,7 @@ local function startRound()
     end;
 
     round:setStatus("Contestant selection");
-    local selectionTimeLimitSeconds = 25; 
+    local selectionTimeLimitSeconds = 2500; -- Temporary for testing 
     local currentTime = os.time();
     ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds - 1);
     ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = function()
@@ -430,7 +430,7 @@ local function checkPlayerList(player: Player)
 end;
 
 local shouldUseStudioPlayers = true;
-if shouldUseStudioPlayers and RunService:IsStudio() then
+if shouldUseStudioPlayers then
 
   Players.PlayerAdded:Connect(function(player)
 
