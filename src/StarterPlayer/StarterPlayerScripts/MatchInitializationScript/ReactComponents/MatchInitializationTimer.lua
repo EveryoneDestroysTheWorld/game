@@ -58,7 +58,7 @@ local function MatchInitializationTimer()
   
             setTextState({
               rotation = -360 + 360 * newValue;
-              textSize = 50 * newValue;
+              textSize = 10 * newValue;
               textTransparency = 1 - newValue;
             });
 
@@ -139,7 +139,7 @@ local function MatchInitializationTimer()
       Rotation = textState.rotation;
       TextSize = textState.textSize;
       TextColor3 = Color3.new(1, 1, 1);
-      Size = UDim2.new(0, 50, 0, 50);
+      Size = UDim2.new(0, 10, 0, 10);
     });
   }) else nil;
 

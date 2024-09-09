@@ -6,7 +6,7 @@ local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 type ClientRound = ClientRound.ClientRound;
 
-type MatchInitializationHeaderProps = {
+export type MatchInitializationHeaderProps = {
   round: ClientRound;
 }
 
@@ -14,9 +14,9 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
 
   local anchorPointY, setAnchorPointY = React.useState(0);
   local textSizes, setTextSizes = React.useState({
-    subtitle = 14;
-    title = 30;
-    tagline = 18;
+    subtitle = 8;
+    title = 10;
+    tagline = 8;
   });
   local titleColor, setTitleColor = React.useState(Color3.fromRGB(255, 94, 97));
   local taglineColor, setTaglineColor = React.useState(Color3.fromRGB(199, 199, 199));
@@ -132,7 +132,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
     }, {
       UIListLayout = React.createElement("UIListLayout", {
         SortOrder = Enum.SortOrder.LayoutOrder;
-        Padding = UDim.new(0, 5);
+        Padding = UDim.new(0, 1);
         HorizontalAlignment = Enum.HorizontalAlignment.Center;
       });
       SubtitleLabel = React.createElement("TextLabel", {

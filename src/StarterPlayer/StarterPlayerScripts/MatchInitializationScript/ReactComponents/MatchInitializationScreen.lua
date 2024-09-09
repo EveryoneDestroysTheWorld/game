@@ -5,7 +5,6 @@ local StarterGui = game:GetService("StarterGui");
 local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 local player = Players.LocalPlayer;
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local Ticker = require(script.Parent.Ticker);
 local TeammateCard = require(script.Parent.TeammateCard);
 local TeammateCardList = require(script.Parent.TeammateCardList);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
@@ -182,10 +181,10 @@ local function MatchInitializationScreen()
       ZIndex = 2;
     }, {
       UIPadding = React.createElement("UIPadding", {
-        PaddingBottom = UDim.new(0, 30);
-        PaddingLeft = UDim.new(0, 30);
-        PaddingRight = UDim.new(0, 30);
-        PaddingTop = UDim.new(0, 30);
+        PaddingBottom = UDim.new(0, 15);
+        PaddingLeft = UDim.new(0, 15);
+        PaddingRight = UDim.new(0, 15);
+        PaddingTop = UDim.new(0, 15);
       });
       MatchInitializationTimerFrame = React.createElement(MatchInitializationTimer);
       Header = if round then React.createElement(MatchInitializationHeader, {round = round}) else nil;
@@ -211,36 +210,35 @@ local function MatchInitializationScreen()
           selectedArchetype = selectedArchetype;
         });
       });
-      ArchetypeSelectionFrame = if shouldShowArchetypeInformation then React.createElement(ArchetypeSelectionFrame, {
-        isConfirmingArchetype = isConfirmingArchetype;
-        selectedArchetype = selectedArchetype;
-        onSelectionChanged = function(newSelectedArchetype)
+      -- ArchetypeSelectionFrame = if shouldShowArchetypeInformation then React.createElement(ArchetypeSelectionFrame, {
+      --   isConfirmingArchetype = isConfirmingArchetype;
+      --   selectedArchetype = selectedArchetype;
+      --   onSelectionChanged = function(newSelectedArchetype)
 
-          setSelectedArchetype(newSelectedArchetype);
+      --     setSelectedArchetype(newSelectedArchetype);
 
-        end;
-        onSelectionConfirmed = function()
+      --   end;
+      --   onSelectionConfirmed = function()
 
-          setIsConfirmingArchetype(true);
+      --     setIsConfirmingArchetype(true);
 
-          local didConfirmArchetype, errorMessage = pcall(function()
+      --     local didConfirmArchetype, errorMessage = pcall(function()
             
-            ReplicatedStorage.Shared.Functions.ChooseArchetype:InvokeServer(selectedArchetype.ID);
+      --       ReplicatedStorage.Shared.Functions.ChooseArchetype:InvokeServer(selectedArchetype.ID);
 
-          end);
+      --     end);
 
-          if not didConfirmArchetype then
+      --     if not didConfirmArchetype then
 
-            warn(`Couldn't confirm archetype: {errorMessage}`);
-            setIsConfirmingArchetype(false);
+      --       warn(`Couldn't confirm archetype: {errorMessage}`);
+      --       setIsConfirmingArchetype(false);
 
-          end;
+      --     end;
 
-        end;
-      }) else nil;
+      --   end;
+      -- }) else nil;
     });
     LoadingBackground = if round then React.createElement(LoadingBackground, {round = round}) else nil;
-    Ticker = React.createElement(Ticker, {round = round});
     -- MainStatus = React.createElement("TextLabel", {
     --   Text = "GET READY!";
     --   AutomaticSize = Enum.AutomaticSize.XY;
