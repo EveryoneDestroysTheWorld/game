@@ -13,6 +13,11 @@
         }
       }
     },
+    "Players": {
+      "$properties": {
+        "CharacterAutoLoads": false
+      }
+    },
     "ServerScriptService": {
       "$path": "src/ServerScriptService"
     },
