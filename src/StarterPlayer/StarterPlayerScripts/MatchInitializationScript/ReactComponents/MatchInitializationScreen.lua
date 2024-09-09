@@ -191,33 +191,33 @@ local function MatchInitializationScreen()
           shouldHide = not shouldShowArchetypeInformation;
         });
       });
-      -- ArchetypeSelectionFrame = if shouldShowArchetypeInformation then React.createElement(ArchetypeSelectionFrame, {
-      --   isConfirmingArchetype = isConfirmingArchetype;
-      --   selectedArchetype = selectedArchetype;
-      --   onSelectionChanged = function(newSelectedArchetype)
+      ArchetypeSelectionFrame = if shouldShowArchetypeInformation then React.createElement(ArchetypeSelectionFrame, {
+        isConfirmingArchetype = isConfirmingArchetype;
+        selectedArchetype = selectedArchetype;
+        onSelectionChanged = function(newSelectedArchetype)
 
-      --     setSelectedArchetype(newSelectedArchetype);
+          setSelectedArchetype(newSelectedArchetype);
 
-      --   end;
-      --   onSelectionConfirmed = function()
+        end;
+        onSelectionConfirmed = function()
 
-      --     setIsConfirmingArchetype(true);
+          setIsConfirmingArchetype(true);
 
-      --     local didConfirmArchetype, errorMessage = pcall(function()
+          local didConfirmArchetype, errorMessage = pcall(function()
             
-      --       ReplicatedStorage.Shared.Functions.ChooseArchetype:InvokeServer(selectedArchetype.ID);
+            ReplicatedStorage.Shared.Functions.ChooseArchetype:InvokeServer(selectedArchetype.ID);
 
-      --     end);
+          end);
 
-      --     if not didConfirmArchetype then
+          if not didConfirmArchetype then
 
-      --       warn(`Couldn't confirm archetype: {errorMessage}`);
-      --       setIsConfirmingArchetype(false);
+            warn(`Couldn't confirm archetype: {errorMessage}`);
+            setIsConfirmingArchetype(false);
 
-      --     end;
+          end;
 
-      --   end;
-      -- }) else nil;
+        end;
+      }) else nil;
     });
     LoadingBackground = if round then React.createElement(LoadingBackground, {round = round}) else nil;
     -- MainStatus = React.createElement("TextLabel", {

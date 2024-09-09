@@ -22,6 +22,7 @@ local function TeammateCardList(props: TeammateCardListProps)
       if container then
 
         setIsTweening(true);
+        local position;
         local tween = dataTypeTween({
           type = "Number";
           goalValue = if props.shouldHide then 300 else 0;
@@ -34,6 +35,7 @@ local function TeammateCardList(props: TeammateCardListProps)
             if container then
 
               container.Position = UDim2.new(1, newValue, 0.5, 0);
+              position = container.Position;
               if container:IsA("CanvasGroup") then
 
                 container.GroupTransparency = newValue / 300;
@@ -47,7 +49,7 @@ local function TeammateCardList(props: TeammateCardListProps)
         
         tween.Completed:Once(function()
         
-          setFinalTweenedPosition(container.Position);
+          setFinalTweenedPosition(position);
           setIsTweening(false);
 
         end);

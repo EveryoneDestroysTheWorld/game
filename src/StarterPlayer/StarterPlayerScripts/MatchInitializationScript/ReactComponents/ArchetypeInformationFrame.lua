@@ -61,7 +61,7 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
     if container then
 
       setIsTweening(true);
-
+      local position;
       local tween = dataTypeTween({
         type = "Number";
         goalValue = if props.shouldHide then 300 else 0;
@@ -73,8 +73,8 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
           container = containerRef.current;
           if container then
 
-            print(props.shouldHide);
             container.Position = UDim2.new(1, newValue, 0.5, 0);
+            position = container.Position;
             if container:IsA("CanvasGroup") then
 
               container.GroupTransparency = math.abs(newValue) / 300;
@@ -88,7 +88,7 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
       
       tween.Completed:Once(function()
       
-        setFinalTweenPosition(container.Position);
+        setFinalTweenPosition(position);
         setIsTweening(false);
 
       end);
