@@ -121,29 +121,43 @@ function ClientRound.new(properties: RoundProperties): ClientRound
   
 end
 
+local queue = {};
+
 -- Creates a ClientRound object from the current round.
 -- Returns a new or cached ClientRound.
 function ClientRound.fromServerRound(): ClientRound
 
-  if serverRound then
+  if not serverRound then
 
-    return serverRound;
+    local number = tick();
+    table.insert(queue, number);
+    while number ~= queue[1] and not serverRound do
+
+      task.wait();
+  
+    end;
+
+    if not serverRound then
+
+      local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
+
+      local contestants = {}
+      for _, contestant in ipairs(roundConstructorProperties.contestants) do
+
+        table.insert(contestants, ClientContestant.new(contestant));
+
+      end;
+      roundConstructorProperties.contestants = contestants;
+
+      serverRound = ClientRound.new(roundConstructorProperties);
+
+    end;
+
+    table.remove(queue, 1);
 
   end;
 
-  local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
-
-  local contestants = {}
-  for _, contestant in ipairs(roundConstructorProperties.contestants) do
-
-    table.insert(contestants, ClientContestant.new(contestant));
-
-  end;
-  roundConstructorProperties.contestants = contestants;
-
-  local round = ClientRound.new(roundConstructorProperties);
-  serverRound = round;
-  return round;
+  return serverRound;
 
 end;
 

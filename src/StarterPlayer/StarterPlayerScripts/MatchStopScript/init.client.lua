@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
-local MatchStoppagePopup = require(ReplicatedStorage.Client.ReactComponents.MatchStoppagePopup);
+local MatchStopScreen = require(script.ReactComponents.MatchStopScreen);
 
 local popupContainer = nil;
 
@@ -22,7 +22,7 @@ local function setupGUI()
     popupContainer.Enabled = true;
   
     local root = ReactRoblox.createRoot(popupContainer);
-    root:render(React.createElement(MatchStoppagePopup));
+    root:render(React.createElement(MatchStopScreen));
 
   end;
 

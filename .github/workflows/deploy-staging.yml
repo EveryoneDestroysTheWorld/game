@@ -1,0 +1,55 @@
+name: Publish to staging environment
+
+on:
+  push: 
+    branches: [staging]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    environment: Staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Set up Aftman
+        uses: ok-nick/setup-aftman@v0.4.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Wally packages
+        run: wally install
+
+      - name: Build Rojo project
+        run: rojo build -o build.rbxl
+
+      - name: Upload project
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: build.rbxl
+          path: build.rbxl
+        
+  deploy:
+    name: Deploy
+    environment: Staging
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download project
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: build.rbxl
+
+      - name: POST to Roblox API
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          ROBLOX_UNIVERSE_ID: ${{ vars.ROBLOX_UNIVERSE_ID }}
+          ROBLOX_PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
+        run: | 
+          curl \
+          -H "x-api-key: $ROBLOX_API_KEY" \
+          -H "Content-Type: application/xml" \
+          --data-binary @build.rbxl \
+          "https://apis.roblox.com/universes/v1/""$ROBLOX_UNIVERSE_ID""/places/""$ROBLOX_PLACE_ID""/versions?versionType=Published"

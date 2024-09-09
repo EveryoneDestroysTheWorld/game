@@ -169,7 +169,7 @@ function ServerRound.__index:start(): ()
         elseif contestant.player then
 
           ReplicatedStorage.Shared.Functions.InitializeInventory:InvokeClient(contestant.player, archetype.ID);
-
+        
         end;
 
       else

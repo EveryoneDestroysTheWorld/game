@@ -6,7 +6,7 @@ type ClientArchetype = ClientArchetype.ClientArchetype;
 local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
 type ClientAction = ClientAction.ClientAction;
 local Colors = require(ReplicatedStorage.Client.Colors);
-local ActionButton = require(script.Parent.ActionButton);
+local ActionButton = require(ReplicatedStorage.Client.ReactComponents.ActionButton);
 
 type ArchetypeInformationFrameProps = {
   selectedArchetype: ClientArchetype?;
@@ -16,7 +16,7 @@ type ArchetypeInformationFrameProps = {
 local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
 
   local actionTextButtons, setActionTextButtons = React.useState({});
-  local selectedAction: ClientAction?, setSelectedAction = React.useState(nil);
+  local selectedAction, setSelectedAction = React.useState(nil :: ClientAction?);
 
   React.useEffect(function()
   
@@ -49,7 +49,7 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
 
     end)
 
-  end, {props.selectedArchetype, selectedAction});
+  end, {props.selectedArchetype :: any, selectedAction});
 
   return React.createElement(if props.uiPaddingRightOffset ~= -300 then "CanvasGroup" else "Frame", {
     AnchorPoint = Vector2.new(1, 0);
