@@ -70,12 +70,14 @@ local function TeammateCardList(props: TeammateCardListProps)
 
   end, {props.round});
 
+  local hiddenValue = 250 + 15;
+
   React.useEffect(function()
   
     local container = containerRef.current;
     if container then
 
-      container.Position = UDim2.new(1, if props.shouldHide then 200 else 0, 0.5, 0);
+      container.Position = UDim2.new(1, if props.shouldHide then hiddenValue else 0, 0.5, 0);
 
     end;
     
@@ -94,7 +96,7 @@ local function TeammateCardList(props: TeammateCardListProps)
 
         local tween = dataTypeTween({
           type = "Number";
-          goalValue = if props.shouldHide then 200 else 0;
+          goalValue = if props.shouldHide then hiddenValue else 0;
           initialValue = container.Position.X.Offset;
           tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
           onChange = function(newValue: number)
