@@ -1,7 +1,6 @@
 --!strict
 -- Profile.lua
--- Written by Christian "Sudobeast" Toney
--- Edits by Hati :))))
+-- Writers: Christian "Sudobeast" Toney and Hati :))))
 -- This script controls the round and lobby management stuff.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
@@ -258,7 +257,9 @@ local function startRound()
             end;
 
             -- Choose a random archetype for those who didn't choose.
+            
             local selectedArchetypeIndex = math.random(1, #ownedArchetypeIDs);
+            
             chosenArchetypeID = ownedArchetypeIDs[selectedArchetypeIndex];
 
           end
