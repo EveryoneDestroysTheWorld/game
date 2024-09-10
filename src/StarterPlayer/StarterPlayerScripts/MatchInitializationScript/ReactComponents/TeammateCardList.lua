@@ -15,6 +15,8 @@ type TeammateCardListProps = {
 
 local function TeammateCardList(props: TeammateCardListProps)
 
+  local shouldUseMaximumSpacing, shouldUseIncreasedWidth = useResponsiveDesign({minimumHeight = 300}, {minimumWidth = 800});
+
   local containerRef = React.useRef(nil :: GuiObject?);
   React.useEffect(function(): ()
 
@@ -71,14 +73,12 @@ local function TeammateCardList(props: TeammateCardListProps)
 
   end, {props.round});
 
-  local hiddenValue = 250 + 15;
-
   React.useEffect(function()
   
     local container = containerRef.current;
     if container then
 
-      container.Position = UDim2.new(1, if props.shouldHide then hiddenValue else 0, 0.5, 0);
+      container.Position = UDim2.new(1, if props.shouldHide then container.AbsoluteSize.X + 15 else 0, 0.5, 0);
 
     end;
     
@@ -97,7 +97,7 @@ local function TeammateCardList(props: TeammateCardListProps)
 
         local tween = dataTypeTween({
           type = "Number";
-          goalValue = if props.shouldHide then hiddenValue else 0;
+          goalValue = if props.shouldHide then container.AbsoluteSize.X + 15 else 0;
           initialValue = container.Position.X.Offset;
           tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
           onChange = function(newValue: number)
@@ -126,8 +126,6 @@ local function TeammateCardList(props: TeammateCardListProps)
     end;
 
   end, {props.shouldHide :: any, props.layoutOrder});
-
-  local shouldUseMaximumSpacing = useResponsiveDesign({minimumHeight = 300});
 
   return React.createElement("Frame", {
     AnchorPoint = Vector2.new(if props.layoutOrder == 1 then 0 else 1, 0.5);

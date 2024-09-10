@@ -18,9 +18,10 @@ type ArchetypeInformationFrameProps = {
 local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
 
   local actionTextButtons, setActionTextButtons = React.useState({});
-  local shouldShowArchetypeDescriptionTextLabel, shouldShowSecondaryMetadataFrame = useResponsiveDesign(
+  local shouldShowArchetypeDescriptionTextLabel, shouldShowSecondaryMetadataFrame, shouldUseIncreasedWidth = useResponsiveDesign(
     {minimumWidth = 600}, 
-    {minimumWidth = 600, minimumHeight = 500}
+    {minimumWidth = 600, minimumHeight = 500},
+    {minimumWidth = 800}
   );
   local selectedAction, setSelectedAction = React.useState(nil :: ClientAction?);
 
@@ -57,14 +58,14 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
 
   end, {props.selectedArchetype :: any, selectedAction});
 
-  local hiddenValue = 250 + 15;
   local containerRef = React.useRef(nil :: GuiObject?);
   React.useEffect(function()
   
     local container = containerRef.current;
     if container then
 
-      container.Position = UDim2.new(1, if props.shouldHide then hiddenValue else 0, 0.5, 0);
+      print(UDim2.new(1, if props.shouldHide then container.AbsoluteSize.X + 15 else 0, 0.5, 0))
+      container.Position = UDim2.new(1, if props.shouldHide then container.AbsoluteSize.X + 15 else 0, 0.5, 0);
 
     end;
     
@@ -79,7 +80,7 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
       local tween = dataTypeTween({
         type = "Number";
         initialValue = container.Position.X.Offset;
-        goalValue = if props.shouldHide then hiddenValue else 0;
+        goalValue = if props.shouldHide then container.AbsoluteSize.X + 15 else 0;
         tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
         onChange = function(newValue: number)
 
@@ -110,15 +111,17 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
     AnchorPoint = Vector2.new(1, 0.5);
     BackgroundTransparency = 1;
     ref = containerRef;
-    AutomaticSize = Enum.AutomaticSize.XY;
+    AutomaticSize = Enum.AutomaticSize.Y;
+    Size = UDim2.new(1, 0, 0, 0);
     LayoutOrder = 2;
   }, {
     UIListLayout = React.createElement("UIListLayout", {
       SortOrder = Enum.SortOrder.LayoutOrder;
       Padding = UDim.new(0, 5);
+      HorizontalAlignment = Enum.HorizontalAlignment.Right;
     });
     UISizeConstraint = React.createElement("UISizeConstraint", {
-      MaxSize = Vector2.new(250, math.huge);
+      MaxSize = Vector2.new(if shouldUseIncreasedWidth then 350 else 250, math.huge);
     });
     PrimaryMetadataFrame = React.createElement("Frame", {
       BackgroundTransparency = 1;
@@ -135,7 +138,7 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
         BackgroundTransparency = 1;
         AutomaticSize = Enum.AutomaticSize.XY;
         TextColor3 = Colors.HeadingText;
-        TextSize = 7;
+        TextSize = if shouldShowSecondaryMetadataFrame then 14 else 7;
         Text = props.selectedArchetype.type:upper();
         FontFace = Font.fromId(11702779517);
         TextXAlignment = Enum.TextXAlignment.Left;
@@ -144,7 +147,7 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
         BackgroundTransparency = 1;
         AutomaticSize = Enum.AutomaticSize.XY;
         LayoutOrder = 2;
-        TextSize = 10;
+        TextSize = if shouldShowSecondaryMetadataFrame then 30 else 10;
         Text = if props.selectedArchetype then props.selectedArchetype.name:upper() else "CHOOSE AN ARCHETYPE";
         TextColor3 = Colors.HeadingText;
         FontFace = Font.fromId(11702779517, Enum.FontWeight.Heavy);
@@ -156,7 +159,7 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
         LayoutOrder = 3;
         Text = if props.selectedArchetype then props.selectedArchetype.description else "Let's take a looksie here...";
         TextWrapped = true;
-        TextSize = 8;
+        TextSize = if shouldShowSecondaryMetadataFrame then 14 else 8;
         TextColor3 = Colors.ParagraphText;
         FontFace = Font.fromId(11702779517, Enum.FontWeight.Medium);
         TextXAlignment = Enum.TextXAlignment.Left;
