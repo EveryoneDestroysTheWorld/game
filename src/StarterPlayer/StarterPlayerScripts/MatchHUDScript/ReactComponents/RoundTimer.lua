@@ -23,7 +23,6 @@ local function RoundTimer(props: RoundTimerProps)
 
         local roundDuration = props.round.duration;
         local roundStartTime = props.round.timeStarted;
-        print(props.round);
         if props.round.status == "Active" and roundDuration and roundStartTime then
 
           setSecondsLeft(math.floor((roundStartTime + roundDuration * 1000 - DateTime.now().UnixTimestampMillis) / 1000) :: any)
