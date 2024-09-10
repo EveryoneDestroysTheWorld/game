@@ -8,6 +8,7 @@ type ClientAction = ClientAction.ClientAction;
 local Colors = require(ReplicatedStorage.Client.Colors);
 local ActionButton = require(ReplicatedStorage.Client.ReactComponents.ActionButton);
 local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
 type ArchetypeInformationFrameProps = {
   selectedArchetype: ClientArchetype?;
@@ -99,6 +100,8 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
 
   end, {props.shouldHide});
 
+  local shouldShowArchetypeDescriptionTextLabel = useResponsiveDesign({minimumWidth = 600});
+
   return React.createElement("Frame", {
     AnchorPoint = Vector2.new(1, 0.5);
     BackgroundTransparency = 1;
@@ -111,7 +114,7 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
       Padding = UDim.new(0, 5);
     });
     UISizeConstraint = React.createElement("UISizeConstraint", {
-      MaxSize = Vector2.new(350, math.huge);
+      MaxSize = Vector2.new(250, math.huge);
     });
     PrimaryMetadataFrame = React.createElement("Frame", {
       BackgroundTransparency = 1;
@@ -143,17 +146,17 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
         FontFace = Font.fromId(11702779517, Enum.FontWeight.Heavy);
         TextXAlignment = Enum.TextXAlignment.Left;
       });
-      -- ArchetypeDescriptionTextLabel = React.createElement("TextLabel", {
-      --   BackgroundTransparency = 1;
-      --   AutomaticSize = Enum.AutomaticSize.XY;
-      --   LayoutOrder = 3;
-      --   Text = if props.selectedArchetype then props.selectedArchetype.description else "Let's take a looksie here...";
-      --   TextWrapped = true;
-      --   TextSize = 8;
-      --   TextColor3 = Colors.ParagraphText;
-      --   FontFace = Font.fromId(11702779517, Enum.FontWeight.Medium);
-      --   TextXAlignment = Enum.TextXAlignment.Left;
-      -- });
+      ArchetypeDescriptionTextLabel = if shouldShowArchetypeDescriptionTextLabel then React.createElement("TextLabel", {
+        BackgroundTransparency = 1;
+        AutomaticSize = Enum.AutomaticSize.XY;
+        LayoutOrder = 3;
+        Text = if props.selectedArchetype then props.selectedArchetype.description else "Let's take a looksie here...";
+        TextWrapped = true;
+        TextSize = 8;
+        TextColor3 = Colors.ParagraphText;
+        FontFace = Font.fromId(11702779517, Enum.FontWeight.Medium);
+        TextXAlignment = Enum.TextXAlignment.Left;
+      }) else nil;
     });
     -- SecondaryMetadataFrame = React.createElement("Frame", {
     --   BackgroundTransparency = 1;

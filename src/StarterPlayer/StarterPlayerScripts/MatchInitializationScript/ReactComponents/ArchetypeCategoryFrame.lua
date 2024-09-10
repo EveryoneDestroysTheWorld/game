@@ -7,6 +7,7 @@ local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
 type ClientAction = ClientAction.ClientAction;
 local Colors = require(ReplicatedStorage.Client.Colors);
 local ArchetypeSelectionButton = require(script.Parent.ArchetypeSelectionButton);
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
 type ArchetypeCategoryFrameProps = {
   type: string;
@@ -33,6 +34,8 @@ local function ArchetypeCategoryFrame(props: ArchetypeCategoryFrameProps)
     
   end;
 
+  local shouldShowArchetypeClassLabel = useResponsiveDesign({minimumWidth = 600});
+
   return React.createElement("Frame", {
     BackgroundTransparency = 0.55;
     AutomaticSize = Enum.AutomaticSize.XY;
@@ -40,7 +43,7 @@ local function ArchetypeCategoryFrame(props: ArchetypeCategoryFrameProps)
     Size = UDim2.new();
   }, {
     UIListLayout = React.createElement("UIListLayout", {
-      Padding = UDim.new(0, 15);
+      Padding = UDim.new(0, 5);
       SortOrder = Enum.SortOrder.LayoutOrder;
       VerticalFlex = Enum.UIFlexAlignment.SpaceBetween;
       VerticalAlignment = Enum.VerticalAlignment.Center;
@@ -75,16 +78,16 @@ local function ArchetypeCategoryFrame(props: ArchetypeCategoryFrameProps)
       });
       ArchetypeButtonList = React.createElement(React.Fragment, {}, archetypeButtons);
     });
-    -- ArchetypeClassNameLabel = React.createElement("TextLabel", {
-    --   Text = props.type:upper();
-    --   AutomaticSize = Enum.AutomaticSize.XY;
-    --   Size = UDim2.new();
-    --   LayoutOrder = 2;
-    --   TextSize = 14;
-    --   BackgroundTransparency = 1;
-    --   FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
-    --   TextColor3 = Colors.ParagraphText;
-    -- });
+    ArchetypeClassNameLabel = if shouldShowArchetypeClassLabel then React.createElement("TextLabel", {
+      Text = props.type:upper();
+      AutomaticSize = Enum.AutomaticSize.XY;
+      Size = UDim2.new();
+      LayoutOrder = 2;
+      TextSize = 8;
+      BackgroundTransparency = 1;
+      FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
+      TextColor3 = Colors.ParagraphText;
+    }) else nil;
   });
 
 end;
