@@ -186,7 +186,7 @@ local function CenteredRoundTimer(props: CenteredRoundTimerProps)
   }, {
     UIStroke = React.createElement("UIStroke", {
       Color = Color3.new(1, 1, 1);
-      Thickness = 1;
+      Thickness = 0.5;
       Transparency = textState.transparency;
     });
     UITextSizeConstraint = React.createElement("UITextSizeConstraint", {
