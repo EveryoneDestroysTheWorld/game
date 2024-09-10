@@ -26,8 +26,17 @@ function DetachLimbAction.new(): ClientAction
 
   local function breakdown(self: ClientAction)
 
-    root:unmount();
-    limbSelectorGUI:Destroy();
+    if root then
+
+      root:unmount();
+
+    end;
+
+    if limbSelectorGUI then
+
+      limbSelectorGUI:Destroy();
+
+    end;
 
   end;
 
