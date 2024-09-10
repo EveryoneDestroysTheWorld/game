@@ -165,7 +165,7 @@ function ServerRound.__index:start(): ()
         if contestant.ID < 1 then
             
           archetype:runAutoPilot(actions);
-        
+
         end;
 
       else
