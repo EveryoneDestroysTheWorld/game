@@ -85,6 +85,7 @@ local function TeammateCard(props: TeammateCardProps)
   local contestantBannerSizeXOffset = React.useState(100);
   local avatarImageLabelRef = React.useRef(nil :: ImageLabel?);
   local tcfUIPaddingRef = React.useRef(nil);
+  local statusLabelRef = React.useRef(nil :: TextLabel?);
   local contestantBannerImageLabelRef = React.useRef(nil);
   
   React.useEffect(function()
@@ -170,6 +171,23 @@ local function TeammateCard(props: TeammateCardProps)
     
               end;
             }):Play();
+
+            local statusLabel = statusLabelRef.current;
+            if statusLabel then
+
+              dataTypeTween({
+                type = "Number";
+                initialValue = statusLabel.TextTransparency;
+                goalValue = 1;
+                tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Sine);
+                onChange = function(newValue)
+
+                  statusLabel.TextTransparency = newValue;
+
+                end;
+              }):Play();
+
+            end;
 
           end);
 
@@ -260,6 +278,7 @@ local function TeammateCard(props: TeammateCardProps)
           LayoutOrder = 1;
           AutomaticSize = Enum.AutomaticSize.XY;
           Size = UDim2.new();
+          ref = statusLabelRef;
           Text = statusLabelText;
           TextTransparency = if props.contestant then 0 else 0.5;
           TextColor3 = if props.isRival then Color3.fromRGB(255, 117, 117) else Color3.new(1, 1, 1);

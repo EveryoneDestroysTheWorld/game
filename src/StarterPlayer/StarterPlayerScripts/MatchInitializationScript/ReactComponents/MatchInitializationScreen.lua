@@ -185,9 +185,11 @@ local function MatchInitializationScreen()
       }, {
         AllyTeammateCardList = React.createElement(TeammateCardList, {
           layoutOrder = 1;
+          round = round;
         }, allyTeammateCards);
         RivalTeammateCardList = React.createElement(TeammateCardList, {
           layoutOrder = 2;
+          round = round;
           shouldHide = shouldShowArchetypeInformation;
         }, rivalTeammateCards);
         ArchetypeInformationFrame = React.createElement(ArchetypeInformationFrame, {
