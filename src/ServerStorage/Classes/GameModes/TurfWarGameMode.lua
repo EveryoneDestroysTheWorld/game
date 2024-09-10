@@ -85,7 +85,6 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
               events[eventIndex]:Disconnect();
             
               -- Add this to the score.
-              print(child:GetAttribute("DestroyerID"));
               local destroyerID = child:GetAttribute("DestroyerID") :: number?;
               if destroyerID then
 
