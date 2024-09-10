@@ -33,6 +33,10 @@ Christian "Sudobeast" Toney
 * hati_bati
 
 ## Visual Team
+### Animators
+* Christian Toney
+* hati_bati
+
 ### Builder
 Christian "Sudobeast" Toney
 
