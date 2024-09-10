@@ -172,7 +172,6 @@ local function CenteredRoundTimer(props: CenteredRoundTimerProps)
 
   local message = React.useState(messages[math.random(1, #messages)]);
 
-  print(textState.textSize);
   return if animatedSecond and (animatedSecond > 0 or not isFinalCountdown) then React.createElement("TextLabel", {
     Text = if animatedSecond == 0 then message else animatedSecond;
     AnchorPoint = Vector2.new(0.5, 0.5);

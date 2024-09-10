@@ -78,19 +78,19 @@ local function RoundTimer(props: RoundTimerProps)
     AutomaticSize = Enum.AutomaticSize.XY;
     Size = UDim2.new();
     AnchorPoint = Vector2.new(1, 0);
-    Position = UDim2.new(1, -30, 0, 30);
+    Position = UDim2.new(1, -15, 0, 15);
     BorderSizePixel = 0;
   }, {
     UICorner = React.createElement("UICorner", {
       CornerRadius = UDim.new(0, 5);
     });
     UIPadding = React.createElement("UIPadding", {
-      PaddingBottom = UDim.new(0, 5);
-      PaddingLeft = UDim.new(0, 10);
-      PaddingRight = UDim.new(0, 10);
+      PaddingBottom = UDim.new(0, 1);
+      PaddingLeft = UDim.new(0, 5);
+      PaddingRight = UDim.new(0, 5);
     });
     UISizeConstraint = React.createElement("UISizeConstraint", {
-      MinSize = Vector2.new(63, 0);
+      MinSize = Vector2.new(18, 0);
     });
     UIListLayout = React.createElement("UIListLayout", {
       HorizontalAlignment = Enum.HorizontalAlignment.Center;
@@ -100,7 +100,7 @@ local function RoundTimer(props: RoundTimerProps)
       Text = time;
       FontFace = Font.fromId(12187371840);
       BackgroundTransparency = 1;
-      TextSize = 30;
+      TextSize = 8;
       AutomaticSize = Enum.AutomaticSize.XY;
       Size = UDim2.new();
       TextColor3 = if secondsLeft and secondsLeft <= 60 then Colors.DemoDemonsRed else Color3.new(1, 1, 1);
