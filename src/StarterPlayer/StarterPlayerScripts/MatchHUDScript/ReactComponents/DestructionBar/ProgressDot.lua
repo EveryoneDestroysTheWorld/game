@@ -1,7 +1,7 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local CircleUICorner = require(script.Parent.CircleUICorner);
+local CircleUICorner = require(ReplicatedStorage.Client.ReactComponents.CircleUICorner);
 
 type ProgressDotProps = {
   teamColor: Color3?;
