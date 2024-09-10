@@ -4,8 +4,8 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local Colors = require(ReplicatedStorage.Client.Colors);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
-local HorizontalUIListLayout = require(script.CircleUICorner);
-local TeamDot = require(script.CircleUICorner);
+local HorizontalUIListLayout = require(script.HorizontalUIListLayout);
+local TeamDot = require(script.TeamDot);
 local ProgressDot = require(script.ProgressDot);
 
 type DestructionBarProps = {
@@ -153,7 +153,7 @@ local function DestructionBar(props: DestructionBarProps)
       LayoutOrder = 2;
     }, {
       UIListLayout = React.createElement(HorizontalUIListLayout);
-      ProgressDotList = getProgressDots();
+      ProgressDotList = React.createElement(React.Fragment, {}, getProgressDots());
     });
     Team2Destruction = React.createElement(TeamDot, {teamNumber = 2});
   });

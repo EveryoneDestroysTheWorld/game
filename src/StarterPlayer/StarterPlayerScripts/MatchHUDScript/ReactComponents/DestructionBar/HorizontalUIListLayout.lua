@@ -4,8 +4,13 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 
 local function HorizontalUIListLayout()
 
-  return React.createElement("UICorner", {
-    CornerRadius = UDim.new(1, 0);
+  return React.createElement("UIListLayout", {
+    SortOrder = Enum.SortOrder.LayoutOrder;
+    FillDirection = Enum.FillDirection.Horizontal;
+    Name = "UIListLayout";
+    Padding = UDim.new(0, 5);
+    VerticalAlignment = Enum.VerticalAlignment.Center;
+    HorizontalAlignment = Enum.HorizontalAlignment.Center;
   });
 
 end;
