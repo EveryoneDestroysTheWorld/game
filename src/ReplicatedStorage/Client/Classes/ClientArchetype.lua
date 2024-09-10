@@ -18,6 +18,8 @@ export type ClientArchetypeProperties = {
 
   breakdown: (self: ClientArchetype) -> ();
   
+  initialize: (self: ClientArchetype) -> ();
+  
 }
 
 local ClientArchetype = {}

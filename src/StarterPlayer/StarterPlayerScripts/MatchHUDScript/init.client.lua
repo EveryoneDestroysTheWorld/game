@@ -3,10 +3,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
-local DestructionBar = require(ReplicatedStorage.Client.ReactComponents.DestructionBar);
-local StatBarContainer = require(ReplicatedStorage.Client.ReactComponents.StatBarContainer);
-local CenteredRoundTimer = require(ReplicatedStorage.Client.ReactComponents.CenteredRoundTimer);
-local RoundTimer = require(ReplicatedStorage.Client.ReactComponents.RoundTimer);
+local DestructionBar = require(script.ReactComponents.DestructionBar);
+local StatBarContainer = require(script.ReactComponents.StatBarContainer);
+local CenteredRoundTimer = require(script.ReactComponents.CenteredRoundTimer);
+local RoundTimer = require(script.ReactComponents.RoundTimer);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 

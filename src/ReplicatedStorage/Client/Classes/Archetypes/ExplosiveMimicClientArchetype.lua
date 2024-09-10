@@ -11,9 +11,13 @@ local ExplosiveMimicClientArchetype = {
   actionIDs = {1, 2, 3, 4};
   type = "Destroyer" :: "Destroyer";
 };
-function ExplosiveMimicClientArchetype.new(contestant: ClientContestant): ClientArchetype
+function ExplosiveMimicClientArchetype.new(): ClientArchetype
 
   local function breakdown(self: ClientArchetype)
+
+  end;
+  
+  local function initialize(self: ClientArchetype)
 
   end;
 
@@ -25,6 +29,7 @@ function ExplosiveMimicClientArchetype.new(contestant: ClientContestant): Client
     actionIDs = ExplosiveMimicClientArchetype.actionIDs;
     type = ExplosiveMimicClientArchetype.type;
     breakdown = breakdown;
+    initialize = initialize;
   });
 
 end;

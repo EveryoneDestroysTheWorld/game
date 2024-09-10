@@ -17,41 +17,14 @@ local ExplosivePunchServerAction = {
   description = ExplosivePunchClientAction.description;
 };
 
-function ExplosivePunchServerAction.new(contestant: ServerContestant, round: ServerRound): ServerAction
-
-  assert(contestant.character, "No character");
+function ExplosivePunchServerAction.new(): ServerAction
+  
+  local contestant: ServerContestant = nil;
+  local round: ServerRound = nil;
 
   -- Set up the explosive parts.
   local explosiveParts = {};
-  local humanoid = contestant.character:FindFirstChild("Humanoid");
-  assert(humanoid and humanoid:IsA("Humanoid"), "Couldn't find contestant's humanoid");
-
-  local isHumanoidR15 = humanoid.RigType == Enum.HumanoidRigType.R15;
-  local leftHand = contestant.character:FindFirstChild(if isHumanoidR15 then "LeftHand" else "LeftArm");
-  local rightHand = contestant.character:FindFirstChild(if isHumanoidR15 then "RightHand" else "RightArm");
-  for _, hand in ipairs({leftHand, rightHand}) do
-
-    if hand and hand:IsA("BasePart") then
-
-      local explosivePart = Instance.new("Part");
-      explosivePart.Name = `{hand.Name}ExplosivePart`;
-      explosivePart.CanCollide = false;
-      explosivePart.Size = Vector3.new(1, 1, 1);
-      explosivePart.Transparency = 1;
-      explosivePart.Position = hand.CFrame.Position - (if not isHumanoidR15 then Vector3.new(0, hand.Size.Y / 2 + explosivePart.Size.Y / 2, 0) else Vector3.new(0, 1.5, 0));
-
-      local explosiveWeldConstraint = Instance.new("WeldConstraint");
-      explosiveWeldConstraint.Part0 = explosivePart;
-      explosiveWeldConstraint.Part1 = hand;
-      explosiveWeldConstraint.Parent = explosivePart;
-
-      explosivePart.Parent = contestant.character;
-
-      table.insert(explosiveParts, explosivePart);
-
-    end;
-
-  end;
+  local humanoid: Humanoid = nil;
 
   local latestActivationTimes = {0, 0};
   local currentAnimationTrack = nil;
@@ -159,39 +132,76 @@ function ExplosivePunchServerAction.new(contestant: ServerContestant, round: Ser
     
   end;
 
-  local action = ServerAction.new({
+  local function initialize(self: ServerAction, newContestant: ServerContestant, newRound: ServerRound)
+
+    contestant = newContestant;
+    round = newRound;
+
+    assert(contestant.character, "Character required");
+    local possibleHumanoid = contestant.character:FindFirstChild("Humanoid");
+    assert(possibleHumanoid and possibleHumanoid:IsA("Humanoid"), "Couldn't find contestant's humanoid");
+    humanoid = possibleHumanoid;
+    local isHumanoidR15 = humanoid.RigType == Enum.HumanoidRigType.R15;
+    local leftHand = contestant.character:FindFirstChild(if isHumanoidR15 then "LeftHand" else "LeftArm");
+    local rightHand = contestant.character:FindFirstChild(if isHumanoidR15 then "RightHand" else "RightArm");
+    for _, hand in ipairs({leftHand, rightHand}) do
+
+      if hand and hand:IsA("BasePart") then
+
+        local explosivePart = Instance.new("Part");
+        explosivePart.Name = `{hand.Name}ExplosivePart`;
+        explosivePart.CanCollide = false;
+        explosivePart.Size = Vector3.new(1, 1, 1);
+        explosivePart.Transparency = 1;
+        explosivePart.Position = hand.CFrame.Position - (if not isHumanoidR15 then Vector3.new(0, hand.Size.Y / 2 + explosivePart.Size.Y / 2, 0) else Vector3.new(0, 1.5, 0));
+
+        local explosiveWeldConstraint = Instance.new("WeldConstraint");
+        explosiveWeldConstraint.Part0 = explosivePart;
+        explosiveWeldConstraint.Part1 = hand;
+        explosiveWeldConstraint.Parent = explosivePart;
+
+        explosivePart.Parent = contestant.character;
+
+        table.insert(explosiveParts, explosivePart);
+
+      end;
+
+    end;
+
+    if contestant.player then
+    
+      actionRemoteFunction = Instance.new("RemoteFunction");
+      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+      actionRemoteFunction.OnServerInvoke = function(player, chargeMode: "charging" | "release")
+  
+        assert(not chargeMode or (typeof(chargeMode) == "string" and (chargeMode == "charging" or chargeMode == "release")), "Charge mode must be nil, \"charging\", or \"release\"");  
+  
+        if player == contestant.player then
+  
+          self:activate(chargeMode);
+  
+        else
+  
+          -- That's weird.
+          error("Unauthorized.");
+  
+        end
+  
+      end;
+      actionRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
+  
+    end;
+
+  end;
+
+  return ServerAction.new({
     ID = ExplosivePunchServerAction.ID;
     name = ExplosivePunchServerAction.name;
     description = ExplosivePunchServerAction.description;
     activate = activate;
     breakdown = breakdown;
+    initialize = initialize;
   });
-  
-  if contestant.player then
-    
-    actionRemoteFunction = Instance.new("RemoteFunction");
-    actionRemoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
-    actionRemoteFunction.OnServerInvoke = function(player, chargeMode: "charging" | "release")
-
-      assert(not chargeMode or (typeof(chargeMode) == "string" and (chargeMode == "charging" or chargeMode == "release")), "Charge mode must be nil, \"charging\", or \"release\"");  
-
-      if player == contestant.player then
-
-        action:activate(chargeMode);
-
-      else
-
-        -- That's weird.
-        error("Unauthorized.");
-
-      end
-
-    end;
-    actionRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
-
-  end;
-  
-  return action;
 
 end;
 

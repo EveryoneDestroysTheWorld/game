@@ -10,9 +10,13 @@ local UndeadConciousnessClientArchetype = {
   actionIDs = {};
   type = "Supporter" :: "Supporter";
 };
-function UndeadConciousnessClientArchetype.new(contestant: ClientContestant): ClientArchetype
+function UndeadConciousnessClientArchetype.new(): ClientArchetype
 
   local function breakdown(self: ClientArchetype)
+
+  end;
+
+  local function initialize(self: ClientArchetype)
 
   end;
 
@@ -24,6 +28,7 @@ function UndeadConciousnessClientArchetype.new(contestant: ClientContestant): Cl
     type = UndeadConciousnessClientArchetype.type;
     iconImage = "rbxassetid://130983727429334";
     breakdown = breakdown;
+    initialize = initialize;
   });
 
 end;

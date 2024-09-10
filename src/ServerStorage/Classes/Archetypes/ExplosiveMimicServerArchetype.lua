@@ -21,118 +21,11 @@ local ExplosiveMimicServerArchetype = {
   type = ExplosiveMimicClientArchetype.type;
 };
 
-function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: ServerRound, stageModel: Model): ServerArchetype
+function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
-  -- Set up the self-destruct.
-  local disqualificationEvent = contestant.onDisqualified:Connect(function()
-
-    if contestant.character then
-
-      -- Make the player progressively grow white for 3 seconds.
-      local highlight = Instance.new("Highlight");
-      highlight.FillTransparency = 1;
-      highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
-      highlight.FillColor = Color3.new(1, 1, 1);
-      highlight.Parent = contestant.character;
-      
-      local humanoid = contestant.character:FindFirstChild("Humanoid");
-      local changedEvent;
-      if humanoid and humanoid:IsA("Humanoid") then
-
-        local humanoidDescription = humanoid:GetAppliedDescription();
-        local sizeTween = TweenService:Create(humanoidDescription, TweenInfo.new(2.5), {
-          DepthScale = humanoidDescription.DepthScale * 1.5;
-          WidthScale = humanoidDescription.WidthScale * 1.5;
-          HeightScale = humanoidDescription.HeightScale * 1.5;
-          HeadScale = humanoidDescription.HeadScale * 1.5;
-        });
-        changedEvent = humanoidDescription.Changed:Connect(function()
-        
-          humanoid:ApplyDescription(humanoidDescription);
-
-        end)
-        sizeTween:Play();
-
-      end;
-
-      local tween = TweenService:Create(highlight, TweenInfo.new(3), {FillTransparency = 0});
-      tween.Completed:Connect(function()
-      
-        -- Engulf the player in an explosion.
-        local primaryPart = contestant.character.PrimaryPart;
-        assert(primaryPart, "PrimaryPart not found.");
-
-        local explosion = Instance.new("Explosion");
-        explosion.BlastPressure = 50000;
-        explosion.BlastRadius = 20;
-        explosion.DestroyJointRadiusPercent = 0;
-        explosion.Position = primaryPart.CFrame.Position - Vector3.new(0, 5, 0);
-        local hitContestants = {};
-        explosion.Hit:Connect(function(basePart)
-  
-          -- Damage any parts or contestants that get hit.
-          for _, possibleEnemyContestant in ipairs(round.contestants) do
-
-            task.spawn(function()
-
-              local possibleEnemyCharacter = possibleEnemyContestant.character;
-              if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
-
-                table.insert(hitContestants, possibleEnemyContestant);
-                local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
-                if enemyHumanoid then
-
-                  local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 50;
-                  possibleEnemyContestant:updateHealth(newHealth, {
-                    contestant = contestant;
-                    archetypeID = ExplosiveMimicServerArchetype.ID;
-                  });
-
-                end;
-
-              end;
-
-            end);
-
-          end;
-
-          local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
-          if basePartCurrentDurability and basePartCurrentDurability > 0 then
-  
-            ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 100, contestant);
-  
-          end;
-  
-        end);
-
-        if humanoid and humanoid:IsA("Humanoid") and changedEvent then
-
-          humanoid.AutomaticScalingEnabled = false;
-          for _, part in ipairs(contestant.character:GetDescendants()) do
-
-            if part:IsA("BasePart") then
-
-              part:SetNetworkOwner(nil);
-
-            end;
-
-          end;
-          humanoid.Health = 0;
-          humanoid:ChangeState(Enum.HumanoidStateType.Dead)
-          changedEvent:Disconnect();
-
-        end;
-
-        explosion.Parent = workspace;
-        highlight:Destroy();
-
-      end);
-
-      tween:Play();
-
-    end;
-
-  end)
+  local contestant: ServerContestant = nil;
+  local round: ServerRound = nil;
+  local disqualificationEvent: RBXScriptConnection;
 
   local function breakdown(self: ServerArchetype)
 
@@ -393,7 +286,8 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
           end;
 
           local visibleDestroyableParts = {};
-          for _, destroyablePart in ipairs(stageModel:GetChildren()) do
+          if not round.stage.model then continue end;
+          for _, destroyablePart in ipairs(round.stage.model:GetChildren()) do
 
             local currentDurability = destroyablePart:GetAttribute("CurrentDurability");
             if destroyablePart:IsA("BasePart") and currentDurability and currentDurability > 0 then
@@ -507,6 +401,123 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
 
   end;
 
+  local function initialize(self: ServerArchetype, newContestant: ServerContestant, newRound: ServerRound)
+
+    -- Set up the self-destruct.
+    contestant = newContestant;
+    round = newRound;
+    disqualificationEvent = contestant.onDisqualified:Connect(function()
+
+      if contestant.character then
+  
+        -- Make the player progressively grow white for 3 seconds.
+        local highlight = Instance.new("Highlight");
+        highlight.FillTransparency = 1;
+        highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
+        highlight.FillColor = Color3.new(1, 1, 1);
+        highlight.Parent = contestant.character;
+        
+        local humanoid = contestant.character:FindFirstChild("Humanoid");
+        local changedEvent;
+        if humanoid and humanoid:IsA("Humanoid") then
+  
+          local humanoidDescription = humanoid:GetAppliedDescription();
+          local sizeTween = TweenService:Create(humanoidDescription, TweenInfo.new(2.5), {
+            DepthScale = humanoidDescription.DepthScale * 1.5;
+            WidthScale = humanoidDescription.WidthScale * 1.5;
+            HeightScale = humanoidDescription.HeightScale * 1.5;
+            HeadScale = humanoidDescription.HeadScale * 1.5;
+          });
+          changedEvent = humanoidDescription.Changed:Connect(function()
+          
+            humanoid:ApplyDescription(humanoidDescription);
+  
+          end)
+          sizeTween:Play();
+  
+        end;
+  
+        local tween = TweenService:Create(highlight, TweenInfo.new(3), {FillTransparency = 0});
+        tween.Completed:Connect(function()
+        
+          -- Engulf the player in an explosion.
+          local primaryPart = contestant.character.PrimaryPart;
+          assert(primaryPart, "PrimaryPart not found.");
+  
+          local explosion = Instance.new("Explosion");
+          explosion.BlastPressure = 50000;
+          explosion.BlastRadius = 20;
+          explosion.DestroyJointRadiusPercent = 0;
+          explosion.Position = primaryPart.CFrame.Position - Vector3.new(0, 5, 0);
+          local hitContestants = {};
+          explosion.Hit:Connect(function(basePart)
+    
+            -- Damage any parts or contestants that get hit.
+            for _, possibleEnemyContestant in ipairs(round.contestants) do
+  
+              task.spawn(function()
+  
+                local possibleEnemyCharacter = possibleEnemyContestant.character;
+                if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
+  
+                  table.insert(hitContestants, possibleEnemyContestant);
+                  local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
+                  if enemyHumanoid then
+  
+                    local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 50;
+                    possibleEnemyContestant:updateHealth(newHealth, {
+                      contestant = contestant;
+                      archetypeID = ExplosiveMimicServerArchetype.ID;
+                    });
+  
+                  end;
+  
+                end;
+  
+              end);
+  
+            end;
+  
+            local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
+            if basePartCurrentDurability and basePartCurrentDurability > 0 then
+    
+              ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 100, contestant);
+    
+            end;
+    
+          end);
+  
+          if humanoid and humanoid:IsA("Humanoid") and changedEvent then
+  
+            humanoid.AutomaticScalingEnabled = false;
+            for _, part in ipairs(contestant.character:GetDescendants()) do
+  
+              if part:IsA("BasePart") then
+  
+                part:SetNetworkOwner(nil);
+  
+              end;
+  
+            end;
+            humanoid.Health = 0;
+            humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+            changedEvent:Disconnect();
+  
+          end;
+  
+          explosion.Parent = workspace;
+          highlight:Destroy();
+  
+        end);
+  
+        tween:Play();
+  
+      end;
+  
+    end);
+
+  end;
+
   return ServerArchetype.new({
     ID = ExplosiveMimicServerArchetype.ID;
     name = ExplosiveMimicServerArchetype.name;
@@ -515,6 +526,7 @@ function ExplosiveMimicServerArchetype.new(contestant: ServerContestant, round: 
     type = ExplosiveMimicServerArchetype.type;
     breakdown = breakdown;
     runAutoPilot = runAutoPilot;
+    initialize = initialize;
   });
 
 end;

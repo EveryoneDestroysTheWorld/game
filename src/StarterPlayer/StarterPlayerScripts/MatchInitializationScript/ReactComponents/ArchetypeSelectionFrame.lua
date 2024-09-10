@@ -6,8 +6,9 @@ local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype
 type ClientArchetype = ClientArchetype.ClientArchetype;
 local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
 type ClientAction = ClientAction.ClientAction;
-local Colors = require(ReplicatedStorage.Client.Colors);
 local Button = require(ReplicatedStorage.Client.ReactComponents.Button);
+local ArchetypeCategoryFrame = require(script.Parent.ArchetypeCategoryFrame);
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
 type ArchetypeInformationFrameProps = {
   selectedArchetype: ClientArchetype?;
@@ -59,98 +60,17 @@ local function ArchetypeSelectionFrame(props: ArchetypeInformationFrameProps)
   local archetypeCategoryFrames = {};
   for type, archetypes in pairs(archetypeCategories) do
 
-    local archetypeButtons = {};
-    for _, archetype in ipairs(archetypes) do
-
-      table.insert(archetypeButtons, React.createElement("TextButton", {
-        ClipsDescendants = true;
-        Name = `Archetype{archetype.ID}`;
-        BackgroundTransparency = 0.55;
-        BackgroundColor3 = Color3.new(0, 0, 0);
-        Text = "";
-        Size = UDim2.new(0, 70, 0, 70);
-        [React.Event.Activated] = function()
-
-          props.onSelectionChanged(archetype);
-
-        end;
-      }, {
-        UICorner = React.createElement("UICorner", {
-          CornerRadius = UDim.new(1, 0);
-        });
-        UIStroke = React.createElement("UIStroke", {
-          Color = if props.selectedArchetype and props.selectedArchetype.ID == archetype.ID then Colors.DemoDemonsOrange else Colors.PopupBorder;
-          Thickness = 2;
-          ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
-          Transparency = if props.isConfirmingArchetype then 0.6 else 0;
-        });
-        ImageLabel = React.createElement("ImageLabel", {
-          AnchorPoint = Vector2.new(0.5, 0.5);
-          Image = archetype.iconImage;
-          Position = UDim2.new(0, 20, 1, -15);
-          Size = UDim2.new(1, 15, 1, 15);
-          BackgroundTransparency = 1;
-          ImageTransparency = if props.isConfirmingArchetype then 0.6 else 0; 
-        })
-      }));
-    end;
-
-    table.insert(archetypeCategoryFrames, React.createElement("Frame", {
-      Name = `{type}Frame`;
-      BackgroundTransparency = 0.55;
-      AutomaticSize = Enum.AutomaticSize.XY;
-      BackgroundColor3 = Color3.new(0, 0, 0);
-      Size = UDim2.new();
-    }, {
-      UIListLayout = React.createElement("UIListLayout", {
-        Padding = UDim.new(0, 15);
-        SortOrder = Enum.SortOrder.LayoutOrder;
-        VerticalFlex = Enum.UIFlexAlignment.SpaceBetween;
-        VerticalAlignment = Enum.VerticalAlignment.Center;
-        HorizontalAlignment = Enum.HorizontalAlignment.Center;
-      });
-      UICorner = React.createElement("UICorner", {
-        CornerRadius = UDim.new(0, 5);
-      });
-      UIStroke = React.createElement("UIStroke", {
-        Color = Colors.PopupBorder;
-        Thickness = 1;
-      });
-      UIPadding = React.createElement("UIPadding", {
-        PaddingBottom = UDim.new(0, 15);
-        PaddingLeft = UDim.new(0, 15);
-        PaddingRight = UDim.new(0, 15);
-        PaddingTop = UDim.new(0, 15);
-      });
-      ArchetypeButtonListFrame = React.createElement("Frame", {
-        AutomaticSize = Enum.AutomaticSize.XY;
-        LayoutOrder = 1;
-        Size = UDim2.new();
-        BackgroundTransparency = 1;
-      }, {
-        React.createElement("UIListLayout", {
-          Padding = UDim.new(0, 15);
-          SortOrder = Enum.SortOrder.LayoutOrder;
-          FillDirection = Enum.FillDirection.Horizontal;
-          VerticalAlignment = Enum.VerticalAlignment.Center;
-          Wraps = true;
-          HorizontalAlignment = Enum.HorizontalAlignment.Center;
-        });
-        archetypeButtons;
-      });
-      ArchetypeClassNameLabel = React.createElement("TextLabel", {
-        Text = type:upper();
-        AutomaticSize = Enum.AutomaticSize.XY;
-        Size = UDim2.new();
-        LayoutOrder = 2;
-        TextSize = 14;
-        BackgroundTransparency = 1;
-        FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
-        TextColor3 = Colors.ParagraphText;
-      });
-    }));
+    archetypeCategoryFrames[`{type}Frame`] = React.createElement(ArchetypeCategoryFrame, {
+      type = type;
+      archetypes = archetypes;
+      isDisabled = props.isConfirmingArchetype;
+      selectedArchetype = props.selectedArchetype;
+      onArchetypeSelected = props.onSelectionChanged;
+    });
 
   end;
+
+  local shouldUseFullSpacing = useResponsiveDesign({minimumWidth = 700});
 
   return React.createElement("Frame", {
     AutomaticSize = Enum.AutomaticSize.Y;
@@ -161,12 +81,13 @@ local function ArchetypeSelectionFrame(props: ArchetypeInformationFrameProps)
   }, {
     UIListLayout = React.createElement("UIListLayout", {
       SortOrder = Enum.SortOrder.LayoutOrder;
-      Padding = UDim.new(0, 15);
+      Padding = UDim.new(0, if shouldUseFullSpacing then 15 else 5);
       HorizontalAlignment = Enum.HorizontalAlignment.Center;
     });
     ConfirmButton = React.createElement(Button, {
       text = "CONFIRM";
       LayoutOrder = 1;
+      textSize = if shouldUseFullSpacing then 12 else 8;
       isDisabled = props.isConfirmingArchetype or props.selectedArchetype == nil or props.selectedArchetype.ID == confirmedArchetypeID;
       onClick = function()
 
@@ -183,7 +104,7 @@ local function ArchetypeSelectionFrame(props: ArchetypeInformationFrameProps)
       UIListLayout = React.createElement("UIListLayout", {
         SortOrder = Enum.SortOrder.LayoutOrder;
         FillDirection = Enum.FillDirection.Horizontal;
-        Padding = UDim.new(0, 15);
+        Padding = UDim.new(0, if shouldUseFullSpacing then 15 else 5);
         HorizontalAlignment = Enum.HorizontalAlignment.Center;
       });
       ArchetypeCategoryFrames = React.createElement(React.Fragment, {}, archetypeCategoryFrames);

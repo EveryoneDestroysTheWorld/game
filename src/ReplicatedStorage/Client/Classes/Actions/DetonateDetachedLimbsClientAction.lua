@@ -32,6 +32,20 @@ function DetonateDetachedLimbsClientAction.new(): ClientAction
 
   end;
 
+  local function initialize(self: ClientAction)
+
+    ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
+      onActivate = function() 
+        
+        self:activate() 
+      
+      end;
+      shortcutCharacter = "L";
+      iconImage = "rbxassetid://17771918066";
+    }));
+
+  end;
+
   local action = ClientAction.new({
     ID = DetonateDetachedLimbsClientAction.ID;
     iconImage = DetonateDetachedLimbsClientAction.iconImage;
@@ -39,14 +53,9 @@ function DetonateDetachedLimbsClientAction.new(): ClientAction
     description = DetonateDetachedLimbsClientAction.description;
     activate = activate;
     breakdown = breakdown;
+    initialize = initialize;
   });
-
-  ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
-    onActivate = function() action:activate() end;
-    shortcutCharacter = "L";
-    iconImage = "rbxassetid://17771918066";
-  }));
-
+  
   return action;
 
 end

@@ -1,9 +1,8 @@
 --!strict
-local TweenService = game:GetService("TweenService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local PathfindingService = game:GetService("PathfindingService");
-local InsertService = game:GetService("InsertService")
+local InsertService = game:GetService("InsertService");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local DraconicKnightClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.DraconicKnightClientArchetype);
@@ -22,18 +21,10 @@ local DraconicKnightServerArchetype = {
   type = DraconicKnightClientArchetype.type;
 };
 
-local function setUpPropsDragonKnight(model)
-  local wingsProp = InsertService:LoadAsset(76933185156855)
-  wingsProp:FindFirstChild("WingProp").Parent = model
-  wingsProp:Destroy()
-  model.WingProp.Root.RigidConstraint.Attachment1 = model:FindFirstChild("BodyBackAttachment", true)
-end
+function DraconicKnightServerArchetype.new(): ServerArchetype
 
-
-function DraconicKnightServerArchetype.new(contestant: ServerContestant, round: ServerRound, stageModel: Model): ServerArchetype
-setUpPropsDragonKnight(contestant["character"])
-
-
+  local contestant: ServerContestant = nil;
+  local round: ServerRound = nil;
 
   local function breakdown(self: ServerArchetype)
 
@@ -53,6 +44,22 @@ setUpPropsDragonKnight(contestant["character"])
 
   end;
 
+  local function initialize(self: ServerArchetype, newContestant: ServerContestant, newRound: ServerRound)
+
+    contestant = newContestant;
+    round = newRound;
+    
+    local function setUpPropsDragonKnight(model)
+      local wingsProp = InsertService:LoadAsset(76933185156855)
+      wingsProp:FindFirstChild("WingProp").Parent = model
+      wingsProp:Destroy()
+      model.WingProp.Root.RigidConstraint.Attachment1 = model:FindFirstChild("BodyBackAttachment", true)
+    end
+      
+    setUpPropsDragonKnight(contestant["character"])
+
+  end;
+
   return ServerArchetype.new({
     ID = DraconicKnightServerArchetype.ID;
     name = DraconicKnightServerArchetype.name;
@@ -61,6 +68,7 @@ setUpPropsDragonKnight(contestant["character"])
     type = DraconicKnightServerArchetype.type;
     breakdown = breakdown;
     runAutoPilot = runAutoPilot;
+    initialize = initialize;
   });
 
 end;

@@ -5,25 +5,27 @@ local Players = game:GetService("Players");
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 type ClientRound = ClientRound.ClientRound;
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
-type MatchInitializationHeaderProps = {
+export type MatchInitializationHeaderProps = {
   round: ClientRound;
 }
 
 local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
 
   local anchorPointY, setAnchorPointY = React.useState(0);
+  local shouldUseMaximumSize = useResponsiveDesign({minimumHeight = 500});
   local textSizes, setTextSizes = React.useState({
-    subtitle = 14;
-    title = 30;
-    tagline = 18;
+    subtitle = if shouldUseMaximumSize then 14 else 8;
+    title = if shouldUseMaximumSize then 30 else 10;
+    tagline = if shouldUseMaximumSize then 18 else 7;
   });
   local titleColor, setTitleColor = React.useState(Color3.fromRGB(255, 94, 97));
   local taglineColor, setTaglineColor = React.useState(Color3.fromRGB(199, 199, 199));
   local textTransparency, setTextTransparency = React.useState(0);
   React.useEffect(function()
   
-    props.round.onStatusChanged:Connect(function()
+    local onStatusChangedEvent = props.round.onStatusChanged:Connect(function()
     
       if props.round.status == "Matchup preview" then
 
@@ -49,9 +51,9 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
               onChange = function(newValue)
 
                 setTextSizes({
-                  subtitle = textSizes.subtitle + 6 * newValue;
-                  title = textSizes.title + 30 * newValue;
-                  tagline = textSizes.tagline + 6 * newValue;
+                  subtitle = textSizes.subtitle + (if shouldUseMaximumSize then 6 else 2) * newValue;
+                  title = textSizes.title + (if shouldUseMaximumSize then 30 else 5) * newValue;
+                  tagline = textSizes.tagline + (if shouldUseMaximumSize then 6 else 2) * newValue;
                 });
 
               end;
@@ -109,6 +111,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
 
     return function()
 
+      onStatusChangedEvent:Disconnect();
       characterAddedEvent:Disconnect();
 
     end;
@@ -132,7 +135,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
     }, {
       UIListLayout = React.createElement("UIListLayout", {
         SortOrder = Enum.SortOrder.LayoutOrder;
-        Padding = UDim.new(0, 5);
+        Padding = UDim.new(0, if shouldUseMaximumSize then 5 else 1);
         HorizontalAlignment = Enum.HorizontalAlignment.Center;
       });
       SubtitleLabel = React.createElement("TextLabel", {

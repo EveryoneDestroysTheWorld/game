@@ -10,6 +10,7 @@ export type ActionProperties = {
   description: string;
   activate: (self: ServerAction, ...any) -> ();
   breakdown: (self: ServerAction) -> ();
+  initialize: (self: ServerAction, ...any) -> ();
 };
 
 export type ActionEvents = {
@@ -38,7 +39,7 @@ function ServerAction.new(properties: ActionProperties): ServerAction
   
 end
 
-function ServerAction.get(actionID: number, contestant: ServerContestant, ...: any): ServerAction
+function ServerAction.get(actionID: number): ServerAction
 
   for _, instance in ipairs(script.Parent.Actions:GetChildren()) do
   
@@ -47,7 +48,7 @@ function ServerAction.get(actionID: number, contestant: ServerContestant, ...: a
       local action = require(instance) :: any;
       if action.ID == actionID then
   
-        return action.new(contestant, ...);
+        return action.new();
   
       end;
   
