@@ -29,13 +29,11 @@ local function DestructionBar(props: DestructionBarProps)
 
     end;
     
-    print("Connect")
     local updateEvent = ReplicatedStorage.Shared.Events.GameModeStatsUpdated.OnClientEvent:Connect(updateBar)
     updateBar();
 
     return function()
 
-      print("Dis");
       updateEvent:Disconnect();
 
     end;

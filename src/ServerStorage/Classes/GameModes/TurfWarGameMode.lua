@@ -89,7 +89,6 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
               local destroyerID = child:GetAttribute("DestroyerID") :: number?;
               if destroyerID then
 
-                print("FIRE")
                 stats.contestants[tostring(destroyerID)].partsDestroyed += 1;
                 stats.contestants[tostring(destroyerID)].partsClaimed += 1;
                 ReplicatedStorage.Shared.Events.GameModeStatsUpdated:FireAllClients();
