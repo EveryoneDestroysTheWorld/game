@@ -4,6 +4,7 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
 type TeammateCardListProps = {
   layoutOrder: number;
@@ -126,6 +127,8 @@ local function TeammateCardList(props: TeammateCardListProps)
 
   end, {props.shouldHide :: any, props.layoutOrder});
 
+  local shouldUseMaximumSpacing = useResponsiveDesign({minimumHeight = 300});
+
   return React.createElement("Frame", {
     AnchorPoint = Vector2.new(if props.layoutOrder == 1 then 0 else 1, 0.5);
     AutomaticSize = Enum.AutomaticSize.XY;
@@ -134,12 +137,12 @@ local function TeammateCardList(props: TeammateCardListProps)
     Size = UDim2.new();
     LayoutOrder = props.layoutOrder;
   }, {
-    React.createElement("UIListLayout", {
+    UIListLayout = React.createElement("UIListLayout", {
       SortOrder = Enum.SortOrder.LayoutOrder;
-      Padding = UDim.new(0, 1);
+      Padding = UDim.new(0, if shouldUseMaximumSpacing then 15 else 1);
       HorizontalAlignment = if props.layoutOrder == 2 then Enum.HorizontalAlignment.Right else nil;
     });
-    React.createElement(React.Fragment, {}, props.children);
+    Children = React.createElement(React.Fragment, {}, props.children);
   })
 
 end;
