@@ -34,11 +34,13 @@ ReplicatedStorage.Shared.Functions.InitializeInventory.OnClientInvoke = function
 
   -- Set up the archetype and actions.
   currentArchetype = ClientArchetype.get(archetypeID);
+  currentArchetype:initialize();
   print(`Archetype active: {currentArchetype.name}`);
 
   for _, actionID in ipairs(currentArchetype.actionIDs) do
 
     local action = ClientAction.get(actionID);
+    action:initialize();
     print(`Action active: {action.name}`);
     table.insert(currentActions, action);
 

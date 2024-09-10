@@ -1,9 +1,8 @@
 --!strict
--- Writer: Christian Toney (Sudobeast)
--- Designer: Christian Toney (Sudobeast)
+-- Writer: Christian Toney (Christian_Toney)
+-- Designer: Christian Toney (Christian_Toney)
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
-local Players = game:GetService("Players");
 local GameMode = require(script.Parent.Parent.GameMode);
 type GameMode = GameMode.GameMode;
 local HttpService = game:GetService("HttpService");

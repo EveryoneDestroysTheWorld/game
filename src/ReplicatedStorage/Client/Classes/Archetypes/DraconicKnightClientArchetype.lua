@@ -13,9 +13,13 @@ local DraconicKnightClientArchetype = {
   type = "Defender" :: "Defender";
 };
 
-function DraconicKnightClientArchetype.new(contestant: ClientContestant): ClientArchetype
+function DraconicKnightClientArchetype.new(): ClientArchetype
 
   local function breakdown(self: ClientArchetype)
+
+  end;
+
+  local function initialize(self: ClientArchetype)
 
   end;
 
@@ -27,6 +31,7 @@ function DraconicKnightClientArchetype.new(contestant: ClientContestant): Client
     actionIDs = DraconicKnightClientArchetype.actionIDs;
     type = DraconicKnightClientArchetype.type;
     breakdown = breakdown;
+    initialize = initialize;
   });
 
 end;
