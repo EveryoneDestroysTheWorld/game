@@ -10,7 +10,6 @@ local Colors = require(ReplicatedStorage.Client.Colors);
 type ClientArchetype = ClientArchetype.ClientArchetype;
 local Players = game:GetService("Players");
 local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
-local NameLabel = require(script.Parent.NameLabel)
 
 type TeammateCardProps = {
   contestant: ClientContestant?;
@@ -19,6 +18,28 @@ type TeammateCardProps = {
   round: ClientRound?;
   uiPaddingRightOffset: number?;
 }
+
+type NameLabelProps = {
+  name: string;
+  type: "Username" | "Display Name";
+}
+
+local function NameLabel(props: NameLabelProps)
+
+  return React.createElement("TextLabel", {
+    BackgroundTransparency = 1;
+    AutomaticSize = Enum.AutomaticSize.XY;
+    Size = UDim2.new();
+    Text = props.name;
+    FontFace = Font.fromId(11702779517, if props.type == "Display Name" then Enum.FontWeight.Heavy else Enum.FontWeight.Medium);
+    TextSize = if props.type == "Display Name" then 20 else 14;
+    TextColor3 = if props.type == "Display Name" then Color3.new(1, 1, 1) else Color3.fromRGB(208, 208, 208);
+    LayoutOrder = if props.type == "Display Name" then 1 else 2;
+    TextTruncate = Enum.TextTruncate.AtEnd;
+    TextXAlignment = Enum.TextXAlignment.Left;
+  });
+
+end;
 
 local function TeammateCard(props: TeammateCardProps)
 
@@ -84,7 +105,8 @@ local function TeammateCard(props: TeammateCardProps)
   end, {props.contestant});
 
 
-  local contestantBannerSizeXOffset = 100;
+  local contestantBannerSizeXOffset = React.useState(300);
+  
   local avatarUIPaddingRef = React.useRef(nil);
   local tcfUIPaddingRef = React.useRef(nil);
   local statusLabelRef = React.useRef(nil);
@@ -190,8 +212,8 @@ local function TeammateCard(props: TeammateCardProps)
     local statusLabel: TextLabel? = statusLabelRef.current;
     if contestantBannerImageLabel and statusLabel then
 
-      contestantBannerImageLabel.Size = UDim2.new(0, contestantBannerSizeXOffset, 0, if props.round and props.round.status == "Waiting for players" then 100 else 10);
-      statusLabel.Size = UDim2.new(0, contestantBannerSizeXOffset, 0, 5);
+      contestantBannerImageLabel.Size = UDim2.new(0, contestantBannerSizeXOffset, 0, if props.round and props.round.status == "Waiting for players" then 100 else 30);
+      statusLabel.Size = UDim2.new(0, contestantBannerSizeXOffset, 0, 17)
 
     end;
 
@@ -222,7 +244,6 @@ local function TeammateCard(props: TeammateCardProps)
     end;
 
   end;
-
   return React.createElement("Frame", {
     BackgroundTransparency = 1;
     AutomaticSize = Enum.AutomaticSize.XY;
@@ -261,7 +282,7 @@ local function TeammateCard(props: TeammateCardProps)
           Text = statusLabelText;
           TextTransparency = if props.contestant then transparency or 0 else 0.5 + (transparency or 0);
           TextColor3 = if props.isRival then Color3.fromRGB(255, 117, 117) else Color3.new(1, 1, 1);
-          TextSize = 5;
+          TextSize = 17;
           FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
           TextXAlignment = if props.isRival then Enum.TextXAlignment.Right else Enum.TextXAlignment.Left;
           TextTruncate = Enum.TextTruncate.AtEnd;
