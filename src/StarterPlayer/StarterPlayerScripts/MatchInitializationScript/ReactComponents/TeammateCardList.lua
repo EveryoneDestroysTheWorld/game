@@ -11,21 +11,32 @@ type TeammateCardListProps = {
 
 local function TeammateCardList(props: TeammateCardListProps)
 
-  local isTweening, setIsTweening = React.useState(false);
   local containerRef = React.useRef(nil :: GuiObject?);
-  local finalTweenedPosition, setFinalTweenedPosition = React.useState(nil :: UDim2?);
+  React.useEffect(function()
+  
+    local container = containerRef.current;
+    if container then
+
+      container.Position = UDim2.new(1, if props.shouldHide then 100 else 0, 0.5, 0);
+
+    end;
+    
+  end, {});
+
   React.useEffect(function(): ()
   
-    if props.layoutOrder == 2 then 
+    local container = containerRef.current;
+    if container and props.layoutOrder == 1 then 
+      
+      container.Position = UDim2.new(0, 0, 0.5, 0);
+    
+    elseif props.layoutOrder == 2 then 
 
-      local container = containerRef.current;
       if container then
 
-        setIsTweening(true);
-        local position;
         local tween = dataTypeTween({
           type = "Number";
-          goalValue = if props.shouldHide then 300 else 0;
+          goalValue = if props.shouldHide then 100 else 0;
           initialValue = container.Position.X.Offset;
           tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
           onChange = function(newValue: number)
@@ -34,27 +45,14 @@ local function TeammateCardList(props: TeammateCardListProps)
             container = containerRef.current;
             if container then
 
-              container.Position = UDim2.new(1, newValue, 0.5, 0);
-              position = container.Position;
-              if container:IsA("CanvasGroup") then
-
-                container.GroupTransparency = newValue / 300;
-
-              end;
+              container.Position = UDim2.new(container.Position.X.Scale, newValue, container.Position.Y.Scale, container.Position.Y.Offset);
 
             end;
 
           end;
         });
-        
-        tween.Completed:Once(function()
-        
-          setFinalTweenedPosition(position);
-          setIsTweening(false);
 
-        end);
-
-        tween:Play()
+        tween:Play();
 
         return function()
   
@@ -68,11 +66,10 @@ local function TeammateCardList(props: TeammateCardListProps)
 
   end, {props.shouldHide :: any, props.layoutOrder});
 
-  return React.createElement(if isTweening then "CanvasGroup" else "Frame", {
+  return React.createElement("Frame", {
     AnchorPoint = Vector2.new(if props.layoutOrder == 1 then 0 else 1, 0.5);
     AutomaticSize = Enum.AutomaticSize.XY;
     ref = containerRef;
-    Position = if props.layoutOrder == 1 then UDim2.new(0, 0, 0.5, 0) elseif finalTweenedPosition and not isTweening then finalTweenedPosition else nil;
     BackgroundTransparency = 1;
     Size = UDim2.new();
     LayoutOrder = props.layoutOrder;

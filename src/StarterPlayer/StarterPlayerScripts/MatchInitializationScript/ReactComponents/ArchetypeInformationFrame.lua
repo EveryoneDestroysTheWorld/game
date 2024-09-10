@@ -53,19 +53,26 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
   end, {props.selectedArchetype :: any, selectedAction});
 
   local containerRef = React.useRef(nil :: GuiObject?);
-  local isTweening, setIsTweening = React.useState(false);
-  local finalTweenPosition, setFinalTweenPosition = React.useState(nil :: UDim2?)
+  React.useEffect(function()
+  
+    local container = containerRef.current;
+    if container then
+
+      container.Position = UDim2.new(1, if props.shouldHide then 100 else 0, 0.5, 0);
+
+    end;
+    
+  end, {});
+
   React.useEffect(function(): ()
   
     local container = containerRef.current;
     if container then
 
-      setIsTweening(true);
-      local position;
       local tween = dataTypeTween({
         type = "Number";
-        goalValue = if props.shouldHide then 300 else 0;
-        initialValue = if props.shouldHide then 0 else -300;
+        initialValue = container.Position.X.Offset;
+        goalValue = if props.shouldHide then 100 else 0;
         tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
         onChange = function(newValue: number)
 
@@ -73,25 +80,12 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
           container = containerRef.current;
           if container then
 
-            container.Position = UDim2.new(1, newValue, 0.5, 0);
-            position = container.Position;
-            if container:IsA("CanvasGroup") then
-
-              container.GroupTransparency = math.abs(newValue) / 300;
-
-            end;
+            container.Position = UDim2.new(container.Position.X.Scale, newValue, container.Position.Y.Scale, container.Position.Y.Offset);
 
           end;
 
         end;
       });
-      
-      tween.Completed:Once(function()
-      
-        setFinalTweenPosition(position);
-        setIsTweening(false);
-
-      end);
 
       tween:Play();
 
@@ -105,11 +99,10 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
 
   end, {props.shouldHide});
 
-  return React.createElement(if isTweening then "CanvasGroup" else "Frame", {
+  return React.createElement("Frame", {
     AnchorPoint = Vector2.new(1, 0.5);
     BackgroundTransparency = 1;
     ref = containerRef;
-    Position = if isTweening then nil else finalTweenPosition;
     AutomaticSize = Enum.AutomaticSize.XY;
     LayoutOrder = 2;
   }, {

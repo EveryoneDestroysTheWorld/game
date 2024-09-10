@@ -82,16 +82,14 @@ local function TeammateCard(props: TeammateCardProps)
 
   end, {props.contestant});
 
-
   local contestantBannerSizeXOffset = React.useState(100);
-  
   local avatarImageLabelRef = React.useRef(nil :: ImageLabel?);
   local tcfUIPaddingRef = React.useRef(nil);
-  local statusLabelRef = React.useRef(nil);
   local contestantBannerImageLabelRef = React.useRef(nil);
+  
   React.useEffect(function()
   
-    task.spawn(function()
+    task.spawn(function(): ()
 
       local avatarImageLabel = avatarImageLabelRef.current;
       local tcfUIPadding: UIPadding? = tcfUIPaddingRef.current;
@@ -111,13 +109,14 @@ local function TeammateCard(props: TeammateCardProps)
             end;
           }):Play();
 
-        elseif roundStatus == "Matchup preview" then
+        elseif roundStatus == "Matchup preview"  then
 
           local goalValue = 10 * (props.layoutOrder - 1) + 5;
-          dataTypeTween({
+          local initialPaddingTween = dataTypeTween({
             type = "Number";
             tweenInfo = TweenInfo.new(3, Enum.EasingStyle.Sine);
             goalValue = goalValue;
+            initialValue = 0;
             onChange = function(newValue)
 
               if props.isRival then
@@ -131,7 +130,7 @@ local function TeammateCard(props: TeammateCardProps)
               end;
 
             end;
-          }):Play();
+          });
 
           task.delay(5, function()
           
@@ -156,7 +155,7 @@ local function TeammateCard(props: TeammateCardProps)
               type = "Number";
               initialValue = goalValue;
               tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Sine);
-              goalValue = -60;
+              goalValue = 0;
               onChange = function(newValue)
 
                 if props.isRival then
@@ -173,6 +172,14 @@ local function TeammateCard(props: TeammateCardProps)
             }):Play();
 
           end);
+
+          initialPaddingTween:Play();
+
+          return function()
+
+            initialPaddingTween:Cancel();
+
+          end;
         
         end;
 
@@ -264,6 +271,9 @@ local function TeammateCard(props: TeammateCardProps)
           UIPadding = React.createElement("UIPadding", {
             PaddingLeft = UDim.new(0, 5);
             PaddingRight = UDim.new(0, 5);
+          });
+          UISizeConstraint = React.createElement("UISizeConstraint", {
+            MaxSize = Vector2.new(math.huge, 100);
           });
         });
         ContestantBannerImageLabel = React.createElement("ImageLabel", {

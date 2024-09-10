@@ -23,7 +23,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
   local textTransparency, setTextTransparency = React.useState(0);
   React.useEffect(function()
   
-    props.round.onStatusChanged:Connect(function()
+    local onStatusChangedEvent = props.round.onStatusChanged:Connect(function()
     
       if props.round.status == "Matchup preview" then
 
@@ -109,6 +109,7 @@ local function MatchInitializationHeader(props: MatchInitializationHeaderProps)
 
     return function()
 
+      onStatusChangedEvent:Disconnect();
       characterAddedEvent:Disconnect();
 
     end;
