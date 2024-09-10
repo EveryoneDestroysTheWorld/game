@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 local Players = game:GetService("Players");
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
 type StatBarProps = {
   type: "Health" | "Stamina";
@@ -14,8 +15,21 @@ local function StatBar(props: StatBarProps)
   local containerRef = React.useRef(nil :: Frame?);
   local textLabelRef = React.useRef(nil :: TextLabel?);
   local currentStatBarRef = React.useRef(nil :: Frame?);
+  local isTweening, setIsTweening = React.useState(false);
 
   local isHealthBar = props.type == "Health";
+  local shouldUseFullLength = useResponsiveDesign({minimumWidth = 800});
+
+  React.useEffect(function()
+  
+    local container = containerRef.current;
+    if not isTweening and container then
+
+      container.Size = UDim2.new(container.Size.X.Scale, if shouldUseFullLength then 200 else 70, container.Size.Y.Scale, container.Size.Y.Offset);
+
+    end;
+
+  end, {isTweening, shouldUseFullLength});
 
   React.useEffect(function(): ()
   
@@ -24,11 +38,11 @@ local function StatBar(props: StatBarProps)
     local textLabel = textLabelRef.current;
     if container and currentStatBar and textLabel then
 
+      setIsTweening(true);
       textLabel.Transparency = 1;
-
       dataTypeTween({
         type = "Number";
-        goalValue = 70;
+        goalValue = if shouldUseFullLength then 200 else 70;
         onChange = function(newValue: number)
 
           container.Size = UDim2.new(container.Size.X.Scale, newValue, container.Size.Y.Scale, container.Size.Y.Offset);
@@ -49,6 +63,7 @@ local function StatBar(props: StatBarProps)
 
       tween.Completed:Connect(function()
       
+        setIsTweening(false);
         dataTypeTween({
           type = "Number";
           initialValue = 1;
