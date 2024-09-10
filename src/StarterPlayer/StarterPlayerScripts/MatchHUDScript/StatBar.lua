@@ -28,7 +28,7 @@ local function StatBar(props: StatBarProps)
 
       dataTypeTween({
         type = "Number";
-        goalValue = 200;
+        goalValue = 70;
         onChange = function(newValue: number)
 
           container.Size = UDim2.new(container.Size.X.Scale, newValue, container.Size.Y.Scale, container.Size.Y.Offset);
@@ -130,7 +130,7 @@ local function StatBar(props: StatBarProps)
       BackgroundTransparency = 1;
       AutomaticSize = Enum.AutomaticSize.XY;
       FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
-      TextSize = 14;
+      TextSize = 8;
       TextColor3 = Color3.new(1, 1, 1);
       ref = textLabelRef;
       LayoutOrder = 1;
@@ -140,7 +140,7 @@ local function StatBar(props: StatBarProps)
       BorderSizePixel = 0;
       AnchorPoint = Vector2.new(if isHealthBar then 1 else 0, 0);
       BackgroundTransparency = 0.7;
-      Size = UDim2.new(1, 0, 0, 5);
+      Size = UDim2.new(1, 0, 0, 3);
       LayoutOrder = 2;
     }, {
       CurrentStat = React.createElement("Frame", {
