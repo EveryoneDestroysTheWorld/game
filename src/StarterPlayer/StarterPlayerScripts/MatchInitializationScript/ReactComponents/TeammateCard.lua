@@ -11,6 +11,7 @@ type ClientArchetype = ClientArchetype.ClientArchetype;
 local Players = game:GetService("Players");
 local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 local NameLabel = require(script.Parent.NameLabel);
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
 type TeammateCardProps = {
   contestant: ClientContestant?;
@@ -82,7 +83,9 @@ local function TeammateCard(props: TeammateCardProps)
 
   end, {props.contestant});
 
-  local contestantBannerSizeXOffset = React.useState(100);
+  local shouldUseMaximumHeight, shouldUseMaximumWidth = useResponsiveDesign({minimumHeight = 300}, {minimumWidth = 800});
+  local contestantBannerSizeYOffset = if shouldUseMaximumHeight then 30 else 10;
+  local contestantBannerSizeXOffset = if shouldUseMaximumWidth then 300 else 100;
   local avatarImageLabelRef = React.useRef(nil :: ImageLabel?);
   local tcfUIPaddingRef = React.useRef(nil);
   local statusLabelRef = React.useRef(nil :: TextLabel?);
@@ -212,7 +215,7 @@ local function TeammateCard(props: TeammateCardProps)
     local contestantBannerImageLabel: ImageLabel? = contestantBannerImageLabelRef.current;
     if contestantBannerImageLabel then
 
-      contestantBannerImageLabel.Size = UDim2.new(0, contestantBannerSizeXOffset, 0, 10);
+      contestantBannerImageLabel.Size = UDim2.new(0, contestantBannerSizeXOffset, 0, contestantBannerSizeYOffset);
 
     end;
 
@@ -282,7 +285,7 @@ local function TeammateCard(props: TeammateCardProps)
           Text = statusLabelText;
           TextTransparency = if props.contestant then 0 else 0.5;
           TextColor3 = if props.isRival then Color3.fromRGB(255, 117, 117) else Color3.new(1, 1, 1);
-          TextSize = 8;
+          TextSize = if shouldUseMaximumHeight then 17 else 8;
           FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
           TextXAlignment = if props.isRival then Enum.TextXAlignment.Right else Enum.TextXAlignment.Left;
           TextTruncate = Enum.TextTruncate.AtEnd;
@@ -381,19 +384,6 @@ local function TeammateCard(props: TeammateCardProps)
                 type = "Username";
               }) else nil;
             });
-            ReadyIndicationImageLabelContainer = if props.round and props.round.status == "Waiting for players" and props.contestant then React.createElement("Frame", {
-              BackgroundTransparency = 1;
-              AnchorPoint = Vector2.new(if props.isRival then 0 else 1, 1);
-              Position = UDim2.new();
-              Size = UDim2.new(0, 35, 0, 35);
-              LayoutOrder = if props.isRival then 1 else 2;
-            }, {
-              ReadyIndicationImageLabel = React.createElement("ImageLabel", {
-                Size = UDim2.new(1, 0, 1, 0);
-                Image = "rbxassetid://17571806169";
-                BackgroundTransparency = 1;
-              });
-            }) else nil;
             AvatarImageLabel = if props.round and props.round.status ~= "Waiting for players" and props.contestant then React.createElement("ImageLabel", {
               AnchorPoint = Vector2.new(if props.isRival then 0 else 1, 1);
               Position = UDim2.new(if props.isRival then 0 else 1, 0, 1, 0);
