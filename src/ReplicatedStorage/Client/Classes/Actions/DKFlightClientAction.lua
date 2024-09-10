@@ -90,7 +90,7 @@ ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(Ac
 		allowedToToggle = true
 
 	end;
-	shortcutCharacter = "L";
+	shortcutCharacter = "Space";
 	iconImage = "rbxassetid://17771917538";
 }));
 
