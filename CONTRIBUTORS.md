@@ -2,42 +2,91 @@
 This is a list of credits, including collaborators and contributors from the past and present. For a list of the current team members, see the [Teams page](https://github.com/orgs/DemoDemons/teams) in the DemoDemons GitHub organization.
 
 ## Producer
-Christian "Sudobeast" Toney
+Christian Toney
 
 ## Director
-Christian "Sudobeast" Toney
+Christian Toney
 
 ## Design Team
 ### Gameplay Designers
-* Christian "Sudobeast" Toney
+* Christian Toney
 * Dylan "Quintt" Provenzano
 * hati_bati
 * InkyTheBlue
 * naz
 
 ### Stage Designer
-Christian "Sudobeast" Toney
+Christian Toney
 
 ### Additional Matchmaking Design
 Dylan "Quintt" Provenzano
 
 ### Sound Designer
-Christian "Sudobeast" Toney
+Christian Toney
 
 ### Web Designer
-Christian "Sudobeast" Toney
+Christian Toney
 
 ## Technology Team
 ### Programmers
-* Christian "Sudobeast" Toney
+* Christian Toney
 * hati_bati
 
 ## Visual Team
 ### Builder
-Christian "Sudobeast" Toney
+Christian Toney
 
 ### 2D Artist
-Christian "Sudobeast" Toney
+Christian Toney
+
+## Audio Team
+### Actors
+<table>
+  <thead>
+    <tr>
+      <th>Character</th>
+      <th>Person</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Entro</td>
+      <td>TBD</td>
+    </tr>
+    <tr>
+      <td>The Announcer</td>
+      <td>Christian Toney</td>
+    </tr>
+    <tr>
+      <td>Tolsmyth</td>
+      <td>TBD</td>
+    </tr>
+    <tr>
+      <td>The Manager</td>
+      <td>TBD</td>
+    </tr>
+    <tr>
+      <td>Security Guard #1</td>
+      <td>TBD</td>
+    </tr>
+    <tr>
+      <td>Security Guard #2</td>
+      <td>TBD</td>
+    </tr>
+    <tr>
+      <td>Satisfied Customer</td>
+      <td>TBD</td>
+    </tr>
+    <tr>
+      <td>Team Carrier</td>
+      <td>InkyTheBlue</td>
+    </tr>
+    <tr>
+      <td>Item Hunter</td>
+      <td>TBD</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Special Thanks
 <table>
