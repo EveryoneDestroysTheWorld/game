@@ -1,7 +1,5 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local ServerStorage = game:GetService("ServerStorage");
-local PathfindingService = game:GetService("PathfindingService");
 local InsertService = game:GetService("InsertService");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
