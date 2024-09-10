@@ -19,7 +19,7 @@ local function CircleFilling()
     BackgroundColor3 = Color3.new(1, 1, 1);
     AnchorPoint = Vector2.new(0.5, 0.5);
     Position = UDim2.new(0.5, 0, 0.5, 0);
-    Size = UDim2.new(0, 20, 0, 20);
+    Size = UDim2.new(0, 5, 0, 5);
     BorderSizePixel = 0;
   }, {
     UICorner = React.createElement(CircleCorner);
@@ -71,7 +71,7 @@ local function ProgressDot(props: ProgressDotProps)
     LayoutOrder = props.LayoutOrder;
     BackgroundColor3 = color;
     BackgroundTransparency = if props.progress then props.progress * 0.2 else 0.7;
-    Size = UDim2.new(0, 7, 0, 7);
+    Size = UDim2.new(0, 3, 0, 3);
   }, {
     CircleCorner = React.createElement(CircleCorner);
   });
@@ -83,7 +83,7 @@ local function TeamDot(props: {teamNumber: number})
   return React.createElement("Frame", {
     BackgroundColor3 = if props.teamNumber == 1 then Colors.DemoDemonsOrange else Colors.DemoDemonsRed;
     BackgroundTransparency = 0.2;
-    Size = UDim2.new(0, 40, 0, 40);
+    Size = UDim2.new(0, 10, 0, 10);
     BorderSizePixel = 0;
     LayoutOrder = props.teamNumber + (props.teamNumber - 1);
   }, {
