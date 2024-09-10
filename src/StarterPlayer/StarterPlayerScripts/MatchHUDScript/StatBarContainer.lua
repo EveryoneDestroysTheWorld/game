@@ -1,7 +1,7 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local StatBar = require(ReplicatedStorage.Client.ReactComponents.StatBar);
+local StatBar = require(script.Parent.StatBar);
 
 local function StatBarContainer()
 

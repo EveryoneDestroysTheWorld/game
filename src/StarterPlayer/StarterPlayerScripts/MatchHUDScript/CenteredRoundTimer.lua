@@ -172,6 +172,7 @@ local function CenteredRoundTimer(props: CenteredRoundTimerProps)
 
   local message = React.useState(messages[math.random(1, #messages)]);
 
+  print(textState.textSize);
   return if animatedSecond and (animatedSecond > 0 or not isFinalCountdown) then React.createElement("TextLabel", {
     Text = if animatedSecond == 0 then message else animatedSecond;
     AnchorPoint = Vector2.new(0.5, 0.5);
@@ -180,7 +181,7 @@ local function CenteredRoundTimer(props: CenteredRoundTimerProps)
     BackgroundTransparency = 1;
     TextTransparency = 1;
     Rotation = textState.rotation;
-    TextSize = textState.textSize;
+    TextScaled = true;
     AutomaticSize = Enum.AutomaticSize.XY;
   }, {
     UIStroke = React.createElement("UIStroke", {
@@ -188,6 +189,10 @@ local function CenteredRoundTimer(props: CenteredRoundTimerProps)
       Thickness = 1;
       Transparency = textState.transparency;
     });
+    UITextSizeConstraint = React.createElement("UITextSizeConstraint", {
+      MinTextSize = 1;
+      MaxTextSize = math.max(1, textState.textSize);
+    })
   }) else nil;
 
 end;
