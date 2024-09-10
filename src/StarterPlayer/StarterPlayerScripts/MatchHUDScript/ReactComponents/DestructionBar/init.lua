@@ -18,7 +18,7 @@ local function DestructionBar(props: DestructionBarProps)
   local gameModeStats, setGameModeStats = React.useState(nil);
   React.useEffect(function(): ()
     
-    local function updateBar(gameModeStats: any)
+    local function updateBar()
 
       task.spawn(function()
       
@@ -29,11 +29,13 @@ local function DestructionBar(props: DestructionBarProps)
 
     end;
     
+    print("Connect")
     local updateEvent = ReplicatedStorage.Shared.Events.GameModeStatsUpdated.OnClientEvent:Connect(updateBar)
     updateBar();
 
     return function()
 
+      print("Dis");
       updateEvent:Disconnect();
 
     end;
@@ -51,7 +53,7 @@ local function DestructionBar(props: DestructionBarProps)
     local teamClaimedParts = {0, 0};
     for contestantID, contestantStats in pairs(gameModeStats.contestants) do
 
-      for _, contestant in ipairs(props.round.contestants) do
+      for _, contestant in props.round.contestants do
 
         if contestant.ID == tonumber(contestantID) then
 
@@ -72,16 +74,17 @@ local function DestructionBar(props: DestructionBarProps)
     local teamDotData = {};
     local team1Remainder = 0;
     local blanks = 0;
+    local dotCount = 5;
     for teamNumber = 1, 2 do
 
       local newDots = {};
-      local percentage = 41 * teamClaimedParts[teamNumber] / gameModeStats.totalStageParts;
+      local percentage = dotCount * teamClaimedParts[teamNumber] / gameModeStats.totalStageParts;
       local flooredPercentage = math.floor(percentage);
       local progressRemainder = percentage - flooredPercentage;
       
       if teamNumber == 2 then
 
-        for progressDotIndex = 1, 41 - #teamDotData[1] - flooredPercentage - (if progressRemainder > 0 then 1 else 0) do
+        for progressDotIndex = 1, dotCount - #teamDotData[1] - flooredPercentage - (if progressRemainder > 0 then 1 else 0) do
 
           blanks += 1;
 
@@ -112,7 +115,7 @@ local function DestructionBar(props: DestructionBarProps)
     end;
 
     local layoutOrder = 1;
-    for teamNumber, teamDots in ipairs(teamDotData) do
+    for teamNumber, teamDots in teamDotData do
 
       if teamNumber == 2 then
 

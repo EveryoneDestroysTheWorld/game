@@ -8,7 +8,7 @@ local function HorizontalUIListLayout()
     SortOrder = Enum.SortOrder.LayoutOrder;
     FillDirection = Enum.FillDirection.Horizontal;
     Name = "UIListLayout";
-    Padding = UDim.new(0, 5);
+    Padding = UDim.new(0, 2);
     VerticalAlignment = Enum.VerticalAlignment.Center;
     HorizontalAlignment = Enum.HorizontalAlignment.Center;
   });

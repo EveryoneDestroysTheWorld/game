@@ -60,12 +60,12 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
         local currentDurability = basePart:GetAttribute("CurrentDurability");
         if currentDurability > 0 then
 
-          basePart:SetAttribute("CurrentDurability", newDurability);
           if newDurability <= 0 then
 
             basePart:SetAttribute("DestroyerID", contestant.ID);
 
           end;
+          basePart:SetAttribute("CurrentDurability", newDurability);
 
         end;
 
@@ -85,9 +85,11 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
               events[eventIndex]:Disconnect();
             
               -- Add this to the score.
+              print(child:GetAttribute("DestroyerID"));
               local destroyerID = child:GetAttribute("DestroyerID") :: number?;
               if destroyerID then
 
+                print("FIRE")
                 stats.contestants[tostring(destroyerID)].partsDestroyed += 1;
                 stats.contestants[tostring(destroyerID)].partsClaimed += 1;
                 ReplicatedStorage.Shared.Events.GameModeStatsUpdated:FireAllClients();

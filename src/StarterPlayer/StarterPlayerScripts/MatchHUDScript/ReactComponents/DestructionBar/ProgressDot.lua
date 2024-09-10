@@ -11,23 +11,14 @@ type ProgressDotProps = {
 
 local function ProgressDot(props: ProgressDotProps)
 
-  local color, setColor = React.useState(Color3.new(1, 1, 1));
+  local color = Color3.new(1, 1, 1);
 
-  React.useEffect(function()
-  
-    if props.teamColor and props.progress then
+  if props.teamColor and props.progress then
 
-      local hue, saturation, value = props.teamColor:ToHSV();
-      local newColor = Color3.fromHSV(hue, saturation * props.progress, value);
-      setColor(newColor);
-
-    else
-
-      setColor(Color3.new(1, 1, 1));
-      
-    end;
-
-  end, {props.teamColor, props.progress :: any});
+    local hue, saturation, value = props.teamColor:ToHSV();
+    color = Color3.fromHSV(hue, saturation * props.progress, value);
+    
+  end;
 
   return React.createElement("Frame", {
     BorderSizePixel = 0;
