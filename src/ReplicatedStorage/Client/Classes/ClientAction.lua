@@ -9,6 +9,7 @@ export type ActionProperties = {
   description: string;
   activate: (self: ClientAction, ...any) -> ();
   breakdown: (self: ClientAction) -> ();
+  initialize: (self: ClientAction) -> ();
 };
 
 export type ActionEvents = {

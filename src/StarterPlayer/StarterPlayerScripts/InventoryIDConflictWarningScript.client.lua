@@ -22,5 +22,3 @@ for _, directory in {classes.Actions, classes.Archetypes} do
   end;
 
 end;
-
-script:Destroy();

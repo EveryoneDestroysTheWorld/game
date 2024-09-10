@@ -5,13 +5,14 @@ local StarterGui = game:GetService("StarterGui");
 local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 local player = Players.LocalPlayer;
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local Ticker = require(script.Parent.Ticker);
 local TeammateCard = require(script.Parent.TeammateCard);
 local TeammateCardList = require(script.Parent.TeammateCardList);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype);
 type ClientArchetype = ClientArchetype.ClientArchetype;
+local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
+type ClientContestant = ClientContestant.ClientContestant;
 local ArchetypeInformationFrame = require(script.Parent.ArchetypeInformationFrame);
 local ArchetypeSelectionFrame = require(script.Parent.ArchetypeSelectionFrame);
 local MatchInitializationHeader = require(script.Parent.MatchInitializationHeader);
@@ -34,76 +35,77 @@ local function MatchInitializationScreen()
   end, {});
 
   -- Get teammate cards to show to the player.
-  local allyTeammateCards, setAllyTeammateCards = React.useState({});
-  local rivalTeammateCards, setRivalTeammateCards = React.useState({});
   local round = React.useState(ClientRound.fromServerRound());
   local shouldShowArchetypeInformation, setShouldShowArchetypeInformation = React.useState(false);
   local selectedArchetype: ClientArchetype, setSelectedArchetype = React.useState(nil :: ClientArchetype?);
+  local contestants, setContestants = React.useState(round.contestants :: {ClientContestant});
 
-  local uiPaddingRightOffset, setUIPaddingRightOffset = React.useState(0);
+  local function getTeamListCards()
+
+    local newAllyTeammateCards = {};
+    local newRivalTeammateCards = {};
+
+    local ownTeamID: number?;
+    for _, contestant in contestants do
+
+      if contestant.ID == player.UserId then
+
+        ownTeamID = contestant.teamID;
+        break;
+
+      end;
+
+    end;
+
+    for _, contestant in contestants do
+
+      local isRival = contestant.ID ~= player.UserId and not ownTeamID or contestant.teamID ~= ownTeamID;
+      local selectedTable = if isRival then newRivalTeammateCards else newAllyTeammateCards;
+      local teammateCard = React.createElement(TeammateCard, {
+        contestant = contestant;
+        isRival = isRival;
+        layoutOrder = #selectedTable + 1;
+        round = round;
+      })
+
+      table.insert(selectedTable, teammateCard);
+
+    end;
+
+    -- Fill in the blank slots.
+    for ti, t in {newAllyTeammateCards, newRivalTeammateCards} do
+
+      for i = #t + 1, 4 do
+
+        table.insert(t, React.createElement(TeammateCard, {
+          isRival = ti == 2;
+          layoutOrder = i;
+        }))
+
+      end;
+
+    end;
+
+    return newAllyTeammateCards, newRivalTeammateCards;
+
+  end;
+
+  local allyTeammateCards, rivalTeammateCards = getTeamListCards();
+
   React.useEffect(function(): ()
 
     if round then
 
       -- Get the current list of teams.
-      local function updateTeamLists()
+      local function updateContestants()
 
-        local newAllyTeammateCards = {};
-        local newRivalTeammateCards = {};
-
-        local ownTeamID: number?;
-        for _, contestant in round.contestants do
-
-          if contestant.ID == player.UserId then
-
-            ownTeamID = contestant.teamID;
-            break;
-
-          end;
-
-        end;
-
-        for _, contestant in round.contestants do
-
-          local isRival = contestant.ID ~= player.UserId and not ownTeamID or contestant.teamID ~= ownTeamID;
-          local selectedTable = if isRival then newRivalTeammateCards else newAllyTeammateCards;
-          local teammateCard = React.createElement(TeammateCard, {
-            contestant = contestant;
-            isRival = isRival;
-            layoutOrder = #selectedTable + 1;
-            round = round;
-            uiPaddingRightOffset = if isRival then uiPaddingRightOffset else nil;
-          })
-
-          table.insert(selectedTable, teammateCard);
-
-        end;
-
-        -- Fill in the blank slots.
-        for ti, t in {newAllyTeammateCards, newRivalTeammateCards} do
-
-          for i = #t + 1, 4 do
-
-            table.insert(t, React.createElement(TeammateCard, {
-              isRival = ti == 2;
-              layoutOrder = i;
-            }))
-
-          end;
-
-        end;
-
-        setAllyTeammateCards(newAllyTeammateCards);
-        setRivalTeammateCards(newRivalTeammateCards);
+        setContestants(round.contestants);
 
       end;
     
       -- Listen for updates.
-      local e1 = round.onContestantAdded:Connect(updateTeamLists);
-      local e2 = round.onContestantRemoved:Connect(updateTeamLists);
-
-      -- Use task.spawn to prevent blocking of other effects.
-      task.spawn(updateTeamLists);
+      local e1 = round.onContestantAdded:Connect(updateContestants);
+      local e2 = round.onContestantRemoved:Connect(updateContestants);
 
       local function checkRoundStatus()
 
@@ -124,23 +126,7 @@ local function MatchInitializationScreen()
 
     end;
 
-  end, {round, uiPaddingRightOffset :: any});
-
-  React.useEffect(function()
-  
-    dataTypeTween({
-      type = "Number";
-      initialValue = uiPaddingRightOffset;
-      goalValue = if shouldShowArchetypeInformation then -300 else 0;
-      tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
-      onChange = function(newValue)
-
-        setUIPaddingRightOffset(newValue);
-
-      end;
-    }):Play();
-
-  end, {shouldShowArchetypeInformation});
+  end, {round});
 
   local backgroundTransparency, setBackgroundTransparency = React.useState(0.4);
   React.useEffect(function()
@@ -182,10 +168,10 @@ local function MatchInitializationScreen()
       ZIndex = 2;
     }, {
       UIPadding = React.createElement("UIPadding", {
-        PaddingBottom = UDim.new(0, 30);
-        PaddingLeft = UDim.new(0, 30);
-        PaddingRight = UDim.new(0, 30);
-        PaddingTop = UDim.new(0, 30);
+        PaddingBottom = UDim.new(0, 15);
+        PaddingLeft = UDim.new(0, 15);
+        PaddingRight = UDim.new(0, 15);
+        PaddingTop = UDim.new(0, 15);
       });
       MatchInitializationTimerFrame = React.createElement(MatchInitializationTimer);
       Header = if round then React.createElement(MatchInitializationHeader, {round = round}) else nil;
@@ -197,18 +183,18 @@ local function MatchInitializationScreen()
         Position = UDim2.new(0.5, 0, 0.5, 0);
         Size = UDim2.new(1, 0, 0, 0);
       }, {
-        UIPadding = React.createElement("UIPadding", {
-          PaddingRight = UDim.new(0, uiPaddingRightOffset);
-        });
         AllyTeammateCardList = React.createElement(TeammateCardList, {
           layoutOrder = 1;
+          round = round;
         }, allyTeammateCards);
         RivalTeammateCardList = React.createElement(TeammateCardList, {
           layoutOrder = 2;
+          round = round;
+          shouldHide = shouldShowArchetypeInformation;
         }, rivalTeammateCards);
         ArchetypeInformationFrame = React.createElement(ArchetypeInformationFrame, {
-          uiPaddingRightOffset = uiPaddingRightOffset;
           selectedArchetype = selectedArchetype;
+          shouldHide = not shouldShowArchetypeInformation;
         });
       });
       ArchetypeSelectionFrame = if shouldShowArchetypeInformation then React.createElement(ArchetypeSelectionFrame, {
@@ -240,7 +226,6 @@ local function MatchInitializationScreen()
       }) else nil;
     });
     LoadingBackground = if round then React.createElement(LoadingBackground, {round = round}) else nil;
-    Ticker = React.createElement(Ticker, {round = round});
     -- MainStatus = React.createElement("TextLabel", {
     --   Text = "GET READY!";
     --   AutomaticSize = Enum.AutomaticSize.XY;

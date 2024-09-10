@@ -9,13 +9,17 @@ local DraconicKnightClientArchetype = {
   name = "Draconic Knight";
   description = "Fly above the enemy and let the vengence flow";
   iconImage = "rbxassetid://18584519829";
-  actionIDs = {};
+  actionIDs = {6};
   type = "Defender" :: "Defender";
 };
 
-function DraconicKnightClientArchetype.new(contestant: ClientContestant): ClientArchetype
+function DraconicKnightClientArchetype.new(): ClientArchetype
 
   local function breakdown(self: ClientArchetype)
+
+  end;
+
+  local function initialize(self: ClientArchetype)
 
   end;
 
@@ -27,6 +31,7 @@ function DraconicKnightClientArchetype.new(contestant: ClientContestant): Client
     actionIDs = DraconicKnightClientArchetype.actionIDs;
     type = DraconicKnightClientArchetype.type;
     breakdown = breakdown;
+    initialize = initialize;
   });
 
 end;

@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 local Players = game:GetService("Players");
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
 type StatBarProps = {
   type: "Health" | "Stamina";
@@ -14,8 +15,21 @@ local function StatBar(props: StatBarProps)
   local containerRef = React.useRef(nil :: Frame?);
   local textLabelRef = React.useRef(nil :: TextLabel?);
   local currentStatBarRef = React.useRef(nil :: Frame?);
+  local isTweening, setIsTweening = React.useState(false);
 
   local isHealthBar = props.type == "Health";
+  local shouldUseFullLength, shouldUseFullHeight = useResponsiveDesign({minimumWidth = 800}, {minimumHeight = 600});
+
+  React.useEffect(function()
+  
+    local container = containerRef.current;
+    if not isTweening and container then
+
+      container.Size = UDim2.new(container.Size.X.Scale, if shouldUseFullLength then 200 else 70, container.Size.Y.Scale, container.Size.Y.Offset);
+
+    end;
+
+  end, {isTweening, shouldUseFullLength});
 
   React.useEffect(function(): ()
   
@@ -24,11 +38,11 @@ local function StatBar(props: StatBarProps)
     local textLabel = textLabelRef.current;
     if container and currentStatBar and textLabel then
 
+      setIsTweening(true);
       textLabel.Transparency = 1;
-
       dataTypeTween({
         type = "Number";
-        goalValue = 200;
+        goalValue = if shouldUseFullLength then 200 else 70;
         onChange = function(newValue: number)
 
           container.Size = UDim2.new(container.Size.X.Scale, newValue, container.Size.Y.Scale, container.Size.Y.Offset);
@@ -49,6 +63,7 @@ local function StatBar(props: StatBarProps)
 
       tween.Completed:Connect(function()
       
+        setIsTweening(false);
         dataTypeTween({
           type = "Number";
           initialValue = 1;
@@ -113,6 +128,8 @@ local function StatBar(props: StatBarProps)
 
   end, {props.type});
 
+
+
   return React.createElement("Frame", {
     BackgroundTransparency = 1;
     AutomaticSize = Enum.AutomaticSize.Y;
@@ -130,7 +147,7 @@ local function StatBar(props: StatBarProps)
       BackgroundTransparency = 1;
       AutomaticSize = Enum.AutomaticSize.XY;
       FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
-      TextSize = 14;
+      TextSize = if shouldUseFullHeight then 14 else 8;
       TextColor3 = Color3.new(1, 1, 1);
       ref = textLabelRef;
       LayoutOrder = 1;
@@ -140,7 +157,7 @@ local function StatBar(props: StatBarProps)
       BorderSizePixel = 0;
       AnchorPoint = Vector2.new(if isHealthBar then 1 else 0, 0);
       BackgroundTransparency = 0.7;
-      Size = UDim2.new(1, 0, 0, 5);
+      Size = UDim2.new(1, 0, 0, if shouldUseFullHeight then 5 else 3);
       LayoutOrder = 2;
     }, {
       CurrentStat = React.createElement("Frame", {

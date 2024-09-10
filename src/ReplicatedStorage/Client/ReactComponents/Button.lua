@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local Colors = require(ReplicatedStorage.Client.Colors);
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
 type ButtonProps = {
   text: string; 
@@ -14,9 +15,12 @@ type ButtonProps = {
   AnchorPoint: Vector2?;
   Visible: boolean?;
   Position: UDim2?;
+  textSize: number?
 };
 
 local function Button(props: ButtonProps)
+
+  local shouldUseFullPadding = useResponsiveDesign({minimumWidth = 700});
 
   return React.createElement("TextButton", {
     Text = props.text:upper();
@@ -32,7 +36,7 @@ local function Button(props: ButtonProps)
     Position = props.Position;
     AnchorPoint = props.AnchorPoint;
     Visible = props.Visible;
-    TextSize = 14;
+    TextSize = props.textSize or 14;
     [React.Event.Activated] = if props.isDisabled then nil else function()
 
       props.onClick();
@@ -40,10 +44,10 @@ local function Button(props: ButtonProps)
     end;
   }, {
     UIPadding = React.createElement("UIPadding", {
-      PaddingLeft = UDim.new(0, 15);
-      PaddingRight = UDim.new(0, 15);
-      PaddingTop = UDim.new(0, 7);
-      PaddingBottom = UDim.new(0, 7);
+      PaddingLeft = UDim.new(0, if shouldUseFullPadding then 15 else 7);
+      PaddingRight = UDim.new(0, if shouldUseFullPadding then 15 else 7);
+      PaddingTop = UDim.new(0, if shouldUseFullPadding then 7 else 5);
+      PaddingBottom = UDim.new(0, if shouldUseFullPadding then 7 else 5);
     });
     UICorner = React.createElement("UICorner", {
       CornerRadius = UDim.new(1, 0);

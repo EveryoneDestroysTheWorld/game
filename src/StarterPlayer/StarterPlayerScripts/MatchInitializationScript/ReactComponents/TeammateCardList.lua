@@ -1,28 +1,146 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
+local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
+local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
+type ClientRound = ClientRound.ClientRound;
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
 type TeammateCardListProps = {
   layoutOrder: number;
   children: any;
+  shouldHide: boolean?;
+  round: ClientRound;
 }
 
 local function TeammateCardList(props: TeammateCardListProps)
 
+  local shouldUseMaximumSpacing, shouldUseIncreasedWidth = useResponsiveDesign({minimumHeight = 300}, {minimumWidth = 800});
+
+  local containerRef = React.useRef(nil :: GuiObject?);
+  React.useEffect(function(): ()
+
+    if props.round then
+
+      local function checkStatus()
+
+        if props.round.status == "Matchup preview" then
+
+          task.delay(5, function()
+
+            local container = containerRef.current;
+            if container then
+
+              local tween = dataTypeTween({
+                type = "Number";
+                goalValue = if props.layoutOrder == 1 then -25 else 25;
+                initialValue = container.Position.X.Offset;
+                tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
+                onChange = function(newValue: number)
+      
+                  -- Using containerRef just in case the type of element changes.
+                  container = containerRef.current;
+                  if container then
+      
+                    container.Position = UDim2.new(container.Position.X.Scale, newValue, container.Position.Y.Scale, container.Position.Y.Offset);
+      
+                  end;
+      
+                end;
+              });
+      
+              tween:Play();
+
+            end;
+
+          end);
+
+        end;
+
+      end;
+
+      local event = props.round.onStatusChanged:Connect(checkStatus);
+
+      checkStatus();
+
+      return function()
+
+        event:Disconnect();
+  
+      end;
+    
+    end;
+
+  end, {props.round});
+
+  React.useEffect(function()
+  
+    local container = containerRef.current;
+    if container then
+
+      container.Position = UDim2.new(1, if props.shouldHide then container.AbsoluteSize.X + 15 else 0, 0.5, 0);
+
+    end;
+    
+  end, {});
+
+  React.useEffect(function(): ()
+  
+    local container = containerRef.current;
+    if container and props.layoutOrder == 1 then 
+      
+      container.Position = UDim2.new(0, 0, 0.5, 0);
+    
+    elseif props.layoutOrder == 2 then 
+
+      if container then
+
+        local tween = dataTypeTween({
+          type = "Number";
+          goalValue = if props.shouldHide then container.AbsoluteSize.X + 15 else 0;
+          initialValue = container.Position.X.Offset;
+          tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
+          onChange = function(newValue: number)
+
+            -- Using containerRef just in case the type of element changes.
+            container = containerRef.current;
+            if container then
+
+              container.Position = UDim2.new(container.Position.X.Scale, newValue, container.Position.Y.Scale, container.Position.Y.Offset);
+
+            end;
+
+          end;
+        });
+
+        tween:Play();
+
+        return function()
+  
+          tween:Cancel();
+    
+        end;
+
+      end;
+
+    end;
+
+  end, {props.shouldHide :: any, props.layoutOrder});
+
   return React.createElement("Frame", {
-    AnchorPoint = Vector2.new(if props.layoutOrder == 1 then 0 else 1, 0);
+    AnchorPoint = Vector2.new(if props.layoutOrder == 1 then 0 else 1, 0.5);
     AutomaticSize = Enum.AutomaticSize.XY;
-    Position = UDim2.new(if props.layoutOrder == 1 then 0 else 1, 0, 0, 0);
+    ref = containerRef;
     BackgroundTransparency = 1;
     Size = UDim2.new();
     LayoutOrder = props.layoutOrder;
   }, {
-    React.createElement("UIListLayout", {
+    UIListLayout = React.createElement("UIListLayout", {
       SortOrder = Enum.SortOrder.LayoutOrder;
-      Padding = UDim.new(0, 15);
+      Padding = UDim.new(0, if shouldUseMaximumSpacing then 15 else 1);
       HorizontalAlignment = if props.layoutOrder == 2 then Enum.HorizontalAlignment.Right else nil;
     });
-    React.createElement(React.Fragment, {}, props.children);
+    Children = React.createElement(React.Fragment, {}, props.children);
   })
 
 end;

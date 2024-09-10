@@ -33,6 +33,34 @@ function ExplosivePunchAction.new(): ClientAction
 
   end;
 
+  local function initialize(self: ClientAction)
+
+    ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
+      onActivate = function()
+  
+        self:activate();
+  
+      end;
+      shortcutCharacter = "L";
+      iconImage = "rbxassetid://17771917538";
+    }));
+    
+    remoteName = `{player.UserId}_{self.ID}`;
+  
+    local function checkJump(_, inputState: Enum.UserInputState)
+  
+      if inputState == Enum.UserInputState.Begin then
+  
+        self:activate();
+      
+      end;
+  
+    end;
+  
+    ContextActionService:BindActionAtPriority("ActivateExplosivePunch", checkJump, false, 2, Enum.UserInputType.MouseButton1);
+
+  end;
+
   local action = ClientAction.new({
     ID = ExplosivePunchAction.ID;
     iconImage = ExplosivePunchAction.iconImage;
@@ -40,31 +68,8 @@ function ExplosivePunchAction.new(): ClientAction
     description = ExplosivePunchAction.description;
     activate = activate;
     breakdown = breakdown;
+    initialize = initialize;
   });
-
-  ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
-    onActivate = function()
-
-      action:activate();
-
-    end;
-    shortcutCharacter = "L";
-    iconImage = "rbxassetid://17771917538";
-  }));
-  
-  remoteName = `{player.UserId}_{action.ID}`;
-
-  local function checkJump(_, inputState: Enum.UserInputState)
-
-    if inputState == Enum.UserInputState.Begin then
-
-      action:activate();
-    
-    end;
-
-  end;
-
-  ContextActionService:BindActionAtPriority("ActivateExplosivePunch", checkJump, false, 2, Enum.UserInputType.MouseButton1);
 
   return action;
 

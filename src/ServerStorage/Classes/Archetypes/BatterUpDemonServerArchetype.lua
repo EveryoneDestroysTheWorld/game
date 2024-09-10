@@ -1,8 +1,5 @@
 --!strict
-local TweenService = game:GetService("TweenService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local ServerStorage = game:GetService("ServerStorage");
-local PathfindingService = game:GetService("PathfindingService");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local BatterUpDemonClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.BatterUpDemonClientArchetype);
@@ -21,7 +18,10 @@ local BatterUpDemonServerArchetype = {
   type = BatterUpDemonClientArchetype.type;
 };
 
-function BatterUpDemonServerArchetype.new(contestant: ServerContestant, round: ServerRound, stageModel: Model): ServerArchetype
+function BatterUpDemonServerArchetype.new(): ServerArchetype
+
+  local contestant: ServerContestant;
+  local round: ServerRound;
 
   local function breakdown(self: ServerArchetype)
 
@@ -41,6 +41,13 @@ function BatterUpDemonServerArchetype.new(contestant: ServerContestant, round: S
 
   end;
 
+  local function initialize(self: ServerArchetype, newContestant: ServerContestant, newRound: ServerRound)
+
+    contestant = newContestant;
+    round = newRound;
+
+  end;
+
   return ServerArchetype.new({
     ID = BatterUpDemonServerArchetype.ID;
     name = BatterUpDemonServerArchetype.name;
@@ -49,6 +56,7 @@ function BatterUpDemonServerArchetype.new(contestant: ServerContestant, round: S
     type = BatterUpDemonServerArchetype.type;
     breakdown = breakdown;
     runAutoPilot = runAutoPilot;
+    initialize = initialize;
   });
 
 end;

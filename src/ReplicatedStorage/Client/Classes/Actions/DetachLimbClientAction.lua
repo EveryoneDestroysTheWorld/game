@@ -20,29 +20,81 @@ local DetachLimbAction = {
 
 function DetachLimbAction.new(): ClientAction
 
-  -- Set up the UI.
   local player = Players.LocalPlayer;
-  local limbSelectorGUI: ScreenGui = Instance.new("ScreenGui");
-  limbSelectorGUI.Name = "LimbSelectorGUI";
-  limbSelectorGUI.Parent = player:WaitForChild("PlayerGui");
-  limbSelectorGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
-  limbSelectorGUI.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets;
-  limbSelectorGUI.ResetOnSpawn = false;
-  limbSelectorGUI.DisplayOrder = 1;
-  limbSelectorGUI.Enabled = true;
-
-  local root = ReactRoblox.createRoot(limbSelectorGUI);
+  local limbSelectorGUI: ScreenGui;
+  local root = nil;
 
   local function breakdown(self: ClientAction)
 
-    root:unmount();
-    limbSelectorGUI:Destroy();
+    if root then
+
+      root:unmount();
+
+    end;
+
+    if limbSelectorGUI then
+
+      limbSelectorGUI:Destroy();
+
+    end;
 
   end;
 
   local function activate(self: ClientAction, limbName: string)
 
     ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(`{player.UserId}_{DetachLimbAction.ID}`):InvokeServer(limbName);
+
+  end;
+
+  local function initialize(self: ClientAction)
+
+    -- Set up the UI.
+    limbSelectorGUI = Instance.new("ScreenGui")
+    limbSelectorGUI.Name = "LimbSelectorGUI";
+    limbSelectorGUI.Parent = player:WaitForChild("PlayerGui");
+    limbSelectorGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+    limbSelectorGUI.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets;
+    limbSelectorGUI.ResetOnSpawn = false;
+    limbSelectorGUI.DisplayOrder = 1;
+    limbSelectorGUI.Enabled = true;
+
+    local root = ReactRoblox.createRoot(limbSelectorGUI);
+
+    local function activateGUI()
+
+      root:render(React.createElement(LimbSelectionWindow, {
+        onSelect = function(limbName) 
+          
+          self:activate(limbName); 
+        
+        end;
+        onClose = function() root:unmount(); end;
+      }));
+  
+    end;
+  
+    ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
+      onActivate = function() activateGUI() end;
+      shortcutCharacter = "L";
+      iconImage = "rbxassetid://17551046771";
+    }));
+  
+    local function toggleGUI(_, inputState: Enum.UserInputState)
+  
+      if inputState == Enum.UserInputState.Begin then
+  
+        activateGUI()
+  
+      elseif inputState == Enum.UserInputState.End then
+  
+        root:unmount();
+  
+      end;
+  
+    end;
+  
+    -- Listen for events.
+    ContextActionService:BindActionAtPriority("Detach Limb", toggleGUI, false, 3, Enum.UserInputType.MouseButton2);
 
   end;
 
@@ -53,39 +105,8 @@ function DetachLimbAction.new(): ClientAction
     description = DetachLimbAction.description;
     activate = activate;
     breakdown = breakdown;
+    initialize = initialize;
   });
-
-  local function activateGUI()
-
-    root:render(React.createElement(LimbSelectionWindow, {
-      onSelect = function(limbName) action:activate(limbName); end;
-      onClose = function() root:unmount(); end;
-    }));
-
-  end;
-
-  ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
-    onActivate = function() activateGUI() end;
-    shortcutCharacter = "L";
-    iconImage = "rbxassetid://17551046771";
-  }));
-
-  local function toggleGUI(_, inputState: Enum.UserInputState)
-
-    if inputState == Enum.UserInputState.Begin then
-
-      activateGUI()
-
-    elseif inputState == Enum.UserInputState.End then
-
-      root:unmount();
-
-    end;
-
-  end;
-
-  -- Listen for events.
-  ContextActionService:BindActionAtPriority("Detach Limb", toggleGUI, false, 3, Enum.UserInputType.MouseButton2);
 
   return action;
 

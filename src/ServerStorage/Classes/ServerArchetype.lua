@@ -17,6 +17,9 @@ export type ServerArchetypeProperties = {
   type: "Fighter" | "Defender" | "Destroyer" | "Supporter";
 
   actionIDs: {number};
+
+  -- Using "...any" because Roblox considers just accessing ServerRound for types as a cyclic dependency.
+  initialize: (self: ServerArchetype, ...any) -> ();
   
 }
 
@@ -40,7 +43,7 @@ function ServerArchetype.new(properties: ServerArchetypeProperties): ServerArche
   
 end
 
-function ServerArchetype.get(archetypeID: number): ServerArchetypeClass
+function ServerArchetype.get(archetypeID: number): ServerArchetype
 
   for _, instance in ipairs(script.Parent.Archetypes:GetChildren()) do
   
@@ -49,7 +52,7 @@ function ServerArchetype.get(archetypeID: number): ServerArchetypeClass
       local archetype = require(instance) :: any;
       if archetype.ID == archetypeID then
   
-        return archetype;
+        return archetype.new();
   
       end;
   

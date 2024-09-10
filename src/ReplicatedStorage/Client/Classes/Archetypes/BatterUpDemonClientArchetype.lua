@@ -13,9 +13,13 @@ local BatterUpDemonClientArchetype = {
   type = "Fighter" :: "Fighter";
 };
 
-function BatterUpDemonClientArchetype.new(contestant: ClientContestant): ClientArchetype
+function BatterUpDemonClientArchetype.new(): ClientArchetype
 
   local function breakdown(self: ClientArchetype)
+
+  end;
+
+  local function initialize(self: ClientArchetype)
 
   end;
 
@@ -27,6 +31,7 @@ function BatterUpDemonClientArchetype.new(contestant: ClientContestant): ClientA
     actionIDs = BatterUpDemonClientArchetype.actionIDs;
     type = BatterUpDemonClientArchetype.type;
     breakdown = breakdown;
+    initialize = initialize;
   });
 
 end;

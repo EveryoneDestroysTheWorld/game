@@ -1,9 +1,8 @@
 --!strict
--- Writer: Christian Toney (Sudobeast)
--- Designer: Christian Toney (Sudobeast)
+-- Writer: Christian Toney (Christian_Toney)
+-- Designer: Christian Toney (Christian_Toney)
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
-local Players = game:GetService("Players");
 local GameMode = require(script.Parent.Parent.GameMode);
 type GameMode = GameMode.GameMode;
 local HttpService = game:GetService("HttpService");
@@ -60,12 +59,12 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
         local currentDurability = basePart:GetAttribute("CurrentDurability");
         if currentDurability > 0 then
 
-          basePart:SetAttribute("CurrentDurability", newDurability);
           if newDurability <= 0 then
 
             basePart:SetAttribute("DestroyerID", contestant.ID);
 
           end;
+          basePart:SetAttribute("CurrentDurability", newDurability);
 
         end;
 

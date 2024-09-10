@@ -1,7 +1,6 @@
 --!strict
 -- Profile.lua
--- Written by Christian "Sudobeast" Toney
--- Edits by Hati :))))
+-- Writers: Christian "Sudobeast" Toney and Hati :))))
 -- This script controls the round and lobby management stuff.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
@@ -29,7 +28,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
       stageID = Stage.random().ID :: string;
       gameModeID = 1;
       contestantIDs = {};
-      duration = 10;
+      duration = 180;
       status = "Waiting for players" :: "Waiting for players";
     });
 
@@ -258,7 +257,9 @@ local function startRound()
             end;
 
             -- Choose a random archetype for those who didn't choose.
+            
             local selectedArchetypeIndex = math.random(1, #ownedArchetypeIDs);
+            
             chosenArchetypeID = ownedArchetypeIDs[selectedArchetypeIndex];
 
           end
@@ -363,7 +364,7 @@ local function startRound()
     end;
 
     round:setStatus("Contestant selection");
-    local selectionTimeLimitSeconds = 25; 
+    local selectionTimeLimitSeconds = 25;
     local currentTime = os.time();
     ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds - 1);
     ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = function()
@@ -430,7 +431,7 @@ local function checkPlayerList(player: Player)
 end;
 
 local shouldUseStudioPlayers = true;
-if shouldUseStudioPlayers and RunService:IsStudio() then
+if shouldUseStudioPlayers then
 
   Players.PlayerAdded:Connect(function(player)
 
