@@ -44,7 +44,7 @@ local function ActionButton(props: LimbSelectionButtonProps)
     RotationContainerFrame = React.createElement("Frame", {
       BackgroundTransparency = 1;
       LayoutOrder = 1;
-      Size = UDim2.new(0, 50, 0, 50);
+      Size = UDim2.new(0, 15, 0, 15);
     }, {
       IconContainerButton = React.createElement("TextButton", {
         [React.Event.Activated] = onActivate;
@@ -55,7 +55,7 @@ local function ActionButton(props: LimbSelectionButtonProps)
         BorderSizePixel = 0;
         Text = "";
         Position = UDim2.new(0.5, 0, 0.5, 0);
-        Size = UDim2.new(1, -15, 1, -15);
+        Size = UDim2.new(1, -5, 1, -5);
       }, {
         UIStroke = React.createElement("UIStroke", {
           Color = Color3.fromRGB(204, 204, 204);
@@ -67,21 +67,21 @@ local function ActionButton(props: LimbSelectionButtonProps)
           AnchorPoint = Vector2.new(0.5, 0.5);
           Rotation = -45;
           Position = UDim2.new(0.5, 0, 0.5, 0);
-          Size = UDim2.new(1, -10, 1, -10);
+          Size = UDim2.new(1, 0, 1, 0);
           BackgroundTransparency = 1;
           Image = props.iconImage;
         }) else nil;
       });
     });
-    ShortcutCharacterLabel = if props.shortcutCharacter then React.createElement("TextLabel", {
-      BackgroundTransparency = 1;
-      LayoutOrder = 2;
-      TextColor3 = Color3.new(1, 1, 1);
-      TextSize = 14;
-      Text = props.shortcutCharacter;
-      FontFace = Font.fromId(11702779517, Enum.FontWeight.Bold);
-      AutomaticSize = Enum.AutomaticSize.XY;
-    }) else nil;
+    -- ShortcutCharacterLabel = if props.shortcutCharacter then React.createElement("TextLabel", {
+    --   BackgroundTransparency = 1;
+    --   LayoutOrder = 2;
+    --   TextColor3 = Color3.new(1, 1, 1);
+    --   TextSize = 14;
+    --   Text = props.shortcutCharacter;
+    --   FontFace = Font.fromId(11702779517, Enum.FontWeight.Bold);
+    --   AutomaticSize = Enum.AutomaticSize.XY;
+    -- }) else nil;
   });
 
 end;
