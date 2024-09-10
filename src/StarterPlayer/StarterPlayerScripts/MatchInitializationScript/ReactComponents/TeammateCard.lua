@@ -272,7 +272,7 @@ local function TeammateCard(props: TeammateCardProps)
           ref = tcfUIPaddingRef;
         });
         UIListLayout = React.createElement("UIListLayout", {
-          Padding = UDim.new(0, 1);
+          Padding = UDim.new(0, if shouldUseMaximumHeight then 5 else 1);
           SortOrder = Enum.SortOrder.LayoutOrder;
           HorizontalAlignment = if props.isRival then Enum.HorizontalAlignment.Right else Enum.HorizontalAlignment.Left;
         });
