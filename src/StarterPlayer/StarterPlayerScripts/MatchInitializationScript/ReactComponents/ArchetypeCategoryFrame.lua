@@ -34,7 +34,7 @@ local function ArchetypeCategoryFrame(props: ArchetypeCategoryFrameProps)
     
   end;
 
-  local shouldShowArchetypeClassLabel = useResponsiveDesign({minimumWidth = 600});
+  local shouldShowArchetypeClassLabel, shouldShowFullHeight = useResponsiveDesign({minimumWidth = 600}, {minimumHeight = 600});
 
   return React.createElement("Frame", {
     BackgroundTransparency = 0.55;
@@ -43,7 +43,7 @@ local function ArchetypeCategoryFrame(props: ArchetypeCategoryFrameProps)
     Size = UDim2.new();
   }, {
     UIListLayout = React.createElement("UIListLayout", {
-      Padding = UDim.new(0, 5);
+      Padding = UDim.new(0, if shouldShowFullHeight then 15 else 5);
       SortOrder = Enum.SortOrder.LayoutOrder;
       VerticalFlex = Enum.UIFlexAlignment.SpaceBetween;
       VerticalAlignment = Enum.VerticalAlignment.Center;
@@ -57,10 +57,10 @@ local function ArchetypeCategoryFrame(props: ArchetypeCategoryFrameProps)
       Thickness = 1;
     });
     UIPadding = React.createElement("UIPadding", {
-      PaddingBottom = UDim.new(0, 5);
-      PaddingLeft = UDim.new(0, 5);
-      PaddingRight = UDim.new(0, 5);
-      PaddingTop = UDim.new(0, 5);
+      PaddingBottom = UDim.new(0, if shouldShowFullHeight then 15 else 5);
+      PaddingLeft = UDim.new(0, if shouldShowFullHeight then 15 else 5);
+      PaddingRight = UDim.new(0, if shouldShowFullHeight then 15 else 5);
+      PaddingTop = UDim.new(0, if shouldShowFullHeight then 15 else 5);
     });
     ArchetypeButtonListFrame = React.createElement("Frame", {
       AutomaticSize = Enum.AutomaticSize.XY;
@@ -83,7 +83,7 @@ local function ArchetypeCategoryFrame(props: ArchetypeCategoryFrameProps)
       AutomaticSize = Enum.AutomaticSize.XY;
       Size = UDim2.new();
       LayoutOrder = 2;
-      TextSize = 8;
+      TextSize = if shouldShowFullHeight then 12 else 8;
       BackgroundTransparency = 1;
       FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
       TextColor3 = Colors.ParagraphText;

@@ -8,6 +8,7 @@ local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
 type ClientAction = ClientAction.ClientAction;
 local Button = require(ReplicatedStorage.Client.ReactComponents.Button);
 local ArchetypeCategoryFrame = require(script.Parent.ArchetypeCategoryFrame);
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
 type ArchetypeInformationFrameProps = {
   selectedArchetype: ClientArchetype?;
@@ -69,6 +70,8 @@ local function ArchetypeSelectionFrame(props: ArchetypeInformationFrameProps)
 
   end;
 
+  local shouldUseFullSpacing = useResponsiveDesign({minimumWidth = 700});
+
   return React.createElement("Frame", {
     AutomaticSize = Enum.AutomaticSize.Y;
     Size = UDim2.new(1, 0, 0, 0);
@@ -78,13 +81,13 @@ local function ArchetypeSelectionFrame(props: ArchetypeInformationFrameProps)
   }, {
     UIListLayout = React.createElement("UIListLayout", {
       SortOrder = Enum.SortOrder.LayoutOrder;
-      Padding = UDim.new(0, 5);
+      Padding = UDim.new(0, if shouldUseFullSpacing then 15 else 5);
       HorizontalAlignment = Enum.HorizontalAlignment.Center;
     });
     ConfirmButton = React.createElement(Button, {
       text = "CONFIRM";
       LayoutOrder = 1;
-      textSize = 8;
+      textSize = if shouldUseFullSpacing then 12 else 8;
       isDisabled = props.isConfirmingArchetype or props.selectedArchetype == nil or props.selectedArchetype.ID == confirmedArchetypeID;
       onClick = function()
 
@@ -101,7 +104,7 @@ local function ArchetypeSelectionFrame(props: ArchetypeInformationFrameProps)
       UIListLayout = React.createElement("UIListLayout", {
         SortOrder = Enum.SortOrder.LayoutOrder;
         FillDirection = Enum.FillDirection.Horizontal;
-        Padding = UDim.new(0, 5);
+        Padding = UDim.new(0, if shouldUseFullSpacing then 15 else 5);
         HorizontalAlignment = Enum.HorizontalAlignment.Center;
       });
       ArchetypeCategoryFrames = React.createElement(React.Fragment, {}, archetypeCategoryFrames);

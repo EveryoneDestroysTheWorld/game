@@ -7,6 +7,7 @@ type ClientRound = ClientRound.ClientRound;
 local HorizontalUIListLayout = require(script.HorizontalUIListLayout);
 local TeamDot = require(script.TeamDot);
 local ProgressDot = require(script.ProgressDot);
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
 type DestructionBarProps = {
   round: ClientRound;
@@ -16,6 +17,7 @@ local function DestructionBar(props: DestructionBarProps)
 
   -- Animate the stat bar.
   local gameModeStats, setGameModeStats = React.useState(nil);
+  local shouldShowAllDots = useResponsiveDesign({minimumWidth = 800});
   React.useEffect(function(): ()
     
     local function updateBar()
@@ -72,7 +74,7 @@ local function DestructionBar(props: DestructionBarProps)
     local teamDotData = {};
     local team1Remainder = 0;
     local blanks = 0;
-    local dotCount = 5;
+    local dotCount = if shouldShowAllDots then 40 else 5;
     for teamNumber = 1, 2 do
 
       local newDots = {};

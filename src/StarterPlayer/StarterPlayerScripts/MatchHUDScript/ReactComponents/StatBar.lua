@@ -18,7 +18,7 @@ local function StatBar(props: StatBarProps)
   local isTweening, setIsTweening = React.useState(false);
 
   local isHealthBar = props.type == "Health";
-  local shouldUseFullLength = useResponsiveDesign({minimumWidth = 800});
+  local shouldUseFullLength, shouldUseFullHeight = useResponsiveDesign({minimumWidth = 800}, {minimumHeight = 600});
 
   React.useEffect(function()
   
@@ -128,6 +128,8 @@ local function StatBar(props: StatBarProps)
 
   end, {props.type});
 
+
+
   return React.createElement("Frame", {
     BackgroundTransparency = 1;
     AutomaticSize = Enum.AutomaticSize.Y;
@@ -145,7 +147,7 @@ local function StatBar(props: StatBarProps)
       BackgroundTransparency = 1;
       AutomaticSize = Enum.AutomaticSize.XY;
       FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
-      TextSize = 8;
+      TextSize = if shouldUseFullHeight then 14 else 8;
       TextColor3 = Color3.new(1, 1, 1);
       ref = textLabelRef;
       LayoutOrder = 1;
@@ -155,7 +157,7 @@ local function StatBar(props: StatBarProps)
       BorderSizePixel = 0;
       AnchorPoint = Vector2.new(if isHealthBar then 1 else 0, 0);
       BackgroundTransparency = 0.7;
-      Size = UDim2.new(1, 0, 0, 3);
+      Size = UDim2.new(1, 0, 0, if shouldUseFullHeight then 5 else 3);
       LayoutOrder = 2;
     }, {
       CurrentStat = React.createElement("Frame", {

@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local Colors = require(ReplicatedStorage.Client.Colors);
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
 type ButtonProps = {
   text: string; 
@@ -18,6 +19,8 @@ type ButtonProps = {
 };
 
 local function Button(props: ButtonProps)
+
+  local shouldUseFullPadding = useResponsiveDesign({minimumWidth = 700});
 
   return React.createElement("TextButton", {
     Text = props.text:upper();
@@ -41,10 +44,10 @@ local function Button(props: ButtonProps)
     end;
   }, {
     UIPadding = React.createElement("UIPadding", {
-      PaddingLeft = UDim.new(0, 7);
-      PaddingRight = UDim.new(0, 7);
-      PaddingTop = UDim.new(0, 5);
-      PaddingBottom = UDim.new(0, 5);
+      PaddingLeft = UDim.new(0, if shouldUseFullPadding then 15 else 7);
+      PaddingRight = UDim.new(0, if shouldUseFullPadding then 15 else 7);
+      PaddingTop = UDim.new(0, if shouldUseFullPadding then 7 else 5);
+      PaddingBottom = UDim.new(0, if shouldUseFullPadding then 7 else 5);
     });
     UICorner = React.createElement("UICorner", {
       CornerRadius = UDim.new(1, 0);

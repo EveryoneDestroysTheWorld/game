@@ -20,7 +20,7 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
   local actionTextButtons, setActionTextButtons = React.useState({});
   local shouldShowArchetypeDescriptionTextLabel, shouldShowSecondaryMetadataFrame = useResponsiveDesign(
     {minimumWidth = 600}, 
-    {minimumWidth = 600, minimumHeight = 600}
+    {minimumWidth = 600, minimumHeight = 500}
   );
   local selectedAction, setSelectedAction = React.useState(nil :: ClientAction?);
 

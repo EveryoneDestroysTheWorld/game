@@ -66,7 +66,7 @@ local function ActionButton(props: LimbSelectionButtonProps)
       IconImageLabel = if props.iconImage then React.createElement("ImageLabel", {
         AnchorPoint = Vector2.new(0.5, 0.5);
         Position = UDim2.new(0.5, 0, 0.5, 0);
-        Size = UDim2.new(1, -5, 1, -5);
+        Size = UDim2.new(1, if shouldUseFullSize then -10 else -5, 1, if shouldUseFullSize then -10 else -5);
         BackgroundTransparency = 1;
         Image = props.iconImage;
       }) else nil;
