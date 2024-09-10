@@ -2,11 +2,14 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 local React = require(ReplicatedStorage.Shared.Packages.react);
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
 local function MatchInitializationTimer()
 
   local currentSecond: number?, setCurrentSecond = React.useState(nil :: number?);
   local animatedSecond: number?, setAnimatedSecond = React.useState(nil :: number?);
+
+  local shouldUseMaximumSize = useResponsiveDesign({minimumHeight = 500});
 
   React.useEffect(function()
 
@@ -58,7 +61,7 @@ local function MatchInitializationTimer()
   
             setTextState({
               rotation = -360 + 360 * newValue;
-              textSize = 10 * newValue;
+              textSize = (if shouldUseMaximumSize then 50 else 10) * newValue;
               textTransparency = 1 - newValue;
             });
 
@@ -139,7 +142,7 @@ local function MatchInitializationTimer()
       Rotation = textState.rotation;
       TextSize = textState.textSize;
       TextColor3 = Color3.new(1, 1, 1);
-      Size = UDim2.new(0, 10, 0, 10);
+      Size = UDim2.new(0, if shouldUseMaximumSize then 50 else 10, 0, if shouldUseMaximumSize then 50 else 10);
     });
   }) else nil;
 

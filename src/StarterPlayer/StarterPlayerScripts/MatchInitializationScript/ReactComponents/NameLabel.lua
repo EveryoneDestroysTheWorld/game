@@ -18,7 +18,7 @@ local function NameLabel(props: NameLabelProps)
     Size = UDim2.new();
     Text = props.name;
     FontFace = Font.fromId(11702779517, if props.type == "Display Name" then Enum.FontWeight.Heavy else Enum.FontWeight.Medium);
-    TextSize = if shouldUseMaximumTextSize then 14 else 8;
+    TextSize = if shouldUseMaximumTextSize then 18 else 8;
     TextColor3 = if props.type == "Display Name" then Color3.new(1, 1, 1) else Color3.fromRGB(208, 208, 208);
     LayoutOrder = if props.type == "Display Name" then 1 else 2;
     TextTruncate = Enum.TextTruncate.AtEnd;

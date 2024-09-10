@@ -101,14 +101,15 @@ local function TeammateCard(props: TeammateCardProps)
 
         if roundStatus == "Contestant selection" then
 
+          local goalValue = if shouldUseMaximumHeight then 60 else 15;
           dataTypeTween({
             type = "Number";
             tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.InOut);
             initialValue = 0;
-            goalValue = 15;
+            goalValue = goalValue;
             onChange = function(newValue)
 
-              avatarImageLabel.Size = UDim2.new(0, 15, 0, newValue);
+              avatarImageLabel.Size = UDim2.new(0, goalValue, 0, newValue);
 
             end;
           }):Play();
