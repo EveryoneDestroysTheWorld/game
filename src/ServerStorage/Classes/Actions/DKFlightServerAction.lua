@@ -24,12 +24,9 @@ local function animateFlight(humanoid,animations, animData,state)
   animations["Left"]:Play(animData.X,animData.Y,animData.Z);
 
   if state and state == "EndFlight" then
-   -- task.wait(0.1)
     animations["RightIdle"]:Stop(0.1)
     animations["LeftIdle"]:Stop(0.1)
     animations["Idle"]:Stop(0.1)
-    print("Ending flight")
-    print(animations["End"])
     animations["End"]:Play(0.1,1,0.8)
     task.wait(0.3)
     animations["End"]:AdjustWeight(0.01,0.5)
@@ -140,7 +137,6 @@ end
 
 
 function TakeFlightServerAction.new(contestant: ServerContestant, round: ServerRound): ServerAction
-print("preloading animations")
 
 local animations = {
   "Right, 87777396509498",

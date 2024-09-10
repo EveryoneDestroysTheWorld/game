@@ -25,15 +25,13 @@ local function flightControls()
 		if child.Name == "LinearVelocity" then
 			flightControlsConnect:Disconnect()
 	activeState = true
-	local linearVelocity = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChildChild("LinearVelocity")
+	local linearVelocity = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("LinearVelocity")
 	local humanoid = Players.LocalPlayer.Character.Humanoid
 	-- this waits for the controls to be enabled by the server
-	print("Player client found the linearVelocity")
 	linearVelocity:SetAttribute("PlayerControls", false)
 	local connection
 	local conncetion2
 	connection = linearVelocity.AttributeChanged:Connect(function()
-		print("Player client found the AttributeChange")
 		connection:Disconnect()
 		connection = linearVelocity.AttributeChanged:Connect(function()
 			connection:Disconnect()
@@ -58,8 +56,10 @@ end)
 end
 
 function TakeFlightAction.new(): ClientAction
-	flightControls()
 	local player = Players.LocalPlayer;
+	if player.Character then
+		flightControls()
+	end
 	local remoteName: string;
 
 	local function breakdown(self: ClientAction)
