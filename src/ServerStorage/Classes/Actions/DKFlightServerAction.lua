@@ -130,7 +130,7 @@ local function preloadAnims(char: Model, animations: any)
 
 	local animator = humanoid:FindFirstChild("Animator") :: Animator;
 	local wingProp = char:FindFirstChild("WingProp") :: Model;
-	local animatorR = (wingProp:FindFirstChild("WingsPropsRight") :: Model):FindFirstChild("Animator") :: Animator;
+	local animatorR = (wingProp:FindFirstChild("WingsPropRight") :: Model):FindFirstChild("Animator") :: Animator;
 	local animatorL = (wingProp:FindFirstChild("WingsPropLeft") :: Model):FindFirstChild("Animator") :: Animator;
 	local anims = {}
 
@@ -182,8 +182,6 @@ function TakeFlightServerAction.new(): ServerAction
 	};
 
 	local anims;
-
-	local action: ServerAction = nil;
 
 	local function activate()
 
@@ -253,12 +251,12 @@ function TakeFlightServerAction.new(): ServerAction
 		if contestant.player then
 
 			local remoteFunction = Instance.new("RemoteFunction");
-			remoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
+			remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
 			remoteFunction.OnServerInvoke = function(player)
 	
 				if player == contestant.player then
 	
-					action:activate();
+					self:activate();
 	
 				else
 	
@@ -275,7 +273,6 @@ function TakeFlightServerAction.new(): ServerAction
 
 	end;
 
-
 	return ServerAction.new({
 		name = TakeFlightServerAction.name;
 		ID = TakeFlightServerAction.ID;
@@ -286,8 +283,5 @@ function TakeFlightServerAction.new(): ServerAction
 	});
 
 end;
-
-
-
 
 return TakeFlightServerAction;
