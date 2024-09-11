@@ -19,15 +19,49 @@ local PotionOfRegenerationServerItem = {
   description = PotionOfRegenerationClientItem.description;
 };
 
-function PotionOfRegenerationServerItem.new(contestant: ServerContestant, round: ServerRound): ServerItem
+function PotionOfRegenerationServerItem.new(): ServerItem
+
+  local contestant: ServerContestant;
+  local shouldHeal = true;
 
   local function activate(self: ServerItem)
     
+    for currentSecond = 1, 3 do
+
+      task.wait(1);
+
+      if shouldHeal then
+
+        local character = contestant.character;
+        local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
+        if humanoid and humanoid:IsA("Humanoid") then
+
+          local currentHealth = humanoid:GetAttribute("CurrentHealth") :: number?;
+          local baseHealth = humanoid:GetAttribute("BaseHealth") :: number?;
+          if currentHealth and baseHealth and currentHealth < baseHealth then
+
+            humanoid:SetAttribute("CurrentHealth", math.min(baseHealth, currentHealth + 4));
+
+          end;
+
+        end;
+
+      end;
+
+    end;
     
   end;
   
-  local function breakdown()
+  local function breakdown(self: ServerItem)
+
+    shouldHeal = false;
     
+  end;
+
+  local function initialize(self: ServerItem, newContestant: ServerContestant)
+
+    contestant = newContestant;
+
   end;
 
   local item = ServerItem.new({
@@ -36,6 +70,7 @@ function PotionOfRegenerationServerItem.new(contestant: ServerContestant, round:
     description = PotionOfRegenerationServerItem.description;
     activate = activate;
     breakdown = breakdown;
+    initialize = initialize;
   });
   
   return item;
