@@ -4,6 +4,9 @@
 -- Designer: InkyTheBlue (InkyTheBlue)
 -- © 2024 Beastslash
 
+local ContextActionService = game:GetService("ContextActionService");
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local Players = game:GetService("Players");
 local ClientItem = require(script.Parent.Parent.ClientItem);
 type ClientItem = ClientItem.ClientItem;
 
@@ -18,9 +21,28 @@ function PotionOfRegenerationClientItem.new(): ClientItem
 
   local function breakdown(self: ClientItem)
 
+    ContextActionService:UnbindAction("Activate");
+
   end;
 
   local function activate(self: ClientItem)
+
+    local player = Players.LocalPlayer;
+    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(`{player.UserId}_{self.ID}`):InvokeServer();
+
+  end;
+
+  local function initialize(self: ClientItem)
+
+    ContextActionService:BindAction("Activate", function(actionName, inputState, inputObject)
+
+      if inputState == Enum.UserInputState.Begin then
+
+        self:activate();
+
+      end;
+
+    end, false);
 
   end;
 
@@ -31,6 +53,7 @@ function PotionOfRegenerationClientItem.new(): ClientItem
     description = PotionOfRegenerationClientItem.description;
     breakdown = breakdown;
     activate = activate;
+    initialize = initialize;
   });
 
 end;
