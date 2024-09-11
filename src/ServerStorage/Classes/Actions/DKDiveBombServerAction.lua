@@ -54,72 +54,108 @@ local function animateFlight(humanoid,animations, animData,state)
 	return animations
 end
 
-local function flightStart(primaryPart)
-	--perhaps some of this could be clientside
-	local linearVelocity = Instance.new("LinearVelocity");
-	linearVelocity.VelocityConstraintMode = "Line"
-	linearVelocity.LineDirection = Vector3.new(0, 1, 0);
-	linearVelocity.LineVelocity = -5
-	linearVelocity.MaxForce = math.huge;
-	linearVelocity.Parent = primaryPart;
-	linearVelocity.Attachment0 = primaryPart:FindFirstChild("RootAttachment") :: Attachment;
-	linearVelocity:SetAttribute("PlayerControls", false)
-	task.wait(0.3)
+local function damageEvent(primaryPart, round)
+	print("creating Explosion")
+		local explosion = Instance.new("Explosion", primaryPart);
+		explosion.BlastPressure = 0;
+		explosion.BlastRadius = 5;
+		explosion.DestroyJointRadiusPercent = 0;
+		explosion.Position = primaryPart.Position;
+		local hitContestants = {};
+		explosion.Hit:Connect(function(basePart)
+  
+		  -- Damage any parts or contestants that get hit.
+		  for _, possibleEnemyContestant in ipairs(round.contestants) do
+  
+			task.spawn(function()
+  
+			  local possibleEnemyCharacter = possibleEnemyContestant.character;
+			  if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
+  
+				table.insert(hitContestants, possibleEnemyContestant);
+				local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
+				if enemyHumanoid then
+  
+				  local currentHealth = enemyHumanoid:GetAttribute("CurrentHealth") :: number?;
+				  if currentHealth then
+  
+					local newHealth = currentHealth - 15;
+					possibleEnemyContestant:updateHealth(newHealth, {
+					  contestant = contestant;
+					  actionID = DiveBombServerAction.ID;
+					});
+  
+				  end
+  
+				end;
+  
+			  end;
+  
+			end);
+  
+		  end;
+		  
+		  local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability") :: number?;
+		  if basePartCurrentDurability and basePartCurrentDurability > 0 then
+  
+			ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, contestant);
+  
+		  end;
+  
+		end);
+  
 
-	linearVelocity.LineVelocity = 50;
+	 
 
-	local tween = TweenService:Create(linearVelocity, TweenInfo.new(1.0, Enum.EasingStyle.Sine), {LineVelocity = 0})
-	tween:Play()
-	task.wait(0.6)
-	linearVelocity.VelocityConstraintMode = "Vector"
-	linearVelocity.VectorVelocity = Vector3.new(0,0,0)
-	linearVelocity:SetAttribute("PlayerControls", true)
-	local humanoid = primaryPart.Parent.Humanoid
+end
 
-	local connection
-	connection = humanoid:GetPropertyChangedSignal("FloorMaterial"):Connect(function(change)
-		if humanoid.FloorMaterial ~= Enum.Material.Air then
-			connection:Disconnect()
-			linearVelocity:Destroy()
-		end
-	end)
-
-
-	repeat 
-		task.wait(0.25)
-		humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") - 2)
-	until linearVelocity:GetAttribute("PlayerControls") == false or humanoid:GetAttribute("CurrentStamina") <= 0
-	if humanoid:GetAttribute("CurrentStamina") <= 0 then
-		linearVelocity:SetAttribute("PlayerControls", false)
-		linearVelocity.VelocityConstraintMode = "Line"
-		linearVelocity.LineDirection = Vector3.new(0, -1, 0);
-		linearVelocity.LineVelocity = 8
-
+local function startAttack(primaryPart, animations, coords, round)
+	local flightConstraint = primaryPart:FindFirstChild("FlightConstraint")
+	if flightConstraint then
+		flightConstraint:SetAttribute("PlayerControls", false)
 	end
+	primaryPart.CFrame = CFrame.lookAt((primaryPart.CFrame.Position), (coords * Vector3.new(1,0,1) + Vector3.new(0,primaryPart.CFrame.Position.Y,0)))
+	--perhaps some of this could be clientside
+	local animData = Vector3.new(0.1,1,1)
+	animations["Right"]:Play(animData.X,animData.Y,animData.Z);
+	animations["Left"]:Play(animData.X,animData.Y,animData.Z);
+	animations["Player"]:Play(animData.X,animData.Y,animData.Z);
+
+	local intialDistance = ((coords+Vector3.new(0,5,0)) - primaryPart.CFrame.Position).Magnitude
+	local part = Instance.new("Part", workspace.Terrain);
+	part.Anchored = true
+	part.CanCollide = false
+	part.Transparency = 1
+	Instance.new("RigidConstraint", part)
+	part.RigidConstraint.Attachment0 = Instance.new("Attachment", part)
+	part.CFrame = primaryPart.CFrame
+	part.RigidConstraint.Attachment1 = primaryPart:FindFirstChild("RootAttachment")
+	for i = 1, 5 do
+		expectedPos = part.Position + (( part.CFrame.LookVector * -1 + Vector3.new(0,1/5,0)) * (5-i)) + ((part.CFrame.LookVector + Vector3.new(0,1/5,0)) * (i))
+	local tween = TweenService:Create(part, TweenInfo.new(0.75/5, Enum.EasingStyle.Linear), {Position = expectedPos})
+	tween:Play()
+	task.wait(0.75/5)
+	end
+	animations["Right"]:AdjustSpeed(1.5);
+	animations["Left"]:AdjustSpeed(1.5);
+	animations["Player"]:AdjustSpeed(1.5);
+	
+	local travelDistance = ((coords+Vector3.new(0,5,0)) - primaryPart.CFrame.Position).Magnitude
+	local travelTime = 8/15
+	local tween = TweenService:Create(part, TweenInfo.new(travelTime, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {Position = coords + Vector3.new(0,4,0)})
+	tween:Play()
+	task.wait(travelTime)
+	damageEvent(primaryPart, round)
+
+	
+	animations["Right"]:AdjustSpeed(1);
+	animations["Left"]:AdjustSpeed(1);
+	animations["Player"]:AdjustSpeed(1);
+	task.wait(0.2)
+part:Destroy()
 	return
 end
 
-local function flightEnd(primaryPart)
-	local linearVelocity = primaryPart:FindFirstChild("LinearVelocity")
-	linearVelocity:SetAttribute("PlayerControls", false)
-
-	linearVelocity.VelocityConstraintMode = "Line"
-	linearVelocity.LineDirection = Vector3.new(0, 1, 0);
-	linearVelocity.LineVelocity = 15
-	linearVelocity.MaxForce = math.huge;
-	linearVelocity.Parent = primaryPart;
-	linearVelocity.Attachment0 = primaryPart:FindFirstChild("RootAttachment") :: Attachment;
-
-	task.wait(0.15)
-	linearVelocity.LineDirection = primaryPart.CFrame.LookVector
-	linearVelocity.LineVelocity = 30;
-	task.delay(0.1, function()
-
-		linearVelocity:Destroy();
-
-	end);
-
-end
 
 local function preloadAnims(char, animations)
 
@@ -127,8 +163,8 @@ local function preloadAnims(char, animations)
 
 
 	local animator = humanoid:FindFirstChild("Animator")
-	local animatorR = humanoid.Parent.WingProp.WingsPropRight:FindFirstChild("AnimationController");
-	local animatorL = humanoid.Parent.WingProp.WingsPropLeft:FindFirstChild("AnimationController");
+	local animatorR = humanoid.Parent.WingProp.WingsPropRight:FindFirstChild("AnimationController") or humanoid.Parent.WingProp.WingsPropRight:FindFirstChild("Animator");
+	local animatorL = humanoid.Parent.WingProp.WingsPropLeft:FindFirstChild("AnimationController") or humanoid.Parent.WingProp.WingsPropLeft:FindFirstChild("Animator");
 	local anims = {}
 
 	-- usually would have a for i here, but since different animators are used this way is easier
@@ -180,9 +216,9 @@ function DiveBombServerAction.new(contestant: ServerContestant, round: ServerRou
 	local function activate()
 
 		if contestant.character then
-
-			print(data)
-
+			local coords = getDataFromClient(contestant.player)
+			print(coords)
+			startAttack(contestant.character.HumanoidRootPart, anims, coords, round)
 		end;
 
 	end;
@@ -198,7 +234,7 @@ function DiveBombServerAction.new(contestant: ServerContestant, round: ServerRou
 
 		end
 
-		contestant.character.WingProp:Destroy()
+		
 
 	end;
 
@@ -221,8 +257,7 @@ function DiveBombServerAction.new(contestant: ServerContestant, round: ServerRou
 
 			if player == contestant.player then
 
-				local data = getDataFromClient(contestant.player)
-	print(data)
+				
 
 				action:activate();
 

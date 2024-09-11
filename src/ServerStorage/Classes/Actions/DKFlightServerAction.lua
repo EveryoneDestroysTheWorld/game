@@ -57,6 +57,7 @@ end
 local function flightStart(primaryPart)
 	--perhaps some of this could be clientside
 	local linearVelocity = Instance.new("LinearVelocity");
+	linearVelocity.Name = "FlightConstraint"
 	linearVelocity.VelocityConstraintMode = "Line"
 	linearVelocity.LineDirection = Vector3.new(0, 1, 0);
 	linearVelocity.LineVelocity = -5
@@ -86,8 +87,9 @@ local function flightStart(primaryPart)
 
 
 	repeat 
-		task.wait(0.25)
 		humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") - 2)
+		task.wait(0.25)
+		
 	until linearVelocity:GetAttribute("PlayerControls") == false or humanoid:GetAttribute("CurrentStamina") <= 0
 	if humanoid:GetAttribute("CurrentStamina") <= 0 then
 		linearVelocity:SetAttribute("PlayerControls", false)
@@ -95,12 +97,20 @@ local function flightStart(primaryPart)
 		linearVelocity.LineDirection = Vector3.new(0, -1, 0);
 		linearVelocity.LineVelocity = 8
 
-	end
+	else
+
+
+	task.delay(0.25, function()
+
+		linearVelocity:Destroy();
+
+	end);
+end
 	return
 end
 
 local function flightEnd(primaryPart)
-	local linearVelocity = primaryPart:FindFirstChild("LinearVelocity")
+	local linearVelocity = primaryPart:FindFirstChild("FlightConstraint")
 	linearVelocity:SetAttribute("PlayerControls", false)
 
 	linearVelocity.VelocityConstraintMode = "Line"
@@ -127,8 +137,8 @@ local function preloadAnims(char, animations)
 
 
 	local animator = humanoid:FindFirstChild("Animator")
-	local animatorR = humanoid.Parent.WingProp.WingsPropRight:FindFirstChild("AnimationController");
-	local animatorL = humanoid.Parent.WingProp.WingsPropLeft:FindFirstChild("AnimationController");
+	local animatorR = humanoid.Parent.WingProp.WingsPropRight:FindFirstChild("AnimationController") or humanoid.Parent.WingProp.WingsPropRight:FindFirstChild("Animator");
+	local animatorL = humanoid.Parent.WingProp.WingsPropLeft:FindFirstChild("AnimationController") or humanoid.Parent.WingProp.WingsPropLeft:FindFirstChild("Animator");
 	local anims = {}
 
 	-- usually would have a for i here, but since different animators are used this way is easier
@@ -226,8 +236,6 @@ function TakeFlightServerAction.new(contestant: ServerContestant, round: ServerR
 			executeActionRemoteFunction:Destroy();
 
 		end
-
-		contestant.character.WingProp:Destroy()
 
 	end;
 

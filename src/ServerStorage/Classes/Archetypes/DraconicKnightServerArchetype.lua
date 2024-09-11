@@ -27,6 +27,11 @@ local function setUpPropsDragonKnight(model)
   wingsProp:FindFirstChild("WingProp").Parent = model
   wingsProp:Destroy()
   model.WingProp.Root.RigidConstraint.Attachment1 = model:FindFirstChild("BodyBackAttachment", true)
+
+  local diveBombIndicator = InsertService:LoadAsset(124109899420589)
+  diveBombIndicator.AoeDisplay.Name = "DiveBombIndicator"
+  diveBombIndicator.DiveBombIndicator.Parent = ReplicatedStorage.Client.InGameDisplayObjects
+  diveBombIndicator:Destroy()
 end
 
 
@@ -36,7 +41,7 @@ setUpPropsDragonKnight(contestant["character"])
 
 
   local function breakdown(self: ServerArchetype)
-
+    contestant.character.WingProp:Destroy()
   end;
 
   local function runAutoPilot(self: ServerArchetype, actions: {ServerAction})

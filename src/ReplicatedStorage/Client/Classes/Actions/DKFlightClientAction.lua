@@ -22,15 +22,15 @@ local activeState = false
 local function flightControls()
 	local flightControlsConnect
 	flightControlsConnect = Players.LocalPlayer.Character.HumanoidRootPart.ChildAdded:Connect(function(child)
-		if child.Name == "LinearVelocity" then
+		if child.Name == "FlightConstraint" then
 			flightControlsConnect:Disconnect()
 	activeState = true
-	local linearVelocity = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("LinearVelocity")
+	local linearVelocity = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("FlightConstraint")
 	local humanoid = Players.LocalPlayer.Character.Humanoid
 	-- this waits for the controls to be enabled by the server
 	linearVelocity:SetAttribute("PlayerControls", false)
 	local connection
-	local conncetion2
+	local connection2
 	connection = linearVelocity.AttributeChanged:Connect(function()
 		connection:Disconnect()
 		connection = linearVelocity.AttributeChanged:Connect(function()
