@@ -19,7 +19,6 @@ local ExplosivePunchAction = {
 function ExplosivePunchAction.new(): ClientAction
 
   local player = Players.LocalPlayer;
-  local remoteName: string;
 
   local function breakdown(self: ClientAction)
 
@@ -29,7 +28,7 @@ function ExplosivePunchAction.new(): ClientAction
 
   local function activate(self: ClientAction)
 
-    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
+    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(`{player.UserId}_{self.ID}`):InvokeServer();
 
   end;
 
@@ -44,8 +43,6 @@ function ExplosivePunchAction.new(): ClientAction
       shortcutCharacter = "L";
       iconImage = "rbxassetid://17771917538";
     }));
-    
-    remoteName = `{player.UserId}_{self.ID}`;
   
     local function checkJump(_, inputState: Enum.UserInputState)
   
