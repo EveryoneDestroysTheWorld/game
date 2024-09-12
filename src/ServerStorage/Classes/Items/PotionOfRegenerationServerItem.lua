@@ -63,6 +63,12 @@ function PotionOfRegenerationServerItem.new(): ServerItem
 
     contestant = newContestant;
 
+    if contestant.player then
+
+      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID);
+
+    end;
+
   end;
 
   local item = ServerItem.new({

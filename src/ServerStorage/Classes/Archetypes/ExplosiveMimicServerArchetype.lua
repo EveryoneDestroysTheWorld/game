@@ -516,6 +516,12 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
   
     end);
 
+    if contestant.player then
+
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
+
+    end;
+
   end;
 
   return ServerArchetype.new({

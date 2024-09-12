@@ -178,6 +178,12 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
     randomItem = contestant:addItemToInventory(randomItem.ID);
     randomItem:initialize(contestant, round);
 
+    if contestant.player then
+
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
+
+    end;
+
   end;
 
   return ServerArchetype.new({

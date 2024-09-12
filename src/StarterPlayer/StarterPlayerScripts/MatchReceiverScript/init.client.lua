@@ -6,9 +6,11 @@ local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 local ActionButtonContainer = require(ReplicatedStorage.Client.ReactComponents.ActionButtonContainer);
+local ClientItem = require(ReplicatedStorage.Client.Classes.ClientItem);
 local StarterGui = game:GetService("StarterGui");
 type ClientArchetype = ClientArchetype.ClientArchetype;
 type ClientAction = ClientAction.ClientAction;
+type ClientItem = ClientItem.ClientItem;
 local RoundResultsWindow = require(script.ReactComponents.RoundResultsWindow);
 
 local currentArchetype: ClientArchetype = nil;
@@ -27,7 +29,7 @@ actionButtonContainer.Enabled = true;
 
 local root = ReactRoblox.createRoot(actionButtonContainer);
 
-ReplicatedStorage.Shared.Functions.InitializeInventory.OnClientInvoke = function(archetypeID: number)
+ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function(archetypeID: number)
 
   -- Set up the action container GUI.
   root:render(React.createElement(ActionButtonContainer));
@@ -45,6 +47,14 @@ ReplicatedStorage.Shared.Functions.InitializeInventory.OnClientInvoke = function
     table.insert(currentActions, action);
 
   end;
+
+end;
+
+ReplicatedStorage.Shared.Functions.InitializeItem.OnClientInvoke = function(itemID: number)
+
+  local item = ClientItem.get(itemID);
+  item:initialize();
+  print(`Item active: {item.name}`);
 
 end;
 

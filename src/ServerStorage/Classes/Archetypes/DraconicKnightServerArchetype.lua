@@ -54,7 +54,13 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
       model.WingProp.Root.RigidConstraint.Attachment1 = model:FindFirstChild("BodyBackAttachment", true)
     end
       
-    setUpPropsDragonKnight(contestant["character"])
+    setUpPropsDragonKnight(contestant["character"]);
+
+    if contestant.player then
+
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
+
+    end;
 
   end;
 

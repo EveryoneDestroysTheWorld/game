@@ -8,8 +8,9 @@ export type ClientItemProperties = {
   name: string;
   iconImage: string;
   description: string;
-  activate: (self: ClientItem, ...any) -> ();
+  activate: (self: ClientItem) -> ();
   breakdown: (self: ClientItem) -> ();
+  initialize: (self: ClientItem, ...any) -> ()
 };
 
 export type ClientItemEvents = {

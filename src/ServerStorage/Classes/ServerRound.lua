@@ -168,10 +168,6 @@ function ServerRound.__index:start(): ()
           if contestant.ID < 1 then
               
             archetype:runAutoPilot(actions);
-
-          elseif contestant.player then
-
-            ReplicatedStorage.Shared.Functions.InitializeInventory:InvokeClient(contestant.player, archetype.ID);
           
           end;
 

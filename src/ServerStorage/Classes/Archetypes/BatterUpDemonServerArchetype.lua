@@ -46,6 +46,12 @@ function BatterUpDemonServerArchetype.new(): ServerArchetype
     contestant = newContestant;
     round = newRound;
 
+    if contestant.player then
+
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
+
+    end;
+
   end;
 
   return ServerArchetype.new({
