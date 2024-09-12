@@ -9,38 +9,31 @@ type HealthHeadBar = {
 
 local function HealthHeadBar(props: HealthHeadBar)
 
-  local sizeXScale: number, setSizeXScale = React.useState(1);
+  local contestant = props.contestant;
+
+  local healthPercentage, setHealthPercentage = React.useState(0);
 
   React.useEffect(function()
+  
+    local function updateHealthPercentage()
 
-    local healthUpdatedEvent = props.contestant.onHealthUpdated:Connect(function()
-    
-      local character = props.contestant.character;
-      local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
-      if humanoid then
+      if contestant.currentHealth and contestant.baseHealth then
 
-        local baseHealth = humanoid:GetAttribute("BaseHealth");
-        local currentHealth = humanoid:GetAttribute("CurrentHealth");
-        if typeof(baseHealth) == "number" and typeof(currentHealth) == "number" then
-
-          setSizeXScale(currentHealth / baseHealth);
-          return;
-
-        end;
+        setHealthPercentage(contestant.currentHealth / contestant.baseHealth);
 
       end;
 
-      setSizeXScale(0);
+    end;
 
-    end);
+    local onHealthUpdated = contestant.onHealthUpdated:Connect(updateHealthPercentage);
 
     return function()
 
-      healthUpdatedEvent:Disconnect();
+      onHealthUpdated:Disconnect();
 
     end;
 
-  end, {props.contestant});
+  end, {contestant});
 
   return React.createElement("Frame", {
     Size = UDim2.new(1, 0, 0.1, 0);
@@ -48,10 +41,10 @@ local function HealthHeadBar(props: HealthHeadBar)
     BackgroundTransparency = 0.7;
     BorderSizePixel = 0;
     LayoutOrder = 2;
-    Visible = sizeXScale < 1;
+    Visible = healthPercentage < 1;
   }, {
     CurrentHealth = React.createElement("Frame", {
-      Size = UDim2.new(sizeXScale, 0, 1, 0);
+      Size = UDim2.new(healthPercentage, 0, 1, 0);
       BackgroundColor3 = Color3.new(1, 1, 1);
       BorderSizePixel = 0;
     })

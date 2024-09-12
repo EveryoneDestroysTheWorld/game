@@ -34,19 +34,7 @@ function PotionOfRegenerationServerItem.new(): ServerItem
 
       if shouldHeal then
 
-        local character = contestant.character;
-        local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
-        if humanoid and humanoid:IsA("Humanoid") then
-
-          local currentHealth = humanoid:GetAttribute("CurrentHealth") :: number?;
-          local baseHealth = humanoid:GetAttribute("BaseHealth") :: number?;
-          if currentHealth and baseHealth and currentHealth < baseHealth then
-
-            humanoid:SetAttribute("CurrentHealth", math.min(baseHealth, currentHealth + 10));
-
-          end;
-
-        end;
+        contestant:updateHealth(math.min(contestant.baseHealth, contestant.currentHealth + 10));
 
       end;
 

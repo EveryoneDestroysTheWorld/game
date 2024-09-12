@@ -17,6 +17,14 @@ export type ClientContestantProperties = {
   isBot: boolean;
 
   teamID: number?;
+
+  currentHealth: number?;
+
+  baseHealth: number?;
+
+  currentStamina: number?;
+
+  baseStamina: number?
   
 }
 
@@ -32,6 +40,7 @@ export type ClientContestantMethods = {
 export type ClientContestantEvents = {
   onDisqualified: RBXScriptSignal;
   onHealthUpdated: RBXScriptSignal;
+  onStaminaUpdated: RBXScriptSignal;
   onArchetypePrivatelyChosen: RBXScriptSignal;
   onArchetypeUpdated: RBXScriptSignal;
   onCharacterUpdated: RBXScriptSignal;
@@ -49,7 +58,7 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
   local contestant = setmetatable(properties, ClientContestant) :: ClientContestant;
 
   -- Set up events.
-  local eventNames = {"onDisqualified", "onHealthUpdated", "onArchetypePrivatelyChosen", "onArchetypeUpdated", "onCharacterUpdated"};
+  local eventNames = {"onDisqualified", "onHealthUpdated", "onStaminaUpdated", "onArchetypePrivatelyChosen", "onArchetypeUpdated", "onCharacterUpdated"};
   events[contestant] = {};
   for _, eventName in ipairs(eventNames) do
 
@@ -96,7 +105,19 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
   
     if contestantID == contestant.ID then
 
+      contestant.currentHealth = newHealth;
       events[contestant].onHealthUpdated:Fire(newHealth, cause);
+
+    end;
+
+  end);
+
+  ReplicatedStorage.Shared.Events.StaminaUpdated.OnClientEvent:Connect(function(contestantID: number, newStamina: number, cause: Cause?)
+  
+    if contestantID == contestant.ID then
+
+      contestant.currentStamina = newStamina;
+      events[contestant].onStaminaUpdated:Fire(newStamina, cause);
 
     end;
 

@@ -193,6 +193,43 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
       end;
 
+      for _, contestant in round.contestants do
+
+        local isRecoveringStamina = false;
+        local function recoverStamina()
+
+          if not isRecoveringStamina then
+
+            isRecoveringStamina = true;
+
+            while contestant.currentStamina < contestant.baseStamina do
+
+              task.wait(1);
+              contestant:updateStamina(math.min(contestant.currentStamina + 5, contestant.baseStamina));
+
+            end;
+
+            isRecoveringStamina = false;
+
+          end;
+
+        end;
+
+        local function checkHealth()
+
+          if contestant.currentHealth <= 0 then
+
+            contestant:disqualify();
+
+          end;
+
+        end;
+
+        table.insert(events, contestant.onHealthUpdated:Connect(checkHealth));
+        table.insert(events, contestant.onStaminaUpdated:Connect(recoverStamina));
+
+      end;
+
     end;
     breakdown = function(self)
 
@@ -242,38 +279,6 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
       playersDowned = 0;
       timesDowned = 0;
     };
-
-    if contestant.character then
-
-      local humanoid = contestant.character:FindFirstChild("Humanoid");
-      if humanoid and humanoid:IsA("Humanoid") then
-
-        humanoid:SetAttribute("CurrentHealth", 100);
-        humanoid:SetAttribute("BaseHealth", 100);
-        humanoid:SetAttribute("CurrentStamina", 100);
-        humanoid:SetAttribute("BaseStamina", 100);
-
-        table.insert(events, humanoid:GetAttributeChangedSignal("CurrentHealth"):Connect(function()
-        
-          if not contestant.isDisqualified and humanoid:GetAttribute("CurrentHealth") <= 0 then
-
-            contestant:disqualify();
-
-          end;
-
-        end));
-
-      else 
-
-        contestant:disqualify();
-
-      end;
-
-    else
-
-      contestant:disqualify();
-
-    end;
 
   end;
 

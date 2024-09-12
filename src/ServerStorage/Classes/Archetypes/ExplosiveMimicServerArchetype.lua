@@ -73,8 +73,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
             cleanupTask();
 
-            local enemyHumanoid = enemyCharacter:FindFirstChild("Humanoid") :: Humanoid;
-            local isEnemyInCriticalCondition = enemyHumanoid:GetAttribute("CurrentHealth") < 25;
+            local isEnemyInCriticalCondition = cause.contestant.currentHealth < 25;
             local hasEnemyAttackedPlayerAgain = DateTime.now().UnixTimestampMillis <= timeEnemyAttacked + 3000;
             local shouldForgiveEnemy = not isEnemyInCriticalCondition and not hasEnemyAttackedPlayerAgain;
             if shouldForgiveEnemy then
@@ -253,21 +252,16 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
       end;
       
       local enemyContestantCharacter = contestantToAttack and contestantToAttack.character;
-      local enemyContestantHumanoid = enemyContestantCharacter and enemyContestantCharacter:FindFirstChild("Humanoid") :: Humanoid;
       local enemyContestantPrimaryPart = enemyContestantCharacter and enemyContestantCharacter.PrimaryPart;
-      if enemyContestantPrimaryPart then
+      if contestantToAttack and contestantToAttack.currentHealth < 0 then
 
-        if enemyContestantHumanoid and enemyContestantHumanoid:GetAttribute("CurrentHealth") < 0 then
+        contestantToAttack = nil;
+        targetPart = nil;
+        continue;
 
-          contestantToAttack = nil;
-          targetPart = nil;
-          continue;
+      elseif enemyContestantPrimaryPart then
 
-        else
-
-          targetPart = enemyContestantPrimaryPart;
-
-        end;
+        targetPart = enemyContestantPrimaryPart;
 
       else
 
@@ -461,16 +455,10 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
                 if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
   
                   table.insert(hitContestants, possibleEnemyContestant);
-                  local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
-                  if enemyHumanoid then
-  
-                    local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") :: number - 50;
-                    possibleEnemyContestant:updateHealth(newHealth, {
-                      contestant = contestant;
-                      archetypeID = ExplosiveMimicServerArchetype.ID;
-                    });
-  
-                  end;
+                  possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 50, {
+                    contestant = contestant;
+                    archetypeID = ExplosiveMimicServerArchetype.ID;
+                  });
   
                 end;
   

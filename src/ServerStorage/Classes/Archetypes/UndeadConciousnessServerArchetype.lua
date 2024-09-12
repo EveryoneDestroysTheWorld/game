@@ -151,8 +151,7 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
   
                     end);
   
-                    local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") :: number - 20;
-                    possibleEnemyContestant:updateHealth(newHealth, {
+                    possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 20, {
                       contestant = contestant;
                       archetypeID = UndeadConciousnessServerArchetype.ID;
                     });

@@ -108,6 +108,10 @@ local function startRound()
         isBot = true;
         isDisqualified = false;
         teamID = if i > team1BotCount then 2 else 1;
+        baseHealth = 100;
+        currentHealth = 100;
+        baseStamina = 100;
+        currentStamina = 100;
       });
 
       round:addContestant(botContestant);
@@ -404,6 +408,10 @@ local function checkPlayerList(player: Player)
         isBot = false;
         isDisqualified = false;
         teamID = 1; -- TODO: Fix this
+        baseHealth = 100;
+        currentHealth = 100;
+        baseStamina = 100;
+        currentStamina = 100;
       }));
 
     else

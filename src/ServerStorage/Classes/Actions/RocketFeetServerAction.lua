@@ -32,7 +32,7 @@ function RocketFeetServerAction.new(): ServerAction
       local humanoid = contestant.character:FindFirstChild("Humanoid");
       assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.character}'s Humanoid`);
 
-      if humanoid:GetAttribute("CurrentStamina") >= 10 then
+      if contestant.currentStamina >= 10 then
 
         for _, explosivePart in ipairs({leftFootExplosivePart, rightFootExplosivePart}) do
 
@@ -53,16 +53,10 @@ function RocketFeetServerAction.new(): ServerAction
                 if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
 
                   table.insert(hitContestants, possibleEnemyContestant);
-                  local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
-                  if enemyHumanoid then
-
-                    local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 15;
-                    possibleEnemyContestant:updateHealth(newHealth, {
-                      contestant = contestant;
-                      actionID = RocketFeetServerAction.ID;
-                    });
-
-                  end;
+                  possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 15, {
+                    contestant = contestant;
+                    actionID = RocketFeetServerAction.ID;
+                  });
 
                 end;
 
@@ -99,7 +93,7 @@ function RocketFeetServerAction.new(): ServerAction
         end;
 
         -- Reduce the player's stamina.
-        humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") - 10);
+        contestant:updateStamina(math.max(0, contestant.currentStamina - 10));
 
       end;
   

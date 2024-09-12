@@ -9,6 +9,8 @@ local CenteredRoundTimer = require(script.ReactComponents.CenteredRoundTimer);
 local RoundTimer = require(script.ReactComponents.RoundTimer);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
+local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
+type ClientContestant = ClientContestant.ClientContestant;
 
 local popupContainer = nil;
 local player = Players.LocalPlayer;
@@ -27,12 +29,26 @@ local function setupGUI()
     popupContainer.Enabled = true;
 
     local round = ClientRound.fromServerRound();
+
+    local contestant: ClientContestant?;
+    for _, possibleContestant in round.contestants do
+
+      if possibleContestant.ID == player.UserId then
+
+        contestant = possibleContestant;
+        break;
+
+      end;
+
+    end;
+
+    assert(contestant);
   
     local root = ReactRoblox.createRoot(popupContainer);
     root:render(React.createElement(React.Fragment, {}, {
       CenteredRoundTimer = React.createElement(CenteredRoundTimer, {round = round});
       DestructionBar = React.createElement(DestructionBar, {round = round});
-      StatBarContainer = React.createElement(StatBarContainer);
+      StatBarContainer = React.createElement(StatBarContainer, {contestant = contestant});
       RoundTimer = React.createElement(RoundTimer, {round = round});
     }));
 
