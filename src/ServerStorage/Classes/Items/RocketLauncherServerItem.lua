@@ -26,8 +26,26 @@ function RocketLauncherServerItem.new(contestant: ServerContestant, round: Serve
     
   end;
   
-  local function breakdown()
+  local function breakdown(self: ServerItem)
     
+    if contestant.player then
+
+      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.ID);
+
+    end;
+
+  end;
+
+  local function initialize(self: ServerItem, newContestant: ServerContestant)
+
+    contestant = newContestant;
+
+    if contestant.player then
+
+      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID);
+
+    end;
+
   end;
 
   local item = ServerItem.new({
@@ -36,6 +54,7 @@ function RocketLauncherServerItem.new(contestant: ServerContestant, round: Serve
     description = RocketLauncherServerItem.description;
     activate = activate;
     breakdown = breakdown;
+    initialize = initialize;
   });
   
   return item;

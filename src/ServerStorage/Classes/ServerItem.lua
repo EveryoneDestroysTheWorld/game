@@ -2,15 +2,13 @@
 -- Written by Christian Toney (Sudobeast)
 -- This module represents an item on the server side.
 
-local ServerContestant = require(script.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
-
 export type ServerItemProperties = {
   ID: number;
   name: string;
   description: string;
-  activate: (self: ServerItem, ...any) -> ();
+  activate: (self: ServerItem) -> ();
   breakdown: (self: ServerItem) -> ();
+  initialize: (self: ServerItem, ...any) -> ();
 };
 
 export type ServerItemEvents = {
@@ -38,7 +36,7 @@ function ServerItem.new(properties: ServerItemProperties): ServerItem
   
 end
 
-function ServerItem.get(itemID: number, contestant: ServerContestant, ...: any): ServerItem
+function ServerItem.get(itemID: number): ServerItem
 
   for _, instance in ipairs(script.Parent.Items:GetChildren()) do
   
@@ -47,7 +45,7 @@ function ServerItem.get(itemID: number, contestant: ServerContestant, ...: any):
       local item = require(instance) :: any;
       if item.ID == itemID then
   
-        return item.new(contestant, ...);
+        return item.new();
   
       end;
   
@@ -56,6 +54,15 @@ function ServerItem.get(itemID: number, contestant: ServerContestant, ...: any):
   end;
 
   error(`Couldn't find item from ID {itemID}.`);
+
+end;
+
+function ServerItem.random(): ServerItem
+
+  local children = script.Parent.Items:GetChildren();
+  local selectedChild = children[math.random(1, #children)];
+  local item = require(selectedChild) :: any;
+  return item.new();
 
 end;
 

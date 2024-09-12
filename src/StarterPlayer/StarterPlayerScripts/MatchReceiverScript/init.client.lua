@@ -5,66 +5,140 @@ local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype
 local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
-local ActionButtonContainer = require(ReplicatedStorage.Client.ReactComponents.ActionButtonContainer);
+local HUDButtonContainer = require(ReplicatedStorage.Client.ReactComponents.HUDButtonContainer);
+local ClientItem = require(ReplicatedStorage.Client.Classes.ClientItem);
 local StarterGui = game:GetService("StarterGui");
 type ClientArchetype = ClientArchetype.ClientArchetype;
 type ClientAction = ClientAction.ClientAction;
+type ClientItem = ClientItem.ClientItem;
 local RoundResultsWindow = require(script.ReactComponents.RoundResultsWindow);
 
-local currentArchetype: ClientArchetype = nil;
-local currentActions: {ClientAction} = {};
+local initializedArchetype: ClientArchetype = nil;
+local initializedActions: {ClientAction} = {};
+local initializedItems: {{ClientItem}} = {};
 
 -- Set up the UI.
 local player = Players.LocalPlayer;
 local actionButtonContainer = Instance.new("ScreenGui");
 actionButtonContainer.Name = "ActionButtonContainerGUI";
-actionButtonContainer.Parent = player:WaitForChild("PlayerGui");
 actionButtonContainer.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
 actionButtonContainer.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets;
 actionButtonContainer.ResetOnSpawn = false;
 actionButtonContainer.DisplayOrder = 1;
 actionButtonContainer.Enabled = true;
 
-local root = ReactRoblox.createRoot(actionButtonContainer);
+local itemButtonContainer = actionButtonContainer:Clone();
+itemButtonContainer.Name = "ItemButtonContainerGUI";
+local actionButtonContainerRoot = ReactRoblox.createRoot(actionButtonContainer);
+local itemButtonContainerRoot = ReactRoblox.createRoot(itemButtonContainer);
 
-ReplicatedStorage.Shared.Functions.InitializeInventory.OnClientInvoke = function(archetypeID: number)
+local actionButtons = {};
+local itemButtons = {};
+local function rerenderRoots()
 
-  -- Set up the action container GUI.
-  root:render(React.createElement(ActionButtonContainer));
+  itemButtonContainer.Parent = player.PlayerGui;
+  itemButtonContainerRoot:render(React.createElement(HUDButtonContainer, {type = "Item"}, React.createElement(React.Fragment, {}, itemButtons)));
+
+  actionButtonContainer.Parent = player.PlayerGui;
+  actionButtonContainerRoot:render(React.createElement(HUDButtonContainer, {type = "Action"}, actionButtons));
+
+end;
+
+ReplicatedStorage.Client.Functions.AddHUDButton.OnInvoke = function(buttonType: "Action" | "Item", buttonComponent)
+  
+  assert(buttonType == "Action" or buttonType == "Item");
+  assert(buttonComponent);
+
+  table.insert(if buttonType == "Action" then actionButtons else itemButtons, buttonComponent);
+  rerenderRoots();
+
+end;
+
+ReplicatedStorage.Client.Functions.DestroyHUDButton.OnInvoke = function(buttonType: "Action" | "Item", key: number)
+
+  local list = if buttonType == "Action" then actionButtons else itemButtons;
+
+  for index, component in list :: {any} do
+
+    if component.key == key then
+
+      table.remove(list, index);
+      break;
+
+    end;
+
+  end;
+
+  rerenderRoots();
+
+end;
+
+ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function(archetypeID: number)
 
   -- Set up the archetype and actions.
-  currentArchetype = ClientArchetype.get(archetypeID);
-  currentArchetype:initialize();
-  print(`Archetype active: {currentArchetype.name}`);
+  initializedArchetype = ClientArchetype.get(archetypeID);
+  initializedArchetype:initialize();
+  print(`Archetype active: {initializedArchetype.name}`);
 
-  for _, actionID in ipairs(currentArchetype.actionIDs) do
+  for _, actionID in ipairs(initializedArchetype.actionIDs) do
 
     local action = ClientAction.get(actionID);
     action:initialize();
+    table.insert(initializedActions, action);
     print(`Action active: {action.name}`);
-    table.insert(currentActions, action);
 
   end;
+
+end;
+
+ReplicatedStorage.Shared.Functions.InitializeItem.OnClientInvoke = function(itemID: number, itemNumber: number, ...: any)
+
+  local item = ClientItem.get(itemID);
+  item:initialize(itemNumber, ...);
+  initializedItems[itemID] = initializedItems[itemID] or {};
+  initializedItems[itemID][itemNumber] = item;
+  print(`Item active: {item.name}`);
+
+end;
+
+ReplicatedStorage.Shared.Functions.BreakdownItem.OnClientInvoke = function(itemID: number, itemNumber: number)
+
+  initializedItems[itemID][itemNumber]:breakdown();
+  initializedItems[itemID][itemNumber] = nil;
+  rerenderRoots();
 
 end;
 
 ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function()
 
   -- Remove the GUI.
-  root:unmount();
+  ReplicatedStorage.Client.Functions.AddHUDButton.OnInvoke = nil;
+  itemButtonContainerRoot:unmount();
+  actionButtonContainerRoot:unmount();
 
   -- Breakdown the archetype and actions.
-  if currentArchetype then
+  if initializedArchetype then
 
-    currentArchetype:breakdown();
-    print(`Archetype disabled: {currentArchetype.name}`);
+    initializedArchetype:breakdown();
+    print(`Archetype disabled: {initializedArchetype.name}`);
 
   end;
 
-  for _, action in ipairs(currentActions) do
+  for _, action in initializedActions do
 
     action:breakdown();
     print(`Action disabled: {action.name}`);
+
+  end;
+
+  for _, itemList in initializedItems do
+
+    for _, item in itemList do
+
+      item:breakdown();
+      print(`Item disabled: {item.name}`);
+  
+    end;
 
   end;
 

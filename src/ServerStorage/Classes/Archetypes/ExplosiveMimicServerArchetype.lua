@@ -50,7 +50,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
     local healthUpdateEvent = contestant.onHealthUpdated:Connect(function(newHealth, oldHealth, cause)
 
       local primaryPart = character.PrimaryPart;
-      local targetPartDurability = targetPart and targetPart:GetAttribute("CurrentDurability");
+      local targetPartDurability = targetPart and targetPart:GetAttribute("CurrentDurability") :: number?;
       local isTargetPartAlmostDestroyed = not contestantToAttack and not targetPart or targetPartDurability and targetPartDurability <= 35;
       local enemyCharacter = cause and cause.contestant and cause.contestant.character;
       if isTargetPartAlmostDestroyed and primaryPart and newHealth < oldHealth and cause and cause.contestant and enemyCharacter and cause.actionID and cause.actionID ~= 2 then
@@ -278,7 +278,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
           -- Search for a visible, destroyable structure.
           -- TODO: Search for *massive* structures.
-          local currentPartDurability = targetPart and targetPart:GetAttribute("CurrentDurability");
+          local currentPartDurability = targetPart and targetPart:GetAttribute("CurrentDurability") :: number?;
           if currentPartDurability and currentPartDurability <= 0 then
 
             targetPart = nil;
@@ -289,7 +289,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
           if not round.stage.model then continue end;
           for _, destroyablePart in ipairs(round.stage.model:GetChildren()) do
 
-            local currentDurability = destroyablePart:GetAttribute("CurrentDurability");
+            local currentDurability = destroyablePart:GetAttribute("CurrentDurability") :: number?;
             if destroyablePart:IsA("BasePart") and currentDurability and currentDurability > 0 then
 
               -- Ensure the part is in visible range.
@@ -464,7 +464,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
                   local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
                   if enemyHumanoid then
   
-                    local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 50;
+                    local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") :: number - 50;
                     possibleEnemyContestant:updateHealth(newHealth, {
                       contestant = contestant;
                       archetypeID = ExplosiveMimicServerArchetype.ID;
@@ -478,7 +478,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
   
             end;
   
-            local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
+            local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability") :: number?;
             if basePartCurrentDurability and basePartCurrentDurability > 0 then
     
               ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 100, contestant);
@@ -515,6 +515,12 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
       end;
   
     end);
+
+    if contestant.player then
+
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
+
+    end;
 
   end;
 

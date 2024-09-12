@@ -5,6 +5,7 @@ local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local UndeadConciousnessClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.UndeadConciousnessClientArchetype);
 local ServerRound = require(script.Parent.Parent.ServerRound);
 local ServerAction = require(script.Parent.Parent.ServerAction);
+local ServerItem = require(script.Parent.Parent.ServerItem);
 type ServerRound = ServerRound.ServerRound;
 type ServerContestant = ServerContestant.ServerContestant;
 type ServerArchetype = ServerArchetype.ServerArchetype;
@@ -150,7 +151,7 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
   
                     end);
   
-                    local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 20;
+                    local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") :: number - 20;
                     possibleEnemyContestant:updateHealth(newHealth, {
                       contestant = contestant;
                       archetypeID = UndeadConciousnessServerArchetype.ID;
@@ -171,6 +172,16 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
       end;
   
     end);
+
+    -- Give the player a random item. 
+    local randomItem = ServerItem.random();
+    contestant:addItemToInventory(randomItem);
+
+    if contestant.player then
+
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
+
+    end;
 
   end;
 

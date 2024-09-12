@@ -14,7 +14,6 @@ type ServerContestant = ServerContestant.ServerContestant;
 local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
 type ServerArchetype = ServerArchetype.ServerArchetype;
 local Profile = require(ServerStorage.Classes.Profile);
-local RunService = game:GetService("RunService");
 
 -- Initialize the round.
 local round;
@@ -105,6 +104,7 @@ local function startRound()
         ID = i * 0.01;
         character = character;
         name = `NPC {i * 0.01}`;
+        inventory = {};
         isBot = true;
         isDisqualified = false;
         teamID = if i > team1BotCount then 2 else 1;
@@ -399,6 +399,7 @@ local function checkPlayerList(player: Player)
         player = player;
         character = player.Character;
         name = player.Name;
+        inventory = {};
         profile = profile;
         isBot = false;
         isDisqualified = false;
