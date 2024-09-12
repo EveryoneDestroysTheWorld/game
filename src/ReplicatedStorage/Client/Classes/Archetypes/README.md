@@ -1,3 +1,7 @@
+# ClientActions
+See [ClientArchetype.lua](../ClientArchetype.lua) for more information on what ClientArchetypes are.
+
+## Template
 ```lua
 --!strict
 -- Programmers: [Name of programmer] ([Roblox username of programmer])
