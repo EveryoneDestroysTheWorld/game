@@ -174,13 +174,8 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
     end);
 
     -- Give the player a random item. 
-    local randomItem = ServerItem.get(1);
+    local randomItem = ServerItem.random();
     contestant:addItemToInventory(randomItem);
-    randomItem:initialize(contestant, round);
-
-    randomItem = ServerItem.get(1);
-    contestant:addItemToInventory(randomItem);
-    randomItem:initialize(contestant, round);
 
     if contestant.player then
 
