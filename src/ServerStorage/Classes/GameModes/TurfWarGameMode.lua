@@ -204,7 +204,6 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
             while contestant.currentStamina < contestant.baseStamina do
 
-              print("recover")
               task.wait(1);
               contestant:updateStamina(math.min(contestant.currentStamina + 5, contestant.baseStamina));
 
