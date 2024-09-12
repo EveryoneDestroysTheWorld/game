@@ -6,8 +6,9 @@ export type ServerItemProperties = {
   ID: number;
   name: string;
   description: string;
-  activate: (self: ServerItem, ...any) -> ();
+  activate: (self: ServerItem) -> ();
   breakdown: (self: ServerItem) -> ();
+  initialize: (self: ServerItem, ...any) -> ();
 };
 
 export type ServerItemEvents = {
