@@ -7,7 +7,7 @@ local function HUDButtonContainer(props)
   local isActionList = props.type == "Action";
 
   return React.createElement("Frame", {
-    AnchorPoint = Vector2.new(1, 1);
+    AnchorPoint = Vector2.new(if isActionList then 1 else 0, 1);
     Position = UDim2.new(if isActionList then 1 else 0, if isActionList then -15 else 15, 1, -15);
     Size = UDim2.new();
     AutomaticSize = Enum.AutomaticSize.XY;
