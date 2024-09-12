@@ -28,7 +28,7 @@ function PotionOfRegenerationClientItem.new(): ClientItem
   local function activate(self: ClientItem)
 
     local player = Players.LocalPlayer;
-    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(`{player.UserId}_{self.ID}`):InvokeServer();
+    ReplicatedStorage.Shared.Functions.ItemFunctions:FindFirstChild(`{player.UserId}_{self.ID}`):InvokeServer();
 
   end;
 

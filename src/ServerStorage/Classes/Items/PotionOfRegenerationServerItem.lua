@@ -23,6 +23,7 @@ function PotionOfRegenerationServerItem.new(): ServerItem
 
   local contestant: ServerContestant;
   local shouldHeal = true;
+  local remoteFunction: RemoteFunction?;
 
   local function activate(self: ServerItem)
     
@@ -56,6 +57,18 @@ function PotionOfRegenerationServerItem.new(): ServerItem
   local function breakdown(self: ServerItem)
 
     shouldHeal = false;
+
+    if contestant.player then
+
+      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.ID);
+
+    end;
+
+    if remoteFunction then
+
+      remoteFunction:Destroy();
+
+    end;
     
   end;
 
@@ -64,6 +77,23 @@ function PotionOfRegenerationServerItem.new(): ServerItem
     contestant = newContestant;
 
     if contestant.player then
+
+      local newRemoteFunction = Instance.new("RemoteFunction");
+      newRemoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+      newRemoteFunction.OnServerInvoke = function(player)
+  
+        if player == contestant.player then
+  
+          self:activate();
+  
+        else
+  
+          error(`{player.Name} ({player.UserId}) may not use another player's item.`, 0);
+  
+        end
+  
+      end;
+      remoteFunction = newRemoteFunction;
 
       ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID);
 
