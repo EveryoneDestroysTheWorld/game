@@ -51,7 +51,6 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
     local container = containerRef.current;
     if container then
 
-      print(UDim2.new(1, if props.shouldHide then container.AbsoluteSize.X + 15 else 0, 0.5, 0))
       container.Position = UDim2.new(1, if props.shouldHide then container.AbsoluteSize.X + 15 else 0, 0.5, 0);
 
     end;

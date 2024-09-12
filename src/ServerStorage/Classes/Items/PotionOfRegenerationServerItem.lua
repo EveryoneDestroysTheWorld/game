@@ -24,9 +24,10 @@ function PotionOfRegenerationServerItem.new(): ServerItem
   local contestant: ServerContestant;
   local shouldHeal = true;
   local remoteFunction: RemoteFunction?;
+  local itemNumber: number = 1;
 
   local function activate(self: ServerItem)
-    
+
     for currentSecond = 1, 3 do
 
       task.wait(1);
@@ -50,7 +51,8 @@ function PotionOfRegenerationServerItem.new(): ServerItem
       end;
 
     end;
-    contestant:removeItemFromInventory(self.ID);
+    
+    contestant:removeItemFromInventory(self);
     
   end;
   
@@ -60,7 +62,7 @@ function PotionOfRegenerationServerItem.new(): ServerItem
 
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.ID, itemNumber);
 
     end;
 
@@ -78,8 +80,16 @@ function PotionOfRegenerationServerItem.new(): ServerItem
 
     if contestant.player then
 
+      local itemName = `{contestant.player.UserId}_{self.ID}`;
+      while ReplicatedStorage.Shared.Functions.ItemFunctions:FindFirstChild(`{itemName}_{itemNumber}`) do
+
+        itemNumber += 1;
+
+      end;
+
       local newRemoteFunction = Instance.new("RemoteFunction");
-      newRemoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+      newRemoteFunction.Name = `{itemName}_{itemNumber}`;
+      newRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ItemFunctions;
       newRemoteFunction.OnServerInvoke = function(player)
   
         if player == contestant.player then
@@ -95,7 +105,7 @@ function PotionOfRegenerationServerItem.new(): ServerItem
       end;
       remoteFunction = newRemoteFunction;
 
-      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID, itemNumber);
 
     end;
 

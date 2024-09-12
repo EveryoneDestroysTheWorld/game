@@ -4,11 +4,12 @@
 -- Designer: InkyTheBlue (InkyTheBlue)
 -- © 2024 Beastslash
 
-local ContextActionService = game:GetService("ContextActionService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ClientItem = require(script.Parent.Parent.ClientItem);
 type ClientItem = ClientItem.ClientItem;
+local React = require(ReplicatedStorage.Shared.Packages.react);
+local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
 
 local PotionOfRegenerationClientItem = {
   ID = 1;
@@ -19,30 +20,32 @@ local PotionOfRegenerationClientItem = {
 
 function PotionOfRegenerationClientItem.new(): ClientItem
 
+  local _itemNumber: number?;
+
   local function breakdown(self: ClientItem)
 
-    ContextActionService:UnbindAction("Activate");
+    ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Item", `{self.ID}_{_itemNumber}`);
 
   end;
 
   local function activate(self: ClientItem)
 
+    assert(_itemNumber);
     local player = Players.LocalPlayer;
-    ReplicatedStorage.Shared.Functions.ItemFunctions:FindFirstChild(`{player.UserId}_{self.ID}`):InvokeServer();
+    ReplicatedStorage.Shared.Functions.ItemFunctions:FindFirstChild(`{player.UserId}_{self.ID}_{_itemNumber}`):InvokeServer();
 
   end;
 
-  local function initialize(self: ClientItem)
+  local function initialize(self: ClientItem, itemNumber: number)
 
-    ContextActionService:BindAction("Activate", function(actionName, inputState, inputObject)
-
-      if inputState == Enum.UserInputState.Begin then
-
-        self:activate();
-
-      end;
-
-    end, false);
+    local hudButton = React.createElement(HUDButton, {
+      type = "Item";
+      key = `{self.ID}_{itemNumber}`;
+      onActivate = function() self:activate() end;
+      iconImage = "rbxassetid://17551046771";
+    });
+    _itemNumber = itemNumber;
+    ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Item", hudButton);
 
   end;
 

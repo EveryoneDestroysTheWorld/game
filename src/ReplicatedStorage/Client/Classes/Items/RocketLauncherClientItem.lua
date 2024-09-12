@@ -24,6 +24,10 @@ function RocketLauncherClientItem.new(): ClientItem
 
   end;
 
+  local function initialize(self: ClientItem)
+
+  end;
+
   return ClientItem.new({
     ID = RocketLauncherClientItem.ID;
     iconImage = RocketLauncherClientItem.iconImage;
@@ -31,6 +35,7 @@ function RocketLauncherClientItem.new(): ClientItem
     description = RocketLauncherClientItem.description;
     breakdown = breakdown;
     activate = activate;
+    initialize = initialize;
   });
 
 end;

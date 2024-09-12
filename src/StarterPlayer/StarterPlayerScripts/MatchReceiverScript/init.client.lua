@@ -15,12 +15,12 @@ local RoundResultsWindow = require(script.ReactComponents.RoundResultsWindow);
 
 local initializedArchetype: ClientArchetype = nil;
 local initializedActions: {ClientAction} = {};
-local initializedItems: {ClientItem} = {};
+local initializedItems: {{ClientItem}} = {};
 
 -- Set up the UI.
 local player = Players.LocalPlayer;
 local actionButtonContainer = Instance.new("ScreenGui");
-actionButtonContainer.Name = "HUDButtonContainerGUI";
+actionButtonContainer.Name = "ActionButtonContainerGUI";
 actionButtonContainer.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
 actionButtonContainer.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets;
 actionButtonContainer.ResetOnSpawn = false;
@@ -28,27 +28,52 @@ actionButtonContainer.DisplayOrder = 1;
 actionButtonContainer.Enabled = true;
 
 local itemButtonContainer = actionButtonContainer:Clone();
+itemButtonContainer.Name = "ItemButtonContainerGUI";
 local actionButtonContainerRoot = ReactRoblox.createRoot(actionButtonContainer);
 local itemButtonContainerRoot = ReactRoblox.createRoot(itemButtonContainer);
 
-ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function(archetypeID: number)
+local actionButtons = {};
+local itemButtons = {};
+local function rerenderRoots()
 
-  -- Set up the action container GUI.
-  local actionButtons = {};
-  local itemButtons = {};
-  local function rerenderRoots()
+  itemButtonContainer.Parent = player.PlayerGui;
+  itemButtonContainerRoot:render(React.createElement(HUDButtonContainer, {type = "Item"}, React.createElement(React.Fragment, {}, itemButtons)));
 
-    actionButtonContainerRoot:render(React.createElement(HUDButtonContainer, {type = "Action"}, actionButtons));
-    itemButtonContainerRoot:render(React.createElement(HUDButtonContainer, {type = "Item"}, itemButtons));
+  actionButtonContainer.Parent = player.PlayerGui;
+  actionButtonContainerRoot:render(React.createElement(HUDButtonContainer, {type = "Action"}, actionButtons));
 
-  end;
+end;
 
-  ReplicatedStorage.Client.Functions.AddHUDButton.OnInvoke = function(buttonType: "Action" | "Item", buttonComponent)
-    
-    table.insert(if buttonType == "Action" then actionButtons else itemButtons, buttonComponent);
-    rerenderRoots();
+ReplicatedStorage.Client.Functions.AddHUDButton.OnInvoke = function(buttonType: "Action" | "Item", buttonComponent)
   
+  assert(buttonType == "Action" or buttonType == "Item");
+  assert(buttonComponent);
+
+  table.insert(if buttonType == "Action" then actionButtons else itemButtons, buttonComponent);
+  rerenderRoots();
+
+end;
+
+ReplicatedStorage.Client.Functions.DestroyHUDButton.OnInvoke = function(buttonType: "Action" | "Item", key: number)
+
+  local list = if buttonType == "Action" then actionButtons else itemButtons;
+
+  for index, component in list :: {any} do
+
+    if component.key == key then
+
+      table.remove(list, index);
+      break;
+
+    end;
+
   end;
+
+  rerenderRoots();
+
+end;
+
+ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function(archetypeID: number)
 
   -- Set up the archetype and actions.
   initializedArchetype = ClientArchetype.get(archetypeID);
@@ -66,11 +91,21 @@ ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function
 
 end;
 
-ReplicatedStorage.Shared.Functions.InitializeItem.OnClientInvoke = function(itemID: number)
+ReplicatedStorage.Shared.Functions.InitializeItem.OnClientInvoke = function(itemID: number, itemNumber: number, ...: any)
 
   local item = ClientItem.get(itemID);
-  item:initialize();
+  item:initialize(itemNumber, ...);
+  initializedItems[itemID] = initializedItems[itemID] or {};
+  initializedItems[itemID][itemNumber] = item;
   print(`Item active: {item.name}`);
+
+end;
+
+ReplicatedStorage.Shared.Functions.BreakdownItem.OnClientInvoke = function(itemID: number, itemNumber: number)
+
+  initializedItems[itemID][itemNumber]:breakdown();
+  initializedItems[itemID][itemNumber] = nil;
+  rerenderRoots();
 
 end;
 
@@ -96,10 +131,14 @@ ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function()
 
   end;
 
-  for _, item in initializedItems do
+  for _, itemList in initializedItems do
 
-    item:breakdown();
-    print(`Item disabled: {item.name}`);
+    for _, item in itemList do
+
+      item:breakdown();
+      print(`Item disabled: {item.name}`);
+  
+    end;
 
   end;
 

@@ -48,7 +48,6 @@ local function HUDButton(props: HUDButtonProps)
     });
     IconContainerButton = React.createElement("TextButton", {
       [React.Event.Activated] = onActivate;
-      Rotation = 45;
       AnchorPoint = Vector2.new(0.5, 0.5);
       BackgroundTransparency = 0.4;
       BackgroundColor3 = Color3.new(0, 0, 0);
@@ -63,7 +62,7 @@ local function HUDButton(props: HUDButtonProps)
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
         Transparency = 0.4;
       });
-      UICorner = React.createElement(CircleUICorner);
+      UICorner = if props.type == "Action" then React.createElement(CircleUICorner) else nil;
       IconImageLabel = if props.iconImage then React.createElement("ImageLabel", {
         AnchorPoint = Vector2.new(0.5, 0.5);
         Position = UDim2.new(0.5, 0, 0.5, 0);

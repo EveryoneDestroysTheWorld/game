@@ -24,6 +24,10 @@ function SuperHammerClientItem.new(): ClientItem
 
   end;
 
+  local function initialize(self: ClientItem)
+
+  end;
+
   return ClientItem.new({
     ID = SuperHammerClientItem.ID;
     iconImage = SuperHammerClientItem.iconImage;
@@ -31,6 +35,7 @@ function SuperHammerClientItem.new(): ClientItem
     description = SuperHammerClientItem.description;
     breakdown = breakdown;
     activate = activate;
+    initialize = initialize;
   });
 
 end;

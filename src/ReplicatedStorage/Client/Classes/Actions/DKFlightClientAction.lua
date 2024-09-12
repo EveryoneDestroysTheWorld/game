@@ -95,8 +95,9 @@ function TakeFlightAction.new(): ClientAction
 			
 		end
 
-		ReplicatedStorage.Client.Functions.AddHUDButton:Invoke(React.createElement(HUDButton, {
+		ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
 			type = "Action";
+			key = self.ID;
 			onActivate = function()
 
 				self:activate();

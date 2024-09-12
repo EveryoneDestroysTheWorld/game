@@ -313,7 +313,7 @@ function DetachLimbServerAction.new(): ServerAction
 
         if player == contestant.player then
 
-          action:activate(limbName);
+          self:activate(limbName);
 
         else
 

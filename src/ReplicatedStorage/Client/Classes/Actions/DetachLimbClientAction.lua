@@ -73,8 +73,9 @@ function DetachLimbAction.new(): ClientAction
   
     end;
   
-    ReplicatedStorage.Client.Functions.AddHUDButton:Invoke(React.createElement(HUDButton, {
+    ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
       type = "Action";
+      key = self.ID;
       onActivate = function() activateGUI() end;
       shortcutCharacter = "L";
       iconImage = "rbxassetid://17551046771";

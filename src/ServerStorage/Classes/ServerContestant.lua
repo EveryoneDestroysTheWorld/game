@@ -57,8 +57,8 @@ export type Cause = {
 };
 
 export type ContestantMethods = {
-  addItemToInventory: (self: ServerContestant, itemID: number) -> ServerItem;
-  removeItemFromInventory: (self: ServerContestant, itemID: number) -> ();
+  addItemToInventory: (self: ServerContestant, item: ServerItem) -> ();
+  removeItemFromInventory: (self: ServerContestant, item: ServerItem) -> ();
   convertToClient: (self: ServerContestant) -> {any};
   disqualify: (self: ServerContestant) -> ();
   getInventoryItemIDs: (self: ServerContestant) -> {number};
@@ -113,27 +113,25 @@ function ServerContestant.__index:getInventoryItemIDs(): {number}
 
 end;
 
-function ServerContestant.__index:addItemToInventory(itemID: number): ServerItem
+function ServerContestant.__index:addItemToInventory(item: ServerItem): ()
 
-  local item = ServerItem.get(itemID)
   table.insert(self.inventory, item);
   events[self].onInventoryUpdated:Fire(self:getInventoryItemIDs());
-  return item;
 
 end;
 
-function ServerContestant.__index:removeItemFromInventory(itemID: number): ()
+function ServerContestant.__index:removeItemFromInventory(item: ServerItem): ()
 
   -- Iterating backwards because the indexes can change after running table.remove().
   for index = #self.inventory, 1, -1 do
 
-    local item = self.inventory[index]
-    if item.ID == itemID then
+    local possibleItem = self.inventory[index]
+    if possibleItem == item then
 
       table.remove(self.inventory, index);
       task.spawn(function()
 
-        item:breakdown();
+        possibleItem:breakdown();
       
       end);
 

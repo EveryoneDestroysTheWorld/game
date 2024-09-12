@@ -34,8 +34,9 @@ function DetonateDetachedLimbsClientAction.new(): ClientAction
 
   local function initialize(self: ClientAction)
 
-    ReplicatedStorage.Client.Functions.AddHUDButton:Invoke(React.createElement(HUDButton, {
+    ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
       type = "Action";
+      key = self.ID;
       onActivate = function() 
         
         self:activate();
