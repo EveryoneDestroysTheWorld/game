@@ -15,7 +15,6 @@ export type ActionProperties = {
 
 export type ActionEvents = {
   onActivate: RBXScriptSignal<"Press" | "Hold">;
-  onHoldRelease: RBXScriptSignal;
 }
 
 local ServerAction = {};
@@ -27,7 +26,7 @@ function ServerAction.new(properties: ActionProperties): ServerAction
 
   -- Set up events.
   local events: {[string]: BindableEvent} = {};
-  local eventNames = {"onActivate", "onHoldRelease"};
+  local eventNames = {"onActivate"};
   for _, eventName in ipairs(eventNames) do
 
     events[eventName] = Instance.new("BindableEvent");
