@@ -42,7 +42,7 @@ function PotionOfRegenerationServerItem.new(): ServerItem
           local baseHealth = humanoid:GetAttribute("BaseHealth") :: number?;
           if currentHealth and baseHealth and currentHealth < baseHealth then
 
-            humanoid:SetAttribute("CurrentHealth", math.min(baseHealth, currentHealth + 4));
+            humanoid:SetAttribute("CurrentHealth", math.min(baseHealth, currentHealth + 10));
 
           end;
 
