@@ -1,4 +1,8 @@
 --!strict
+-- Programmers: Christian Toney (Christian_Toney)
+-- Designers: Christian Toney (Christian_Toney)
+-- © 2024 Beastslash LLC
+
 local ClientArchetype = require(script.Parent.Parent.ClientArchetype);
 local ClientContestant = require(script.Parent.Parent.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;

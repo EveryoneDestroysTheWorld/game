@@ -1,8 +1,9 @@
 --!strict
 -- This module represents a Potion of Regeneration on the client side. It should only be used for item activations.
+--
 -- Programmers: Christian Toney (Christian_Toney)
 -- Designer: InkyTheBlue (InkyTheBlue)
--- © 2024 Beastslash
+-- © 2024 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");

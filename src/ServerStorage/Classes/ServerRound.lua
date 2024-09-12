@@ -57,7 +57,6 @@ export type ServerRoundProperties = ServerRoundConstructorProperties & {
 export type ServerRoundEvents = {
   onStopped: RBXScriptSignal;
   onEnded: RBXScriptSignal;
-  onHoldRelease: RBXScriptSignal;
   onStatusChanged: RBXScriptSignal;
   onContestantAdded: RBXScriptSignal;
   onContestantRemoved: RBXScriptSignal;
@@ -91,7 +90,7 @@ function ServerRound.new(properties: ServerRoundConstructorProperties & {stage: 
   round.stage = properties.stage or Stage.fromID(properties.stageID);
 
   events[round] = {};
-  for _, eventName in ipairs({"onTimeStartedChanged", "onStopped", "onEnded", "onHoldRelease", "onContestantAdded", "onContestantRemoved", "onStatusChanged"}) do
+  for _, eventName in ipairs({"onTimeStartedChanged", "onStopped", "onEnded", "onContestantAdded", "onContestantRemoved", "onStatusChanged"}) do
 
     events[round][eventName] = Instance.new("BindableEvent");
     (round :: {})[eventName] = events[round][eventName].Event;

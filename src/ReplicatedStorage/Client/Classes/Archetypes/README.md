@@ -1,60 +1,49 @@
-# Client archetypes
-Client archetypes are meant to let the server know when the player does something that the server wouldn't know by itself. For example, when the player presses a key on their keyboard or moves their mouse. Client archetypes are typically not designed to handle actions because all archetypes must be compatible with bot players. Bots cannot access client archetypes.
+# ClientActions
+See [ClientArchetype.lua](../ClientArchetype.lua) for more information on what ClientArchetypes are.
 
-## Creating an archetype
-Raise an issue in the [design repository](https://github.com/DemoDemons/design) before creating an official archetype. After it's approved by the design team, move on to ["Implementing an archetype"](#implementing-an-archetype).
-
-## Implementing an archetype
-### Metadata
-Archetypes only require names, IDs, and types. Descriptions and action IDs are optional. The client manages this information, while the server pulls it from ReplicatedStorage.
-
-Archetypes require unique IDs to help the server identify archetypes with duplicate or modified names. IDs also help reduce the size of match records. Players can see these IDs in developer mode.
-
-### Functions
-> [!IMPORTANT]
-> For security, the client can only modify what the player sees; but, it's important to remember that client perspectives can be misleading. Consider the server the sole arbiter of truth and never trust the client, especially with sensitive information.
-
-The `new` constructor typically runs when the player is about to participate in a round. `contestant.player` should be equivalant to the local player.
-
-The `breakdown` function in the constructor is for disconnecting events. It is separated for readability, so do not simplify it.
-
-### Archetype template
+## Template
 ```lua
 --!strict
--- This is an archetype designed for the DemoDemons game.
--- Programmers: [Who programmed this? Example: Christian Toney <christiantoney.com>]
--- Designer: [Who designed this? Example: InkyTheBlue <bio.link/inkytheblue>]
--- © 2024 Beastslash
+-- Programmers: [Name of programmer] ([Roblox username of programmer])
+-- Designers: [Name of designer] ([Roblox username of designer])
+-- © [current year] Beastslash LLC
+
 local ClientArchetype = require(script.Parent.Parent.ClientArchetype);
-local Contestant = require(script.Parent.Parent.Contestant);
-type Contestant = Contestant.Contestant;
+local ClientContestant = require(script.Parent.Parent.ClientContestant);
+type ClientContestant = ClientContestant.ClientContestant;
 type ClientArchetype = ClientArchetype.ClientArchetype;
 
-local Archetype = {
-  ID = 1; -- Replace with an unused ID.
-  name = "Archetype Name"; -- The player will see this.
-  description = ""; -- The player will see this in the shop and when they open their inventory.
-  actionIDs = {1, 2, 3, 4}; -- These actions will automatically be loaded when this archetype is loaded. 
-  type = ""; 
+local ExtendedClientArchetype = {
+  ID = 0; -- Replace this. Very important.
+  name = "Extended";
+  description = "This is an example archetype.";
+  iconImage = "rbxassetid://18584519829";
+  actionIDs = {6}; -- Replace with action IDs.
+  type = "Defender" :: "Defender"; -- Replace both with "Destroyer", "Fighter", "Defender", or "Supporter".
 };
 
-function Archetype.new(contestant: Contestant): ClientArchetype
+function ExtendedClientArchetype.new(): ClientArchetype
 
-  -- Runs when the round ends.
   local function breakdown(self: ClientArchetype)
 
   end;
 
+  local function initialize(self: ClientArchetype)
+
+  end;
+
   return ClientArchetype.new({
-    ID = Archetype.ID;
-    name = Archetype.name;
-    description = Archetype.description;
-    actionIDs = Archetype.actionIDs;
-    type = Archetype.type;
+    ID = ExtendedClientArchetype.ID;
+    iconImage = ExtendedClientArchetype.iconImage;
+    name = ExtendedClientArchetype.name;
+    description = ExtendedClientArchetype.description;
+    actionIDs = ExtendedClientArchetype.actionIDs;
+    type = ExtendedClientArchetype.type;
     breakdown = breakdown;
+    initialize = initialize;
   });
 
 end;
 
-return Archetype;
+return ExtendedClientArchetype;
 ```

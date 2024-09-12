@@ -1,6 +1,8 @@
 --!strict
--- Writer: Hati ---- Heavily modified edit of ExplosivePunch
--- Designer: Christian Toney (Sudobeast)
+-- Programmers: Hati ---- Heavily modified edit of ExplosivePunch
+-- Designers: Christian Toney (Christian_Toney)
+-- © 2024 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
