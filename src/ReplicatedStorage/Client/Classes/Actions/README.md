@@ -18,7 +18,7 @@ local ExtendedClientAction = {
   iconImage = "rbxassetid://18464513809";
 };
 
-function ExtendedLimbAction.new(): ClientAction
+function ExtendedClientAction.new(): ClientAction
 
   local remoteName: string;
 
