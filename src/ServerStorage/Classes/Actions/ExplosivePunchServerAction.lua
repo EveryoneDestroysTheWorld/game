@@ -61,21 +61,10 @@ function ExplosivePunchServerAction.new(): ServerAction
             if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
 
               table.insert(hitContestants, possibleEnemyContestant);
-              local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
-              if enemyHumanoid then
-
-                local currentHealth = enemyHumanoid:GetAttribute("CurrentHealth") :: number?;
-                if currentHealth then
-
-                  local newHealth = currentHealth - 15;
-                  possibleEnemyContestant:updateHealth(newHealth, {
-                    contestant = contestant;
-                    actionID = ExplosivePunchServerAction.ID;
-                  });
-
-                end
-
-              end;
+              possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 15, {
+                contestant = contestant;
+                actionID = ExplosivePunchServerAction.ID;
+              });
 
             end;
 

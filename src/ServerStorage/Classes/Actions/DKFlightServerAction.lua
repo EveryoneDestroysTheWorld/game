@@ -54,7 +54,7 @@ local function animateFlight(humanoid: Humanoid, animations, animData, isEndingF
 	return animations
 end
 
-local function flightStart(primaryPart: BasePart)
+local function flightStart(contestant: ServerContestant, primaryPart: BasePart)
 
 	--perhaps some of this could be clientside
 	local linearVelocity = Instance.new("LinearVelocity");
@@ -86,11 +86,13 @@ local function flightStart(primaryPart: BasePart)
 	end)
 
 	repeat 
-		task.wait(0.25)
-		humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") :: number - 2)
-	until linearVelocity:GetAttribute("PlayerControls") == false or humanoid:GetAttribute("CurrentStamina") <= 0
 
-	if humanoid:GetAttribute("CurrentStamina") <= 0 then
+		task.wait(0.25)
+		contestant:updateStamina(math.max(0, contestant.currentStamina - 2));
+
+	until linearVelocity:GetAttribute("PlayerControls") == false or contestant.currentStamina <= 0
+
+	if contestant.currentStamina <= 0 then
 
 		linearVelocity:SetAttribute("PlayerControls", false)
 		linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
@@ -195,12 +197,12 @@ function TakeFlightServerAction.new(): ServerAction
 
 				if not primaryPart:FindFirstChild("LinearVelocity") then
 
-					if humanoid:GetAttribute("CurrentStamina") >= 10 then
+					if contestant.currentStamina >= 10 then
 
 						-- Reduce the player's stamina.
-						humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") :: number - 10)
+						contestant:updateStamina(math.max(0, contestant.currentStamina - 10));
 						local animData = Vector3.new(0,100,1.8)
-						coroutine.wrap(flightStart)(primaryPart)
+						coroutine.wrap(flightStart)(contestant, primaryPart)
 						anims = animateFlight(humanoid, anims, animData, false)
 
 					end

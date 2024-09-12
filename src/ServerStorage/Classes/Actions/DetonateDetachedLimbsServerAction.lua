@@ -47,16 +47,10 @@ function DetonateDetachedLimbsServerAction.new(): ServerAction
               if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
 
                 table.insert(hitContestants, possibleEnemyContestant);
-                local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
-                if enemyHumanoid then
-
-                  local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 15;
-                  possibleEnemyContestant:updateHealth(newHealth, {
-                    contestant = contestant;
-                    actionID = DetonateDetachedLimbsServerAction.ID;
-                  });
-
-                end;
+                possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 15, {
+                  contestant = contestant;
+                  actionID = DetonateDetachedLimbsServerAction.ID;
+                });
 
               end;
 

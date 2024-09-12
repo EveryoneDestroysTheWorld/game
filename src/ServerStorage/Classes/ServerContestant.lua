@@ -46,6 +46,14 @@ export type ContestantProperties = {
   teamID: number?;
 
   inventory: {ServerItem};
+
+  currentHealth: number;
+
+  baseHealth: number;
+
+  currentStamina: number;
+
+  baseStamina: number;
   
 }
 
@@ -66,6 +74,7 @@ export type ContestantMethods = {
   updateCharacter: (self: ServerContestant, newCharacter: Model?) -> ();
   updateInventory: (self: ServerContestant, newInventory: {ServerItem}) -> ();
   updateHealth: (self: ServerContestant, newHealth: number, cause: Cause?) -> ();
+  updateStamina: (self: ServerContestant, newStamina: number, cause: Cause?) -> ();
   toString: (self: ServerContestant) -> string;
 }
 
@@ -73,6 +82,7 @@ export type ContestantEvents = {
   onDisqualified: RBXScriptSignal;
   onArchetypeUpdated: RBXScriptSignal;
   onHealthUpdated: RBXScriptSignal<number, number, Cause?>;
+  onStaminaUpdated: RBXScriptSignal<number, number, Cause?>;
   onInventoryUpdated: RBXScriptSignal<{number}>
 }
 
@@ -88,7 +98,7 @@ function ServerContestant.new(properties: ContestantProperties): ServerContestan
   local contestant = setmetatable(properties, ServerContestant) :: ServerContestant;
 
   -- Set up events.
-  local eventNames = {"onDisqualified", "onHealthUpdated", "onArchetypeUpdated", "onCharacterUpdated", "onInventoryUpdated"};
+  local eventNames = {"onDisqualified", "onHealthUpdated", "onStaminaUpdated", "onArchetypeUpdated", "onCharacterUpdated", "onInventoryUpdated"};
   events[contestant] = {};
   for _, eventName in ipairs(eventNames) do
 
@@ -163,6 +173,10 @@ function ServerContestant.__index:convertToClient(): {any}
     isBot = self.isBot;
     character = self.character;
     teamID = self.teamID;
+    currentHealth = self.currentHealth;
+    baseHealth = self.baseHealth;
+    currentStamina = self.currentStamina;
+    baseStamina = self.baseStamina;
   };
 
 end;
@@ -175,20 +189,33 @@ function ServerContestant.__index:updateArchetypeID(newArchetypeID: number): ()
 
 end;
 
-function ServerContestant.__index:updateHealth(newHealth: number, cause: Cause?)
+function ServerContestant.__index:updateHealth(newHealth: number, cause: Cause?): ()
 
-  local character = self.character;
-  local humanoid = character and character:FindFirstChild("Humanoid") :: Humanoid;
-  assert(humanoid, "No humanoid found.");
+  local oldHealth = self.currentHealth;
+  self.currentHealth = newHealth;
 
-  local oldHealth = humanoid:GetAttribute("CurrentHealth");
-  humanoid:SetAttribute("CurrentHealth", newHealth);
   ReplicatedStorage.Shared.Events.HealthUpdated:FireAllClients(self.ID, newHealth, if cause then {
     contestantID = cause.contestant.ID;
     actionID = cause.actionID;
     archetypeID = cause.archetypeID;
   } else nil);
+
   events[self].onHealthUpdated:Fire(newHealth, oldHealth, cause);
+
+end;
+
+function ServerContestant.__index:updateStamina(newStamina: number, cause: Cause?): ()
+
+  local oldStamina = self.currentStamina;
+  self.currentStamina = newStamina;
+
+  ReplicatedStorage.Shared.Events.StaminaUpdated:FireAllClients(self.ID, newStamina, if cause then {
+    contestantID = cause.contestant.ID;
+    actionID = cause.actionID;
+    archetypeID = cause.archetypeID;
+  } else nil);
+  
+  events[self].onStaminaUpdated:Fire(newStamina, oldStamina, cause);
 
 end;
 
