@@ -6,7 +6,7 @@ type ClientArchetype = ClientArchetype.ClientArchetype;
 local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
 type ClientAction = ClientAction.ClientAction;
 local Colors = require(ReplicatedStorage.Client.Colors);
-local ActionButton = require(ReplicatedStorage.Client.ReactComponents.ActionButton);
+local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
 local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
 local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 
@@ -17,7 +17,7 @@ type ArchetypeInformationFrameProps = {
 
 local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
 
-  local actionTextButtons, setActionTextButtons = React.useState({});
+  local actionTextButtons = {};
   local shouldShowArchetypeDescriptionTextLabel, shouldShowSecondaryMetadataFrame, shouldUseIncreasedWidth = useResponsiveDesign(
     {minimumWidth = 600}, 
     {minimumWidth = 600, minimumHeight = 500},
@@ -25,38 +25,25 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
   );
   local selectedAction, setSelectedAction = React.useState(nil :: ClientAction?);
 
-  React.useEffect(function()
-  
-    task.spawn(function()
+  if props.selectedArchetype then
 
-      if props.selectedArchetype then
+    for _, actionID in props.selectedArchetype.actionIDs do
 
-        local actionTextButtons = {};
-        for _, actionID in ipairs(props.selectedArchetype.actionIDs) do
-
-          local action = ClientAction.get(actionID);
-          local actionButton = React.createElement(ActionButton, {
-            iconImage = action.iconImage;
-            onActivate = function() 
-              
-              setSelectedAction(action);
-
-            end
-          });
-          table.insert(actionTextButtons, actionButton)
+      local action = ClientAction.get(actionID);
+      local actionButton = React.createElement(HUDButton, {
+        type = "Action";
+        iconImage = action.iconImage;
+        onActivate = function() 
+          
+          setSelectedAction(action);
 
         end;
-        setActionTextButtons(actionTextButtons);
+      });
+      table.insert(actionTextButtons, actionButton);
 
-      else
+    end;
 
-        setActionTextButtons({});
-
-      end;
-
-    end)
-
-  end, {props.selectedArchetype :: any, selectedAction});
+  end;
 
   local containerRef = React.useRef(nil :: GuiObject?);
   React.useEffect(function()
@@ -185,7 +172,7 @@ local function ArchetypeInformationFrame(props: ArchetypeInformationFrameProps)
           FillDirection = Enum.FillDirection.Horizontal;
           Padding = UDim.new(0, 5);
         });
-        ActionButtonList = React.createElement(React.Fragment, {}, actionTextButtons);
+        HUDButtonList = React.createElement(React.Fragment, {}, actionTextButtons);
       });
       ActionInformationFrame = if selectedAction then React.createElement("Frame", {
         BackgroundTransparency = 0.55;

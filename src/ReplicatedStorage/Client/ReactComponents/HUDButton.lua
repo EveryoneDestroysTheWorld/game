@@ -5,13 +5,14 @@ local UserInputService = game:GetService("UserInputService");
 local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 local CircleUICorner = require(script.Parent.CircleUICorner);
 
-type LimbSelectionButtonProps = {
+type HUDButtonProps = {
+  type: "Action" | "Item";
   onActivate: () -> ();
   shortcutCharacter: string;
   iconImage: string?;
 }
 
-local function ActionButton(props: LimbSelectionButtonProps)
+local function HUDButton(props: HUDButtonProps)
 
   local isKeyboardEnabled, setIsKeyboardEnabled = React.useState(false);
 
@@ -84,4 +85,4 @@ local function ActionButton(props: LimbSelectionButtonProps)
 
 end;
 
-return ActionButton;
+return HUDButton;

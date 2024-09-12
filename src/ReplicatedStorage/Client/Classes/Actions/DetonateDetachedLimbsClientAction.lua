@@ -6,7 +6,7 @@ local Players = game:GetService("Players");
 -- local ContextActionService = game:GetService("ContextActionService");
 local ClientAction = require(script.Parent.Parent.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local ActionButton = require(script.Parent.Parent.Parent.ReactComponents.ActionButton);
+local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton);
 type ClientAction = ClientAction.ClientAction;
 
 local DetonateDetachedLimbsClientAction = {
@@ -34,10 +34,11 @@ function DetonateDetachedLimbsClientAction.new(): ClientAction
 
   local function initialize(self: ClientAction)
 
-    ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
+    ReplicatedStorage.Client.Functions.AddHUDButton:Invoke(React.createElement(HUDButton, {
+      type = "Action";
       onActivate = function() 
         
-        self:activate() 
+        self:activate();
       
       end;
       shortcutCharacter = "L";
