@@ -152,12 +152,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
           humanoid:MoveTo(closestEnemyHRP.CFrame.Position, closestEnemyHRP);
           humanoid.MoveToFinished:Wait();
-
-          if not contestant.isDisqualified then
-
-            contestant:disqualify();
-
-          end;
+          contestant:updateHealth(0);
 
         end;
 

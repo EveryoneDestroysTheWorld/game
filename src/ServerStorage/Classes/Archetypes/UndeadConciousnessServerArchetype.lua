@@ -26,7 +26,6 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
   local isContestantStunned = false;
   local breakdownEventList: {
     [BasePart]: RBXScriptConnection;
-    disqualificationEvent: RBXScriptConnection?;
     healthUpdateEvent: RBXScriptConnection?;
     contestantTouchEvent: RBXScriptConnection?;
   } = {};
@@ -60,7 +59,17 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
     contestant = newContestant;
     round = newRound;
 
-    breakdownEventList.disqualificationEvent = contestant.onDisqualified:Connect(function()
+    local isOffenseActivated = false;
+
+    local function activateOffense()
+
+      if isOffenseActivated then
+
+        return;
+
+      end;
+
+      isOffenseActivated = true;
 
       -- Verify that we have the required instances.
       local character = contestant.character;
@@ -169,7 +178,24 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
         end;
   
       end;
-  
+
+    end;
+
+    contestant.onHealthUpdated:Connect(function()
+    
+      if contestant.currentHealth <= 0 then
+
+        if contestant.character then
+
+          local ragdollModel = contestant.character:Clone();
+          ragdollModel.Parent = workspace;
+
+        end;
+
+        activateOffense();
+
+      end;
+
     end);
 
     -- Give the player a random item. 

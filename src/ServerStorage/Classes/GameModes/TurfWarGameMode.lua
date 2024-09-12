@@ -219,7 +219,8 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
           if contestant.currentHealth <= 0 then
 
-            contestant:disqualify();
+            -- Remove all items.
+            contestant:updateInventory({});
 
           end;
 
@@ -229,6 +230,20 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
         table.insert(events, contestant.onStaminaUpdated:Connect(recoverStamina));
 
       end;
+
+      table.insert(events, ReplicatedStorage.Shared.Events.ResetButtonPressed.OnServerEvent:Connect(function(player)
+      
+        for _, contestant in round.contestants do
+
+          if contestant.player == player then
+
+            contestant:updateHealth(0);
+
+          end;
+
+        end;
+
+      end));
 
     end;
     breakdown = function(self)
