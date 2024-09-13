@@ -20,7 +20,6 @@ local MeleeServerAction = {
 	description = MeleeClientAction.description;
 };
 
-
 local function damageEvent(primaryPart, round, contestant)
 	print("creating Explosion")
 	local explosion = Instance.new("Explosion", primaryPart);
@@ -71,28 +70,25 @@ local function damageEvent(primaryPart, round, contestant)
 
 	end);
 
-
-
-
 end
 
-local function startAttack(primaryPart, animations, combo, round, contestant)
-	
-	combo = "Melee" .. tostring(combo + 1)
+local function startAttack(primaryPart, animations, combo: number, round, contestant)
+
+	local animationName = `Melee{combo + 1}`;
 	print("Animating " .. combo)
 	--perhaps some of this could be clientside
 	animations["Melee1"]:Stop(0.3)
 	animations["Melee2"]:Stop(0.3)
 	animations["Melee3"]:Stop(0.3)
 	local animData = Vector3.new(0.1,1,1)
-	animations[combo]:Play(animData.X,animData.Y,animData.Z)
+	animations[animationName]:Play(animData.X,animData.Y,animData.Z)
 
 
 	local linearVelocity = Instance.new("LinearVelocity", primaryPart)
-	linearVelocity.VelocityConstraintMode = "Line"
+	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
 	linearVelocity.LineVelocity = -5
 	linearVelocity.MaxForce = math.huge
-	linearVelocity.RelativeTo = "Attachment0"
+	linearVelocity.RelativeTo = Enum.ActuatorRelativeTo.Attachment0;
 	local attachment = Instance.new("Attachment", primaryPart)
 	attachment.Axis = Vector3.new(0,0,-1)
 	linearVelocity.Attachment0 = attachment
@@ -110,9 +106,10 @@ local function startAttack(primaryPart, animations, combo, round, contestant)
 
 
 	end);
+
 	task.delay(1, function()
 
-		animations[combo]:AdjustWeight(0.01,0.5)
+		animations[animationName]:AdjustWeight(0.01, 0.5)
 
 	end);
 
@@ -123,41 +120,29 @@ local function startAttack(primaryPart, animations, combo, round, contestant)
 end
 
 
-local function preloadAnims(char, animations)
+local function preloadAnims(humanoid: Humanoid, animations: {[string]: string})
 
-	local humanoid = char.Humanoid
+	local animator = humanoid:FindFirstChild("Animator") :: Animator;
+	local anims: {[string]: AnimationTrack} = {}
 
+	for animationName, assetID in pairs(animations) do
 
-	local animator = humanoid:FindFirstChild("Animator")
-	local anims = {}
-
-	for i, anim in animations do
-		local v = anim:split(", ")
-		anims[v[1]] = Instance.new("Animation");
-		anims[v[1]].AnimationId = "rbxassetid://" .. v[2];
-		anims[v[1]] = animator:LoadAnimation(anims[v[1]]);
+		local animation = Instance.new("Animation");
+		animation.AnimationId = `rbxassetid://{assetID}`;
+		anims[animationName] = animator:LoadAnimation(animation);
 
 	end
 
-	return anims
-end
+	return anims;
 
+end
 
 function MeleeServerAction.new(contestant: ServerContestant, round: ServerRound, data): ServerAction
 
-	local combo = 0
-	local animations = {
-		"Melee1, 77919655263406",
-		"Melee2, 101769847900220",
-		"Melee3, 136026551879479",
-	};
+	local combo = 0;
+	local humanoid: Humanoid;
+	local anims: {[string]: AnimationTrack} = {};
 
-	local anims = preloadAnims(contestant.character, animations)
-	local humanoid = contestant.character.Humanoid
-	local action: ServerAction = nil;
-	local debounce = Instance.new("StringValue", contestant.character)
-	debounce.Name = "MeleeAttackDebounce"
-	debounce.Value = "False"
 	local function activate()
 
 		if contestant.character then
@@ -193,7 +178,6 @@ function MeleeServerAction.new(contestant: ServerContestant, round: ServerRound,
 
 	end;
 
-
 	local executeActionRemoteFunction: RemoteFunction? = nil;
 
 	local function breakdown()
@@ -204,51 +188,58 @@ function MeleeServerAction.new(contestant: ServerContestant, round: ServerRound,
 
 		end
 
+	end;
 
+	local function initialize(self: ServerAction)
+
+		local animations = {
+			Melee1 = "77919655263406";
+			Melee2 = "101769847900220";
+			Melee3 = "136026551879479";
+		};
+	
+		assert(contestant.character);
+		humanoid = contestant.character:FindFirstChild("Humanoid") :: Humanoid;
+		anims = preloadAnims(humanoid, animations);
+		local action: ServerAction = nil;
+		local debounce = Instance.new("StringValue", contestant.character)
+		debounce.Name = "MeleeAttackDebounce"
+		debounce.Value = "False"
+
+		if contestant.player then
+
+			local remoteFunction = Instance.new("RemoteFunction");
+			remoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
+			remoteFunction.OnServerInvoke = function(player)
+	
+				if player == contestant.player then
+
+					action:activate();
+	
+				else
+	
+					-- That's weird.
+					error("Unauthorized.");
+	
+				end
+	
+			end;
+			remoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
+			executeActionRemoteFunction = remoteFunction;
+	
+		end
 
 	end;
 
-
-
-
-	action = ServerAction.new({
+	return ServerAction.new({
 		name = MeleeServerAction.name;
 		ID = MeleeServerAction.ID;
 		description = MeleeServerAction.description;
 		breakdown = breakdown;
 		activate = activate;
+		initialize = initialize;
 	});
 
-	if contestant.player then
-
-		local remoteFunction = Instance.new("RemoteFunction");
-		remoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
-		remoteFunction.OnServerInvoke = function(player)
-
-			if player == contestant.player then
-
-
-
-				action:activate();
-
-			else
-
-				-- That's weird.
-				error("Unauthorized.");
-
-			end
-
-		end;
-		remoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
-		executeActionRemoteFunction = remoteFunction;
-
-	end
-
-	return action;
-
 end;
-
-
-
 
 return MeleeServerAction;

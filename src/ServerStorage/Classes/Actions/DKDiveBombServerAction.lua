@@ -203,7 +203,7 @@ local function preloadAnims(char: Model): {[string]: AnimationTrack}
 
 	end;
 
-	return animationTracks
+	return animationTracks;
 
 end
 
