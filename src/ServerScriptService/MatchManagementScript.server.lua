@@ -267,7 +267,7 @@ local function startRound()
             chosenArchetypeID = ownedArchetypeIDs[selectedArchetypeIndex];
 
           end
-          local chosenArchetypeID = 3 -- DRAGONIC KNIGHT BETA TESTING
+
           contestant:updateArchetypeID(chosenArchetypeID);
 
         end;
