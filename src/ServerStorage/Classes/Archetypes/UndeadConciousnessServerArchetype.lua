@@ -1,4 +1,5 @@
 --!strict
+local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
@@ -10,6 +11,8 @@ type ServerRound = ServerRound.ServerRound;
 type ServerContestant = ServerContestant.ServerContestant;
 type ServerArchetype = ServerArchetype.ServerArchetype;
 type ServerAction = ServerAction.ServerAction;
+local downContestant = require(ServerStorage.Modules.downContestant);
+local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
 
 local UndeadConciousnessServerArchetype = {
   ID = UndeadConciousnessClientArchetype.ID;
@@ -26,16 +29,22 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
   local isContestantStunned = false;
   local breakdownEventList: {
     [BasePart]: RBXScriptConnection;
-    disqualificationEvent: RBXScriptConnection?;
     healthUpdateEvent: RBXScriptConnection?;
     contestantTouchEvent: RBXScriptConnection?;
   } = {};
 
+  local ragdollClone;
   local function breakdown(self: ServerArchetype)
 
     for _, event in pairs(breakdownEventList) do
 
       event:Disconnect();
+
+    end;
+
+    if ragdollClone then
+
+      ragdollClone:Destroy();
 
     end;
 
@@ -60,7 +69,17 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
     contestant = newContestant;
     round = newRound;
 
-    breakdownEventList.disqualificationEvent = contestant.onDisqualified:Connect(function()
+    local isOffenseActivated = false;
+
+    local function activateOffense()
+
+      if isOffenseActivated then
+
+        return;
+
+      end;
+
+      isOffenseActivated = true;
 
       -- Verify that we have the required instances.
       local character = contestant.character;
@@ -169,7 +188,36 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
         end;
   
       end;
-  
+
+    end;
+
+    local isDowned = false;
+    breakdownEventList.healthUpdateEvent = contestant.onHealthUpdated:Connect(function()
+    
+      if isDowned and contestant.currentHealth > 0 then
+        
+        isDowned = false;
+        if ragdollClone then
+
+          ragdollClone:Destroy();
+
+        end;
+
+      elseif not isDowned and contestant.currentHealth <= 0 then
+
+        isDowned = true;
+
+        if contestant.character then
+
+          ragdollClone = createRagdollClone(contestant.character);
+
+        end;
+
+        downContestant(contestant);
+        activateOffense();
+
+      end;
+
     end);
 
     -- Give the player a random item. 

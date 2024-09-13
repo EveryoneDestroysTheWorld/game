@@ -12,6 +12,7 @@ type ServerRound = ServerRound.ServerRound;
 type ServerContestant = ServerContestant.ServerContestant;
 type ServerArchetype = ServerArchetype.ServerArchetype;
 type ServerAction = ServerAction.ServerAction;
+local downContestant = require(ServerStorage.Modules.downContestant);
 
 local ExplosiveMimicServerArchetype = {
   ID = ExplosiveMimicClientArchetype.ID;
@@ -152,12 +153,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
           humanoid:MoveTo(closestEnemyHRP.CFrame.Position, closestEnemyHRP);
           humanoid.MoveToFinished:Wait();
-
-          if not contestant.isDisqualified then
-
-            contestant:disqualify();
-
-          end;
+          contestant:updateHealth(0);
 
         end;
 
@@ -400,18 +396,20 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
     -- Set up the self-destruct.
     contestant = newContestant;
     round = newRound;
-    disqualificationEvent = contestant.onDisqualified:Connect(function()
+    local isExploding = false;
+    disqualificationEvent = contestant.onHealthUpdated:Connect(function()
 
-      if contestant.character then
+      if not isExploding and contestant.currentHealth <= 0 and contestant.character then
   
         -- Make the player progressively grow white for 3 seconds.
+        isExploding = true;
         local highlight = Instance.new("Highlight");
         highlight.FillTransparency = 1;
         highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
         highlight.FillColor = Color3.new(1, 1, 1);
         highlight.Parent = contestant.character;
         
-        local humanoid = contestant.character:FindFirstChild("Humanoid");
+        local humanoid = contestant.character:FindFirstChild("Humanoid") :: Humanoid?;
         local changedEvent;
         if humanoid and humanoid:IsA("Humanoid") then
   
@@ -426,7 +424,12 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
           
             humanoid:ApplyDescription(humanoidDescription);
   
-          end)
+          end);
+          sizeTween.Completed:Connect(function()
+          
+            changedEvent:Disconnect();
+
+          end);
           sizeTween:Play();
   
         end;
@@ -477,7 +480,14 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
   
           if humanoid and humanoid:IsA("Humanoid") and changedEvent then
   
+            local humanoidDescription = humanoid:GetAppliedDescription();
+            humanoidDescription.DepthScale *= 0.75;
+            humanoidDescription.WidthScale *= 0.75;
+            humanoidDescription.HeightScale *= 0.75;
+            humanoidDescription.HeadScale *= 0.75;
+            humanoid:ApplyDescription(humanoidDescription);
             humanoid.AutomaticScalingEnabled = false;
+            
             for _, part in ipairs(contestant.character:GetDescendants()) do
   
               if part:IsA("BasePart") then
@@ -487,12 +497,12 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
               end;
   
             end;
-            humanoid.Health = 0;
-            humanoid:ChangeState(Enum.HumanoidStateType.Dead)
             changedEvent:Disconnect();
+
+            downContestant(contestant);
   
           end;
-  
+
           explosion.Parent = workspace;
           highlight:Destroy();
   
