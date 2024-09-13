@@ -76,13 +76,14 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
       elseif not isDowned and contestant.currentHealth <= 0 then
 
         isDowned = true;
-        downContestant(contestant);
 
         if contestant.character then
           
           createRagdollClone(contestant.character);
 
         end;
+
+        downContestant(contestant);
 
       end;
 

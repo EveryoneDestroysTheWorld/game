@@ -184,17 +184,24 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
 
     end;
 
-    contestant.onHealthUpdated:Connect(function()
+    local isDowned = false;
+    breakdownEventList.healthUpdateEvent = contestant.onHealthUpdated:Connect(function()
     
-      if contestant.currentHealth <= 0 then
+      if isDowned and contestant.currentHealth > 0 then
+        
+        isDowned = false;
 
-        downContestant(contestant);
+      elseif not isDowned and contestant.currentHealth <= 0 then
+
+        isDowned = true;
 
         if contestant.character then
 
           createRagdollClone(contestant.character);
 
         end;
+
+        downContestant(contestant);
         activateOffense();
 
       end;
