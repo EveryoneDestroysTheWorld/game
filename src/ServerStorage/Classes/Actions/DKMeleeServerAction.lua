@@ -144,7 +144,7 @@ function MeleeServerAction.new(): ServerAction
 	local _contestant: ServerContestant? = nil;
 	local _round: ServerRound? = nil;
 	local combo: number = 0;
-	local humanoid: Humanoid? = nil;
+	local _humanoid: Humanoid? = nil;
 	local anims: {[string]: AnimationTrack} = {};
 	local debounce = false;
 
@@ -159,13 +159,7 @@ function MeleeServerAction.new(): ServerAction
 				shouldRepeat = false;
 				if not primaryPart:FindFirstChild("FlightConstraint") then
 
-					if debounce then
-
-						debounce.Value = "NoFurtherInputs"
-						debounce.Changed:Wait()
-						shouldRepeat = true;
-
-					else
+					if not debounce then
 
 						if _contestant.currentStamina >= 5 then
 							
@@ -228,12 +222,9 @@ function MeleeServerAction.new(): ServerAction
 		};
 	
 		assert(contestant.character);
-		humanoid = contestant.character:FindFirstChild("Humanoid") :: Humanoid;
+		local humanoid = contestant.character:FindFirstChild("Humanoid") :: Humanoid;
 		anims = preloadAnims(humanoid, animations);
 		local action: ServerAction = nil;
-		local debounce = Instance.new("StringValue", contestant.character)
-		debounce.Name = "MeleeAttackDebounce"
-		debounce.Value = "False"
 
 		if contestant.player then
 
@@ -258,6 +249,7 @@ function MeleeServerAction.new(): ServerAction
 	
 		end
 
+		_humanoid = humanoid;
 		_contestant = contestant;
 
 	end;
