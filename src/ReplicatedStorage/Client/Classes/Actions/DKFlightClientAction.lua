@@ -1,6 +1,5 @@
 --!strict
-
--- Programmers: Hati ---- Heavily modified edit of ExplosivePunch
+-- Programmers: Hati (hati_bati)
 -- Designers: Christian Toney (Christian_Toney)
 -- © 2024 Beastslash LLC
 
