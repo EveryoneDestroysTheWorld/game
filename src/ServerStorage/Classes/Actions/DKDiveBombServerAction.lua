@@ -198,7 +198,7 @@ local function preloadAnims(char: Model): {[string]: AnimationTrack}
 	for key, data in pairs(animationAssets) do
 
 		local animation = Instance.new("Animation");
-		animation.AnimationId = `rbxassetid://{data.animator};`
+		animation.AnimationId = `rbxassetid://{data.assetID};`
 		animationTracks[key] = data.animator:LoadAnimation(animation);
 
 	end;
