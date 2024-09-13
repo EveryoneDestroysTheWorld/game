@@ -203,7 +203,7 @@ local function getDataFromClient(player: Player)
 
 	local event = Instance.new("RemoteEvent")
 	local connect
-	connect = event.OnServerEvent:Connect(function(p, data)
+	connect = event.OnServerEvent:Connect(function(_: Player, data: Vector3)
 
 		connect:Disconnect();
 		event:SetAttribute("Coords", data);
