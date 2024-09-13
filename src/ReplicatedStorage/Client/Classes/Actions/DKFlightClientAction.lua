@@ -10,8 +10,7 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 local ClientAction = require(script.Parent.Parent.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
-
-local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton);
+local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
 
 type ClientAction = ClientAction.ClientAction;
 
@@ -85,7 +84,7 @@ function TakeFlightAction.new(): ClientAction
 		end
 
 		local allowedToToggle = true
-		ReplicatedStorage.Client.Functions.AddActionButton:Invoke("Action", React.createElement(HUDButton, {
+		ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
 			type = "Action";
 			onActivate = function()
 

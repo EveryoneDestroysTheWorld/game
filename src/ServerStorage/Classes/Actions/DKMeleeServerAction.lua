@@ -224,17 +224,16 @@ function MeleeServerAction.new(): ServerAction
 		assert(contestant.character);
 		local humanoid = contestant.character:FindFirstChild("Humanoid") :: Humanoid;
 		anims = preloadAnims(humanoid, animations);
-		local action: ServerAction = nil;
 
 		if contestant.player then
 
 			local remoteFunction = Instance.new("RemoteFunction");
-			remoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
+			remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
 			remoteFunction.OnServerInvoke = function(player)
 	
 				if player == contestant.player then
 
-					action:activate();
+					self:activate();
 	
 				else
 	
