@@ -24,11 +24,16 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
 
   local contestant: ServerContestant = nil;
   local round: ServerRound = nil;
-
-
+  local wingProp: Model?;
 
   local function breakdown(self: ServerArchetype)
-    contestant.character.WingProp:Destroy()
+
+    if wingProp then
+
+      wingProp:Destroy()
+
+    end;
+
   end;
 
   local function runAutoPilot(self: ServerArchetype, actions: {ServerAction})
@@ -53,15 +58,21 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
     local function setUpPropsDragonKnight(model)
       local wingsProp = InsertService:LoadAsset(76933185156855)
       wingsProp:FindFirstChild("WingProp").Parent = model
-      wingsProp:Destroy()
-      model.WingProp.Root.RigidConstraint.Attachment1 = model:FindFirstChild("BodyBackAttachment", true)
+      wingsProp:Destroy();
+      local newWingProp = model.WingProp;
+      (newWingProp:FindFirstChild("Root") :: any).RigidConstraint.Attachment1 = model:FindFirstChild("BodyBackAttachment", true)
         
       if not ReplicatedStorage.Client.InGameDisplayObjects:FindFirstChild("DiveBombIndicator") then
+
         local diveBombIndicator = InsertService:LoadAsset(124109899420589)
         diveBombIndicator.AoeDisplay.Name = "DiveBombIndicator"
         diveBombIndicator.DiveBombIndicator.Parent = ReplicatedStorage.Client.InGameDisplayObjects
         diveBombIndicator:Destroy()
+        
       end
+
+      wingProp = newWingProp;
+
     end
       
     setUpPropsDragonKnight(contestant["character"]);

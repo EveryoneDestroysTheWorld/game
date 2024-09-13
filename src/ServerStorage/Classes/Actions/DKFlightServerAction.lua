@@ -1,6 +1,8 @@
 --!strict
--- Writer: Hati ---- Heavily modified edit of RocketFeet
--- Designer: Christian Toney (Sudobeast)
+-- Programmer: Hati (hati_bati)
+-- Designer: Christian Toney (Christian_Toney)
+-- © 2024 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService")
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
@@ -10,8 +12,6 @@ type ServerAction = ServerAction.ServerAction;
 local TakeFlightClientAction = require(ReplicatedStorage.Client.Classes.Actions.DKFlightClientAction);
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
-
-local ServerStorage = game:GetService("ServerStorage");
 
 
 local TakeFlightServerAction = {

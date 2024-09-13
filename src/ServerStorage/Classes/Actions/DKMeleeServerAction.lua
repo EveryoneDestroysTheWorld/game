@@ -1,6 +1,8 @@
 --!strict
--- Writer: Hati ---- Heavily modified edit of RocketFeet
--- Designer: Christian Toney (Sudobeast)
+-- Programmer: Hati (hati_bati)
+-- Designer: Christian Toney (Christian_Toney)
+-- © 2024 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService")
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
@@ -75,6 +77,7 @@ local function damageEvent(primaryPart, round, contestant)
 end
 
 local function startAttack(primaryPart, animations, combo, round, contestant)
+	
 	combo = "Melee" .. tostring(combo + 1)
 	print("Animating " .. combo)
 	--perhaps some of this could be clientside
