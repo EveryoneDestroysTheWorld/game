@@ -409,7 +409,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
         highlight.FillColor = Color3.new(1, 1, 1);
         highlight.Parent = contestant.character;
         
-        local humanoid = contestant.character:FindFirstChild("Humanoid");
+        local humanoid = contestant.character:FindFirstChild("Humanoid") :: Humanoid?;
         local changedEvent;
         if humanoid and humanoid:IsA("Humanoid") then
   
@@ -424,7 +424,12 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
           
             humanoid:ApplyDescription(humanoidDescription);
   
-          end)
+          end);
+          sizeTween.Completed:Connect(function()
+          
+            changedEvent:Disconnect();
+
+          end);
           sizeTween:Play();
   
         end;
@@ -475,7 +480,14 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
   
           if humanoid and humanoid:IsA("Humanoid") and changedEvent then
   
+            local humanoidDescription = humanoid:GetAppliedDescription();
+            humanoidDescription.DepthScale *= 0.75;
+            humanoidDescription.WidthScale *= 0.75;
+            humanoidDescription.HeightScale *= 0.75;
+            humanoidDescription.HeadScale *= 0.75;
+            humanoid:ApplyDescription(humanoidDescription);
             humanoid.AutomaticScalingEnabled = false;
+            
             for _, part in ipairs(contestant.character:GetDescendants()) do
   
               if part:IsA("BasePart") then
@@ -490,7 +502,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
             downContestant(contestant);
   
           end;
-  
+
           explosion.Parent = workspace;
           highlight:Destroy();
   
