@@ -1,5 +1,5 @@
 --!strict
--- Programmer: Hati ---- Heavily modified edit of ExplosivePunch
+-- Programmer: Hati
 -- Designer: Christian Toney (Sudobeast)
 -- © 2024 Beastslash LLC
 
@@ -39,7 +39,7 @@ local function waitForServerResponse(coordinateData: Vector3): ()
 end
 
 local playerDisplay = {}
-local function displayTarget(state)
+local function displayTarget(state: "Start" | "Release"): ()
 
 	if state == "Start" then
 		
@@ -57,7 +57,7 @@ local function displayTarget(state)
 
 		playerDisplay["obj"]:Destroy()
 		playerDisplay["con"]:Disconnect()
-		
+
 	end
 
 end
