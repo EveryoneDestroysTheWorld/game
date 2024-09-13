@@ -1,6 +1,6 @@
 --!strict
--- Programmer: Hati
--- Designer: Christian Toney (Sudobeast)
+-- Programmer: Hati (hati_bati)
+-- Designer: Christian Toney (Christian_Toney)
 -- © 2024 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
