@@ -61,10 +61,6 @@ end)
 end
 
 function TakeFlightAction.new(): ClientAction
-	local player = Players.LocalPlayer;
-	if player.Character then
-		flightControls()
-	end
 
 	local remoteName: string;
 
@@ -76,60 +72,81 @@ function TakeFlightAction.new(): ClientAction
 
 
 	local function activate(self: ClientAction)
+
 		ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
-end;
-
-local action = ClientAction.new({
-	ID = TakeFlightAction.ID;
-	iconImage = TakeFlightAction.iconImage;
-	name = TakeFlightAction.name;
-	description = TakeFlightAction.description;
-	activate = activate;
-	breakdown = breakdown;
-});
-local allowedToToggle = true
-ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
-	onActivate = function()
-		action:activate();
-
-		flightControls()
-		allowedToToggle = false
-		task.wait(1)
-		allowedToToggle = true
 
 	end;
 
-	shortcutCharacter = "Space";
-	iconImage = "rbxassetid://17771917538";
-}));
+	local function initialize(self: ClientAction)
 
-remoteName = `{player.UserId}_{action.ID}`;
-local debounce = false
-local function checkJump(_, inputState: Enum.UserInputState)
-	if inputState == Enum.UserInputState.Begin and allowedToToggle == true then
-		if debounce == false then
-			debounce = true
-			if activeState == false then
-				task.wait(0.4)
-				if debounce == true and Players.LocalPlayer.Character.Humanoid.Jump == true  then
-					debounce = false
-					action:activate();
-				end
-			end
-		else
-			debounce = false
-			action:activate();
+		local player = Players.LocalPlayer;
+		if player.Character then
+			flightControls()
 		end
 
+		local allowedToToggle = true
+		ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(HUDButton, {
+			initialize = initialize;
+			onActivate = function()
+
+				self:activate();
+				flightControls()
+				allowedToToggle = false
+				task.wait(1);
+				allowedToToggle = true
+	
+			end;
+			shortcutCharacter = "Space";
+			iconImage = "rbxassetid://17771917538";
+		}));
+	
+		remoteName = `{player.UserId}_{self.ID}`;
+		local debounce = false;
+	
+		local function checkJump(_, inputState: Enum.UserInputState)
+			
+			if inputState == Enum.UserInputState.Begin and allowedToToggle then
+	
+				if not debounce then
+	
+					debounce = true
+					if activeState == false then
+	
+						task.wait(0.4);
+	
+						if debounce and Players.LocalPlayer.Character.Humanoid.Jump == true then
+
+							debounce = false
+							self:activate();
+
+						end;
+	
+					end
+	
+				else
+	
+					debounce = false
+					self:activate();
+	
+				end
+	
+			end;
+	
+		end;
+	
+		ContextActionService:BindActionAtPriority("ActivateTakeFlight", checkJump, false, 2, Enum.KeyCode.Space);
 
 	end;
 
-end;
-
-ContextActionService:BindActionAtPriority("ActivateTakeFlight", checkJump, false, 2, Enum.KeyCode.Space);
-
-return action;
-
+	return ClientAction.new({
+		ID = TakeFlightAction.ID;
+		iconImage = TakeFlightAction.iconImage;
+		name = TakeFlightAction.name;
+		description = TakeFlightAction.description;
+		activate = activate;
+		breakdown = breakdown;
+		initialize = initialize;
+	});
 
 end
 

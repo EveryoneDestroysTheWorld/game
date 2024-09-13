@@ -173,33 +173,41 @@ local function startAttack(primaryPart: BasePart, animations, coords: Vector3, r
 end
 
 
-local function preloadAnims(char, animations)
+local function preloadAnims(char: Model): {[string]: AnimationTrack}
 
-	local humanoid = char.Humanoid
+	local humanoid = char:FindFirstChild("Humanoid") :: Humanoid;
+	local wingProp = (humanoid.Parent :: Instance):FindFirstChild("WingProp") :: Model;
+	local wingsPropRight = wingProp:FindFirstChild("WingsPropRight") :: Instance;
+	local wingsPropLeft = wingProp:FindFirstChild("WingsPropLeft") :: Instance;
+	local animationAssets: {[string]: {animator: Animator; assetID: number}} = {
+		Left = {
+			animator = wingsPropLeft:FindFirstChild("Animator") :: Animator;
+			assetID = 89949470467953;
+		};
+		Right = {
+			animator = wingsPropRight:FindFirstChild("Animator") :: Animator;
+			assetID = 95242287519828;
+		};
+		Player = {
+			animator = humanoid:FindFirstChild("Animator") :: Animator;
+			assetID = 85718382304634;
+		};
+	}
 
-	local animator = humanoid:FindFirstChild("Animator")
-	local animatorR = humanoid.Parent.WingProp.WingsPropRight:FindFirstChild("AnimationController") or humanoid.Parent.WingProp.WingsPropRight:FindFirstChild("Animator");
-	local animatorL = humanoid.Parent.WingProp.WingsPropLeft:FindFirstChild("AnimationController") or humanoid.Parent.WingProp.WingsPropLeft:FindFirstChild("Animator");
-	local anims = {}
+	local animationTracks = {};
+	for key, data in pairs(animationAssets) do
 
-	-- usually would have a for i here, but since different animators are used this way is easier
-	anims["Right"] = Instance.new("Animation");
-	anims["Right"].AnimationId = "rbxassetid://89949470467953";
-	animations["Right"] = animatorR:LoadAnimation(anims["Right"]);
+		local animation = Instance.new("Animation");
+		animation.AnimationId = `rbxassetid://{data.animator};`
+		animationTracks[key] = data.animator:LoadAnimation(animation);
 
-	anims["Left"] = Instance.new("Animation");
-	anims["Left"].AnimationId = "rbxassetid://95242287519828";
-	animations["Left"] = animatorL:LoadAnimation(anims["Left"]);
+	end;
 
+	return animationTracks
 
-	anims["Player"] = Instance.new("Animation");
-	anims["Player"].AnimationId = "rbxassetid://85718382304634";
-	animations["Player"] = animator:LoadAnimation(anims["Player"])
-
-	return animations
 end
 
-local function getDataFromClient(player: Player)
+local function getDataFromClient(player: Player): Vector3
 
 	local event = Instance.new("RemoteEvent")
 	local connect
@@ -217,7 +225,7 @@ local function getDataFromClient(player: Player)
 	event.AttributeChanged:Wait()
 
 	--coords recieved by player
-	return event:GetAttribute("Coords");
+	return event:GetAttribute("Coords") :: Vector3;
 
 end
 
@@ -259,18 +267,12 @@ function DiveBombServerAction.new(): ServerAction
 
 	local function initialize(self: ServerAction, contestant: ServerContestant, round: ServerRound)
 
-		local animations = {
-			Right = "89949470467953";
-			Left = "95242287519828";
-			Player = "85718382304634";
-		};
-
 		_contestant = contestant;
 		_round = round;
 
 		if contestant.character then
 
-			anims = preloadAnims(contestant.character, animations);
+			anims = preloadAnims(contestant.character);
 
 		end;
 
