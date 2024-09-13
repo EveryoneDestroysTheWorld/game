@@ -202,7 +202,7 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
             isRecoveringStamina = true;
 
-            while contestant.currentStamina < contestant.baseStamina do
+            while contestant.currentHealth > 0 and contestant.currentStamina < contestant.baseStamina do
 
               task.wait(1);
               contestant:updateStamina(math.min(contestant.currentStamina + 5, contestant.baseStamina));
@@ -215,12 +215,51 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
         end;
 
+        local isHandled = false;
+        local ghostHighlight: Highlight? = nil;
         local function checkHealth()
 
-          if contestant.currentHealth <= 0 then
+          if contestant.currentHealth > 0 and ghostHighlight then
+
+            ghostHighlight:Destroy();
+          
+          elseif not isHandled and contestant.currentHealth <= 0 then
 
             -- Remove all items.
+            isHandled = true;
             contestant:updateInventory({});
+
+            -- Turn the player transparent.
+            if contestant.character then
+
+              local highlight = Instance.new("Highlight");
+              highlight.Name = "GhostHighlight";
+              highlight.Parent = contestant.character;
+              highlight.OutlineTransparency = 1;
+              highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
+              highlight.FillColor = Color3.fromRGB(152, 202, 248);
+              highlight.FillTransparency = 0.5;
+              ghostHighlight = highlight;
+
+              local proximityPrompt = Instance.new("ProximityPrompt");
+              proximityPrompt.Name = "RevivalProximityPrompt";
+              proximityPrompt.ObjectText = "Downed contestant";
+              proximityPrompt.ActionText = "Revive";
+              proximityPrompt.HoldDuration = 3;
+              proximityPrompt.Triggered:Once(function(player)
+            
+                -- Prevent the player from reviving themself.
+                if player ~= contestant.player then
+
+                  contestant:updateHealth(contestant.baseHealth / 2);
+                  proximityPrompt:Destroy();
+
+                end;
+
+              end);
+              proximityPrompt.Parent = contestant.character;
+
+            end;
 
           end;
 
