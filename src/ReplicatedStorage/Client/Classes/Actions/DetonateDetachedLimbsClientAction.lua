@@ -1,12 +1,14 @@
 --!strict
--- Writer: Christian Toney (Sudobeast)
--- Designer: Christian Toney (Sudobeast)
+-- Programmers: Christian Toney (Christian_Toney)
+-- Designers: Christian Toney (Christian_Toney)
+-- © 2024 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 -- local ContextActionService = game:GetService("ContextActionService");
 local ClientAction = require(script.Parent.Parent.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local ActionButton = require(script.Parent.Parent.Parent.ReactComponents.ActionButton);
+local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton);
 type ClientAction = ClientAction.ClientAction;
 
 local DetonateDetachedLimbsClientAction = {
@@ -32,6 +34,22 @@ function DetonateDetachedLimbsClientAction.new(): ClientAction
 
   end;
 
+  local function initialize(self: ClientAction)
+
+    ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+      type = "Action";
+      key = self.ID;
+      onActivate = function() 
+        
+        self:activate();
+      
+      end;
+      shortcutCharacter = "L";
+      iconImage = "rbxassetid://17771918066";
+    }));
+
+  end;
+
   local action = ClientAction.new({
     ID = DetonateDetachedLimbsClientAction.ID;
     iconImage = DetonateDetachedLimbsClientAction.iconImage;
@@ -39,14 +57,9 @@ function DetonateDetachedLimbsClientAction.new(): ClientAction
     description = DetonateDetachedLimbsClientAction.description;
     activate = activate;
     breakdown = breakdown;
+    initialize = initialize;
   });
-
-  ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
-    onActivate = function() action:activate() end;
-    shortcutCharacter = "L";
-    iconImage = "rbxassetid://17771918066";
-  }));
-
+  
   return action;
 
 end

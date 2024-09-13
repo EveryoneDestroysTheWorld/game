@@ -17,8 +17,10 @@ local DetonateDetachedLimbsServerAction = {
   description = DetonateDetachedLimbsClientAction.description;
 };
 
-function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant, round: ServerRound): ServerAction
+function DetonateDetachedLimbsServerAction.new(): ServerAction
 
+  local contestant: ServerContestant = nil;
+  local round: ServerRound = nil;
   local function activate()
 
     for limbName, instance in pairs(ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.ID}_GetDetachedLimbs`):Invoke(contestant)) do
@@ -45,16 +47,10 @@ function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant, rou
               if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
 
                 table.insert(hitContestants, possibleEnemyContestant);
-                local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
-                if enemyHumanoid then
-
-                  local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 15;
-                  possibleEnemyContestant:updateHealth(newHealth, {
-                    contestant = contestant;
-                    actionID = DetonateDetachedLimbsServerAction.ID;
-                  });
-
-                end;
+                possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 15, {
+                  contestant = contestant;
+                  actionID = DetonateDetachedLimbsServerAction.ID;
+                });
 
               end;
 
@@ -101,38 +97,44 @@ function DetonateDetachedLimbsServerAction.new(contestant: ServerContestant, rou
 
   end;
 
-  local action = ServerAction.new({
+  local function initialize(self: ServerAction, newContestant: ServerContestant, newRound: ServerRound)
+
+    contestant = newContestant;
+    round = newRound;
+
+    if contestant.player then
+    
+      local actionRemoteFunction = Instance.new("RemoteFunction");
+      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+      actionRemoteFunction.OnServerInvoke = function(player)
+  
+        if player == contestant.player then
+  
+          self:activate();
+  
+        else
+  
+          -- That's weird.
+          error("Unauthorized.");
+  
+        end
+  
+      end;
+      actionRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
+      remoteFunction = actionRemoteFunction;
+  
+    end;
+
+  end;
+
+  return ServerAction.new({
     name = DetonateDetachedLimbsServerAction.name;
     ID = DetonateDetachedLimbsServerAction.ID;
     description = DetonateDetachedLimbsServerAction.description;
     breakdown = breakdown;
     activate = activate;
+    initialize = initialize;
   });
-
-  if contestant.player then
-    
-    local actionRemoteFunction = Instance.new("RemoteFunction");
-    actionRemoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
-    actionRemoteFunction.OnServerInvoke = function(player)
-
-      if player == contestant.player then
-
-        action:activate();
-
-      else
-
-        -- That's weird.
-        error("Unauthorized.");
-
-      end
-
-    end;
-    actionRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
-    remoteFunction = actionRemoteFunction;
-
-  end;
-
-  return action;
 
 end;
 

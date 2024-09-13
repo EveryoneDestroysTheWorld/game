@@ -10,7 +10,9 @@ type ServerAction = ServerAction.ServerAction;
 local TakeFlightClientAction = require(ReplicatedStorage.Client.Classes.Actions.DKFlightClientAction);
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
+
 local ServerStorage = game:GetService("ServerStorage");
+
 
 local TakeFlightServerAction = {
 	ID = TakeFlightClientAction.ID;
@@ -18,18 +20,23 @@ local TakeFlightServerAction = {
 	description = TakeFlightClientAction.description;
 };
 
-local function animateFlight(humanoid,animations, animData,state)
+
+local function animateFlight(humanoid: Humanoid, animations, animData, isEndingFlight: boolean)
+
 
 	animations["Right"]:Play(animData.X,animData.Y,animData.Z);
 	animations["Left"]:Play(animData.X,animData.Y,animData.Z);
 
-	if state and state == "EndFlight" then
+
+	if isEndingFlight then
+
 		animations["RightIdle"]:Stop(0.1)
 		animations["LeftIdle"]:Stop(0.1)
 		animations["Idle"]:Stop(0.1)
 		animations["End"]:Play(0.1,1,0.8)
 		task.wait(0.3)
 		animations["End"]:AdjustWeight(0.01,0.5)
+
 	else
 		animations["Start"]:Play(0.1,1,1.8)
 		task.wait(0.5)
@@ -54,17 +61,21 @@ local function animateFlight(humanoid,animations, animData,state)
 	return animations
 end
 
-local function flightStart(primaryPart)
+local function flightStart(contestant: ServerContestant, primaryPart: BasePart)
+
 	--perhaps some of this could be clientside
 	local linearVelocity = Instance.new("LinearVelocity");
-	linearVelocity.Name = "FlightConstraint"
-	linearVelocity.VelocityConstraintMode = "Line"
+  linearVelocity.Name = "FlightConstraint"
+	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
+
 	linearVelocity.LineDirection = Vector3.new(0, 1, 0);
 	linearVelocity.LineVelocity = -5
 	linearVelocity.MaxForce = math.huge;
 	linearVelocity.Parent = primaryPart;
 	linearVelocity.Attachment0 = primaryPart:FindFirstChild("RootAttachment") :: Attachment;
-	linearVelocity:SetAttribute("PlayerControls", false)
+
+	linearVelocity:SetAttribute("PlayerControls", false);
+
 	task.wait(0.3)
 
 	linearVelocity.LineVelocity = 50;
@@ -72,10 +83,12 @@ local function flightStart(primaryPart)
 	local tween = TweenService:Create(linearVelocity, TweenInfo.new(1.0, Enum.EasingStyle.Sine), {LineVelocity = 0})
 	tween:Play()
 	task.wait(0.6)
-	linearVelocity.VelocityConstraintMode = "Vector"
+
+	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Vector;
 	linearVelocity.VectorVelocity = Vector3.new(0,0,0)
 	linearVelocity:SetAttribute("PlayerControls", true)
-	local humanoid = primaryPart.Parent.Humanoid
+	local humanoid = (primaryPart.Parent :: Instance):FindFirstChild("Humanoid") :: Humanoid;
+
 
 	local connection
 	connection = humanoid:GetPropertyChangedSignal("FloorMaterial"):Connect(function(change)
@@ -85,35 +98,30 @@ local function flightStart(primaryPart)
 		end
 	end)
 
-
 	repeat 
-		humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") - 2)
+
 		task.wait(0.25)
-		
-	until linearVelocity:GetAttribute("PlayerControls") == false or humanoid:GetAttribute("CurrentStamina") <= 0
-	if humanoid:GetAttribute("CurrentStamina") <= 0 then
+		contestant:updateStamina(math.max(0, contestant.currentStamina - 2));
+
+	until linearVelocity:GetAttribute("PlayerControls") == false or contestant.currentStamina <= 0
+
+	if contestant.currentStamina <= 0 then
+
 		linearVelocity:SetAttribute("PlayerControls", false)
-		linearVelocity.VelocityConstraintMode = "Line"
+		linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
 		linearVelocity.LineDirection = Vector3.new(0, -1, 0);
 		linearVelocity.LineVelocity = 8
 
-	else
-
-
-	task.delay(0.25, function()
-
-		linearVelocity:Destroy();
-
-	end);
-end
-	return
+	end
+	
 end
 
-local function flightEnd(primaryPart)
-	local linearVelocity = primaryPart:FindFirstChild("FlightConstraint")
+local function flightEnd(primaryPart: BasePart)
+
+	local linearVelocity = primaryPart:FindFirstChild("LinearVelocity") :: LinearVelocity;
 	linearVelocity:SetAttribute("PlayerControls", false)
 
-	linearVelocity.VelocityConstraintMode = "Line"
+	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
 	linearVelocity.LineDirection = Vector3.new(0, 1, 0);
 	linearVelocity.LineVelocity = 15
 	linearVelocity.MaxForce = math.huge;
@@ -131,14 +139,16 @@ local function flightEnd(primaryPart)
 
 end
 
-local function preloadAnims(char, animations)
 
-	local humanoid = char.Humanoid
+local function preloadAnims(char: Model, animations: any)
 
+	local humanoid = char:FindFirstChild("Humanoid") :: Humanoid;
 
-	local animator = humanoid:FindFirstChild("Animator")
-	local animatorR = humanoid.Parent.WingProp.WingsPropRight:FindFirstChild("AnimationController") or humanoid.Parent.WingProp.WingsPropRight:FindFirstChild("Animator");
-	local animatorL = humanoid.Parent.WingProp.WingsPropLeft:FindFirstChild("AnimationController") or humanoid.Parent.WingProp.WingsPropLeft:FindFirstChild("Animator");
+	local animator = humanoid:FindFirstChild("Animator") :: Animator;
+	local wingProp = char:FindFirstChild("WingProp") :: Model;
+	local animatorR = (wingProp:FindFirstChild("WingsPropRight") :: Model):FindFirstChild("Animator") :: Animator;
+	local animatorL = (wingProp:FindFirstChild("WingsPropLeft") :: Model):FindFirstChild("Animator") :: Animator;
+
 	local anims = {}
 
 	-- usually would have a for i here, but since different animators are used this way is easier
@@ -173,22 +183,22 @@ local function preloadAnims(char, animations)
 	return animations
 end
 
+function TakeFlightServerAction.new(): ServerAction
 
-function TakeFlightServerAction.new(contestant: ServerContestant, round: ServerRound): ServerAction
+	local contestant: ServerContestant;
 
 	local animations = {
-		"Right, 87777396509498",
-		"RightIdle, 112159869158031",
-		"Left, 72026942510156",
-		"LeftIdle, 109626445218372",
-		"End, 101417868579212",
-		"Start, 92928175332389",
-		"Idle, 109371600216543"
+		Right = 87777396509498,
+		RightIdle = 112159869158031,
+		Left = 72026942510156,
+		LeftIdle = 109626445218372,
+		End = 101417868579212,
+		Start = 92928175332389,
+		Idle = 109371600216543,
 	};
 
-	local anims = preloadAnims(contestant.character, animations)
+	local anims;
 
-	local action: ServerAction = nil;
 
 	local function activate()
 
@@ -198,28 +208,31 @@ function TakeFlightServerAction.new(contestant: ServerContestant, round: ServerR
 			assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.character}'s Humanoid`);
 
 
-
-
 			local primaryPart = contestant.character.PrimaryPart;
 			if humanoid:GetState() == Enum.HumanoidStateType.Freefall and primaryPart then
-				local animationTracks
+
 				if not primaryPart:FindFirstChild("FlightConstraint") then
-					if humanoid:GetAttribute("CurrentStamina") >= 10 then
+
+					if contestant.currentStamina >= 10 then
+
 						-- Reduce the player's stamina.
-						humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") - 10)
+						contestant:updateStamina(math.max(0, contestant.currentStamina - 10));
 						local animData = Vector3.new(0,100,1.8)
-						coroutine.wrap(flightStart)(primaryPart)
-						anims = animateFlight(humanoid, anims, animData)
+						coroutine.wrap(flightStart)(contestant, primaryPart)
+						anims = animateFlight(humanoid, anims, animData, false)
+
 					end
+
 				else
-					local animData = Vector3.new(0,100,2.5)
-					coroutine.wrap(flightEnd)(primaryPart)
-					anims = animateFlight(humanoid, anims, animData, "EndFlight")
+
+					local animData = Vector3.new(0, 100, 2.5);
+					coroutine.wrap(flightEnd)(primaryPart);
+					anims = animateFlight(humanoid, anims, animData, true);
+
 
 				end
 
 			end;
-
 
 
 		end;
@@ -237,47 +250,60 @@ function TakeFlightServerAction.new(contestant: ServerContestant, round: ServerR
 
 		end
 
+
+		if contestant.character then
+
+			local wingProp = contestant.character:FindFirstChild("WingProp");
+			if wingProp then
+
+				wingProp:Destroy();
+
+			end;
+
+		end;
+
 	end;
 
+	local function initialize(self: ServerAction, newContestant: ServerContestant)
 
+    contestant = newContestant;
 
+		anims = preloadAnims(contestant.character :: Model, animations)
 
-	action = ServerAction.new({
+		if contestant.player then
+
+			local remoteFunction = Instance.new("RemoteFunction");
+			remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+			remoteFunction.OnServerInvoke = function(player)
+	
+				if player == contestant.player then
+	
+					self:activate();
+	
+				else
+	
+					-- That's weird.
+					error("Unauthorized.");
+	
+				end
+	
+			end;
+			remoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
+			executeActionRemoteFunction = remoteFunction;
+	
+		end
+
+	end;
+
+	return ServerAction.new({
 		name = TakeFlightServerAction.name;
 		ID = TakeFlightServerAction.ID;
 		description = TakeFlightServerAction.description;
 		breakdown = breakdown;
 		activate = activate;
+		initialize = initialize;
 	});
 
-	if contestant.player then
-
-		local remoteFunction = Instance.new("RemoteFunction");
-		remoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
-		remoteFunction.OnServerInvoke = function(player)
-
-			if player == contestant.player then
-
-				action:activate();
-
-			else
-
-				-- That's weird.
-				error("Unauthorized.");
-
-			end
-
-		end;
-		remoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
-		executeActionRemoteFunction = remoteFunction;
-
-	end
-
-	return action;
-
 end;
-
-
-
 
 return TakeFlightServerAction;

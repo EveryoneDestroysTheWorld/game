@@ -7,6 +7,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
+local ServerItem = require(script.Parent.ServerItem);
+type ServerItem = ServerItem.ServerItem;
 local Profile = require(ServerStorage.Classes.Profile);
 type Profile = Profile.Profile;
 
@@ -42,6 +44,16 @@ export type ContestantProperties = {
 
   -- The team ID of the contestant. This will be nil if the game rules call for a free-for-all.
   teamID: number?;
+
+  inventory: {ServerItem};
+
+  currentHealth: number;
+
+  baseHealth: number;
+
+  currentStamina: number;
+
+  baseStamina: number;
   
 }
 
@@ -49,14 +61,20 @@ export type Cause = {
   contestant: ServerContestant; 
   actionID: number?; 
   archetypeID: number?;
+  itemID: number?;
 };
 
 export type ContestantMethods = {
+  addItemToInventory: (self: ServerContestant, item: ServerItem) -> ();
+  removeItemFromInventory: (self: ServerContestant, item: ServerItem) -> ();
   convertToClient: (self: ServerContestant) -> {any};
   disqualify: (self: ServerContestant) -> ();
+  getInventoryItemIDs: (self: ServerContestant) -> {number};
   updateArchetypeID: (self: ServerContestant, newArchetypeID: number) -> ();
   updateCharacter: (self: ServerContestant, newCharacter: Model?) -> ();
+  updateInventory: (self: ServerContestant, newInventory: {ServerItem}) -> ();
   updateHealth: (self: ServerContestant, newHealth: number, cause: Cause?) -> ();
+  updateStamina: (self: ServerContestant, newStamina: number, cause: Cause?) -> ();
   toString: (self: ServerContestant) -> string;
 }
 
@@ -64,6 +82,8 @@ export type ContestantEvents = {
   onDisqualified: RBXScriptSignal;
   onArchetypeUpdated: RBXScriptSignal;
   onHealthUpdated: RBXScriptSignal<number, number, Cause?>;
+  onStaminaUpdated: RBXScriptSignal<number, number, Cause?>;
+  onInventoryUpdated: RBXScriptSignal<{number}>
 }
 
 local ServerContestant = {
@@ -78,7 +98,7 @@ function ServerContestant.new(properties: ContestantProperties): ServerContestan
   local contestant = setmetatable(properties, ServerContestant) :: ServerContestant;
 
   -- Set up events.
-  local eventNames = {"onDisqualified", "onHealthUpdated", "onArchetypeUpdated", "onCharacterUpdated"};
+  local eventNames = {"onDisqualified", "onHealthUpdated", "onStaminaUpdated", "onArchetypeUpdated", "onCharacterUpdated", "onInventoryUpdated"};
   events[contestant] = {};
   for _, eventName in ipairs(eventNames) do
 
@@ -91,6 +111,57 @@ function ServerContestant.new(properties: ContestantProperties): ServerContestan
   
 end
 
+function ServerContestant.__index:getInventoryItemIDs(): {number}
+
+  local itemIDs = {};
+  for _, item in self.inventory do
+
+    table.insert(itemIDs, item.ID);
+
+  end;
+  return itemIDs;
+
+end;
+
+function ServerContestant.__index:addItemToInventory(item: ServerItem): ()
+
+  table.insert(self.inventory, item);
+  events[self].onInventoryUpdated:Fire(self:getInventoryItemIDs());
+
+end;
+
+function ServerContestant.__index:removeItemFromInventory(item: ServerItem): ()
+
+  -- Iterating backwards because the indexes can change after running table.remove().
+  for index = #self.inventory, 1, -1 do
+
+    local possibleItem = self.inventory[index]
+    if possibleItem == item then
+
+      table.remove(self.inventory, index);
+      task.spawn(function()
+
+        possibleItem:breakdown();
+      
+      end);
+
+    end;
+
+  end;
+
+  events[self].onInventoryUpdated:Fire(self:getInventoryItemIDs());
+
+end;
+
+function ServerContestant.__index:updateInventory(newInventory: {ServerItem}): ()
+
+  self.inventory = newInventory;
+
+  -- Only share the IDs to the client. Sharing a server class is unnecessary.
+  events[self].onInventoryUpdated:Fire(self:getInventoryItemIDs());
+
+end;
+
 function ServerContestant.__index:convertToClient(): {any}
 
   return {
@@ -102,6 +173,10 @@ function ServerContestant.__index:convertToClient(): {any}
     isBot = self.isBot;
     character = self.character;
     teamID = self.teamID;
+    currentHealth = self.currentHealth;
+    baseHealth = self.baseHealth;
+    currentStamina = self.currentStamina;
+    baseStamina = self.baseStamina;
   };
 
 end;
@@ -114,20 +189,33 @@ function ServerContestant.__index:updateArchetypeID(newArchetypeID: number): ()
 
 end;
 
-function ServerContestant.__index:updateHealth(newHealth: number, cause: Cause?)
+function ServerContestant.__index:updateHealth(newHealth: number, cause: Cause?): ()
 
-  local character = self.character;
-  local humanoid = character and character:FindFirstChild("Humanoid") :: Humanoid;
-  assert(humanoid, "No humanoid found.");
+  local oldHealth = self.currentHealth;
+  self.currentHealth = newHealth;
 
-  local oldHealth = humanoid:GetAttribute("CurrentHealth");
-  humanoid:SetAttribute("CurrentHealth", newHealth);
   ReplicatedStorage.Shared.Events.HealthUpdated:FireAllClients(self.ID, newHealth, if cause then {
     contestantID = cause.contestant.ID;
     actionID = cause.actionID;
     archetypeID = cause.archetypeID;
   } else nil);
+
   events[self].onHealthUpdated:Fire(newHealth, oldHealth, cause);
+
+end;
+
+function ServerContestant.__index:updateStamina(newStamina: number, cause: Cause?): ()
+
+  local oldStamina = self.currentStamina;
+  self.currentStamina = newStamina;
+
+  ReplicatedStorage.Shared.Events.StaminaUpdated:FireAllClients(self.ID, newStamina, if cause then {
+    contestantID = cause.contestant.ID;
+    actionID = cause.actionID;
+    archetypeID = cause.archetypeID;
+  } else nil);
+  
+  events[self].onStaminaUpdated:Fire(newStamina, oldStamina, cause);
 
 end;
 

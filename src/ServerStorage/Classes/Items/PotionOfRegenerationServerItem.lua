@@ -19,15 +19,84 @@ local PotionOfRegenerationServerItem = {
   description = PotionOfRegenerationClientItem.description;
 };
 
-function PotionOfRegenerationServerItem.new(contestant: ServerContestant, round: ServerRound): ServerItem
+function PotionOfRegenerationServerItem.new(): ServerItem
+
+  local contestant: ServerContestant;
+  local shouldHeal = true;
+  local remoteFunction: RemoteFunction?;
+  local itemNumber: number = 1;
 
   local function activate(self: ServerItem)
+
+    for currentSecond = 1, 3 do
+
+      task.wait(1);
+
+      if shouldHeal then
+
+        contestant:updateHealth(math.min(contestant.baseHealth, contestant.currentHealth + 10));
+
+      end;
+
+    end;
     
+    contestant:removeItemFromInventory(self);
     
   end;
   
-  local function breakdown()
+  local function breakdown(self: ServerItem)
+
+    shouldHeal = false;
+
+    if contestant.player then
+
+      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.ID, itemNumber);
+
+    end;
+
+    if remoteFunction then
+
+      remoteFunction:Destroy();
+
+    end;
     
+  end;
+
+  local function initialize(self: ServerItem, newContestant: ServerContestant)
+
+    contestant = newContestant;
+
+    if contestant.player then
+
+      local itemName = `{contestant.player.UserId}_{self.ID}`;
+      while ReplicatedStorage.Shared.Functions.ItemFunctions:FindFirstChild(`{itemName}_{itemNumber}`) do
+
+        itemNumber += 1;
+
+      end;
+
+      local newRemoteFunction = Instance.new("RemoteFunction");
+      newRemoteFunction.Name = `{itemName}_{itemNumber}`;
+      newRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ItemFunctions;
+      newRemoteFunction.OnServerInvoke = function(player)
+  
+        if player == contestant.player then
+  
+          self:activate();
+  
+        else
+  
+          error(`{player.Name} ({player.UserId}) may not use another player's item.`, 0);
+  
+        end
+  
+      end;
+      remoteFunction = newRemoteFunction;
+
+      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID, itemNumber);
+
+    end;
+
   end;
 
   local item = ServerItem.new({
@@ -36,6 +105,7 @@ function PotionOfRegenerationServerItem.new(contestant: ServerContestant, round:
     description = PotionOfRegenerationServerItem.description;
     activate = activate;
     breakdown = breakdown;
+    initialize = initialize;
   });
   
   return item;

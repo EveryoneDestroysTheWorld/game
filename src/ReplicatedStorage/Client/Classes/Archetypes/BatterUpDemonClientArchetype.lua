@@ -1,4 +1,8 @@
 --!strict
+-- Programmers: Christian Toney (Christian_Toney)
+-- Designers: Christian Toney (Christian_Toney)
+-- © 2024 Beastslash LLC
+
 local ClientArchetype = require(script.Parent.Parent.ClientArchetype);
 local ClientContestant = require(script.Parent.Parent.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
@@ -13,9 +17,13 @@ local BatterUpDemonClientArchetype = {
   type = "Fighter" :: "Fighter";
 };
 
-function BatterUpDemonClientArchetype.new(contestant: ClientContestant): ClientArchetype
+function BatterUpDemonClientArchetype.new(): ClientArchetype
 
   local function breakdown(self: ClientArchetype)
+
+  end;
+
+  local function initialize(self: ClientArchetype)
 
   end;
 
@@ -27,6 +35,7 @@ function BatterUpDemonClientArchetype.new(contestant: ClientContestant): ClientA
     actionIDs = BatterUpDemonClientArchetype.actionIDs;
     type = BatterUpDemonClientArchetype.type;
     breakdown = breakdown;
+    initialize = initialize;
   });
 
 end;

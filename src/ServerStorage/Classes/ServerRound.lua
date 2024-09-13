@@ -57,7 +57,6 @@ export type ServerRoundProperties = ServerRoundConstructorProperties & {
 export type ServerRoundEvents = {
   onStopped: RBXScriptSignal;
   onEnded: RBXScriptSignal;
-  onHoldRelease: RBXScriptSignal;
   onStatusChanged: RBXScriptSignal;
   onContestantAdded: RBXScriptSignal;
   onContestantRemoved: RBXScriptSignal;
@@ -91,7 +90,7 @@ function ServerRound.new(properties: ServerRoundConstructorProperties & {stage: 
   round.stage = properties.stage or Stage.fromID(properties.stageID);
 
   events[round] = {};
-  for _, eventName in ipairs({"onTimeStartedChanged", "onStopped", "onEnded", "onHoldRelease", "onContestantAdded", "onContestantRemoved", "onStatusChanged"}) do
+  for _, eventName in ipairs({"onTimeStartedChanged", "onStopped", "onEnded", "onContestantAdded", "onContestantRemoved", "onStatusChanged"}) do
 
     events[round][eventName] = Instance.new("BindableEvent");
     (round :: {})[eventName] = events[round][eventName].Event;
@@ -147,35 +146,43 @@ function ServerRound.__index:start(): ()
 
     task.spawn(function()
 
-      if contestant.archetypeID then
+      local isSuccess, errorMessage = pcall(function()
 
-        local archetype = ServerArchetype.get(contestant.archetypeID).new(contestant, self, self.stage.model);
+        if contestant.archetypeID then
 
-        local actions = {};
-        for _, actionID in ipairs(archetype.actionIDs) do
+          local archetype = ServerArchetype.get(contestant.archetypeID);
+          archetype:initialize(contestant, self);
+          table.insert(self.archetypes :: {ServerArchetype}, archetype);
 
-          local action = ServerAction.get(actionID, contestant, self);
-          table.insert(self.actions :: {ServerAction}, action);
-          actions[actionID] = action;
+          local actions = {};
+          for _, actionID in ipairs(archetype.actionIDs) do
+
+            local action = ServerAction.get(actionID);
+            action:initialize(contestant, self);
+            table.insert(self.actions :: {ServerAction}, action);
+            actions[actionID] = action;
+
+          end;
+          
+          if contestant.ID < 1 then
+              
+            archetype:runAutoPilot(actions);
+          
+          end;
+
+        else
+
+          contestant:disqualify();
+          warn(`Disqualified {contestant.name} ({contestant.ID}) because they don't have an archetype.`);
 
         end;
 
-        table.insert(self.archetypes :: {ServerArchetype}, archetype);
-        
-        if contestant.ID < 1 then
-            
-          archetype:runAutoPilot(actions);
+      end);
 
-        elseif contestant.player then
+      if not isSuccess then
 
-          ReplicatedStorage.Shared.Functions.InitializeInventory:InvokeClient(contestant.player, archetype.ID);
-        
-        end;
-
-      else
-
-        contestant:disqualify();
-        warn(`Disqualified {contestant.name} ({contestant.ID}) because they don't have an archetype.`);
+        self:stop(true);
+        error(errorMessage, 0);
 
       end;
 

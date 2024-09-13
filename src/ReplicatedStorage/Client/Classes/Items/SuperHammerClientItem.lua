@@ -1,8 +1,9 @@
 --!strict
 -- This module represents a Super Hammer on the client side. It should only be used for item activations.
+-- 
 -- Programmers: Christian Toney (Christian_Toney)
 -- Designer: Christian Toney (Christian_Toney)
--- © 2024 Beastslash
+-- © 2024 Beastslash LLC
 
 local ClientItem = require(script.Parent.Parent.ClientItem);
 type ClientItem = ClientItem.ClientItem;
@@ -24,6 +25,10 @@ function SuperHammerClientItem.new(): ClientItem
 
   end;
 
+  local function initialize(self: ClientItem)
+
+  end;
+
   return ClientItem.new({
     ID = SuperHammerClientItem.ID;
     iconImage = SuperHammerClientItem.iconImage;
@@ -31,6 +36,7 @@ function SuperHammerClientItem.new(): ClientItem
     description = SuperHammerClientItem.description;
     breakdown = breakdown;
     activate = activate;
+    initialize = initialize;
   });
 
 end;

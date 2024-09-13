@@ -180,14 +180,18 @@ local function CenteredRoundTimer(props: CenteredRoundTimerProps)
     BackgroundTransparency = 1;
     TextTransparency = 1;
     Rotation = textState.rotation;
-    TextSize = textState.textSize;
+    TextScaled = true;
     AutomaticSize = Enum.AutomaticSize.XY;
   }, {
     UIStroke = React.createElement("UIStroke", {
       Color = Color3.new(1, 1, 1);
-      Thickness = 1;
+      Thickness = 0.5;
       Transparency = textState.transparency;
     });
+    UITextSizeConstraint = React.createElement("UITextSizeConstraint", {
+      MinTextSize = 1;
+      MaxTextSize = math.max(1, textState.textSize);
+    })
   }) else nil;
 
 end;

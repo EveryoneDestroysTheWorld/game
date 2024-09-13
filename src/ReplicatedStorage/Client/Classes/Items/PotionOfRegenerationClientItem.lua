@@ -1,11 +1,16 @@
 --!strict
 -- This module represents a Potion of Regeneration on the client side. It should only be used for item activations.
+--
 -- Programmers: Christian Toney (Christian_Toney)
 -- Designer: InkyTheBlue (InkyTheBlue)
--- © 2024 Beastslash
+-- © 2024 Beastslash LLC
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local Players = game:GetService("Players");
 local ClientItem = require(script.Parent.Parent.ClientItem);
 type ClientItem = ClientItem.ClientItem;
+local React = require(ReplicatedStorage.Shared.Packages.react);
+local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
 
 local PotionOfRegenerationClientItem = {
   ID = 1;
@@ -16,11 +21,32 @@ local PotionOfRegenerationClientItem = {
 
 function PotionOfRegenerationClientItem.new(): ClientItem
 
+  local _itemNumber: number?;
+
   local function breakdown(self: ClientItem)
+
+    ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Item", `{self.ID}_{_itemNumber}`);
 
   end;
 
   local function activate(self: ClientItem)
+
+    assert(_itemNumber);
+    local player = Players.LocalPlayer;
+    ReplicatedStorage.Shared.Functions.ItemFunctions:FindFirstChild(`{player.UserId}_{self.ID}_{_itemNumber}`):InvokeServer();
+
+  end;
+
+  local function initialize(self: ClientItem, itemNumber: number)
+
+    local hudButton = React.createElement(HUDButton, {
+      type = "Item";
+      key = `{self.ID}_{itemNumber}`;
+      onActivate = function() self:activate() end;
+      iconImage = "rbxassetid://17551046771";
+    });
+    _itemNumber = itemNumber;
+    ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Item", hudButton);
 
   end;
 
@@ -31,6 +57,7 @@ function PotionOfRegenerationClientItem.new(): ClientItem
     description = PotionOfRegenerationClientItem.description;
     breakdown = breakdown;
     activate = activate;
+    initialize = initialize;
   });
 
 end;

@@ -1,21 +1,39 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local TweenService = game:GetService("TweenService");
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local dataTypeTween = require(ReplicatedStorage.Client.Classes.DataTypeTween);
-local Players = game:GetService("Players");
+local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
+local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
+type ClientContestant = ClientContestant.ClientContestant;
 
 type StatBarProps = {
   type: "Health" | "Stamina";
+  contestant: ClientContestant;
 }
 
 local function StatBar(props: StatBarProps)
+
+  local contestant = props.contestant;
 
   -- Animate the stat bar.
   local containerRef = React.useRef(nil :: Frame?);
   local textLabelRef = React.useRef(nil :: TextLabel?);
   local currentStatBarRef = React.useRef(nil :: Frame?);
+  local isTweening, setIsTweening = React.useState(false);
 
   local isHealthBar = props.type == "Health";
+  local shouldUseFullLength, shouldUseFullHeight = useResponsiveDesign({minimumWidth = 800}, {minimumHeight = 600});
+
+  React.useEffect(function()
+  
+    local container = containerRef.current;
+    if not isTweening and container then
+
+      container.Size = UDim2.new(container.Size.X.Scale, if shouldUseFullLength then 200 else 70, container.Size.Y.Scale, container.Size.Y.Offset);
+
+    end;
+
+  end, {isTweening, shouldUseFullLength});
 
   React.useEffect(function(): ()
   
@@ -24,40 +42,21 @@ local function StatBar(props: StatBarProps)
     local textLabel = textLabelRef.current;
     if container and currentStatBar and textLabel then
 
+      setIsTweening(true);
       textLabel.Transparency = 1;
-
-      dataTypeTween({
-        type = "Number";
-        goalValue = 200;
-        onChange = function(newValue: number)
-
-          container.Size = UDim2.new(container.Size.X.Scale, newValue, container.Size.Y.Scale, container.Size.Y.Offset);
-
-        end;
+      TweenService:Create(container, TweenInfo.new(), {
+        Size = UDim2.new(container.Size.X.Scale, if shouldUseFullLength then 200 else 70, container.Size.Y.Scale, container.Size.Y.Offset)
       }):Play();
 
-      local tween = dataTypeTween({
-        type = "Number";
-        goalValue = 1;
-        tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Sine);
-        onChange = function(newValue: number)
-
-          currentStatBar.Size = UDim2.new(newValue, currentStatBar.Size.X.Offset, 1, currentStatBar.Size.Y.Offset);
-
-        end;
+      local tween = TweenService:Create(currentStatBar, TweenInfo.new(2, Enum.EasingStyle.Sine), {
+        Size = UDim2.new(1, currentStatBar.Size.X.Offset, 1, currentStatBar.Size.Y.Offset);
       });
 
       tween.Completed:Connect(function()
       
-        dataTypeTween({
-          type = "Number";
-          initialValue = 1;
-          goalValue = 0;
-          onChange = function(newValue: number)
-  
-            textLabel.TextTransparency = newValue;
-  
-          end;
+        setIsTweening(false);
+        TweenService:Create(textLabel, TweenInfo.new(), {
+          TextTransparency = 0;
         }):Play();
         
       end);
@@ -66,52 +65,43 @@ local function StatBar(props: StatBarProps)
 
       local function updateBar()
 
-        local character = Players.LocalPlayer.Character;
-        local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
-        if humanoid then
-
-          local current = humanoid:GetAttribute(`Current{props.type}`) or 0;
-          local base = humanoid:GetAttribute(`Base{props.type}`) or 0;
-          currentStatBar.Size = UDim2.new(math.min(current, 100) / base, 0, 1, 0);
-
-        end;
-  
-      end;
-  
-      local function listenToCharacter(character: Model)
-
-        local humanoid = character:FindFirstChild("Humanoid");
-        if humanoid then
-  
-          humanoid:GetAttributeChangedSignal(`Current{props.type}`):Connect(updateBar)
-          humanoid:GetAttributeChangedSignal(`Base{props.type}`):Connect(updateBar);
-  
-        end;
+        local current = contestant[`current{props.type}`] or 0;
+        local base = contestant[`base{props.type}`] or 0;
+        TweenService:Create(currentStatBar, TweenInfo.new(0.2), {
+          Size = UDim2.new(math.min(current, 100) / base, 0, 1, 0)
+        }):Play();
 
       end;
-
-      local characterAddedEvent = Players.LocalPlayer.CharacterAdded:Connect(function(character)
-      
-        listenToCharacter(character);
   
-      end);
+      local onHealthUpdated;
+      local onStaminaUpdated;
+      if props.type == "Health" then
 
-      local character = Players.LocalPlayer.Character;
-      if character then
+        onHealthUpdated = contestant.onHealthUpdated:Connect(updateBar);
 
-        listenToCharacter(character);
-  
+      else
+
+        onStaminaUpdated = contestant.onStaminaUpdated:Connect(updateBar);
+
       end;
 
       return function()
   
-        characterAddedEvent:Disconnect();
+        if onHealthUpdated then
+
+          onHealthUpdated:Disconnect();
+
+        else
+
+          onStaminaUpdated:Disconnect();
+
+        end;
   
       end;
 
     end;
 
-  end, {props.type});
+  end, {props.type :: any, contestant});
 
   return React.createElement("Frame", {
     BackgroundTransparency = 1;
@@ -130,7 +120,7 @@ local function StatBar(props: StatBarProps)
       BackgroundTransparency = 1;
       AutomaticSize = Enum.AutomaticSize.XY;
       FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
-      TextSize = 14;
+      TextSize = if shouldUseFullHeight then 14 else 8;
       TextColor3 = Color3.new(1, 1, 1);
       ref = textLabelRef;
       LayoutOrder = 1;
@@ -140,7 +130,7 @@ local function StatBar(props: StatBarProps)
       BorderSizePixel = 0;
       AnchorPoint = Vector2.new(if isHealthBar then 1 else 0, 0);
       BackgroundTransparency = 0.7;
-      Size = UDim2.new(1, 0, 0, 5);
+      Size = UDim2.new(1, 0, 0, if shouldUseFullHeight then 5 else 3);
       LayoutOrder = 2;
     }, {
       CurrentStat = React.createElement("Frame", {

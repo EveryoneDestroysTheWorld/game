@@ -1,6 +1,9 @@
 --!strict
--- Writer: Hati ---- Heavily modified edit of ExplosivePunch
--- Designer: Christian Toney (Sudobeast)
+
+-- Programmers: Hati ---- Heavily modified edit of ExplosivePunch
+-- Designers: Christian Toney (Christian_Toney)
+-- © 2024 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -8,7 +11,9 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 local ClientAction = require(script.Parent.Parent.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local ActionButton = require(script.Parent.Parent.Parent.ReactComponents.ActionButton);
+
+local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton);
+
 type ClientAction = ClientAction.ClientAction;
 
 local TakeFlightAction = {
@@ -20,6 +25,7 @@ local TakeFlightAction = {
 
 local activeState = false
 local function flightControls()
+
 	local flightControlsConnect
 	flightControlsConnect = Players.LocalPlayer.Character.HumanoidRootPart.ChildAdded:Connect(function(child)
 		if child.Name == "FlightConstraint" then
@@ -60,6 +66,7 @@ function TakeFlightAction.new(): ClientAction
 	if player.Character then
 		flightControls()
 	end
+
 	local remoteName: string;
 
 	local function breakdown(self: ClientAction)
@@ -67,6 +74,7 @@ function TakeFlightAction.new(): ClientAction
 		ContextActionService:UnbindAction("ActivateTakeFlight");
 
 	end;
+
 
 	local function activate(self: ClientAction)
 		ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
@@ -84,12 +92,14 @@ local allowedToToggle = true
 ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(ActionButton, {
 	onActivate = function()
 		action:activate();
+
 		flightControls()
 		allowedToToggle = false
 		task.wait(1)
 		allowedToToggle = true
 
 	end;
+
 	shortcutCharacter = "Space";
 	iconImage = "rbxassetid://17771917538";
 }));
@@ -120,6 +130,7 @@ end;
 ContextActionService:BindActionAtPriority("ActivateTakeFlight", checkJump, false, 2, Enum.KeyCode.Space);
 
 return action;
+
 
 end
 

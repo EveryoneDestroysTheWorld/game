@@ -17,21 +17,13 @@ local RocketFeetServerAction = {
   description = RocketFeetClientAction.description;
 };
 
-function RocketFeetServerAction.new(contestant: ServerContestant, round: ServerRound): ServerAction
+function RocketFeetServerAction.new(): ServerAction
 
-  local leftFootExplosivePart = Instance.new("Part");
-  leftFootExplosivePart.Name = "LeftFootExplosivePart";
-  leftFootExplosivePart.CanCollide = false;
-  leftFootExplosivePart.Size = Vector3.new(1, 1, 1);
-  leftFootExplosivePart.Transparency = 1;
-
-  local rightFootExplosivePart = Instance.new("Part");
-  rightFootExplosivePart.Name = "RightFootExplosivePart";
-  rightFootExplosivePart.CanCollide = false;
-  rightFootExplosivePart.Size = Vector3.new(1, 1, 1);
-  rightFootExplosivePart.Transparency = 1;
-
-  local action: ServerAction = nil;
+  local contestant: ServerContestant = nil;
+  local round: ServerRound = nil;
+  local leftFootExplosivePart: Part;
+  local rightFootExplosivePart: Part;
+  local executeActionRemoteFunction: RemoteFunction? = nil;
 
   local function activate()
 
@@ -40,7 +32,7 @@ function RocketFeetServerAction.new(contestant: ServerContestant, round: ServerR
       local humanoid = contestant.character:FindFirstChild("Humanoid");
       assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.character}'s Humanoid`);
 
-      if humanoid:GetAttribute("CurrentStamina") >= 10 then
+      if contestant.currentStamina >= 10 then
 
         for _, explosivePart in ipairs({leftFootExplosivePart, rightFootExplosivePart}) do
 
@@ -61,16 +53,10 @@ function RocketFeetServerAction.new(contestant: ServerContestant, round: ServerR
                 if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
 
                   table.insert(hitContestants, possibleEnemyContestant);
-                  local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
-                  if enemyHumanoid then
-
-                    local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 15;
-                    possibleEnemyContestant:updateHealth(newHealth, {
-                      contestant = contestant;
-                      actionID = RocketFeetServerAction.ID;
-                    });
-
-                  end;
+                  possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 15, {
+                    contestant = contestant;
+                    actionID = RocketFeetServerAction.ID;
+                  });
 
                 end;
 
@@ -107,15 +93,13 @@ function RocketFeetServerAction.new(contestant: ServerContestant, round: ServerR
         end;
 
         -- Reduce the player's stamina.
-        humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") - 10);
+        contestant:updateStamina(math.max(0, contestant.currentStamina - 10));
 
       end;
   
     end;
 
   end;
-
-  local executeActionRemoteFunction: RemoteFunction? = nil;
 
   local function breakdown()
 
@@ -129,68 +113,86 @@ function RocketFeetServerAction.new(contestant: ServerContestant, round: ServerR
     rightFootExplosivePart:Destroy();
 
   end;
+  
+  local function initialize(self: ServerAction, newContestant: ServerContestant, newRound: ServerRound)
 
-  if contestant.character then
+    contestant = newContestant;
+    round = newRound;
 
-    -- Create the explosive attachments on both feet of the player.
-    local humanoid = contestant.character:FindFirstChild("Humanoid");
-    assert(humanoid and humanoid:IsA("Humanoid"), "Couldn't find contestant's humanoid");
+    leftFootExplosivePart = Instance.new("Part");
+    leftFootExplosivePart.Name = "LeftFootExplosivePart";
+    leftFootExplosivePart.CanCollide = false;
+    leftFootExplosivePart.Size = Vector3.new(1, 1, 1);
+    leftFootExplosivePart.Transparency = 1;
 
-    local isHumanoidR15 = humanoid.RigType == Enum.HumanoidRigType.R15;
-    local leftFoot = contestant.character:FindFirstChild(if isHumanoidR15 then "LeftFoot" else "LeftLeg");
-    local rightFoot = contestant.character:FindFirstChild(if isHumanoidR15 then "RightFoot" else "RightLeg");
-    for _, footInfo in ipairs({{leftFoot, leftFootExplosivePart}, {rightFoot, rightFootExplosivePart}}) do
+    rightFootExplosivePart = Instance.new("Part");
+    rightFootExplosivePart.Name = "RightFootExplosivePart";
+    rightFootExplosivePart.CanCollide = false;
+    rightFootExplosivePart.Size = Vector3.new(1, 1, 1);
+    rightFootExplosivePart.Transparency = 1;
 
-      local foot = footInfo[1];
-      local explosivePart = footInfo[2];
-      if foot and foot:IsA("BasePart") and explosivePart and explosivePart:IsA("BasePart") then
+    if contestant.character then
 
-        local explosiveWeldConstraint = Instance.new("WeldConstraint");
-        explosiveWeldConstraint.Part0 = explosivePart;
-        explosiveWeldConstraint.Part1 = foot;
-        explosiveWeldConstraint.Parent = explosivePart;
-
-        explosivePart.Position = foot.CFrame.Position - (if not isHumanoidR15 then Vector3.new(0, foot.Size.Y / 2 + explosivePart.Size.Y / 2, 0) else Vector3.zero);
-        explosivePart.Parent = contestant.character;
-
+      -- Create the explosive attachments on both feet of the player.
+      local humanoid = contestant.character:FindFirstChild("Humanoid");
+      assert(humanoid and humanoid:IsA("Humanoid"), "Couldn't find contestant's humanoid");
+  
+      local isHumanoidR15 = humanoid.RigType == Enum.HumanoidRigType.R15;
+      local leftFoot = contestant.character:FindFirstChild(if isHumanoidR15 then "LeftFoot" else "LeftLeg");
+      local rightFoot = contestant.character:FindFirstChild(if isHumanoidR15 then "RightFoot" else "RightLeg");
+      for _, footInfo in ipairs({{leftFoot, leftFootExplosivePart}, {rightFoot, rightFootExplosivePart}}) do
+  
+        local foot = footInfo[1];
+        local explosivePart = footInfo[2];
+        if foot and foot:IsA("BasePart") and explosivePart and explosivePart:IsA("BasePart") then
+  
+          local explosiveWeldConstraint = Instance.new("WeldConstraint");
+          explosiveWeldConstraint.Part0 = explosivePart;
+          explosiveWeldConstraint.Part1 = foot;
+          explosiveWeldConstraint.Parent = explosivePart;
+  
+          explosivePart.Position = foot.CFrame.Position - (if not isHumanoidR15 then Vector3.new(0, foot.Size.Y / 2 + explosivePart.Size.Y / 2, 0) else Vector3.zero);
+          explosivePart.Parent = contestant.character;
+  
+        end;
+      
       end;
-    
+  
     end;
+
+    if contestant.player then
+
+      local remoteFunction = Instance.new("RemoteFunction");
+      remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+      remoteFunction.OnServerInvoke = function(player)
+  
+        if player == contestant.player then
+  
+          self:activate();
+  
+        else
+  
+          -- That's weird.
+          error("Unauthorized.");
+  
+        end
+  
+      end;
+      remoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
+      executeActionRemoteFunction = remoteFunction;
+  
+    end
 
   end;
 
-  action = ServerAction.new({
+  return ServerAction.new({
     name = RocketFeetServerAction.name;
     ID = RocketFeetServerAction.ID;
     description = RocketFeetServerAction.description;
     breakdown = breakdown;
     activate = activate;
+    initialize = initialize;
   });
-
-  if contestant.player then
-
-    local remoteFunction = Instance.new("RemoteFunction");
-    remoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
-    remoteFunction.OnServerInvoke = function(player)
-
-      if player == contestant.player then
-
-        action:activate();
-
-      else
-
-        -- That's weird.
-        error("Unauthorized.");
-
-      end
-
-    end;
-    remoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
-    executeActionRemoteFunction = remoteFunction;
-
-  end
-
-  return action;
 
 end;
 

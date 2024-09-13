@@ -5,6 +5,7 @@ local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local UndeadConciousnessClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.UndeadConciousnessClientArchetype);
 local ServerRound = require(script.Parent.Parent.ServerRound);
 local ServerAction = require(script.Parent.Parent.ServerAction);
+local ServerItem = require(script.Parent.Parent.ServerItem);
 type ServerRound = ServerRound.ServerRound;
 type ServerContestant = ServerContestant.ServerContestant;
 type ServerArchetype = ServerArchetype.ServerArchetype;
@@ -18,9 +19,10 @@ local UndeadConciousnessServerArchetype = {
   type = UndeadConciousnessClientArchetype.type;
 };
 
-function UndeadConciousnessServerArchetype.new(contestant: ServerContestant, round: ServerRound, stageModel: Model): ServerArchetype
+function UndeadConciousnessServerArchetype.new(): ServerArchetype
 
-  -- Set up the self-destruct.
+  local contestant: ServerContestant;
+  local round: ServerRound;
   local isContestantStunned = false;
   local breakdownEventList: {
     [BasePart]: RBXScriptConnection;
@@ -28,118 +30,6 @@ function UndeadConciousnessServerArchetype.new(contestant: ServerContestant, rou
     healthUpdateEvent: RBXScriptConnection?;
     contestantTouchEvent: RBXScriptConnection?;
   } = {};
-  breakdownEventList.disqualificationEvent = contestant.onDisqualified:Connect(function()
-
-    -- Verify that we have the required instances.
-    local character = contestant.character;
-    assert(character, `Couldn't find {contestant.ID}'s character.`);
-    
-    local humanoid = character:FindFirstChild("Humanoid") :: Humanoid?;
-    assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.ID}'s humanoid.`);
-
-    -- Slow down the player.
-    humanoid.WalkSpeed = 12;
-
-    -- Allow the player to revive disqualified allies and give them this archetype.
-    for _, possibleAllyContestant in ipairs(round.contestants) do
-
-      -- To be implemented when teams are implemented.
-      possibleAllyContestant.onDisqualified:Connect(function()
-      
-        
-
-      end);
-
-    end;
-
-    -- If the player gets dealt 30 damage, stun them for 3 seconds.
-    if breakdownEventList.healthUpdateEvent then
-
-      breakdownEventList.healthUpdateEvent:Disconnect();
-
-    end;
-
-    local damageCounter = 0;
-    breakdownEventList.healthUpdateEvent = contestant.onHealthUpdated:Connect(function(newHealth, oldHealth)
-    
-      -- Stun the contestant if the total damage taken is at least 30.
-      local delta = newHealth - oldHealth;
-      if not isContestantStunned and delta < 0 then
-
-        damageCounter += delta;
-        if damageCounter >= 30 then
-
-          isContestantStunned = true;
-          damageCounter = 0;
-          humanoid.WalkSpeed = 0;
-
-          -- Restore the contestant after 3 seconds.
-          task.delay(3, function()
-          
-            humanoid.WalkSpeed = 12;
-            isContestantStunned = false;
-
-          end);
-
-        end;
-
-      end;
-
-    end);
-
-    -- Make touching enemy contestants take 20 damage with 1 second of immunity.
-    if breakdownEventList.contestantTouchEvent then
-
-      breakdownEventList.contestantTouchEvent:Disconnect();
-
-    end;
-
-    local immuneContestants = {};
-    for _, instance in ipairs(character:GetChildren()) do
-
-      if instance:IsA("BasePart") then
-
-        breakdownEventList[instance] = instance.Touched:Connect(function(basePart)
-          
-          for _, possibleEnemyContestant in ipairs(round.contestants) do
-
-            task.spawn(function()
-            
-              local possibleEnemyCharacter = possibleEnemyContestant.character;
-              if possibleEnemyContestant ~= contestant and not table.find(immuneContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
-
-                local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
-                if enemyHumanoid then
-
-                  -- Add immunity, then remove it after a second.
-                  table.insert(immuneContestants, possibleEnemyContestant);
-                  task.delay(1, function()
-                  
-                    table.remove(immuneContestants, table.find(immuneContestants, possibleEnemyContestant));
-
-                  end);
-
-                  local newHealth = enemyHumanoid:GetAttribute("CurrentHealth") - 20;
-                  possibleEnemyContestant:updateHealth(newHealth, {
-                    contestant = contestant;
-                    archetypeID = UndeadConciousnessServerArchetype.ID;
-                  });
-
-                end;
-
-              end;
-
-            end);
-
-          end;
-
-        end);
-
-      end;
-
-    end;
-
-  end);
 
   local function breakdown(self: ServerArchetype)
 
@@ -165,6 +55,135 @@ function UndeadConciousnessServerArchetype.new(contestant: ServerContestant, rou
 
   end;
 
+  local function initialize(self: ServerArchetype, newContestant: ServerContestant, newRound: ServerRound)
+
+    contestant = newContestant;
+    round = newRound;
+
+    breakdownEventList.disqualificationEvent = contestant.onDisqualified:Connect(function()
+
+      -- Verify that we have the required instances.
+      local character = contestant.character;
+      assert(character, `Couldn't find {contestant.ID}'s character.`);
+      
+      local humanoid = character:FindFirstChild("Humanoid") :: Humanoid?;
+      assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.ID}'s humanoid.`);
+  
+      -- Slow down the player.
+      humanoid.WalkSpeed = 12;
+  
+      -- Allow the player to revive disqualified allies and give them this archetype.
+      for _, possibleAllyContestant in ipairs(round.contestants) do
+  
+        -- To be implemented when teams are implemented.
+        possibleAllyContestant.onDisqualified:Connect(function()
+        
+          
+  
+        end);
+  
+      end;
+  
+      -- If the player gets dealt 30 damage, stun them for 3 seconds.
+      if breakdownEventList.healthUpdateEvent then
+  
+        breakdownEventList.healthUpdateEvent:Disconnect();
+  
+      end;
+  
+      local damageCounter = 0;
+      breakdownEventList.healthUpdateEvent = contestant.onHealthUpdated:Connect(function(newHealth, oldHealth)
+      
+        -- Stun the contestant if the total damage taken is at least 30.
+        local delta = newHealth - oldHealth;
+        if not isContestantStunned and delta < 0 then
+  
+          damageCounter += delta;
+          if damageCounter >= 30 then
+  
+            isContestantStunned = true;
+            damageCounter = 0;
+            humanoid.WalkSpeed = 0;
+  
+            -- Restore the contestant after 3 seconds.
+            task.delay(3, function()
+            
+              humanoid.WalkSpeed = 12;
+              isContestantStunned = false;
+  
+            end);
+  
+          end;
+  
+        end;
+  
+      end);
+  
+      -- Make touching enemy contestants take 20 damage with 1 second of immunity.
+      if breakdownEventList.contestantTouchEvent then
+  
+        breakdownEventList.contestantTouchEvent:Disconnect();
+  
+      end;
+  
+      local immuneContestants = {};
+      for _, instance in ipairs(character:GetChildren()) do
+  
+        if instance:IsA("BasePart") then
+  
+          breakdownEventList[instance] = instance.Touched:Connect(function(basePart)
+            
+            for _, possibleEnemyContestant in ipairs(round.contestants) do
+  
+              task.spawn(function()
+              
+                local possibleEnemyCharacter = possibleEnemyContestant.character;
+                if possibleEnemyContestant ~= contestant and not table.find(immuneContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
+  
+                  local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
+                  if enemyHumanoid then
+  
+                    -- Add immunity, then remove it after a second.
+                    table.insert(immuneContestants, possibleEnemyContestant);
+                    task.delay(1, function()
+                    
+                      table.remove(immuneContestants, table.find(immuneContestants, possibleEnemyContestant));
+  
+                    end);
+  
+                    possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 20, {
+                      contestant = contestant;
+                      archetypeID = UndeadConciousnessServerArchetype.ID;
+                    });
+  
+                  end;
+  
+                end;
+  
+              end);
+  
+            end;
+  
+          end);
+  
+        end;
+  
+      end;
+  
+    end);
+
+    -- Give the player a random item. 
+    local randomItem = ServerItem.random();
+    contestant:addItemToInventory(randomItem);
+
+    if contestant.player then
+
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
+
+    end;
+
+  end;
+
   return ServerArchetype.new({
     ID = UndeadConciousnessServerArchetype.ID;
     name = UndeadConciousnessServerArchetype.name;
@@ -173,6 +192,7 @@ function UndeadConciousnessServerArchetype.new(contestant: ServerContestant, rou
     type = UndeadConciousnessServerArchetype.type;
     breakdown = breakdown;
     runAutoPilot = runAutoPilot;
+    initialize = initialize;
   });
 
 end;

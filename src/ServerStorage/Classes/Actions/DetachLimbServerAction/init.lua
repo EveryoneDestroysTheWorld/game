@@ -8,6 +8,8 @@ type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
 local DetachLimbClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetachLimbClientAction);
+local ServerRound = require(script.Parent.Parent.ServerRound);
+type ServerRound = ServerRound.ServerRound;
 
 local DetachLimbServerAction = {
   ID = DetachLimbClientAction.ID;
@@ -15,20 +17,14 @@ local DetachLimbServerAction = {
   description = DetachLimbClientAction.description;
 };
 
-function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
+function DetachLimbServerAction.new(): ServerAction
   
-  local validLimbNames = {"Head", "Torso", "LeftArm", "RightArm", "LeftLeg", "RightLeg"};
+  local contestant: ServerContestant = nil;
+  local round: ServerRound = nil;
 
-  local action: ServerAction;
+  local validLimbNames = {"Head", "Torso", "LeftArm", "RightArm", "LeftLeg", "RightLeg"};
   local detachedLimbs: {[string]: BasePart | Model} = {};
   local bindableFunction = Instance.new("BindableFunction");
-  bindableFunction.Name = `{contestant.ID}_GetDetachedLimbs`;
-  bindableFunction.OnInvoke = function()
-
-    return detachedLimbs;
-
-  end;
-  bindableFunction.Parent = ServerStorage.Functions.ActionFunctions;
 
   local function activate(self: ServerAction, limbName: string?)
 
@@ -294,41 +290,54 @@ function DetachLimbServerAction.new(contestant: ServerContestant): ServerAction
 
   end;
 
-  action = ServerAction.new({
+  local function initialize(self: ServerAction, newContestant: ServerContestant, newRound: ServerRound)
+
+    contestant = newContestant;
+    round = newRound;
+    bindableFunction.Name = `{contestant.ID}_GetDetachedLimbs`;
+    bindableFunction.OnInvoke = function()
+  
+      return detachedLimbs;
+  
+    end;
+    bindableFunction.Parent = ServerStorage.Functions.ActionFunctions;
+
+    -- Create a remote function.
+    if contestant.player then
+      
+      local actionRemoteFunction = Instance.new("RemoteFunction");
+      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+      actionRemoteFunction.OnServerInvoke = function(player, limbName: string)
+
+        assert(typeof(limbName) == "string", "Limb name must be a string");  
+
+        if player == contestant.player then
+
+          self:activate(limbName);
+
+        else
+
+          -- That's weird.
+          error("Unauthorized.");
+
+        end
+
+      end;
+      actionRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
+      remoteFunction = actionRemoteFunction;
+
+    end;
+
+  end;
+
+  return ServerAction.new({
     ID = DetachLimbServerAction.ID;
     name = DetachLimbServerAction.name;
     description = DetachLimbServerAction.description;
     activate = activate;
     breakdown = breakdown;
+    initialize = initialize;
   });
-
-  -- Create a remote function.
-  if contestant.player then
-    
-    local actionRemoteFunction = Instance.new("RemoteFunction");
-    actionRemoteFunction.Name = `{contestant.player.UserId}_{action.ID}`;
-    actionRemoteFunction.OnServerInvoke = function(player, limbName: string)
-
-      assert(typeof(limbName) == "string", "Limb name must be a string");  
-
-      if player == contestant.player then
-
-        action:activate(limbName);
-
-      else
-
-        -- That's weird.
-        error("Unauthorized.");
-
-      end
-
-    end;
-    actionRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
-    remoteFunction = actionRemoteFunction;
-
-  end;
-
-  return action;
 
 end;
 

@@ -14,7 +14,6 @@ type ServerContestant = ServerContestant.ServerContestant;
 local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
 type ServerArchetype = ServerArchetype.ServerArchetype;
 local Profile = require(ServerStorage.Classes.Profile);
-local RunService = game:GetService("RunService");
 
 -- Initialize the round.
 local round;
@@ -105,9 +104,14 @@ local function startRound()
         ID = i * 0.01;
         character = character;
         name = `NPC {i * 0.01}`;
+        inventory = {};
         isBot = true;
         isDisqualified = false;
         teamID = if i > team1BotCount then 2 else 1;
+        baseHealth = 100;
+        currentHealth = 100;
+        baseStamina = 100;
+        currentStamina = 100;
       });
 
       round:addContestant(botContestant);
@@ -364,7 +368,9 @@ local function startRound()
     end;
 
     round:setStatus("Contestant selection");
-    local selectionTimeLimitSeconds = 25; -- WAS 25
+
+    local selectionTimeLimitSeconds = 25;
+
     local currentTime = os.time();
     ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds - 1);
     ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = function()
@@ -399,10 +405,15 @@ local function checkPlayerList(player: Player)
         player = player;
         character = player.Character;
         name = player.Name;
+        inventory = {};
         profile = profile;
         isBot = false;
         isDisqualified = false;
         teamID = 1; -- TODO: Fix this
+        baseHealth = 100;
+        currentHealth = 100;
+        baseStamina = 100;
+        currentStamina = 100;
       }));
 
     else
@@ -431,7 +442,7 @@ local function checkPlayerList(player: Player)
 end;
 
 local shouldUseStudioPlayers = true;
-if shouldUseStudioPlayers and RunService:IsStudio() then
+if shouldUseStudioPlayers then
 
   Players.PlayerAdded:Connect(function(player)
 

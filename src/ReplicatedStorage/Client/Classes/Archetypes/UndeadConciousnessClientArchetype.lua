@@ -1,4 +1,8 @@
 --!strict
+-- Programmers: Christian Toney (Christian_Toney)
+-- Designers: Christian Toney (Christian_Toney)
+-- © 2024 Beastslash LLC
+
 local ClientArchetype = require(script.Parent.Parent.ClientArchetype);
 local ClientContestant = require(script.Parent.Parent.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
@@ -10,9 +14,13 @@ local UndeadConciousnessClientArchetype = {
   actionIDs = {};
   type = "Supporter" :: "Supporter";
 };
-function UndeadConciousnessClientArchetype.new(contestant: ClientContestant): ClientArchetype
+function UndeadConciousnessClientArchetype.new(): ClientArchetype
 
   local function breakdown(self: ClientArchetype)
+
+  end;
+
+  local function initialize(self: ClientArchetype)
 
   end;
 
@@ -24,6 +32,7 @@ function UndeadConciousnessClientArchetype.new(contestant: ClientContestant): Cl
     type = UndeadConciousnessClientArchetype.type;
     iconImage = "rbxassetid://130983727429334";
     breakdown = breakdown;
+    initialize = initialize;
   });
 
 end;

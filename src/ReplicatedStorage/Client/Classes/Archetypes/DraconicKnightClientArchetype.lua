@@ -1,4 +1,8 @@
 --!strict
+-- Programmers: Christian Toney (Christian_Toney)
+-- Designers: Christian Toney (Christian_Toney)
+-- © 2024 Beastslash LLC
+
 local ClientArchetype = require(script.Parent.Parent.ClientArchetype);
 local ClientContestant = require(script.Parent.Parent.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
@@ -9,13 +13,19 @@ local DraconicKnightClientArchetype = {
   name = "Draconic Knight";
   description = "Fly above the enemy and let the vengence flow";
   iconImage = "rbxassetid://18584519829";
+
   actionIDs = {6, 7, 8};
+
   type = "Defender" :: "Defender";
 };
 
-function DraconicKnightClientArchetype.new(contestant: ClientContestant): ClientArchetype
+function DraconicKnightClientArchetype.new(): ClientArchetype
 
   local function breakdown(self: ClientArchetype)
+
+  end;
+
+  local function initialize(self: ClientArchetype)
 
   end;
 
@@ -27,6 +37,7 @@ function DraconicKnightClientArchetype.new(contestant: ClientContestant): Client
     actionIDs = DraconicKnightClientArchetype.actionIDs;
     type = DraconicKnightClientArchetype.type;
     breakdown = breakdown;
+    initialize = initialize;
   });
 
 end;

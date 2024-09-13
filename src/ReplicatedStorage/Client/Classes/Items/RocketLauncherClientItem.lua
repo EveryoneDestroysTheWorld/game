@@ -1,8 +1,9 @@
 --!strict
 -- This module represents a Rocket Launcher on the client side. It should only be used for item activations.
+--
 -- Programmers: Christian Toney (Christian_Toney)
 -- Designer: InkyTheBlue (InkyTheBlue)
--- © 2024 Beastslash
+-- © 2024 Beastslash LLC
 
 local ClientItem = require(script.Parent.Parent.ClientItem);
 type ClientItem = ClientItem.ClientItem;
@@ -24,6 +25,10 @@ function RocketLauncherClientItem.new(): ClientItem
 
   end;
 
+  local function initialize(self: ClientItem)
+
+  end;
+
   return ClientItem.new({
     ID = RocketLauncherClientItem.ID;
     iconImage = RocketLauncherClientItem.iconImage;
@@ -31,6 +36,7 @@ function RocketLauncherClientItem.new(): ClientItem
     description = RocketLauncherClientItem.description;
     breakdown = breakdown;
     activate = activate;
+    initialize = initialize;
   });
 
 end;
