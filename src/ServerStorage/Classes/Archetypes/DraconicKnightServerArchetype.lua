@@ -19,7 +19,6 @@ local DraconicKnightServerArchetype = {
   type = DraconicKnightClientArchetype.type;
 };
 
-
 function DraconicKnightServerArchetype.new(): ServerArchetype
 
   local contestant: ServerContestant = nil;
@@ -68,7 +67,7 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
         diveBombIndicator.AoeDisplay.Name = "DiveBombIndicator"
         diveBombIndicator.DiveBombIndicator.Parent = ReplicatedStorage.Client.InGameDisplayObjects
         diveBombIndicator:Destroy()
-        
+
       end
 
       wingProp = newWingProp;
