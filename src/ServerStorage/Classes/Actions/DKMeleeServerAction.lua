@@ -97,13 +97,15 @@ local function startAttack(primaryPart, animations, combo: number, round, contes
 	tween:Play()
 
 	task.delay(0.5, function()
+
 		local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {LineVelocity = 0})
 		tween:Play()
 		task.delay(0.2, function()
+
 			linearVelocity:Destroy()
 			attachment:Destroy()
+			
 		end);
-
 
 	end);
 
@@ -137,43 +139,64 @@ local function preloadAnims(humanoid: Humanoid, animations: {[string]: string})
 
 end
 
-function MeleeServerAction.new(contestant: ServerContestant, round: ServerRound, data): ServerAction
+function MeleeServerAction.new(): ServerAction
 
-	local combo = 0;
-	local humanoid: Humanoid;
+	local _contestant: ServerContestant? = nil;
+	local _round: ServerRound? = nil;
+	local combo: number = 0;
+	local humanoid: Humanoid? = nil;
 	local anims: {[string]: AnimationTrack} = {};
+	local debounce = false;
 
-	local function activate()
+	local function activate(self: ServerAction)
 
-		if contestant.character then
-			if not contestant.character.HumanoidRootPart:FindFirstChild("FlightConstraint") then
-				if debounce.Value == "False" then
-					if humanoid:GetAttribute("CurrentStamina") >= 5 then
+		if _contestant and _contestant.character then
+
+			local primaryPart = _contestant.character.PrimaryPart :: BasePart;
+			if not primaryPart:FindFirstChild("FlightConstraint") then
+
+				if not debounce then
+
+					if _contestant.currentStamina >= 5 then
+						
+						debounce = true;
+
 						-- Reduce the player's stamina.
-						humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") - 5)
-						debounce.Value = "True"
+						_contestant:updateStamina(math.max(0, _contestant.currentStamina - 5));
 						task.delay(0.66, function()
 
-							debounce.Value = "False"
+							debounce = false;
 
 						end);
-						print("meleeing")
-						startAttack(contestant.character.HumanoidRootPart, anims, combo, round, contestant)
+
+						startAttack(primaryPart, anims, combo, _round, _contestant)
 						combo += 1
+
 						local storedCombo = combo
 						if combo == 3 then combo = 0 else
+
 							task.wait(2)
+
 							if combo == storedCombo then
+
 								combo = 0
+
 							end
+
 						end
+						
 					end
-				elseif debounce.Value == "True" then
+
+				elseif debounce then
+
 					debounce.Value = "NoFurtherInputs"
 					debounce.Changed:Wait()
-					activate()
+					self:activate()
+
 				end
+				
 			end
+
 		end;
 
 	end;
@@ -190,7 +213,7 @@ function MeleeServerAction.new(contestant: ServerContestant, round: ServerRound,
 
 	end;
 
-	local function initialize(self: ServerAction)
+	local function initialize(self: ServerAction, contestant: ServerContestant)
 
 		local animations = {
 			Melee1 = "77919655263406";
@@ -228,6 +251,8 @@ function MeleeServerAction.new(contestant: ServerContestant, round: ServerRound,
 			executeActionRemoteFunction = remoteFunction;
 	
 		end
+
+		_contestant = contestant;
 
 	end;
 
