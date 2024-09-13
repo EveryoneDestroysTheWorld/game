@@ -23,10 +23,8 @@ local TakeFlightServerAction = {
 
 local function animateFlight(humanoid: Humanoid, animations, animData, isEndingFlight: boolean)
 
-
 	animations["Right"]:Play(animData.X,animData.Y,animData.Z);
 	animations["Left"]:Play(animData.X,animData.Y,animData.Z);
-
 
 	if isEndingFlight then
 
@@ -67,20 +65,18 @@ local function flightStart(contestant: ServerContestant, primaryPart: BasePart)
 	local linearVelocity = Instance.new("LinearVelocity");
   linearVelocity.Name = "FlightConstraint"
 	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
-
 	linearVelocity.LineDirection = Vector3.new(0, 1, 0);
 	linearVelocity.LineVelocity = -5
 	linearVelocity.MaxForce = math.huge;
 	linearVelocity.Parent = primaryPart;
 	linearVelocity.Attachment0 = primaryPart:FindFirstChild("RootAttachment") :: Attachment;
-
 	linearVelocity:SetAttribute("PlayerControls", false);
 
 	task.wait(0.3)
 
 	linearVelocity.LineVelocity = 50;
 
-	local tween = TweenService:Create(linearVelocity, TweenInfo.new(1.0, Enum.EasingStyle.Sine), {LineVelocity = 0})
+	local tween = TweenService:Create(linearVelocity, TweenInfo.new(1.0, Enum.EasingStyle.Sine), {LineVelocity = 0});
 	tween:Play()
 	task.wait(0.6)
 
@@ -88,14 +84,16 @@ local function flightStart(contestant: ServerContestant, primaryPart: BasePart)
 	linearVelocity.VectorVelocity = Vector3.new(0,0,0)
 	linearVelocity:SetAttribute("PlayerControls", true)
 	local humanoid = (primaryPart.Parent :: Instance):FindFirstChild("Humanoid") :: Humanoid;
-
-
 	local connection
 	connection = humanoid:GetPropertyChangedSignal("FloorMaterial"):Connect(function(change)
+
 		if humanoid.FloorMaterial ~= Enum.Material.Air then
+
 			connection:Disconnect()
 			linearVelocity:Destroy()
+
 		end
+
 	end)
 
 	repeat 
@@ -103,7 +101,7 @@ local function flightStart(contestant: ServerContestant, primaryPart: BasePart)
 		task.wait(0.25)
 		contestant:updateStamina(math.max(0, contestant.currentStamina - 2));
 
-	until linearVelocity:GetAttribute("PlayerControls") == false or contestant.currentStamina <= 0
+	until not linearVelocity:GetAttribute("PlayerControls") or contestant.currentStamina <= 0
 
 	if contestant.currentStamina <= 0 then
 
@@ -118,8 +116,8 @@ end
 
 local function flightEnd(primaryPart: BasePart)
 
-	local linearVelocity = primaryPart:FindFirstChild("LinearVelocity") :: LinearVelocity;
-	linearVelocity:SetAttribute("PlayerControls", false)
+	local linearVelocity = primaryPart:FindFirstChild("FlightConstraint") :: LinearVelocity;
+	linearVelocity:SetAttribute("PlayerControls", false);
 
 	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
 	linearVelocity.LineDirection = Vector3.new(0, 1, 0);
@@ -199,7 +197,6 @@ function TakeFlightServerAction.new(): ServerAction
 
 	local anims;
 
-
 	local function activate()
 
 		if contestant.character then
@@ -207,33 +204,26 @@ function TakeFlightServerAction.new(): ServerAction
 			local humanoid = contestant.character:FindFirstChild("Humanoid");
 			assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.character}'s Humanoid`);
 
-
 			local primaryPart = contestant.character.PrimaryPart;
 			if humanoid:GetState() == Enum.HumanoidStateType.Freefall and primaryPart then
 
-				if not primaryPart:FindFirstChild("FlightConstraint") then
-
-					if contestant.currentStamina >= 10 then
-
-						-- Reduce the player's stamina.
-						contestant:updateStamina(math.max(0, contestant.currentStamina - 10));
-						local animData = Vector3.new(0,100,1.8)
-						coroutine.wrap(flightStart)(contestant, primaryPart)
-						anims = animateFlight(humanoid, anims, animData, false)
-
-					end
-
-				else
+				if primaryPart:FindFirstChild("FlightConstraint") then
 
 					local animData = Vector3.new(0, 100, 2.5);
 					coroutine.wrap(flightEnd)(primaryPart);
 					anims = animateFlight(humanoid, anims, animData, true);
 
+				elseif contestant.currentStamina >= 10 then
+
+					-- Reduce the player's stamina.
+					contestant:updateStamina(math.max(0, contestant.currentStamina - 10));
+					local animData = Vector3.new(0,100,1.8)
+					coroutine.wrap(flightStart)(contestant, primaryPart)
+					anims = animateFlight(humanoid, anims, animData, false)
 
 				end
 
 			end;
-
 
 		end;
 

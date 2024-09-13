@@ -26,37 +26,46 @@ local function flightControls()
 
 	local flightControlsConnect
 	flightControlsConnect = Players.LocalPlayer.Character.HumanoidRootPart.ChildAdded:Connect(function(child)
+
 		if child.Name == "FlightConstraint" then
+
 			flightControlsConnect:Disconnect()
-	activeState = true
-	local linearVelocity = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("FlightConstraint")
-	local humanoid = Players.LocalPlayer.Character.Humanoid
-	-- this waits for the controls to be enabled by the server
-	linearVelocity:SetAttribute("PlayerControls", false)
-	local connection
-	local connection2
-	connection = linearVelocity.AttributeChanged:Connect(function()
-		connection:Disconnect()
-		connection = linearVelocity.AttributeChanged:Connect(function()
-			connection:Disconnect()
-			connection2:Disconnect()
-			activeState = false
-			flightControls()
-		end)
-		local verticalVelocity = 0
-		connection2 = RunService.RenderStepped:Connect(function(step)
-			if humanoid.Jump == true then
-				verticalVelocity = 0.8
-			else
-				verticalVelocity = 0
-			end
-			local value = (humanoid.MoveDirection) + Vector3.new(0,verticalVelocity,0)
-				local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.5, Enum.EasingStyle.Sine), {VectorVelocity = value * 20})
-			tween:Play()
-		end)
+			activeState = true;
+			local linearVelocity = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("FlightConstraint");
+			local humanoid = Players.LocalPlayer.Character.Humanoid
+
+			-- this waits for the controls to be enabled by the server
+			linearVelocity:SetAttribute("PlayerControls", false)
+			local connection
+			local connection2
+			connection = linearVelocity.AttributeChanged:Connect(function()
+
+				connection:Disconnect()
+				connection = linearVelocity.AttributeChanged:Connect(function()
+
+					connection:Disconnect()
+					connection2:Disconnect()
+					activeState = false
+					flightControls()
+
+				end)
+
+				local verticalVelocity = 0
+				connection2 = RunService.RenderStepped:Connect(function(step)
+
+					verticalVelocity = if humanoid.Jump then 0.8 else 0;
+					local value = (humanoid.MoveDirection) + Vector3.new(0,verticalVelocity,0)
+					local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.5, Enum.EasingStyle.Sine), {VectorVelocity = value * 20})
+					tween:Play()
+
+				end)
+
+			end)
+
+		end
+
 	end)
-end
-end)
+
 end
 
 function TakeFlightAction.new(): ClientAction
@@ -80,7 +89,9 @@ function TakeFlightAction.new(): ClientAction
 
 		local player = Players.LocalPlayer;
 		if player.Character then
+
 			flightControls()
+			
 		end
 
 		local allowedToToggle = true

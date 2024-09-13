@@ -83,7 +83,6 @@ local function startAttack(primaryPart, animations, combo: number, round, contes
 	local animData = Vector3.new(0.1, 1, 1)
 	animations[animationName]:Play(animData.X,animData.Y,animData.Z)
 
-
 	local linearVelocity = Instance.new("LinearVelocity", primaryPart)
 	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
 	linearVelocity.LineVelocity = -5
