@@ -216,14 +216,9 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
         end;
 
         local isHandled = false;
-        local ghostHighlight: Highlight? = nil;
         local function checkHealth()
 
-          if contestant.currentHealth > 0 and ghostHighlight then
-
-            ghostHighlight:Destroy();
-          
-          elseif not isHandled and contestant.currentHealth <= 0 then
+          if not isHandled and contestant.currentHealth <= 0 then
 
             -- Remove all items.
             isHandled = true;
@@ -239,7 +234,6 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
               highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
               highlight.FillColor = Color3.fromRGB(152, 202, 248);
               highlight.FillTransparency = 0.5;
-              ghostHighlight = highlight;
 
               local proximityPrompt = Instance.new("ProximityPrompt");
               proximityPrompt.Name = "RevivalProximityPrompt";
@@ -252,6 +246,7 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
                 if player ~= contestant.player then
 
                   contestant:updateHealth(contestant.baseHealth / 2);
+                  highlight:Destroy();
                   proximityPrompt:Destroy();
 
                 end;
