@@ -85,8 +85,8 @@ function TakeFlightAction.new(): ClientAction
 		end
 
 		local allowedToToggle = true
-		ReplicatedStorage.Client.Functions.AddActionButton:Invoke(React.createElement(HUDButton, {
-			initialize = initialize;
+		ReplicatedStorage.Client.Functions.AddActionButton:Invoke("Action", React.createElement(HUDButton, {
+			type = "Action";
 			onActivate = function()
 
 				self:activate();
