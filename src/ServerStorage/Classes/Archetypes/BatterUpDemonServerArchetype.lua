@@ -27,12 +27,19 @@ function BatterUpDemonServerArchetype.new(): ServerArchetype
   local round: ServerRound;
   local events: {RBXScriptConnection} = {};
 
+  local ragdollClone;
   local function breakdown(self: ServerArchetype)
 
     for _, event in events do
 
       event:Disconnect();
 
+    end;
+
+    if ragdollClone then
+
+      ragdollClone:Destroy();
+      
     end;
 
   end;
@@ -68,6 +75,11 @@ function BatterUpDemonServerArchetype.new(): ServerArchetype
       if isDowned and contestant.currentHealth > 0 then
         
         isDowned = false;
+        if ragdollClone then
+
+          ragdollClone:Destroy();
+
+        end;
 
       elseif not isDowned and contestant.currentHealth <= 0 then
 
@@ -75,7 +87,7 @@ function BatterUpDemonServerArchetype.new(): ServerArchetype
 
         if contestant.character then
 
-          createRagdollClone(contestant.character);
+          ragdollClone = createRagdollClone(contestant.character);
 
         end;
 

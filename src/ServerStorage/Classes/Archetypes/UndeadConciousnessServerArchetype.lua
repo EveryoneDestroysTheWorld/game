@@ -33,11 +33,18 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
     contestantTouchEvent: RBXScriptConnection?;
   } = {};
 
+  local ragdollClone;
   local function breakdown(self: ServerArchetype)
 
     for _, event in pairs(breakdownEventList) do
 
       event:Disconnect();
+
+    end;
+
+    if ragdollClone then
+
+      ragdollClone:Destroy();
 
     end;
 
@@ -190,6 +197,11 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
       if isDowned and contestant.currentHealth > 0 then
         
         isDowned = false;
+        if ragdollClone then
+
+          ragdollClone:Destroy();
+
+        end;
 
       elseif not isDowned and contestant.currentHealth <= 0 then
 
@@ -197,7 +209,7 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
 
         if contestant.character then
 
-          createRagdollClone(contestant.character);
+          ragdollClone = createRagdollClone(contestant.character);
 
         end;
 
