@@ -202,7 +202,7 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
             isRecoveringStamina = true;
 
-            while contestant.currentStamina < contestant.baseStamina do
+            while contestant.currentHealth > 0 and contestant.currentStamina < contestant.baseStamina do
 
               task.wait(1);
               contestant:updateStamina(math.min(contestant.currentStamina + 5, contestant.baseStamina));
@@ -215,20 +215,23 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
         end;
 
-        local function checkHealth()
+        table.insert(events, contestant.onStaminaUpdated:Connect(recoverStamina));
 
-          if contestant.currentHealth <= 0 then
+      end;
 
-            contestant:disqualify();
+      table.insert(events, ReplicatedStorage.Shared.Events.ResetButtonPressed.OnServerEvent:Connect(function(player)
+      
+        for _, contestant in round.contestants do
+
+          if contestant.player == player then
+
+            contestant:updateHealth(0);
 
           end;
 
         end;
 
-        table.insert(events, contestant.onHealthUpdated:Connect(checkHealth));
-        table.insert(events, contestant.onStaminaUpdated:Connect(recoverStamina));
-
-      end;
+      end));
 
     end;
     breakdown = function(self)
