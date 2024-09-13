@@ -1,6 +1,7 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local InsertService = game:GetService("InsertService");
+local ServerStorage = game:GetService("ServerStorage");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local DraconicKnightClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.DraconicKnightClientArchetype);
@@ -10,6 +11,8 @@ type ServerRound = ServerRound.ServerRound;
 type ServerContestant = ServerContestant.ServerContestant;
 type ServerArchetype = ServerArchetype.ServerArchetype;
 type ServerAction = ServerAction.ServerAction;
+local downContestant = require(ServerStorage.Modules.downContestant);
+local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
 
 local DraconicKnightServerArchetype = {
   ID = DraconicKnightClientArchetype.ID;
@@ -23,6 +26,7 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
 
   local contestant: ServerContestant = nil;
   local round: ServerRound = nil;
+  local events: {RBXScriptConnection} = {};
 
   local function breakdown(self: ServerArchetype)
 
@@ -61,6 +65,28 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
       ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
 
     end;
+
+    local isDowned = false;
+    table.insert(events, contestant.onHealthUpdated:Connect(function()
+    
+      if isDowned and contestant.currentHealth > 0 then
+        
+        isDowned = false;
+
+      elseif not isDowned and contestant.currentHealth <= 0 then
+
+        isDowned = true;
+        downContestant(contestant);
+
+        if contestant.character then
+          
+          createRagdollClone(contestant.character);
+
+        end;
+
+      end;
+
+    end));
 
   end;
 

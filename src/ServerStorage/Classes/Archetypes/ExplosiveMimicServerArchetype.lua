@@ -12,6 +12,7 @@ type ServerRound = ServerRound.ServerRound;
 type ServerContestant = ServerContestant.ServerContestant;
 type ServerArchetype = ServerArchetype.ServerArchetype;
 type ServerAction = ServerAction.ServerAction;
+local downContestant = require(ServerStorage.Modules.downContestant);
 
 local ExplosiveMimicServerArchetype = {
   ID = ExplosiveMimicClientArchetype.ID;
@@ -395,11 +396,13 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
     -- Set up the self-destruct.
     contestant = newContestant;
     round = newRound;
-    disqualificationEvent = contestant.onDisqualified:Connect(function()
+    local isExploding = false;
+    disqualificationEvent = contestant.onHealthUpdated:Connect(function()
 
-      if contestant.character then
+      if not isExploding and contestant.currentHealth <= 0 and contestant.character then
   
         -- Make the player progressively grow white for 3 seconds.
+        isExploding = true;
         local highlight = Instance.new("Highlight");
         highlight.FillTransparency = 1;
         highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
@@ -482,9 +485,9 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
               end;
   
             end;
-            humanoid.Health = 0;
-            humanoid:ChangeState(Enum.HumanoidStateType.Dead)
             changedEvent:Disconnect();
+
+            downContestant(contestant);
   
           end;
   

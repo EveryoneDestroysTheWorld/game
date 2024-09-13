@@ -1,4 +1,5 @@
 --!strict
+local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
@@ -10,6 +11,8 @@ type ServerRound = ServerRound.ServerRound;
 type ServerContestant = ServerContestant.ServerContestant;
 type ServerArchetype = ServerArchetype.ServerArchetype;
 type ServerAction = ServerAction.ServerAction;
+local downContestant = require(ServerStorage.Modules.downContestant);
+local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
 
 local UndeadConciousnessServerArchetype = {
   ID = UndeadConciousnessClientArchetype.ID;
@@ -185,52 +188,13 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
     
       if contestant.currentHealth <= 0 then
 
+        downContestant(contestant);
+
         if contestant.character then
 
-          contestant.character.Archivable = true;
-          local ragdollModel = contestant.character:Clone();
-
-          for index,joint in pairs(ragdollModel:GetDescendants()) do
-
-            if joint:IsA("Motor6D") then
-
-              local socket = Instance.new("BallSocketConstraint");
-              local a1 = Instance.new("Attachment");
-              local a2 = Instance.new("Attachment");
-              socket.Attachment0 = a1
-              socket.Attachment1 = a2
-              a1.CFrame = joint.C0
-              a2.CFrame = joint.C1
-              socket.LimitsEnabled = true
-              socket.TwistLimitsEnabled = true
-              a1.Parent = joint.Part0
-              a2.Parent = joint.Part1
-              socket.Parent = joint.Parent
-              joint.Enabled = false;
-
-            elseif joint:IsA("LocalScript") or joint:IsA("Script") then
-
-              joint:Destroy();
-
-            end;
-
-          end
-
-          ragdollModel.Parent = workspace;
-          (ragdollModel:FindFirstChild("Humanoid") :: Humanoid):ChangeState(Enum.HumanoidStateType.Physics);
-
-          for _, part in ragdollModel:GetDescendants() do
-
-            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-
-              part:SetNetworkOwner(nil)
-
-            end
-
-          end;
+          createRagdollClone(contestant.character);
 
         end;
-
         activateOffense();
 
       end;
