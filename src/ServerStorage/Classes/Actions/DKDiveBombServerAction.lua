@@ -54,7 +54,7 @@ local function animateFlight(humanoid,animations, animData,state)
 	return animations
 end
 
-local function damageEvent(primaryPart, round)
+local function damageEvent(primaryPart, round, contestant)
 	print("creating Explosion")
 		local explosion = Instance.new("Explosion", primaryPart);
 		explosion.BlastPressure = 0;
@@ -109,7 +109,7 @@ local function damageEvent(primaryPart, round)
 
 end
 
-local function startAttack(primaryPart, animations, coords, round)
+local function startAttack(primaryPart, animations, coords, round, contestant)
 	local flightConstraint = primaryPart:FindFirstChild("FlightConstraint")
 	if flightConstraint then
 		flightConstraint:SetAttribute("PlayerControls", false)
@@ -145,7 +145,7 @@ local function startAttack(primaryPart, animations, coords, round)
 	local tween = TweenService:Create(part, TweenInfo.new(travelTime, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {Position = coords + Vector3.new(0,4,0)})
 	tween:Play()
 	task.wait(travelTime)
-	damageEvent(primaryPart, round)
+	damageEvent(primaryPart, round, contestant)
 
 	
 	animations["Right"]:AdjustSpeed(1);
@@ -210,7 +210,7 @@ function DiveBombServerAction.new(contestant: ServerContestant, round: ServerRou
 	};
 
 	local anims = preloadAnims(contestant.character, animations)
-
+local humanoid = contestant.character.Humanoid
 	local action: ServerAction = nil;
 
 	local function activate()
@@ -218,7 +218,11 @@ function DiveBombServerAction.new(contestant: ServerContestant, round: ServerRou
 		if contestant.character then
 			local coords = getDataFromClient(contestant.player)
 			print(coords)
-			startAttack(contestant.character.HumanoidRootPart, anims, coords, round)
+			if humanoid:GetAttribute("CurrentStamina") >= 20 then
+				-- Reduce the player's stamina.
+				humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") - 10)
+			startAttack(contestant.character.HumanoidRootPart, anims, coords, round, contestant)
+			end
 		end;
 
 	end;

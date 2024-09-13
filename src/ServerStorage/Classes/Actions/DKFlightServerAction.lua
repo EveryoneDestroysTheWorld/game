@@ -155,7 +155,7 @@ local function preloadAnims(char, animations)
 	animations["Left"] = animatorL:LoadAnimation(anims["Left"]);
 
 	anims["LeftIdle"] = Instance.new("Animation");
-	anims["LeftIdle"].AnimationId = "rbxassetid://73990987512197";
+	anims["LeftIdle"].AnimationId = "rbxassetid://109626445218372";
 	animations["LeftIdle"] = animatorL:LoadAnimation(anims["LeftIdle"]);
 
 	anims["End"] = Instance.new("Animation");
@@ -180,7 +180,7 @@ function TakeFlightServerAction.new(contestant: ServerContestant, round: ServerR
 		"Right, 87777396509498",
 		"RightIdle, 112159869158031",
 		"Left, 72026942510156",
-		"LeftIdle, 73990987512197",
+		"LeftIdle, 109626445218372",
 		"End, 101417868579212",
 		"Start, 92928175332389",
 		"Idle, 109371600216543"
@@ -203,7 +203,7 @@ function TakeFlightServerAction.new(contestant: ServerContestant, round: ServerR
 			local primaryPart = contestant.character.PrimaryPart;
 			if humanoid:GetState() == Enum.HumanoidStateType.Freefall and primaryPart then
 				local animationTracks
-				if not primaryPart:FindFirstChild("LinearVelocity") then
+				if not primaryPart:FindFirstChild("FlightConstraint") then
 					if humanoid:GetAttribute("CurrentStamina") >= 10 then
 						-- Reduce the player's stamina.
 						humanoid:SetAttribute("CurrentStamina", humanoid:GetAttribute("CurrentStamina") - 10)
