@@ -80,7 +80,7 @@ local function startAttack(primaryPart, animations, combo: number, round, contes
 	animations["Melee1"]:Stop(0.3)
 	animations["Melee2"]:Stop(0.3)
 	animations["Melee3"]:Stop(0.3)
-	local animData = Vector3.new(0.1,1,1)
+	local animData = Vector3.new(0.1, 1, 1)
 	animations[animationName]:Play(animData.X,animData.Y,animData.Z)
 
 
@@ -90,7 +90,7 @@ local function startAttack(primaryPart, animations, combo: number, round, contes
 	linearVelocity.MaxForce = math.huge
 	linearVelocity.RelativeTo = Enum.ActuatorRelativeTo.Attachment0;
 	local attachment = Instance.new("Attachment", primaryPart)
-	attachment.Axis = Vector3.new(0,0,-1)
+	attachment.Axis = Vector3.new(0, 0, -1)
 	linearVelocity.Attachment0 = attachment
 
 	local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {LineVelocity = 22})
@@ -104,7 +104,7 @@ local function startAttack(primaryPart, animations, combo: number, round, contes
 
 			linearVelocity:Destroy()
 			attachment:Destroy()
-			
+
 		end);
 
 	end);
@@ -153,49 +153,55 @@ function MeleeServerAction.new(): ServerAction
 		if _contestant and _contestant.character then
 
 			local primaryPart = _contestant.character.PrimaryPart :: BasePart;
-			if not primaryPart:FindFirstChild("FlightConstraint") then
+			local shouldRepeat: boolean;
+			repeat
 
-				if not debounce then
+				shouldRepeat = false;
+				if not primaryPart:FindFirstChild("FlightConstraint") then
 
-					if _contestant.currentStamina >= 5 then
-						
-						debounce = true;
+					if debounce then
 
-						-- Reduce the player's stamina.
-						_contestant:updateStamina(math.max(0, _contestant.currentStamina - 5));
-						task.delay(0.66, function()
+						debounce.Value = "NoFurtherInputs"
+						debounce.Changed:Wait()
+						shouldRepeat = true;
 
-							debounce = false;
+					else
 
-						end);
+						if _contestant.currentStamina >= 5 then
+							
+							debounce = true;
 
-						startAttack(primaryPart, anims, combo, _round, _contestant)
-						combo += 1
+							-- Reduce the player's stamina.
+							_contestant:updateStamina(math.max(0, _contestant.currentStamina - 5));
+							task.delay(0.66, function()
 
-						local storedCombo = combo
-						if combo == 3 then combo = 0 else
+								debounce = false;
 
-							task.wait(2)
+							end);
 
-							if combo == storedCombo then
+							startAttack(primaryPart, anims, combo, _round, _contestant)
+							combo += 1
 
-								combo = 0
+							local storedCombo = combo
+							if combo == 3 then combo = 0 else
+
+								task.wait(2)
+
+								if combo == storedCombo then
+
+									combo = 0
+
+								end
 
 							end
-
+							
 						end
-						
+
 					end
-
-				elseif debounce then
-
-					debounce.Value = "NoFurtherInputs"
-					debounce.Changed:Wait()
-					self:activate()
-
+					
 				end
-				
-			end
+
+			until not shouldRepeat;
 
 		end;
 
