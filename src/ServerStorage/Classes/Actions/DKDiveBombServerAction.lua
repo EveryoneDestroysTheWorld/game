@@ -1,6 +1,8 @@
 --!strict
--- Writer: Hati ---- Heavily modified edit of RocketFeet
--- Designer: Christian Toney (Sudobeast)
+-- Programmers: Hati ---- Heavily modified edit of RocketFeet
+-- Designers: Christian Toney (Sudobeast)
+-- © 2024 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService")
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
