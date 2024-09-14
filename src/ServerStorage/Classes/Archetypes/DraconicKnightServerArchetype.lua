@@ -85,6 +85,11 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
         diveBombIndicator.DiveBombIndicator.Parent = ReplicatedStorage.Client.InGameDisplayObjects
         diveBombIndicator:Destroy()
 
+        local fireBeamProp = InsertService:LoadAsset(132308940043685)
+        fireBeamProp.FireBeam.Name = "FireBeamProp"
+        fireBeamProp.FireBeamProp.Parent = ReplicatedStorage.Client.InGameDisplayObjects
+        fireBeamProp:Destroy()
+
       end
 
       wingProp = newWingProp;

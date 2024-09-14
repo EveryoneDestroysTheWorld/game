@@ -58,7 +58,7 @@ function MeleeAction.new(): ClientAction
 				self:activate();
 
 			elseif inputState == Enum.UserInputState.End then
-
+				self:activate();
 			end
 		end;
 

@@ -182,11 +182,11 @@ local function preloadAnims(char: Model): {[string]: AnimationTrack}
 	local animationAssets: {[string]: {animator: Animator; assetID: number}} = {
 		Left = {
 			animator = wingsPropLeft:FindFirstChild("Animator") :: Animator;
-			assetID = 89949470467953;
+			assetID = 95242287519828;
 		};
 		Right = {
 			animator = wingsPropRight:FindFirstChild("Animator") :: Animator;
-			assetID = 95242287519828;
+			assetID = 89949470467953;
 		};
 		Player = {
 			animator = humanoid:FindFirstChild("Animator") :: Animator;

@@ -72,47 +72,77 @@ local function damageEvent(primaryPart, round, contestant)
 
 end
 
-local function startAttack(primaryPart, animations, combo: number, round, contestant)
-
+local function startAttack(primaryPart, animations, combo: number, round, contestant, buttonDown)
+local wasChargedAttack = false
 	local animationName = `Melee{combo + 1}`;
 	print("Animating " .. combo)
 	--perhaps some of this could be clientside
 	animations["Melee1"]:Stop(0.3)
 	animations["Melee2"]:Stop(0.3)
 	animations["Melee3"]:Stop(0.3)
-	local animData = Vector3.new(0.1, 1, 1)
+	local animData = Vector3.new(0.1, 1, 0.6)
 	animations[animationName]:Play(animData.X,animData.Y,animData.Z)
-
+	local connection
+	
 	local linearVelocity = Instance.new("LinearVelocity", primaryPart)
 	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
 	linearVelocity.LineVelocity = -5
 	linearVelocity.MaxForce = math.huge
-	linearVelocity.RelativeTo = Enum.ActuatorRelativeTo.Attachment0;
+	--linearVelocity.RelativeTo = Enum.ActuatorRelativeTo.Attachment0;
 	local attachment = Instance.new("Attachment", primaryPart)
-	attachment.Axis = Vector3.new(0, 0, -1)
+	--attachment.Axis = Vector3.new(0, 0, -1)
+	linearVelocity.LineDirection = primaryPart.CFrame.LookVector
 	linearVelocity.Attachment0 = attachment
 
 	local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {LineVelocity = 22})
 	tween:Play()
-
-	task.delay(0.5, function()
-
+	if buttonDown.Value then
+		
+		connection = buttonDown.Changed:connect(function()
+			connection:Disconnect()
+			connection = nil
+			tween:Cancel()
+			animations["Melee1"]:AdjustSpeed(1)
+			animations["Melee2"]:AdjustSpeed(1)
+			animations["Melee3"]:AdjustSpeed(1)
+		end)
+	else
+		animations["Melee1"]:AdjustSpeed(1)
+		animations["Melee2"]:AdjustSpeed(1)
+		animations["Melee3"]:AdjustSpeed(1)
+	end
+	if combo == 3 then
+		task.wait(0.3)
+	end
+	tween.Completed:Connect(function()
+		local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {LineVelocity = 22})
+	tween:Play()
+		task.wait(0.3)
+		if connection then
+		connection:Disconnect()
+		wasChargedAttack = true
+		end
 		local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {LineVelocity = 0})
 		tween:Play()
 		task.delay(0.2, function()
 
 			linearVelocity:Destroy()
 			attachment:Destroy()
-
+			if wasChargedAttack then
+				print("That was a charged attack!!")
+			else
+				print("That was a regular attack")
+			end
 		end);
+		task.delay(0.5, function()
 
+			animations[animationName]:AdjustWeight(0.01, 0.5)
+			
+		end);
+		
 	end);
 
-	task.delay(1, function()
-
-		animations[animationName]:AdjustWeight(0.01, 0.5)
-
-	end);
+	
 
 
 	--damageEvent(primaryPart, round, contestant)
@@ -120,6 +150,46 @@ local function startAttack(primaryPart, animations, combo: number, round, contes
 	return
 end
 
+local function flyingAttackCharge(primaryPart, anims)
+	print("charging the fire breath")
+	local fireBreathCharge = primaryPart.Parent:FindFirstChild("ButtonDown")
+	fireBreathCharge:SetAttribute("Charge", 0)
+
+	local connection
+	connection = fireBreathCharge.Changed:Connect(function()
+		connection:Disconnect()
+		fireBreathCharge = nil
+	end)
+	repeat 
+		fireBreathCharge:SetAttribute("Charge", fireBreathCharge:GetAttribute("Charge") + 5)
+		task.wait(0.1) 
+	until not fireBreathCharge or fireBreathCharge:GetAttribute("Charge") >= 100
+	if fireBreathCharge then
+	print("Fully Charged")
+	end
+end
+
+local function flyingAttackFire(primaryPart, anims, combo, _round, _contestant)
+	print("firing the fire breath")
+	
+	local fireBreathCharge = primaryPart.Parent:FindFirstChild("ButtonDown")
+	if fireBreathCharge:GetAttribute("Charge") >= 15 then
+
+	local fireBeamProp = ReplicatedStorage.Client.InGameDisplayObjects:FindFirstChild("FireBeamProp"):Clone()
+	fireBeamProp.Parent = primaryPart.Parent
+	fireBeamProp.AlignPosition.Attachment1 = primaryPart.Parent.Head.FaceCenterAttachment
+	fireBeamProp.Root = primaryPart.Parent.Head.FaceCenterAttachment.WorldPosition
+
+	repeat
+		fireBreathCharge:SetAttribute("Charge", fireBreathCharge:GetAttribute("Charge") - 3)
+		task.wait(0.1) 
+	until fireBreathCharge:GetAttribute("Charge") <= 0
+	fireBreathCharge:SetAttribute("Charge", 0)
+
+
+	fireBeamProp:Destroy()
+end
+end
 
 local function preloadAnims(humanoid: Humanoid, animations: {[string]: string})
 
@@ -146,58 +216,84 @@ function MeleeServerAction.new(): ServerAction
 	local _humanoid: Humanoid? = nil;
 	local anims: {[string]: AnimationTrack} = {};
 	local debounce = false;
+	local buttonDown
+	local shouldRepeat: boolean;
 
 	local function activate(self: ServerAction)
 
+		if not _contestant.character:FindFirstChild("ButtonDown") then
+			buttonDown = Instance.new("BoolValue", _contestant.character)
+			buttonDown.Name = "ButtonDown"
+		end
 		if _contestant and _contestant.character then
+			if not buttonDown.Value then
+				buttonDown.Value = true
+			else
+				buttonDown.Value = false
+			end
 
 			local primaryPart = _contestant.character.PrimaryPart :: BasePart;
-			local shouldRepeat: boolean;
-			repeat
+			if not primaryPart:FindFirstChild("FlightConstraint") then
+				if buttonDown.Value then
+					if debounce then
+						shouldRepeat = true
+					else
+						repeat
+							shouldRepeat = false;
+							if not debounce then
 
-				shouldRepeat = false;
-				if not primaryPart:FindFirstChild("FlightConstraint") then
+								if _contestant.currentStamina >= 5 then
 
-					if not debounce then
+									debounce = true;
 
-						if _contestant.currentStamina >= 5 then
-							
-							debounce = true;
+									-- Reduce the player's stamina.
+									_contestant:updateStamina(math.max(0, _contestant.currentStamina - 5));
+									if combo == 2 then
+										task.delay(1.05, function()
+											debounce = false;
+										end);
+									else
+										task.delay(0.75, function()
+											debounce = false;
+										end);
+									end
 
-							-- Reduce the player's stamina.
-							_contestant:updateStamina(math.max(0, _contestant.currentStamina - 5));
-							task.delay(0.66, function()
+									startAttack(primaryPart, anims, combo, _round, _contestant, buttonDown)
+									combo += 1
 
-								debounce = false;
+									local storedCombo = combo
+									if combo == 3 then 
+										combo = 0 
+										task.wait(0.3)
+									else
+										task.delay(2, function()
 
-							end);
+											if combo == storedCombo then
 
-							startAttack(primaryPart, anims, combo, _round, _contestant)
-							combo += 1
+												combo = 0
 
-							local storedCombo = combo
-							if combo == 3 then combo = 0 else
+											end
 
-								task.wait(2)
+										end);
 
-								if combo == storedCombo then
-
-									combo = 0
-
+									end
+									task.wait(0.75)
 								end
 
 							end
-							
-						end
 
+
+						until not shouldRepeat;
 					end
-					
 				end
-
-			until not shouldRepeat;
-
-		end;
-
+			else
+				if buttonDown.Value then
+					flyingAttackCharge(primaryPart, anims)
+				else
+					flyingAttackFire(primaryPart, anims, combo, _round, _contestant)
+				end
+			end
+		end
 	end;
 
 	local executeActionRemoteFunction: RemoteFunction? = nil;
@@ -219,7 +315,7 @@ function MeleeServerAction.new(): ServerAction
 			Melee2 = "101769847900220";
 			Melee3 = "136026551879479";
 		};
-	
+
 		assert(contestant.character);
 		local humanoid = contestant.character:FindFirstChild("Humanoid") :: Humanoid;
 		anims = preloadAnims(humanoid, animations);
@@ -229,22 +325,22 @@ function MeleeServerAction.new(): ServerAction
 			local remoteFunction = Instance.new("RemoteFunction");
 			remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
 			remoteFunction.OnServerInvoke = function(player)
-	
+
 				if player == contestant.player then
 
 					self:activate();
-	
+
 				else
-	
+
 					-- That's weird.
 					error("Unauthorized.");
-	
+
 				end
-	
+
 			end;
 			remoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
 			executeActionRemoteFunction = remoteFunction;
-	
+
 		end
 
 		_humanoid = humanoid;
