@@ -8,7 +8,11 @@ See [ClientAction.lua](../ClientAction.lua) for more information on what ClientA
 -- Designers: [Name of designer] ([Roblox username of designer])
 -- © [current year] Beastslash LLC
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local Players = game:GetService("Players");
 local ClientAction = require(script.Parent.Parent.ClientAction);
+local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton);
+local React = require(ReplicatedStorage.Shared.Packages.react);
 type ClientAction = ClientAction.ClientAction;
 
 local ExtendedClientAction = {
@@ -36,6 +40,7 @@ function ExtendedClientAction.new(): ClientAction
 
   local function initialize(self: ClientAction)
 
+    local player = Players.LocalPlayer;
     remoteName = `{player.UserId}_{self.ID}`;
 
     -- This adds a HUD button. Add as many as you like.
