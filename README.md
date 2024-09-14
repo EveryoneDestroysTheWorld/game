@@ -19,10 +19,12 @@ The following dependencies are required for development:
 * [Wally](https://wally.run/install) - Required to install Luau packages.
 
 ### Create a development place
+> [!WARNING]
+> Avoid directly developing on the staging place.
+
 You can create a development place by copying the [staging place](https://www.roblox.com/games/17711502472/Everyone-Destroys-the-World-Staging-Game) into a new game on your personal account. 
 
-> [!WARNING]
-> Do not directly develop on the staging place.
+You may need to also copy the [Stage Maker place](https://www.roblox.com/games/17474086074/Everyone-Destroys-the-World-Staging-Stage-Maker) into the game. This will allow you to create and publish a testing stage. This process is a bit tedious — an easier solution (i.e. a plugin) will be made so that you can create a random stage from Studio.
 
 ### Implement changes
 Enable Rojo and use `development.project.json`. Go ahead and implement whatever the issue needs. Be sure to include any models as `.rbxlx` or `.model.json` files if you create any.
