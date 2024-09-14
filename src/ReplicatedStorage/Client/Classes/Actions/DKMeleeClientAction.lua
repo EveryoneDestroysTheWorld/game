@@ -18,6 +18,28 @@ local MeleeAction = {
 	description = "Attack!!";
 };
 
+local function waitForServerResponse()
+	local connection: RBXScriptConnection;
+
+	connection = Players.LocalPlayer.ChildAdded:Connect(function(child: Instance)
+
+		if child:IsA("RemoteEvent") and child.Name == "FireBreathCoords" then
+
+			--set up data requests recieved from server
+			connection:Disconnect()
+			connection = child.OnClientEvent:Connect(function()
+				child:FireServer(Players.LocalPlayer:GetMouse().Hit.Position)
+			end)
+			--sent data back to server
+
+		end
+
+	end)
+	
+	return connection
+
+end
+
 function MeleeAction.new(): ClientAction
 
 	local player = Players.LocalPlayer;
@@ -29,9 +51,11 @@ function MeleeAction.new(): ClientAction
 		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.ID);
 
 	end;
-
+	local connection
 	local function activate(self: ClientAction)
-
+		if not connection then
+			connection = waitForServerResponse()
+		end
 		ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
 
 	end;

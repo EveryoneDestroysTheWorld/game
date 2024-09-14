@@ -20,6 +20,8 @@ local MeleeServerAction = {
 	description = MeleeClientAction.description;
 };
 
+
+
 local function damageEvent(primaryPart, round, contestant)
 	print("creating Explosion")
 	local explosion = Instance.new("Explosion", primaryPart);
@@ -73,7 +75,7 @@ local function damageEvent(primaryPart, round, contestant)
 end
 
 local function startAttack(primaryPart, animations, combo: number, round, contestant, buttonDown)
-local wasChargedAttack = false
+	local wasChargedAttack = false
 	local animationName = `Melee{combo + 1}`;
 	print("Animating " .. combo)
 	--perhaps some of this could be clientside
@@ -83,7 +85,7 @@ local wasChargedAttack = false
 	local animData = Vector3.new(0.1, 1, 0.6)
 	animations[animationName]:Play(animData.X,animData.Y,animData.Z)
 	local connection
-	
+
 	local linearVelocity = Instance.new("LinearVelocity", primaryPart)
 	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
 	linearVelocity.LineVelocity = -5
@@ -97,7 +99,7 @@ local wasChargedAttack = false
 	local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {LineVelocity = 22})
 	tween:Play()
 	if buttonDown.Value then
-		
+
 		connection = buttonDown.Changed:connect(function()
 			connection:Disconnect()
 			connection = nil
@@ -116,11 +118,11 @@ local wasChargedAttack = false
 	end
 	tween.Completed:Connect(function()
 		local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {LineVelocity = 22})
-	tween:Play()
+		tween:Play()
 		task.wait(0.3)
 		if connection then
-		connection:Disconnect()
-		wasChargedAttack = true
+			connection:Disconnect()
+			wasChargedAttack = true
 		end
 		local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {LineVelocity = 0})
 		tween:Play()
@@ -137,12 +139,12 @@ local wasChargedAttack = false
 		task.delay(0.5, function()
 
 			animations[animationName]:AdjustWeight(0.01, 0.5)
-			
+
 		end);
-		
+
 	end);
 
-	
+
 
 
 	--damageEvent(primaryPart, round, contestant)
@@ -165,30 +167,69 @@ local function flyingAttackCharge(primaryPart, anims)
 		task.wait(0.1) 
 	until not fireBreathCharge or fireBreathCharge:GetAttribute("Charge") >= 100
 	if fireBreathCharge then
-	print("Fully Charged")
+		print("Fully Charged")
 	end
+end
+
+local function getDataFromClient(player: Player, toggle): Vector3
+	local connection
+	local event = player:FindFirstChild("FireBreathCoords")
+	if not event then
+		event = Instance.new("RemoteEvent", player)
+		event.Name = "FireBreathCoords"
+	end
+	connection = event.OnServerEvent:Connect(function(_: Player, data: Vector3)
+		event:SetAttribute("Coords", data);
+	end)
+	event:FireClient(player)
+	event.AttributeChanged:Wait()
+	connection:Disconnect()
+	return event:GetAttribute("Coords") :: Vector3, connection;
+
 end
 
 local function flyingAttackFire(primaryPart, anims, combo, _round, _contestant)
 	print("firing the fire breath")
-	
+	local coords, eventCon = getDataFromClient(_contestant.player);
 	local fireBreathCharge = primaryPart.Parent:FindFirstChild("ButtonDown")
 	if fireBreathCharge:GetAttribute("Charge") >= 15 then
 
-	local fireBeamProp = ReplicatedStorage.Client.InGameDisplayObjects:FindFirstChild("FireBeamProp"):Clone()
-	fireBeamProp.Parent = primaryPart.Parent
-	fireBeamProp.AlignPosition.Attachment1 = primaryPart.Parent.Head.FaceCenterAttachment
-	fireBeamProp.Root = primaryPart.Parent.Head.FaceCenterAttachment.WorldPosition
-
-	repeat
-		fireBreathCharge:SetAttribute("Charge", fireBreathCharge:GetAttribute("Charge") - 3)
-		task.wait(0.1) 
-	until fireBreathCharge:GetAttribute("Charge") <= 0
-	fireBreathCharge:SetAttribute("Charge", 0)
-
-
-	fireBeamProp:Destroy()
-end
+		local fireBeamProp = ReplicatedStorage.Client.InGameDisplayObjects:FindFirstChild("FireBeamProp"):Clone()
+		fireBeamProp.Parent = primaryPart.Parent
+		fireBeamProp.Root.Position = primaryPart.Parent.Head.FaceCenterAttachment.WorldPosition
+		fireBeamProp.AlignPosition.Attachment1 = primaryPart.Parent.Head.FaceCenterAttachment
+		local putOnPlayer = fireBeamProp.PutOnPlayer.HumanoidRootPart:GetChildren()
+		for i, item in ipairs(putOnPlayer) do
+			item.Parent = primaryPart
+		end
+		fireBeamProp.PutOnPlayer:Destroy()
+		
+		task.delay(0.1, function()
+			repeat
+				coords = getDataFromClient(_contestant.player);
+				task.wait(0.2)
+			until fireBreathCharge:GetAttribute("Charge") <= 0
+		end)
+		repeat
+			local distance = (fireBeamProp.Particles.Atch.WorldPosition - fireBeamProp.Target.Position).Magnitude * 4
+			local tween1 = TweenService:Create(fireBeamProp.Target, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {Position = coords})
+			tween1:Play()
+			fireBeamProp.Particles.Fire.Speed = NumberRange.new(distance,distance)
+			fireBreathCharge:SetAttribute("Charge", fireBreathCharge:GetAttribute("Charge") - 6)
+			task.wait(0.2) 
+		until fireBreathCharge:GetAttribute("Charge") <= 0
+		fireBreathCharge:SetAttribute("Charge", 0)
+		fireBeamProp.Particles:Destroy()
+		fireBeamProp.Root:Destroy()
+		for i, item in ipairs(putOnPlayer) do
+			item:Destroy()
+		end
+		fireBeamProp.Target.FireAfter.Rate = 0
+		task.delay(2, function()
+			fireBeamProp:Destroy()
+		end)
+	end
+	print("FireBreathEnded")
 end
 
 local function preloadAnims(humanoid: Humanoid, animations: {[string]: string})
@@ -290,6 +331,7 @@ function MeleeServerAction.new(): ServerAction
 				if buttonDown.Value then
 					flyingAttackCharge(primaryPart, anims)
 				else
+
 					flyingAttackFire(primaryPart, anims, combo, _round, _contestant)
 				end
 			end
