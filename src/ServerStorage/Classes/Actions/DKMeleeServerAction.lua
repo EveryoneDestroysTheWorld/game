@@ -13,6 +13,7 @@ local MeleeClientAction = require(ReplicatedStorage.Client.Classes.Actions.DKMel
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
 local ServerStorage = game:GetService("ServerStorage");
+local displayObjects = ReplicatedStorage.Client.InGameDisplayObjects
 
 local MeleeServerAction = {
 	ID = MeleeClientAction.ID;
@@ -154,9 +155,23 @@ end
 
 local function flyingAttackCharge(primaryPart, anims)
 	print("charging the fire breath")
+	local fireBreathChargeGUI = displayObjects:FindFirstChild("ChargeMeter"):Clone()
+	fireBreathChargeGUI.Parent = primaryPart
+	fireBreathChargeGUI.Adornee = primaryPart
+
+
+	local animateSprite = require(displayObjects.SpriteAnimator)
+	local data = {
+		FrameRate = 64/2,
+		Sprite = fireBreathChargeGUI.Sprite,
+		SpriteSheet = "8x8"
+	}
+	coroutine.wrap(animateSprite.animateSprite)(data, 1)
+
+
 	local fireBreathCharge = primaryPart.Parent:FindFirstChild("ButtonDown")
 	fireBreathCharge:SetAttribute("Charge", 0)
-
+	
 	local connection
 	connection = fireBreathCharge.Changed:Connect(function()
 		connection:Disconnect()
@@ -168,6 +183,23 @@ local function flyingAttackCharge(primaryPart, anims)
 	until not fireBreathCharge or fireBreathCharge:GetAttribute("Charge") >= 100
 	if fireBreathCharge then
 		print("Fully Charged")
+		task.delay(1/15, function()
+			local highlight = Instance.new("Highlight", primaryPart.Parent)
+			highlight.Name = "FullyChargedHighlight"
+			highlight.OutlineTransparency = 1
+			highlight.FillTransparency = 1
+			local con
+			con = fireBreathCharge.AttributeChanged:Connect(function()
+				highlight:Destroy()
+				con:Disconnect()
+			end)
+
+			repeat
+			local tween = TweenService:Create(highlight, TweenInfo.new(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 1, true), {FillTransparency = 0.7})
+			tween:Play()
+			task.wait(1)
+			until not primaryPart.Parent:FindFirstChild("FullyChargedHighlight")
+		end)
 	end
 end
 
@@ -192,9 +224,16 @@ local function flyingAttackFire(primaryPart, anims, combo, _round, _contestant)
 	print("firing the fire breath")
 	local coords, eventCon = getDataFromClient(_contestant.player);
 	local fireBreathCharge = primaryPart.Parent:FindFirstChild("ButtonDown")
-	if fireBreathCharge:GetAttribute("Charge") >= 15 then
 
-		local fireBeamProp = ReplicatedStorage.Client.InGameDisplayObjects:FindFirstChild("FireBeamProp"):Clone()
+	local animateSprite = require(displayObjects.SpriteAnimator)
+	local data = {
+		FrameRate = 128,
+		Sprite = primaryPart.ChargeMeter.Sprite,
+		SpriteSheet = "8x8"
+	}
+	
+	if fireBreathCharge:GetAttribute("Charge") >= 15 then
+		local fireBeamProp = displayObjects:FindFirstChild("FireBeamProp"):Clone()
 		fireBeamProp.Parent = primaryPart.Parent
 		fireBeamProp.Root.Position = primaryPart.Parent.Head.FaceCenterAttachment.WorldPosition
 		fireBeamProp.AlignPosition.Attachment1 = primaryPart.Parent.Head.FaceCenterAttachment
@@ -210,25 +249,64 @@ local function flyingAttackFire(primaryPart, anims, combo, _round, _contestant)
 				task.wait(0.2)
 			until fireBreathCharge:GetAttribute("Charge") <= 0
 		end)
+
+		local fireWallProps = {}
+		fireBeamProp.Target.Position = coords
+
 		repeat
+			local rate = 6
+			fireWallProps[#fireWallProps + 1] = fireBeamProp.Target:Clone()
+			fireWallProps[#fireWallProps].Parent = fireBeamProp
+			fireWallProps[#fireWallProps].Name = tostring(#fireWallProps)
+			if #fireWallProps >= 2 then
+				fireWallProps[#fireWallProps - 1].CFrame = CFrame.lookAt(fireWallProps[#fireWallProps - 1].Position, fireWallProps[#fireWallProps].Position)
+				fireWallProps[#fireWallProps - 1].Position = (fireWallProps[#fireWallProps - 1].Position + fireWallProps[#fireWallProps].Position) / 2
+				fireWallProps[#fireWallProps - 1].Size = Vector3.new(1,1,((fireWallProps[#fireWallProps - 1].Position - fireWallProps[#fireWallProps].Position).Magnitude)*2)
+				fireWallProps[#fireWallProps - 1].FireAfter.Rate = fireWallProps[#fireWallProps - 1].Size.Z
+				rate = fireWallProps[#fireWallProps - 1].Size.Z 
+			end
 			local distance = (fireBeamProp.Particles.Atch.WorldPosition - fireBeamProp.Target.Position).Magnitude * 4
 			local tween1 = TweenService:Create(fireBeamProp.Target, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {Position = coords})
 			tween1:Play()
+			
 			fireBeamProp.Particles.Fire.Speed = NumberRange.new(distance,distance)
-			fireBreathCharge:SetAttribute("Charge", fireBreathCharge:GetAttribute("Charge") - 6)
+			coroutine.wrap(animateSprite.animateSprite)(data, fireBreathCharge:GetAttribute("Charge")/100)
+			fireBreathCharge:SetAttribute("Charge", fireBreathCharge:GetAttribute("Charge") - rate)
 			task.wait(0.2) 
 		until fireBreathCharge:GetAttribute("Charge") <= 0
+		
 		fireBreathCharge:SetAttribute("Charge", 0)
 		fireBeamProp.Particles:Destroy()
 		fireBeamProp.Root:Destroy()
-		for i, item in ipairs(putOnPlayer) do
-			item:Destroy()
-		end
-		fireBeamProp.Target.FireAfter.Rate = 0
-		task.delay(2, function()
+		fireBeamProp.Target.FireAfter:Destroy()
+
+
+		fireWallProps[#fireWallProps - 1].CFrame = CFrame.lookAt(fireWallProps[#fireWallProps - 1].Position, fireBeamProp.Target.Position)
+		fireWallProps[#fireWallProps - 1].Position = (fireWallProps[#fireWallProps - 1].Position + fireBeamProp.Target.Position) / 2
+		fireWallProps[#fireWallProps - 1].Size = Vector3.new(3,3,((fireWallProps[#fireWallProps - 1].Position - fireBeamProp.Target.Position).Magnitude)*2)
+
+		task.delay(1/15, function()
+			local tween = TweenService:Create(fireBeamProp.Target, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Position = Vector3.new(fireBeamProp.Target.Position.X,primaryPart.Position.Y,fireBeamProp.Target.Position.Z)})
+			tween:Play()
+			task.wait(0.5)
+			for i, item in ipairs(putOnPlayer) do
+				item:Destroy()
+			end
+		end)
+		
+		task.delay(5, function()
+			fireBeamProp.Target.FireAfter.Rate = 0
+			for i, item in ipairs(fireWallProps) do
+				item.FireAfter.Rate = 0
+			end
+			task.wait(2)
 			fireBeamProp:Destroy()
 		end)
 	end
+	coroutine.wrap(animateSprite.animateSprite)(data, 0)
+	task.delay(1, function()
+	primaryPart.ChargeMeter:Destroy()
+	end)
 	print("FireBreathEnded")
 end
 

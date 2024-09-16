@@ -77,7 +77,6 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
       wingsProp:Destroy();
       local newWingProp = model.WingProp;
       (newWingProp:FindFirstChild("Root") :: any).RigidConstraint.Attachment1 = model:FindFirstChild("BodyBackAttachment", true)
-        
       if not ReplicatedStorage.Client.InGameDisplayObjects:FindFirstChild("DiveBombIndicator") then
 
         local diveBombIndicator = InsertService:LoadAsset(124109899420589)
@@ -90,8 +89,12 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
         fireBeamProp.FireBeamProp.Parent = ReplicatedStorage.Client.InGameDisplayObjects
         fireBeamProp:Destroy()
 
+        local fireBeamGUI = InsertService:LoadAsset(83599259067516)
+        fireBeamGUI.Charge.Name = "ChargeMeter"
+        fireBeamGUI.ChargeMeter.Parent = ReplicatedStorage.Client.InGameDisplayObjects
+        fireBeamGUI:Destroy()
+        
       end
-
       wingProp = newWingProp;
 
     end
