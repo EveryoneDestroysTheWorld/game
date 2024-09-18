@@ -89,6 +89,13 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
         fireBeamProp.FireBeamProp.Parent = ReplicatedStorage.Client.InGameDisplayObjects
         fireBeamProp:Destroy()
 
+
+        local fireDebuffProp = InsertService:LoadAsset(131535660581587)
+        fireDebuffProp.FirePlayer.Name = "FireDebuffProp"
+        fireDebuffProp.FireDebuffProp.Parent = ReplicatedStorage.Client.InGameDisplayObjects
+        fireDebuffProp:Destroy()
+        
+
         local fireBeamGUI = InsertService:LoadAsset(83599259067516)
         fireBeamGUI.Charge.Name = "ChargeMeter"
         fireBeamGUI.ChargeMeter.Parent = ReplicatedStorage.Client.InGameDisplayObjects
