@@ -124,25 +124,52 @@ local function startAttack(primaryPart, animations, combo: number, round, contes
 		if connection then
 			connection:Disconnect()
 			wasChargedAttack = true
-		end
-		local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {LineVelocity = 0})
-		tween:Play()
-		task.delay(0.2, function()
 
-			linearVelocity:Destroy()
-			attachment:Destroy()
-			if wasChargedAttack then
-				print("That was a charged attack!!")
-			else
-				print("That was a regular attack")
+			local effect = displayObjects.DraconicKnight.ChargedAttackEffect:Clone()
+			effect.Parent = primaryPart.Parent
+			effect.Root.CFrame = primaryPart.CFrame
+			effect.Root.RigidConstraint.Attachment1 = primaryPart.RootAttachment
+			local animateSprite = require(displayObjects.SpriteAnimator)
+			if combo == 1 then
+				effect.Left:Destroy()
+			elseif combo == 2 then
+				effect.Right:Destroy()
 			end
-		end);
-		task.delay(0.5, function()
+			for i, item in ipairs(effect:GetChildren()) do
+				if item.Name ~= "Root" then
+					for i, child in ipairs(item:GetChildren()) do
+						if child:IsA("SurfaceGui") then
+							local data = {
+								FrameRate = 30,
+								Sprite = child.Sprite,
+								SpriteSheet = "6x5"
+							}
+							coroutine.wrap(animateSprite.animateSprite)(data, 1)
+						end
+					end
+				end
+				task.delay(1.2, function()
+					effect:Destroy()
+				end)
+			end
+			local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {LineVelocity = 0})
+			tween:Play()
+			task.delay(0.2, function()
 
-			animations[animationName]:AdjustWeight(0.01, 0.5)
+				linearVelocity:Destroy()
+				attachment:Destroy()
+				if wasChargedAttack then
+					print("That was a charged attack!!")
+				else
+					print("That was a regular attack")
+				end
+			end);
+			task.delay(0.5, function()
 
-		end);
+				animations[animationName]:AdjustWeight(0.01, 0.5)
 
+			end);
+		end
 	end);
 
 
@@ -154,7 +181,7 @@ local function startAttack(primaryPart, animations, combo: number, round, contes
 end
 
 local function flyingAttackCharge(primaryPart, anims)
-	local fireBreathChargeGUI = displayObjects:FindFirstChild("ChargeMeter"):Clone()
+	local fireBreathChargeGUI = displayObjects.DraconicKnight:FindFirstChild("ChargeMeter"):Clone()
 	fireBreathChargeGUI.Parent = primaryPart
 	fireBreathChargeGUI.Adornee = primaryPart
 
@@ -223,7 +250,7 @@ local function setOnFire(model, round, contestant)
 	if fireDebuffProp then 
 		fireDebuffProp:SetAttribute("Duration", 6)
 	elseif model:FindFirstChild("HumanoidRootPart") then
-		fireDebuffProp = displayObjects:FindFirstChild("FireDebuffProp"):Clone()
+		fireDebuffProp = displayObjects.DraconicKnight:FindFirstChild("FireDebuffProp"):Clone()
 		fireDebuffProp.Parent = model
 		fireDebuffProp.RigidConstraint.Attachment1 = model.HumanoidRootPart:FindFirstChild("RootAttachment") or nil
 		fireDebuffProp:SetAttribute("Duration", 6)
@@ -239,10 +266,10 @@ local function setOnFire(model, round, contestant)
 					if contestant["name"] == model.Name then
 						print(contestant)
 						contestant:updateHealth(contestant.currentHealth - 4, {
-						contestant = contestant;
-						actionID = MeleeServerAction.ID;
-					});
-				end
+							contestant = contestant;
+							actionID = MeleeServerAction.ID;
+						});
+					end
 				end
 			until fireDebuffProp:GetAttribute("Duration") == 0
 			fireDebuffProp:Destroy()
@@ -264,7 +291,7 @@ local function flyingAttackFire(primaryPart, anims, combo, round, contestant)
 	}
 
 	if fireBreathCharge:GetAttribute("Charge") >= 15 then
-		local fireBeamProp = displayObjects:FindFirstChild("FireBeamProp"):Clone()
+		local fireBeamProp = displayObjects.DraconicKnight:FindFirstChild("FireBeamProp"):Clone()
 		fireBeamProp.Parent = primaryPart.Parent
 		fireBeamProp.Root.Position = primaryPart.Parent.Head.FaceCenterAttachment.WorldPosition
 		fireBeamProp.AlignPosition.Attachment1 = primaryPart.Parent.Head.FaceCenterAttachment
@@ -313,7 +340,7 @@ local function flyingAttackFire(primaryPart, anims, combo, round, contestant)
 				fireWallProps[#fireWallProps - 1].Position = (fireWallProps[#fireWallProps - 1].Position + fireWallProps[#fireWallProps].Position) / 2
 				fireWallProps[#fireWallProps - 1].Size = Vector3.new(1,1,((fireWallProps[#fireWallProps - 1].Position - fireWallProps[#fireWallProps].Position).Magnitude)*2)
 				fireWallProps[#fireWallProps - 1].FireAfter.Rate = fireWallProps[#fireWallProps - 1].Size.Z
-				rate = fireWallProps[#fireWallProps - 1].Size.Z 
+				rate += fireWallProps[#fireWallProps - 1].Size.Z / 2
 
 				damageConnect[#damageConnect] = fireWallProps[#fireWallProps - 1].Touched:Connect(function(touched)
 					if not connectDebounce["All"] then
@@ -411,8 +438,18 @@ function MeleeServerAction.new(): ServerAction
 	local buttonDown
 	local shouldRepeat: boolean;
 
-	local function activate(self: ServerAction)
 
+	local melee = require(ServerStorage.Classes.Actions.Framework.MeleeAttackFramework)
+	
+
+
+	local function activate(self: ServerAction)
+		local meleeData = {
+			animName = "Melee",
+			maxCombo = 3,
+			Animations = anims,
+			Contestant = contestant
+		}
 		if not contestant.character:FindFirstChild("ButtonDown") then
 			buttonDown = Instance.new("BoolValue", contestant.character)
 			buttonDown.Name = "ButtonDown"
@@ -427,62 +464,14 @@ function MeleeServerAction.new(): ServerAction
 			local primaryPart = contestant.character.PrimaryPart :: BasePart;
 			if not primaryPart:FindFirstChild("FlightConstraint") then
 				if buttonDown.Value then
-					if debounce then
-						shouldRepeat = true
-					else
-						repeat
-							shouldRepeat = false;
-							if not debounce then
-
-								if contestant.currentStamina >= 5 then
-
-									debounce = true;
-
-									-- Reduce the player's stamina.
-									contestant:updateStamina(math.max(0, contestant.currentStamina - 5));
-									if combo == 2 then
-										task.delay(1.05, function()
-											debounce = false;
-										end);
-									else
-										task.delay(0.75, function()
-											debounce = false;
-										end);
-									end
-
-									startAttack(primaryPart, anims, combo, round, contestant, buttonDown)
-									combo += 1
-
-									local storedCombo = combo
-									if combo == 3 then 
-										combo = 0 
-										task.wait(0.3)
-									else
-										task.delay(2, function()
-
-											if combo == storedCombo then
-
-												combo = 0
-
-											end
-
-										end);
-
-									end
-									task.wait(0.75)
-								end
-
-							end
-
-
-						until not shouldRepeat;
-					end
+					melee.KeyDown(meleeData)
+				else
+					melee.KeyRelease(meleeData)
 				end
 			else
 				if buttonDown.Value then
 					flyingAttackCharge(primaryPart, anims)
 				else
-
 					flyingAttackFire(primaryPart, anims, combo, round, contestant)
 				end
 			end
@@ -513,7 +502,6 @@ function MeleeServerAction.new(): ServerAction
 		assert(contestant.character);
 		local humanoid = contestant.character:FindFirstChild("Humanoid") :: Humanoid;
 		anims = preloadAnims(humanoid, animations);
-
 		if contestant.player then
 
 			local remoteFunction = Instance.new("RemoteFunction");

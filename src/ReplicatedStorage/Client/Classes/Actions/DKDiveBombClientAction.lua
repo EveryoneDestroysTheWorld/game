@@ -43,7 +43,7 @@ local function displayTarget(state: "Start" | "Release"): ()
 
 	if state == "Start" then
 		
-		playerDisplay["obj"] = ReplicatedStorage.Client.InGameDisplayObjects.DiveBombIndicator:Clone()
+		playerDisplay["obj"] = ReplicatedStorage.Client.InGameDisplayObjects.DraconicKnight.DiveBombIndicator:Clone()
 		playerDisplay["obj"].Root.Position = Players.LocalPlayer:GetMouse().Hit.Position + Vector3.new(0,0.5,0)
 		playerDisplay["obj"].Parent = workspace.Terrain
 		playerDisplay["obj"]:FindFirstChild("Beam", true).Attachment1 = Players.LocalPlayer.Character.HumanoidRootPart.RootAttachment

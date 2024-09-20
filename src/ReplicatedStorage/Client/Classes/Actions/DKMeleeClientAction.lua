@@ -9,6 +9,7 @@ local ContextActionService = game:GetService("ContextActionService");
 local ClientAction = require(script.Parent.Parent.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
+
 type ClientAction = ClientAction.ClientAction;
 
 local MeleeAction = {
