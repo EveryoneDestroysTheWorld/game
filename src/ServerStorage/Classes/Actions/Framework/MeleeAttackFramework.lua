@@ -50,7 +50,7 @@ local defaultData = {
 
 local storedCombos = {}
 
-function meleeAttackFramework.KeyDown(data)
+function meleeAttackFramework.KeyDown(data: Array, effect: Function)
 	data.Contestant:updateStamina(math.max(0, data.Contestant.currentStamina - (data.lightStamDrain or defaultData.lightStamDrain)));
 	local combo = storedCombos[data.Contestant] or 1
 	local animations = data.Animations
@@ -74,35 +74,69 @@ function meleeAttackFramework.KeyDown(data)
 		(data.heavyAttackSpeed or defaultData.heavyAttackSpeed)/100 -- speed
 	)
 	animations[animationName]:Play(animData.X,animData.Y,animData.Z)
-
+	local movementTween 
 	local connection
+	local playerFollowPart
+	local posTarget
+	local lookDirection = if data.Contestant.character.Humanoid.MoveDirection ~= Vector3.new(0,0,0) then Vector2.new(data.Contestant.character.Humanoid.MoveDirection.X,data.Contestant.character.Humanoid.MoveDirection.Z) else Vector2.new(data.Contestant.character.HumanoidRootPart.CFrame.LookVector.X,data.Contestant.character.HumanoidRootPart.CFrame.LookVector.Z)
+	local updateLookDirection
+	local debounce = false
+	updateLookDirection = data.Contestant.character.Humanoid:GetPropertyChangedSignal("MoveDirection"):Connect(function()
+		
+		if not debounce then
+			debounce = true
+			lookDirection = if data.Contestant.character.Humanoid.MoveDirection ~= Vector3.new(0,0,0) then Vector2.new(data.Contestant.character.Humanoid.MoveDirection.X,data.Contestant.character.Humanoid.MoveDirection.Z) else lookDirection
+			task.wait(0.1)
+			debounce = false
+			lookDirection = if data.Contestant.character.Humanoid.MoveDirection ~= Vector3.new(0,0,0) then Vector2.new(data.Contestant.character.Humanoid.MoveDirection.X,data.Contestant.character.Humanoid.MoveDirection.Z) else lookDirection
+		end
+	end)
+
+		
+		
+		
+
+
+
 	connection = attackState.Destroying:Connect(function()
 		connection:Disconnect()
 		connection = nil
 		animations[animationName]:AdjustSpeed((data.lightAttackSpeed or defaultData.lightAttackSpeed)/100)
+		movementTween:Cancel()
 	end)
 
-	task.delay(0.1, function()
-		repeat
-			local tween = TweenService:Create(data.Contestant.character.HumanoidRootPart, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {AssemblyLinearVelocity = data.Contestant.character.HumanoidRootPart.AssemblyLinearVelocity + data.Contestant.character.HumanoidRootPart.CFrame.LookVector * 50})
-			tween:Play()
-			task.wait(0.1)
-		until not connection
-	end)
+	local LVelc = Instance.new("LinearVelocity", data.Contestant.character.HumanoidRootPart)
+	LVelc.VelocityConstraintMode = Enum.VelocityConstraintMode.Plane
+	LVelc.SecondaryTangentAxis = Vector3.new(0, 0, 1)
+	
+	LVelc.MaxForce = math.huge
+	task.wait()
+    LVelc.Attachment0 = Instance.new("Attachment", data.Contestant.character.HumanoidRootPart)
+	
+	local i = 1
+	LVelc.PlaneVelocity = lookDirection * (data.forwardMomentum or defaultData.forwardMomentum) * 4 * (i/((data.timeToCharge or defaultData.timeToCharge) * 10))
+	repeat
+		
+		movementTween = TweenService:Create(LVelc, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {PlaneVelocity = lookDirection * (data.forwardMomentum or defaultData.forwardMomentum) * 4 * ((i + 2)/((data.timeToCharge or defaultData.timeToCharge) * 10))})
+		movementTween:Play()
+		task.wait(0.1)
+		i += 1
+	until i > ((data.timeToCharge or defaultData.timeToCharge) * 10) or not connection
+	LVelc:Destroy()
 
-	task.wait(data.timeToCharge or defaultData.timeToCharge)
 	if connection then
+		if effect then
+			coroutine.wrap(effect)(data.Contestant.character, combo)
+		end
 		data.Contestant:updateStamina(math.max(0, data.Contestant.currentStamina - ((data.heavyStamDrain or defaultData.heavyStamDrain) - (data.lightStamDrain or defaultData.lightStamDrain)))); -- since you already paid the cost for a light attack, reduce the heavy attack cost by that much
 		connection:Disconnect()
 		connection = nil
-		print("That was a charged attack!!!")
 		animations[animationName]:AdjustSpeed(1)
 	else
-		staminaDrain = (data.lightStamDrain or defaultData.lightStamDrain)
-		print("That was a light attack")
+
 	end
-
-
+	task.wait(0.5)
+	updateLookDirection:Disconnect()
 
 	return staminaDrain
 end

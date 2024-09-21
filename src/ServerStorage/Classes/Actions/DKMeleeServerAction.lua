@@ -75,111 +75,6 @@ local function damageEvent(primaryPart, round, contestant)
 
 end
 
-local function startAttack(primaryPart, animations, combo: number, round, contestant, buttonDown)
-	local wasChargedAttack = false
-	local animationName = `Melee{combo + 1}`;
-	print("Animating " .. combo)
-	--perhaps some of this could be clientside
-	animations["Melee1"]:Stop(0.3)
-	animations["Melee2"]:Stop(0.3)
-	animations["Melee3"]:Stop(0.3)
-	local animData = Vector3.new(0.1, 1, 0.6)
-	animations[animationName]:Play(animData.X,animData.Y,animData.Z)
-	local connection
-
-	local linearVelocity = Instance.new("LinearVelocity", primaryPart)
-	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
-	linearVelocity.LineVelocity = -5
-	linearVelocity.MaxForce = math.huge
-	--linearVelocity.RelativeTo = Enum.ActuatorRelativeTo.Attachment0;
-	local attachment = Instance.new("Attachment", primaryPart)
-	--attachment.Axis = Vector3.new(0, 0, -1)
-	linearVelocity.LineDirection = primaryPart.CFrame.LookVector
-	linearVelocity.Attachment0 = attachment
-
-	local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {LineVelocity = 22})
-	tween:Play()
-	if buttonDown.Value then
-
-		connection = buttonDown.Changed:connect(function()
-			connection:Disconnect()
-			connection = nil
-			tween:Cancel()
-			animations["Melee1"]:AdjustSpeed(1)
-			animations["Melee2"]:AdjustSpeed(1)
-			animations["Melee3"]:AdjustSpeed(1)
-		end)
-	else
-		animations["Melee1"]:AdjustSpeed(1)
-		animations["Melee2"]:AdjustSpeed(1)
-		animations["Melee3"]:AdjustSpeed(1)
-	end
-	if combo == 3 then
-		task.wait(0.3)
-	end
-	tween.Completed:Connect(function()
-		local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {LineVelocity = 22})
-		tween:Play()
-		task.wait(0.3)
-		if connection then
-			connection:Disconnect()
-			wasChargedAttack = true
-
-			local effect = displayObjects.DraconicKnight.ChargedAttackEffect:Clone()
-			effect.Parent = primaryPart.Parent
-			effect.Root.CFrame = primaryPart.CFrame
-			effect.Root.RigidConstraint.Attachment1 = primaryPart.RootAttachment
-			local animateSprite = require(displayObjects.SpriteAnimator)
-			if combo == 1 then
-				effect.Left:Destroy()
-			elseif combo == 2 then
-				effect.Right:Destroy()
-			end
-			for i, item in ipairs(effect:GetChildren()) do
-				if item.Name ~= "Root" then
-					for i, child in ipairs(item:GetChildren()) do
-						if child:IsA("SurfaceGui") then
-							local data = {
-								FrameRate = 30,
-								Sprite = child.Sprite,
-								SpriteSheet = "6x5"
-							}
-							coroutine.wrap(animateSprite.animateSprite)(data, 1)
-						end
-					end
-				end
-				task.delay(1.2, function()
-					effect:Destroy()
-				end)
-			end
-			local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {LineVelocity = 0})
-			tween:Play()
-			task.delay(0.2, function()
-
-				linearVelocity:Destroy()
-				attachment:Destroy()
-				if wasChargedAttack then
-					print("That was a charged attack!!")
-				else
-					print("That was a regular attack")
-				end
-			end);
-			task.delay(0.5, function()
-
-				animations[animationName]:AdjustWeight(0.01, 0.5)
-
-			end);
-		end
-	end);
-
-
-
-
-	--damageEvent(primaryPart, round, contestant)
-
-	return
-end
-
 local function flyingAttackCharge(primaryPart, anims)
 	local fireBreathChargeGUI = displayObjects.DraconicKnight:FindFirstChild("ChargeMeter"):Clone()
 	fireBreathChargeGUI.Parent = primaryPart
@@ -427,6 +322,36 @@ local function preloadAnims(humanoid: Humanoid, animations: {[string]: string})
 
 end
 
+function meleeAttackEffect(character, combo)
+	local effect = displayObjects.DraconicKnight.ChargedAttackEffect:Clone()
+	effect.Parent = character
+	effect.Root.CFrame = character.HumanoidRootPart.CFrame
+	effect.Root.RigidConstraint.Attachment1 = character.HumanoidRootPart.RootAttachment
+	local animateSprite = require(displayObjects.SpriteAnimator)
+	if combo == 1 then
+		effect.Right:Destroy()
+	elseif combo == 2 then
+		effect.Left:Destroy()
+	end
+	for i, item in ipairs(effect:GetChildren()) do
+		if item.Name ~= "Root" then
+			for i, child in ipairs(item:GetChildren()) do
+				if child:IsA("SurfaceGui") then
+					local data = {
+						FrameRate = 45,
+						Sprite = child.Sprite,
+						SpriteSheet = "6x5"
+					}
+					coroutine.wrap(animateSprite.animateSprite)(data, 1)
+				end
+			end
+		end
+		task.delay(1.2, function()
+			effect:Destroy()
+		end)
+	end
+end
+
 function MeleeServerAction.new(): ServerAction
 
 	local contestant: ServerContestant? = nil;
@@ -464,7 +389,7 @@ function MeleeServerAction.new(): ServerAction
 			local primaryPart = contestant.character.PrimaryPart :: BasePart;
 			if not primaryPart:FindFirstChild("FlightConstraint") then
 				if buttonDown.Value then
-					melee.KeyDown(meleeData)
+					melee.KeyDown(meleeData, meleeAttackEffect)
 				else
 					melee.KeyRelease(meleeData)
 				end

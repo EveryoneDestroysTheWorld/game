@@ -70,7 +70,7 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
 
     contestant = newContestant;
     round = newRound;
-    
+    contestant.character.Humanoid.WalkSpeed = 13
     local function setUpPropsDragonKnight(model)
       local wingsProp = InsertService:LoadAsset(76933185156855)
       

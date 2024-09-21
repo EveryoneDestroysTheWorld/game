@@ -19,7 +19,6 @@ function module.animateSprite(data, target)
 	local Xoffset = math.floor(data.Sprite.ImageRectOffset.X / size.X)
 	local Yoffset = math.floor(data.Sprite.ImageRectOffset.Y / size.Y)
 	local frame = Yoffset * y + Xoffset 
-	print(frame)
 	if frame < target then
 		for i=1, (target - frame) do
 			data.Sprite.ImageRectOffset = Vector2.new((size.X * Xoffset),(size.Y * Yoffset))
