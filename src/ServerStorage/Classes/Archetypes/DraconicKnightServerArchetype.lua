@@ -109,6 +109,12 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
         chargedAttackEffect.ChargedAttack.Name = "ChargedAttackEffect"
         chargedAttackEffect.ChargedAttackEffect.Parent = classFolder
         chargedAttackEffect:Destroy()
+
+
+        local tarBomb = InsertService:LoadAsset(134163908471327)
+        tarBomb.TarBomb.Parent = classFolder
+        chargedAttackEffect:Destroy()
+        
         
         
       end

@@ -5,7 +5,7 @@
 local module = {}
 
 
-function module.animateSprite(data, target)
+function module.animateSprite(data, target, loop)
 	local size = data.Sprite.ImageRectSize
 	local x = string.split(data.SpriteSheet, "x")
 	local y = tonumber(x[2])
@@ -19,6 +19,12 @@ function module.animateSprite(data, target)
 	local Xoffset = math.floor(data.Sprite.ImageRectOffset.X / size.X)
 	local Yoffset = math.floor(data.Sprite.ImageRectOffset.Y / size.Y)
 	local frame = Yoffset * y + Xoffset 
+	repeat
+		if loop then
+			frame = 0 
+			Xoffset = 0
+			Yoffset = 0
+		end
 	if frame < target then
 		for i=1, (target - frame) do
 			data.Sprite.ImageRectOffset = Vector2.new((size.X * Xoffset),(size.Y * Yoffset))
@@ -50,6 +56,7 @@ function module.animateSprite(data, target)
 	else
 		warn("TargetFrame is currentFrame????")
 	end
+	until not loop
 end
 
 

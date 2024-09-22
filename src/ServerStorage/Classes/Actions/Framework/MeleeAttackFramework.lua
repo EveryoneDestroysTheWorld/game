@@ -29,6 +29,7 @@ local defaultData = {
 	heavyAttackMomentumMultiplier = 2,
 	lightStamDrain = 10,
 	heavyStamDrain = 20,
+	actionID = 8
 }
 
 -- 			data template
@@ -50,7 +51,7 @@ local defaultData = {
 
 local storedCombos = {}
 
-function meleeAttackFramework.KeyDown(data: Array, effect: Function)
+function meleeAttackFramework.KeyDown(data: Array, effect: Function, round)
 	data.Contestant:updateStamina(math.max(0, data.Contestant.currentStamina - (data.lightStamDrain or defaultData.lightStamDrain)));
 	local combo = storedCombos[data.Contestant] or 1
 	local animations = data.Animations
@@ -78,7 +79,7 @@ function meleeAttackFramework.KeyDown(data: Array, effect: Function)
 	local connection
 	local playerFollowPart
 	local posTarget
-	local lookDirection = if data.Contestant.character.Humanoid.MoveDirection ~= Vector3.new(0,0,0) then Vector2.new(data.Contestant.character.Humanoid.MoveDirection.X,data.Contestant.character.Humanoid.MoveDirection.Z) else Vector2.new(data.Contestant.character.HumanoidRootPart.CFrame.LookVector.X,data.Contestant.character.HumanoidRootPart.CFrame.LookVector.Z)
+	local lookDirection = if data.Contestant.character.Humanoid.MoveDirection ~= Vector3.new(0,0,0) then data.Contestant.character.Humanoid.MoveDirection else data.Contestant.character.HumanoidRootPart.CFrame.LookVector
 	local updateLookDirection
 	local debounce = false
 	updateLookDirection = data.Contestant.character.Humanoid:GetPropertyChangedSignal("MoveDirection"):Connect(function()
@@ -95,34 +96,67 @@ function meleeAttackFramework.KeyDown(data: Array, effect: Function)
 		
 		
 		
+	timeToCharge = (data.timeToCharge or defaultData.timeToCharge)
 
-
-
+	local i = 2
 	connection = attackState.Destroying:Connect(function()
 		connection:Disconnect()
 		connection = nil
 		animations[animationName]:AdjustSpeed((data.lightAttackSpeed or defaultData.lightAttackSpeed)/100)
-		movementTween:Cancel()
+		i = 3.1
 	end)
 
-	local LVelc = Instance.new("LinearVelocity", data.Contestant.character.HumanoidRootPart)
-	LVelc.VelocityConstraintMode = Enum.VelocityConstraintMode.Plane
-	LVelc.SecondaryTangentAxis = Vector3.new(0, 0, 1)
 	
-	LVelc.MaxForce = math.huge
-	task.wait()
-    LVelc.Attachment0 = Instance.new("Attachment", data.Contestant.character.HumanoidRootPart)
 	
-	local i = 1
-	LVelc.PlaneVelocity = lookDirection * (data.forwardMomentum or defaultData.forwardMomentum) * 4 * (i/((data.timeToCharge or defaultData.timeToCharge) * 10))
+	local LVelc
+	task.wait(0.3)
+	if i < 3 then
+		LVelc = Instance.new("LinearVelocity", data.Contestant.character.HumanoidRootPart)
+		LVelc.VelocityConstraintMode = Enum.VelocityConstraintMode.Line
+		--LVelc.SecondaryTangentAxis = Vector3.new(0, 0, 1)
+	
+		LVelc.MaxForce = math.huge
+		task.wait()
+    	LVelc.Attachment0 = Instance.new("Attachment", data.Contestant.character.HumanoidRootPart)
+		LVelc.LineDirection = lookDirection
 	repeat
-		
-		movementTween = TweenService:Create(LVelc, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {PlaneVelocity = lookDirection * (data.forwardMomentum or defaultData.forwardMomentum) * 4 * ((i + 2)/((data.timeToCharge or defaultData.timeToCharge) * 10))})
+		movementTween = TweenService:Create(LVelc, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {LineVelocity = (data.forwardMomentum or defaultData.forwardMomentum) * 4 * ((i + 1)/((data.timeToCharge or defaultData.timeToCharge) * 10)), LineDirection = lookDirection})
 		movementTween:Play()
 		task.wait(0.1)
 		i += 1
-	until i > ((data.timeToCharge or defaultData.timeToCharge) * 10) or not connection
-	LVelc:Destroy()
+	until i > timeToCharge * 10
+	end
+	local function hurt(damage)
+		local hurtBox = Instance.new("Part", data.Contestant.character:FindFirstChild("HumanoidRootPart"))
+		hurtBox.Name = "HurtBox"
+		hurtBox = data.Contestant.character:FindFirstChild("HumanoidRootPart"):FindFirstChild("HurtBox")
+		hurtBox.Anchored = true
+		hurtBox.CanCollide = false
+		hurtBox.CFrame = data.Contestant.character:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(Vector3.new(0,0,-10))
+		hurtBox.Size = Vector3.new(7,7,7)
+
+		local foundParts = Workspace:GetPartsInPart(hurtBox)
+		local validTargets = {}
+		for i, part in ipairs(foundParts) do
+			local model = part:FindFirstAncestorOfClass("Model")
+			if model and not table.find(validTargets, model.Name) and model:FindFirstChild("Humanoid") and model.Name ~= data.Contestant.character.Name then
+				table.insert(validTargets, model.Name)
+			end
+		end
+		if #validTargets > 0 then
+			
+			for i, contestant in ipairs(round.contestants) do
+				if contestant["name"] == validTargets[table.find(validTargets, contestant["name"])] then
+					contestant:updateHealth(contestant.currentHealth - damage, {
+						contestant = contestant;
+						actionID = actionID;
+					});
+				end
+			end
+		end
+		task.wait(0.1)
+		hurtBox:Destroy()
+	end
 
 	if connection then
 		if effect then
@@ -132,10 +166,32 @@ function meleeAttackFramework.KeyDown(data: Array, effect: Function)
 		connection:Disconnect()
 		connection = nil
 		animations[animationName]:AdjustSpeed(1)
+		task.delay(0.24,function()
+			hurt(30)
+		end)
+		i = 0
+		if LVelc then
+			LVelc.LineDirection = lookDirection
+			LVelc.LineVelocity = (data.forwardMomentum or defaultData.forwardMomentum) * (data.heavyAttackMomentumMultiplier or defaultData.heavyAttackMomentumMultiplier) * 4
+		movementTween = TweenService:Create(LVelc, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {LineVelocity = 0})
+		movementTween:Play()
+		end
+		task.wait(0.5)
 	else
-
+		task.delay(0.2,function()
+			hurt(10)
+		end)
 	end
-	task.wait(0.5)
+	
+	
+
+
+	
+	task.wait(0.3)
+	if LVelc then
+	LVelc:Destroy()
+	end
+	
 	updateLookDirection:Disconnect()
 
 	return staminaDrain
@@ -145,6 +201,37 @@ function meleeAttackFramework.KeyRelease(data)
 	local state = data.Contestant.character:FindFirstChild("MeleeAttackState")
 	if state then state:Destroy() else warn("No keydown found, how strange!") 
 	end
+end
+
+
+function meleeAttackFramework.Attack(data: Array, effect: Function, round)
+	if not data.Contestant.character:FindFirstChild("ButtonDown") then
+		buttonDown = Instance.new("BoolValue", data.Contestant.character)
+		buttonDown.Name = "ButtonDown"
+	end
+	if not buttonDown.Value then
+		buttonDown.Value = true
+	else
+		buttonDown.Value = false
+	end
+	if buttonDown.Value then
+		if not debounce then
+			debounce = true
+			meleeAttackFramework.KeyDown(data, meleeAttackEffect, round)
+			if debounce == "buffered" then
+				debounce = false
+				meleeAttackFramework.KeyDown(data, meleeAttackEffect, round)
+			end
+			debounce = false
+		else
+			debounce = "buffered"
+		end
+	elseif debounce == "buffered" then
+		meleeAttackFramework.KeyRelease(data)
+	else
+		meleeAttackFramework.KeyRelease(data)
+	end
+
 end
 
 return meleeAttackFramework

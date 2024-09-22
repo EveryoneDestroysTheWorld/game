@@ -373,7 +373,8 @@ function MeleeServerAction.new(): ServerAction
 			animName = "Melee",
 			maxCombo = 3,
 			Animations = anims,
-			Contestant = contestant
+			Contestant = contestant,
+			actionID = 8
 		}
 		if not contestant.character:FindFirstChild("ButtonDown") then
 			buttonDown = Instance.new("BoolValue", contestant.character)
@@ -389,7 +390,19 @@ function MeleeServerAction.new(): ServerAction
 			local primaryPart = contestant.character.PrimaryPart :: BasePart;
 			if not primaryPart:FindFirstChild("FlightConstraint") then
 				if buttonDown.Value then
-					melee.KeyDown(meleeData, meleeAttackEffect)
+					if not debounce then
+						debounce = true
+						melee.KeyDown(meleeData, meleeAttackEffect, round)
+						if debounce == "buffered" then
+							debounce = false
+							melee.KeyDown(meleeData, meleeAttackEffect, round)
+						end
+						debounce = false
+					else
+						debounce = "buffered"
+					end
+				elseif debounce == "buffered" then
+					melee.KeyRelease(meleeData)
 				else
 					melee.KeyRelease(meleeData)
 				end
