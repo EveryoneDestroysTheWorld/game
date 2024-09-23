@@ -22,11 +22,11 @@ local TarBombServerAction = {
 
 
 
-local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant: ServerContestant)
+local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant: ServerContestant, size)
 
 	local explosion = Instance.new("Explosion", primaryPart);
 	explosion.BlastPressure = 0;
-	explosion.BlastRadius = 5;
+	explosion.BlastRadius = size;
 	explosion.DestroyJointRadiusPercent = 0;
 	explosion.Position = primaryPart.Position;
 	local hitContestants = {};
@@ -47,7 +47,7 @@ local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant
 				local currentHealth = enemyHumanoid:GetAttribute("CurrentHealth") :: number?;
 				if currentHealth then
 
-				local newHealth = currentHealth - 15;
+				local newHealth = currentHealth - size*3;
 				possibleEnemyContestant:updateHealth(newHealth, {
 					contestant = contestant;
 					actionID = TarBombServerAction.ID;
@@ -74,13 +74,18 @@ local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant
 
 end
 
-local function startAttack(primaryPart: BasePart, animations, coords: Vector3, round: ServerRound, contestant: ServerContestant)
+local function startAttack(primaryPart: BasePart, animations, coords: Vector3, round: ServerRound, contestant: ServerContestant, split)
 	local bomb = ReplicatedStorage.Client.InGameDisplayObjects.DraconicKnight.TarBomb:Clone()
 	bomb.Parent = workspace.Terrain
 	bomb.Position = primaryPart.Position
 	bomb.Anchored = true
 	bomb.CanCollide = false
-
+	local size = 5
+	if not split then
+		bomb.ParticleEmitter:Destroy()
+		bomb.BillboardGui.Size = UDim2.new(3, 0, 3, 0)
+		size = 2.5
+	end
 	local animateSprite = require(ReplicatedStorage.Client.InGameDisplayObjects.SpriteAnimator)
 	local data = {
 		FrameRate = 30,
@@ -91,6 +96,9 @@ local function startAttack(primaryPart: BasePart, animations, coords: Vector3, r
 
 
 	local distance = (bomb.Position - coords).Magnitude / 40
+	if distance > 1 then 
+		distance = 1 
+	end
 	local i = 0
 	repeat
 		local height = ((distance) - (math.abs(0.5-(i/distance)) * distance)) * 4
@@ -100,7 +108,13 @@ local function startAttack(primaryPart: BasePart, animations, coords: Vector3, r
 		i+=0.1
 	until i > distance
 	task.wait(1)
-	damageEvent(bomb, round, contestant)
+	damageEvent(bomb, round, contestant, size)
+	if split then
+		for i=1, math.random(4,6) do
+			local randomCoor = coords + Vector3.new(math.random(-10,10),0,math.random(-10,10))
+			coroutine.wrap(startAttack)(bomb, animations, randomCoor, round, contestant)
+		end
+	end
 	bomb.BillboardGui:Destroy()
 	task.wait(2)
 	bomb:Destroy()
@@ -179,7 +193,7 @@ function TarBombServerAction.new(): ServerAction
 
 				-- Reduce the player's stamina.
 				_contestant:updateStamina(math.max(0, _contestant.currentStamina - 10));
-				startAttack(_contestant.character.PrimaryPart :: BasePart, anims, coords, _round, _contestant);
+				startAttack(_contestant.character.PrimaryPart :: BasePart, anims, coords, _round, _contestant, true);
 
 			end
 
