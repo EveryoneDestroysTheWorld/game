@@ -140,7 +140,8 @@ local function startAttack(sourcePart: BasePart, animations, coords: Vector3, ro
 	local bomb = ReplicatedStorage.Client.InGameDisplayObjects.DraconicKnight.TarBomb:Clone()
 	bomb.Parent = workspace.Terrain
 	bomb.Position = sourcePart.Position
-	bomb.CanCollide = false
+	bomb.CanTouch = false
+	
 	bomb.Massless = false
 	Instance.new("NoCollisionConstraint", bomb)
 	bomb.NoCollisionConstraint.Part0 = bomb
@@ -161,26 +162,56 @@ local function startAttack(sourcePart: BasePart, animations, coords: Vector3, ro
 
 
 	local distance = (coords - bomb.Position)
-	local distanceModifier = workspace.Distance.Value
-	local heightModifier = workspace.Height.Value
-	
-	bomb.AssemblyLinearVelocity = distance + Vector3.new(0,distance.Magnitude,0)
-	task.wait(0.1)
-	bomb.CanCollide = true
-
-
-
-	task.wait(4)
-	damageEvent(bomb, round, contestant, size)
-	if split then
-		for i=1, math.random(4,6) do
-			local randomCoor = coords + Vector3.new(math.random(-10,10),0,math.random(-10,10))
-			coroutine.wrap(startAttack)(bomb, animations, randomCoor, round, contestant)
+	local time = distance.Magnitude / 32 + 0.4
+	print(time)
+	bomb.AssemblyLinearVelocity = Vector3.new(distance.X * 2 / time, (distance.Y + ((196.2/2) * (time/2))) ,distance.Z * 2 / time)
+	task.wait(0.3)
+	bomb.CanTouch = true
+	local collisionConnect
+	collisionConnect = bomb.Touched:Connect(function(touched)
+		collisionConnect:Disconnect()
+		Instance.new("WeldConstraint", bomb)
+		
+		local rayOrigin = bomb.Position
+		local rayDirection
+		if touched:IsA("Terrain") then
+			rayDirection = Vector3.new(0,-10,0) 
+		elseif (touched.Size.X * touched.Size.Y * touched.Size.Z) > 100 then
+			rayDirection = bomb.AssemblyLinearVelocity
+		else
+			rayDirection = (touched.Position - bomb.Position) * 2
 		end
-	end
-	bomb.BillboardGui:Destroy()
-	task.wait(2)
-	bomb:Destroy()
+
+		local raycastResult = workspace:Raycast(rayOrigin, rayDirection)
+		if not raycastResult then
+			rayDirection = Vector3.new(0,-10,0) 
+			raycastResult = workspace:Raycast(rayOrigin, rayDirection)
+		end
+		if raycastResult then
+			bomb.Position = raycastResult.Position
+
+
+			bomb.WeldConstraint.Part0 = bomb
+			bomb.WeldConstraint.Part1 = touched
+		else
+			bomb.Anchored = true
+		end
+		task.wait(1.5)
+		damageEvent(bomb, round, contestant, size)
+		if split then
+			for i=1, math.random(4,6) do
+				local randomCoor = coords + Vector3.new(math.random(-10,10),0,math.random(-10,10))
+				coroutine.wrap(startAttack)(bomb, animations, randomCoor, round, contestant)
+			end
+		end
+		bomb.BillboardGui:Destroy()
+		task.wait(2)
+		bomb:Destroy()
+	
+	end)
+
+
+	
 end
 
 
