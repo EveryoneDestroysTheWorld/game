@@ -132,11 +132,13 @@ local function startAttack(primaryPart: BasePart, animations, coords: Vector3, r
 end
 ]]
 local function startAttack(sourcePart: BasePart, animations, coords: Vector3, round: ServerRound, contestant: ServerContestant, split)
+	--[[ for testing to make sure projectile goes where it should
 	local part = Instance.new("Part")
 	part.Position = coords
 	part.Anchored = true
 	part.CanCollide = false
 	part.Parent = workspace.Terrain
+	]]
 	local bomb = ReplicatedStorage.Client.InGameDisplayObjects.DraconicKnight.TarBomb:Clone()
 	bomb.Parent = workspace.Terrain
 	bomb.Position = sourcePart.Position
