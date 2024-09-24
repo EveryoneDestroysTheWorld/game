@@ -128,10 +128,12 @@ function meleeAttackFramework.KeyDown(data: Array, effect: Function, round)
 	end
 	local function hurt(damage)
 		local hurtBox = Instance.new("Part", data.Contestant.character:FindFirstChild("HumanoidRootPart"))
+		hurtbox.Transparency = 1
 		hurtBox.Name = "HurtBox"
 		hurtBox = data.Contestant.character:FindFirstChild("HumanoidRootPart"):FindFirstChild("HurtBox")
 		hurtBox.Anchored = true
 		hurtBox.CanCollide = false
+		
 		hurtBox.CFrame = data.Contestant.character:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(Vector3.new(0,0,-10))
 		hurtBox.Size = Vector3.new(7,7,7)
 
