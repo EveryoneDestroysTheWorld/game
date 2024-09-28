@@ -38,6 +38,8 @@ local function waitForServerResponse(coordinateData: Vector3): ()
 
 end
 
+
+
 local playerDisplay = {}
 local function displayTarget(state: "Start" | "Release"): ()
 
@@ -113,6 +115,20 @@ function TarBombAction.new(): ClientAction
 
 		ContextActionService:BindActionAtPriority("ActivateTarBomb", checkJump, false, 2, Enum.KeyCode.Q);
 
+
+		workspace.Terrain.ChildAdded:Connect(function(child)
+			if child.Name == "TarBomb" then
+				local connection
+				task.wait(0.2)
+				connection = child.Touched:Connect(function(touched)
+					connection:Disconnect()
+					child.AssemblyLinearVelocity = Vector3.new(0,0,0)
+				end)
+			end
+		
+		end)
+
+		
 	end;
 
 	return ClientAction.new({

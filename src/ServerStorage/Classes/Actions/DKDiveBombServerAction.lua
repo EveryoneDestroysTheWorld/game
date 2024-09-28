@@ -56,45 +56,19 @@ local function animateFlight(humanoid, animations, animData,state)
 	return animations
 end
 
-local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant: ServerContestant)
-
+local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant: ServerContestant, player)
 	local explosion = Instance.new("Explosion", primaryPart);
+	local size = 5
 	explosion.BlastPressure = 0;
-	explosion.BlastRadius = 5;
+	explosion.BlastRadius = 1 + size;
 	explosion.DestroyJointRadiusPercent = 0;
 	explosion.Position = primaryPart.Position;
-	local hitContestants = {};
+	local validTargets = {};
 	explosion.Hit:Connect(function(basePart)
-
 		-- Damage any parts or contestants that get hit.
-		for _, possibleEnemyContestant in ipairs(round.contestants) do
-
-		task.spawn(function()
-
-			local possibleEnemyCharacter = possibleEnemyContestant.character;
-			if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
-
-			table.insert(hitContestants, possibleEnemyContestant);
-			local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
-			if enemyHumanoid then
-
-				local currentHealth = enemyHumanoid:GetAttribute("CurrentHealth") :: number?;
-				if currentHealth then
-
-				local newHealth = currentHealth - 15;
-				possibleEnemyContestant:updateHealth(newHealth, {
-					contestant = contestant;
-					actionID = DiveBombServerAction.ID;
-				});
-
-				end
-
-			end;
-
-			end;
-
-		end);
-
+		local model = basePart:FindFirstAncestorOfClass("Model")
+		if model and model:FindFirstChild("Humanoid") then
+			table.insert(validTargets, model.Name)
 		end;
 		
 		local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability") :: number?;
@@ -105,7 +79,22 @@ local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant
 		end;
 
 	end);
-
+	task.delay(0.1, function()
+	if #validTargets > 0 then
+			
+		for i, contestant in ipairs(round.contestants) do
+			if contestant["name"] == validTargets[table.find(validTargets, contestant["name"])] then
+				if contestant["name"] == player then
+					size = size/3
+				end
+				contestant:updateHealth(contestant.currentHealth - size*3, {
+					contestant = contestant;
+					actionID = actionID;
+				});
+			end
+		end
+	end
+end)
 end
 
 local function startAttack(primaryPart: BasePart, animations, coords: Vector3, round: ServerRound, contestant: ServerContestant)
@@ -161,7 +150,7 @@ local function startAttack(primaryPart: BasePart, animations, coords: Vector3, r
 	});
 	tween:Play();
 	task.wait(travelTime);
-	damageEvent(primaryPart, round, contestant)
+	damageEvent(primaryPart, round, contestant, contestant)
 
 	
 	animations["Right"]:AdjustSpeed(1);

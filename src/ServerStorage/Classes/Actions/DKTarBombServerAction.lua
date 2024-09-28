@@ -22,45 +22,19 @@ local TarBombServerAction = {
 
 
 
-local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant: ServerContestant, size)
+local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant: ServerContestant, size, player)
 
 	local explosion = Instance.new("Explosion", primaryPart);
 	explosion.BlastPressure = 0;
-	explosion.BlastRadius = size;
+	explosion.BlastRadius = 1 + size;
 	explosion.DestroyJointRadiusPercent = 0;
 	explosion.Position = primaryPart.Position;
-	local hitContestants = {};
+	local validTargets = {};
 	explosion.Hit:Connect(function(basePart)
-
 		-- Damage any parts or contestants that get hit.
-		for _, possibleEnemyContestant in ipairs(round.contestants) do
-
-		task.spawn(function()
-
-			local possibleEnemyCharacter = possibleEnemyContestant.character;
-			if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
-
-			table.insert(hitContestants, possibleEnemyContestant);
-			local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
-			if enemyHumanoid then
-
-				local currentHealth = enemyHumanoid:GetAttribute("CurrentHealth") :: number?;
-				if currentHealth then
-
-				local newHealth = currentHealth - size*3;
-				possibleEnemyContestant:updateHealth(newHealth, {
-					contestant = contestant;
-					actionID = TarBombServerAction.ID;
-				});
-
-				end
-
-			end;
-
-			end;
-
-		end);
-
+		local model = basePart:FindFirstAncestorOfClass("Model")
+		if model and model:FindFirstChild("Humanoid") then
+			table.insert(validTargets, model.Name)
 		end;
 		
 		local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability") :: number?;
@@ -71,6 +45,22 @@ local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant
 		end;
 
 	end);
+	task.delay(0.1, function()
+	if #validTargets > 0 then
+			
+		for i, contestant in ipairs(round.contestants) do
+			if contestant["name"] == validTargets[table.find(validTargets, contestant["name"])] then
+				if contestant["name"] == player then
+					size = size/2
+				end
+				contestant:updateHealth(contestant.currentHealth - size*3, {
+					contestant = contestant;
+					actionID = actionID;
+				});
+			end
+		end
+	end
+end)
 
 end
 --[[ OUTDATED
@@ -131,7 +121,7 @@ local function startAttack(primaryPart: BasePart, animations, coords: Vector3, r
 	bomb:Destroy()
 end
 ]]
-local function startAttack(sourcePart: BasePart, animations, coords: Vector3, round: ServerRound, contestant: ServerContestant, split)
+local function startAttack(sourcePart: BasePart, animations, coords: Vector3, round: ServerRound, contestant: ServerContestant, split, size)
 	--[[ for testing to make sure projectile goes where it should
 	local part = Instance.new("Part")
 	part.Position = coords
@@ -148,11 +138,9 @@ local function startAttack(sourcePart: BasePart, animations, coords: Vector3, ro
 	Instance.new("NoCollisionConstraint", bomb)
 	bomb.NoCollisionConstraint.Part0 = bomb
 	bomb.NoCollisionConstraint.Part1 = sourcePart
-	local size = 5
 	if not split then
 		bomb.ParticleEmitter:Destroy()
-		bomb.BillboardGui.Size = UDim2.new(3, 0, 3, 0)
-		size = 2.5
+		bomb.BillboardGui.Size = UDim2.new(size, 0, size, 0)
 	end
 	local animateSprite = require(ReplicatedStorage.Client.InGameDisplayObjects.SpriteAnimator)
 	local data = {
@@ -165,7 +153,6 @@ local function startAttack(sourcePart: BasePart, animations, coords: Vector3, ro
 
 	local distance = (coords - bomb.Position)
 	local time = distance.Magnitude / 32 + 0.4
-	print(time)
 	bomb.AssemblyLinearVelocity = Vector3.new(distance.X * 2 / time, (distance.Y + ((196.2/2) * (time/2))) ,distance.Z * 2 / time)
 	task.wait(0.3)
 	bomb.CanTouch = true
@@ -199,11 +186,12 @@ local function startAttack(sourcePart: BasePart, animations, coords: Vector3, ro
 			bomb.Anchored = true
 		end
 		task.wait(1.5)
-		damageEvent(bomb, round, contestant, size)
+		damageEvent(bomb, round, contestant, size, contestant)
 		if split then
-			for i=1, math.random(4,6) do
-				local randomCoor = coords + Vector3.new(math.random(-10,10),0,math.random(-10,10))
-				coroutine.wrap(startAttack)(bomb, animations, randomCoor, round, contestant)
+			local roll = math.random(2,10)
+			for i=1, roll do
+				local randomCoor = coords + Vector3.new(math.random(-100,100)/10,0,math.random(-100,100)/10)
+				coroutine.wrap(startAttack)(bomb, animations, randomCoor, round, contestant, false, 8/roll)
 			end
 		end
 		bomb.BillboardGui:Destroy()
@@ -289,7 +277,7 @@ function TarBombServerAction.new(): ServerAction
 
 				-- Reduce the player's stamina.
 				_contestant:updateStamina(math.max(0, _contestant.currentStamina - 10));
-				startAttack(_contestant.character.Head :: BasePart, anims, coords, _round, _contestant, true);
+				startAttack(_contestant.character.Head :: BasePart, anims, coords, _round, _contestant, true, 5);
 
 			end
 
