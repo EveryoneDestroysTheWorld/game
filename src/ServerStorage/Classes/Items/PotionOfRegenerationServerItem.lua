@@ -5,6 +5,7 @@
 -- © 2024 Beastslash
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local ServerStorage = game:GetService("ServerStorage");
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
 type ServerContestant = ServerContestant.ServerContestant;
 local ServerItem = require(script.Parent.Parent.ServerItem);
@@ -12,6 +13,7 @@ type ServerItem = ServerItem.ServerItem;
 local PotionOfRegenerationClientItem = require(ReplicatedStorage.Client.Classes.Items.PotionOfRegenerationClientItem);
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
+local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
 
 local PotionOfRegenerationServerItem = {
   ID = PotionOfRegenerationClientItem.ID;
@@ -68,30 +70,11 @@ function PotionOfRegenerationServerItem.new(): ServerItem
 
     if contestant.player then
 
-      local itemName = `{contestant.player.UserId}_{self.ID}`;
-      while ReplicatedStorage.Shared.Functions.ItemFunctions:FindFirstChild(`{itemName}_{itemNumber}`) do
+      remoteFunction, itemNumber = createInventoryRemoteFunction(contestant.player, self.ID, function()
+      
+        self:activate();
 
-        itemNumber += 1;
-
-      end;
-
-      local newRemoteFunction = Instance.new("RemoteFunction");
-      newRemoteFunction.Name = `{itemName}_{itemNumber}`;
-      newRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ItemFunctions;
-      newRemoteFunction.OnServerInvoke = function(player)
-  
-        if player == contestant.player then
-  
-          self:activate();
-  
-        else
-  
-          error(`{player.Name} ({player.UserId}) may not use another player's item.`, 0);
-  
-        end
-  
-      end;
-      remoteFunction = newRemoteFunction;
+      end);
 
       ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID, itemNumber);
 
