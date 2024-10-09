@@ -1,6 +1,8 @@
 --!strict
--- Writer: Hati ---- Heavily modified edit of RocketFeet
--- Designer: Christian Toney (Sudobeast)
+-- Programmer: Hati (hati_bati)
+-- Designer: Christian Toney (Christian_Toney)
+-- © 2024 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService")
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
@@ -11,11 +13,13 @@ local TakeFlightClientAction = require(ReplicatedStorage.Client.Classes.Actions.
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
 
+
 local TakeFlightServerAction = {
 	ID = TakeFlightClientAction.ID;
 	name = TakeFlightClientAction.name;
 	description = TakeFlightClientAction.description;
 };
+
 
 local function animateFlight(humanoid: Humanoid, animations, animData, isEndingFlight: boolean)
 
@@ -51,6 +55,7 @@ local function animateFlight(humanoid: Humanoid, animations, animData, isEndingF
 
 	end
 
+
 	return animations
 end
 
@@ -58,6 +63,7 @@ local function flightStart(contestant: ServerContestant, primaryPart: BasePart)
 
 	--perhaps some of this could be clientside
 	local linearVelocity = Instance.new("LinearVelocity");
+  linearVelocity.Name = "FlightConstraint"
 	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
 	linearVelocity.LineDirection = Vector3.new(0, 1, 0);
 	linearVelocity.LineVelocity = -5
@@ -65,24 +71,29 @@ local function flightStart(contestant: ServerContestant, primaryPart: BasePart)
 	linearVelocity.Parent = primaryPart;
 	linearVelocity.Attachment0 = primaryPart:FindFirstChild("RootAttachment") :: Attachment;
 	linearVelocity:SetAttribute("PlayerControls", false);
+
 	task.wait(0.3)
 
 	linearVelocity.LineVelocity = 50;
 
-	local tween = TweenService:Create(linearVelocity, TweenInfo.new(1.0, Enum.EasingStyle.Sine), {LineVelocity = 0})
+	local tween = TweenService:Create(linearVelocity, TweenInfo.new(1.0, Enum.EasingStyle.Sine), {LineVelocity = 0});
 	tween:Play()
 	task.wait(0.6)
+
 	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Vector;
 	linearVelocity.VectorVelocity = Vector3.new(0,0,0)
 	linearVelocity:SetAttribute("PlayerControls", true)
 	local humanoid = (primaryPart.Parent :: Instance):FindFirstChild("Humanoid") :: Humanoid;
-
 	local connection
 	connection = humanoid:GetPropertyChangedSignal("FloorMaterial"):Connect(function(change)
+
 		if humanoid.FloorMaterial ~= Enum.Material.Air then
+
 			connection:Disconnect()
 			linearVelocity:Destroy()
+
 		end
+
 	end)
 
 	repeat 
@@ -90,7 +101,7 @@ local function flightStart(contestant: ServerContestant, primaryPart: BasePart)
 		task.wait(0.25)
 		contestant:updateStamina(math.max(0, contestant.currentStamina - 2));
 
-	until linearVelocity:GetAttribute("PlayerControls") == false or contestant.currentStamina <= 0
+	until not linearVelocity:GetAttribute("PlayerControls") or contestant.currentStamina <= 0
 
 	if contestant.currentStamina <= 0 then
 
@@ -105,8 +116,8 @@ end
 
 local function flightEnd(primaryPart: BasePart)
 
-	local linearVelocity = primaryPart:FindFirstChild("LinearVelocity") :: LinearVelocity;
-	linearVelocity:SetAttribute("PlayerControls", false)
+	local linearVelocity = primaryPart:FindFirstChild("FlightConstraint") :: LinearVelocity;
+	linearVelocity:SetAttribute("PlayerControls", false);
 
 	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
 	linearVelocity.LineDirection = Vector3.new(0, 1, 0);
@@ -126,6 +137,7 @@ local function flightEnd(primaryPart: BasePart)
 
 end
 
+
 local function preloadAnims(char: Model, animations: any)
 
 	local humanoid = char:FindFirstChild("Humanoid") :: Humanoid;
@@ -134,6 +146,7 @@ local function preloadAnims(char: Model, animations: any)
 	local wingProp = char:FindFirstChild("WingProp") :: Model;
 	local animatorR = (wingProp:FindFirstChild("WingsPropRight") :: Model):FindFirstChild("Animator") :: Animator;
 	local animatorL = (wingProp:FindFirstChild("WingsPropLeft") :: Model):FindFirstChild("Animator") :: Animator;
+
 	local anims = {}
 
 	-- usually would have a for i here, but since different animators are used this way is easier
@@ -150,7 +163,7 @@ local function preloadAnims(char: Model, animations: any)
 	animations["Left"] = animatorL:LoadAnimation(anims["Left"]);
 
 	anims["LeftIdle"] = Instance.new("Animation");
-	anims["LeftIdle"].AnimationId = "rbxassetid://73990987512197";
+	anims["LeftIdle"].AnimationId = "rbxassetid://109626445218372";
 	animations["LeftIdle"] = animatorL:LoadAnimation(anims["LeftIdle"]);
 
 	anims["End"] = Instance.new("Animation");
@@ -166,7 +179,6 @@ local function preloadAnims(char: Model, animations: any)
 	animations["Idle"] = animator:LoadAnimation(anims["Idle"]);
 
 	return animations
-
 end
 
 function TakeFlightServerAction.new(): ServerAction
@@ -177,7 +189,7 @@ function TakeFlightServerAction.new(): ServerAction
 		Right = 87777396509498,
 		RightIdle = 112159869158031,
 		Left = 72026942510156,
-		LeftIdle = 73990987512197,
+		LeftIdle = 109626445218372,
 		End = 101417868579212,
 		Start = 92928175332389,
 		Idle = 109371600216543,
@@ -195,23 +207,19 @@ function TakeFlightServerAction.new(): ServerAction
 			local primaryPart = contestant.character.PrimaryPart;
 			if humanoid:GetState() == Enum.HumanoidStateType.Freefall and primaryPart then
 
-				if not primaryPart:FindFirstChild("LinearVelocity") then
-
-					if contestant.currentStamina >= 10 then
-
-						-- Reduce the player's stamina.
-						contestant:updateStamina(math.max(0, contestant.currentStamina - 10));
-						local animData = Vector3.new(0,100,1.8)
-						coroutine.wrap(flightStart)(contestant, primaryPart)
-						anims = animateFlight(humanoid, anims, animData, false)
-
-					end
-
-				else
+				if primaryPart:FindFirstChild("FlightConstraint") then
 
 					local animData = Vector3.new(0, 100, 2.5);
 					coroutine.wrap(flightEnd)(primaryPart);
 					anims = animateFlight(humanoid, anims, animData, true);
+
+				elseif contestant.currentStamina >= 10 then
+
+					-- Reduce the player's stamina.
+					contestant:updateStamina(math.max(0, contestant.currentStamina - 10));
+					local animData = Vector3.new(0,100,1.8)
+					coroutine.wrap(flightStart)(contestant, primaryPart)
+					anims = animateFlight(humanoid, anims, animData, false)
 
 				end
 
@@ -220,6 +228,7 @@ function TakeFlightServerAction.new(): ServerAction
 		end;
 
 	end;
+
 
 	local executeActionRemoteFunction: RemoteFunction? = nil;
 
@@ -230,6 +239,7 @@ function TakeFlightServerAction.new(): ServerAction
 			executeActionRemoteFunction:Destroy();
 
 		end
+
 
 		if contestant.character then
 

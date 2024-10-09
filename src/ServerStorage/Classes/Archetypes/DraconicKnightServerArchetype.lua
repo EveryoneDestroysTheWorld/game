@@ -26,6 +26,7 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
 
   local contestant: ServerContestant = nil;
   local round: ServerRound = nil;
+  local wingProp: Model?;
   local events: {RBXScriptConnection} = {};
   local ragdollClone;
 
@@ -36,6 +37,12 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
       event:Disconnect();
 
     end;
+    
+    if wingProp then
+
+      wingProp:Destroy()
+      
+    end
 
     if ragdollClone then
 
@@ -63,12 +70,56 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
 
     contestant = newContestant;
     round = newRound;
-    
+    contestant.character.Humanoid.WalkSpeed = 13
     local function setUpPropsDragonKnight(model)
       local wingsProp = InsertService:LoadAsset(76933185156855)
+      
       wingsProp:FindFirstChild("WingProp").Parent = model
-      wingsProp:Destroy()
-      model.WingProp.Root.RigidConstraint.Attachment1 = model:FindFirstChild("BodyBackAttachment", true)
+      wingsProp:Destroy();
+      local newWingProp = model.WingProp;
+      (newWingProp:FindFirstChild("Root") :: any).RigidConstraint.Attachment1 = model:FindFirstChild("BodyBackAttachment", true)
+
+      -- Creates effects and folder for draconicknight if it doesnt already exist
+      if not ReplicatedStorage.Client.InGameDisplayObjects:FindFirstChild("DraconicKnight") then
+        local classFolder = Instance.new("Folder", ReplicatedStorage.Client.InGameDisplayObjects)
+        classFolder.Name = "DraconicKnight"
+
+        local diveBombIndicator = InsertService:LoadAsset(124109899420589)
+        diveBombIndicator.AoeDisplay.Name = "DiveBombIndicator"
+        diveBombIndicator.DiveBombIndicator.Parent = classFolder
+        diveBombIndicator:Destroy()
+
+        local fireBeamProp = InsertService:LoadAsset(132308940043685)
+        fireBeamProp.FireBeam.Name = "FireBeamProp"
+        fireBeamProp.FireBeamProp.Parent = classFolder
+        fireBeamProp:Destroy()
+
+        local fireDebuffProp = InsertService:LoadAsset(131535660581587)
+        fireDebuffProp.FirePlayer.Name = "FireDebuffProp"
+        fireDebuffProp.FireDebuffProp.Parent = classFolder
+        fireDebuffProp:Destroy()
+        
+
+        local fireBeamGUI = InsertService:LoadAsset(83599259067516)
+        fireBeamGUI.Charge.Name = "ChargeMeter"
+        fireBeamGUI.ChargeMeter.Parent = classFolder
+        fireBeamGUI:Destroy()
+
+        local chargedAttackEffect = InsertService:LoadAsset(117856122514203)
+        chargedAttackEffect.ChargedAttack.Name = "ChargedAttackEffect"
+        chargedAttackEffect.ChargedAttackEffect.Parent = classFolder
+        chargedAttackEffect:Destroy()
+
+
+        local tarBomb = InsertService:LoadAsset(134163908471327)
+        tarBomb.TarBomb.Parent = classFolder
+        chargedAttackEffect:Destroy()
+        
+        
+        
+      end
+      wingProp = newWingProp;
+
     end
       
     setUpPropsDragonKnight(contestant["character"]);

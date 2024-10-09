@@ -368,7 +368,9 @@ local function startRound()
     end;
 
     round:setStatus("Contestant selection");
+
     local selectionTimeLimitSeconds = 25;
+
     local currentTime = os.time();
     ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds - 1);
     ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = function()
