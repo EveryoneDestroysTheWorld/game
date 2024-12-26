@@ -1,3 +1,5 @@
+name: Sync GitHub issues with Discord
+
 on: 
   issues:
     types: [opened, edited, closed, deleted, locked, unlocked]
