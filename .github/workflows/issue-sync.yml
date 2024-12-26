@@ -1,0 +1,22 @@
+on: 
+  issues:
+    types: [opened, edited, closed, deleted, locked, unlocked]
+
+jobs:
+  issues-sync:
+    runs-on: ubuntu-latest
+    name: Sync issue
+    steps:
+      - name: Sync issue with Discord
+        id: sync-issue
+        uses: DaDragonDen/issues-sync@main
+        with:
+          discord-token: ${{ secrets.ISSUES_SYNC_DISCORD_TOKEN }}
+          discord-channel-id: ${{ vars.ISSUES_SYNC_DISCORD_CHANNEL_ID }}
+          project-id: ${{ vars.ISSUES_SYNC_PROJECT_ID }}
+          field-name: ${{ vars.ISSUES_SYNC_GITHUB_PROJECT_FIELD_NAME }}
+          github-app-id: ${{ vars.ISSUES_SYNC_GITHUB_APP_ID }}
+          github-app-private-key: ${{ secrets.ISSUES_SYNC_GITHUB_APP_PRIVATE_KEY }}
+          github-app-client-id: ${{ vars.ISSUES_SYNC_GITHUB_APP_CLIENT_ID }}
+          github-app-client-secret: ${{ secrets.ISSUES_SYNC_GITHUB_APP_CLIENT_SECRET }}
+          github-app-installation-id: ${{ vars.ISSUES_SYNC_GITHUB_INSTALLATION_ID }}
