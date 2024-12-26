@@ -5,6 +5,7 @@ on:
 jobs:
   issues-sync:
     runs-on: ubuntu-latest
+    environment: "Issues Sync"
     name: Sync issue
     steps:
       - name: Sync issue with Discord
