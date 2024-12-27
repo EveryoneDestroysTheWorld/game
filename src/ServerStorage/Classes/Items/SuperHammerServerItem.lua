@@ -112,7 +112,6 @@ function SuperHammerServerItem.new(): ServerItem
                 if enemyHumanoid then
 
                   -- Add immunity, then remove it after a second.
-                  print("Hit!");
                   table.insert(immuneContestants, possibleEnemyContestant);
                   task.delay(1, function()
                   
