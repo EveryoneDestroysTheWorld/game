@@ -39,8 +39,26 @@ function SuperHammerServerItem.new(): ServerItem
 
       assert(_contestant and _contestant.character and _meshPart);
 
+      -- Attach the hammer to the player's right hand.
+      local humanoid: Instance? = _contestant.character:FindFirstChild("Humanoid");
+      assert(humanoid and humanoid:IsA("Humanoid"));
+
+      local attachment = Instance.new("Attachment");
+      attachment.Name = "RightGripAttachment";
+      attachment.CFrame = CFrame.new(0, -2.9, 0);
+      attachment.Parent = _meshPart;
+
+      local accessory = Instance.new("Accessory");
+      accessory.Name = "Super Hammer";
+
+      _meshPart.Name = "Handle";
+      _meshPart.Parent = accessory;
+
+      humanoid:AddAccessory(accessory);
+
+      _meshPart.Anchored = false;
+
       -- Run the equip animation.
-      _meshPart.Parent = _contestant.character;
       _mode = mode;
 
     elseif mode == "Dequipped" then
