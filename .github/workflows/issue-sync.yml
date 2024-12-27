@@ -2,7 +2,7 @@ name: Sync GitHub issues with Discord
 
 on: 
   issues:
-    types: [opened, edited, closed, deleted, locked, unlocked]
+    types: [opened, edited, closed, deleted, locked, unlocked, assigned, unassigned]
 
 jobs:
   issues-sync:
@@ -10,14 +10,44 @@ jobs:
     environment: "Issues Sync"
     name: Sync issue
     steps:
+      - name: Convert project number to ID
+        id: convert_project_number_to_id
+        uses: Beastslash/actions-get-project-id-from-number@v1.0.0
+        with:
+          github-project-number: ${{ vars.ISSUES_SYNC_GITHUB_PROJECT_NUMBER }}
+          github-app-id: ${{ vars.ISSUES_SYNC_GITHUB_APP_ID }}
+          github-app-private-key: ${{ secrets.ISSUES_SYNC_GITHUB_APP_PRIVATE_KEY }}
+          github-app-installation-id: ${{ vars.ISSUES_SYNC_GITHUB_APP_INSTALLATION_ID }}
+      - name: Convert issue number to project item ID
+        id: convert_issue_number_to_project_item_id
+        if: steps.convert_project_number_to_id.outputs.GITHUB_PROJECT_ID != 0
+        uses: Beastslash/actions-get-project-item-id-from-issue@v1.0.0
+        with:
+          github-project-id: ${{ steps.convert_project_number_to_id.outputs.GITHUB_PROJECT_ID }}
+          github-app-id: ${{ vars.ISSUES_SYNC_GITHUB_APP_ID }}
+          github-app-private-key: ${{ secrets.ISSUES_SYNC_GITHUB_APP_PRIVATE_KEY }}
+          github-app-installation-id: ${{ vars.ISSUES_SYNC_GITHUB_APP_INSTALLATION_ID }}
+      - name: Convert project field name to ID
+        id: convert_project_field_name_to_ID
+        uses: Beastslash/actions-get-project-field-id-from-name@v1.0.1
+        if: steps.convert_project_number_to_id.outputs.GITHUB_PROJECT_ID != 0 && steps.convert_issue_number_to_project_item_id.outputs.GITHUB_PROJECT_ITEM_ID != 0
+        with:
+          github-project-id: ${{ steps.convert_project_number_to_id.outputs.GITHUB_PROJECT_ID }}
+          github-project-field-name: ${{ vars.ISSUES_SYNC_GITHUB_PROJECT_FIELD_NAME }}
+          github-app-id: ${{ vars.ISSUES_SYNC_GITHUB_APP_ID }}
+          github-app-private-key: ${{ secrets.ISSUES_SYNC_GITHUB_APP_PRIVATE_KEY }}
+          github-app-installation-id: ${{ vars.ISSUES_SYNC_GITHUB_APP_INSTALLATION_ID }}
       - name: Sync issue with Discord
-        id: sync-issue
+        id: sync_issue_with_discord
         uses: DaDragonDen/issues-sync@main
+        if: steps.convert_project_number_to_id.outputs.GITHUB_PROJECT_ID != 0 && steps.convert_issue_number_to_project_item_id.outputs.GITHUB_PROJECT_ITEM_ID != 0 && steps.convert_project_field_name_to_ID.outputs.GITHUB_PROJECT_FIELD_ID != 0
         with:
           discord-token: ${{ secrets.ISSUES_SYNC_DISCORD_TOKEN }}
           discord-channel-id: ${{ vars.ISSUES_SYNC_DISCORD_CHANNEL_ID }}
-          project-id: ${{ vars.ISSUES_SYNC_GITHUB_PROJECT_ID }}
-          field-name: ${{ vars.ISSUES_SYNC_GITHUB_PROJECT_FIELD_NAME }}
+          discord-user-map: ${{ vars.ISSUES_SYNC_DISCORD_USER_MAP }}
+          github-project-id: ${{ steps.convert_project_number_to_id.outputs.GITHUB_PROJECT_ID }}
+          github-project-item-id: ${{ steps.convert_issue_number_to_project_item_id.outputs.GITHUB_PROJECT_ITEM_ID }}
+          github-project-field-id: ${{ steps.convert_project_field_name_to_ID.outputs.GITHUB_PROJECT_FIELD_ID }}
           github-app-id: ${{ vars.ISSUES_SYNC_GITHUB_APP_ID }}
           github-app-private-key: ${{ secrets.ISSUES_SYNC_GITHUB_APP_PRIVATE_KEY }}
-          github-app-installation-id: ${{ vars.ISSUES_SYNC_GITHUB_INSTALLATION_ID }}
+          github-app-installation-id: ${{ vars.ISSUES_SYNC_GITHUB_APP_INSTALLATION_ID }}
