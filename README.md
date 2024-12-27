@@ -15,7 +15,7 @@ Use the `staging` branch to get the most stable version of the game. When the ga
 ### Install dependencies
 The following dependencies are required for development:
 * [Roblox Studio](https://create.roblox.com/docs/studio/setting-up-roblox-studio) - This game is developed on Roblox.
-* [Aftman](https://github.com/LPGhatguy/aftman/releases) - Required to install Wally.
+* [Aftman](https://github.com/LPGhatguy/aftman/releases) - Required to install Wally. After installing Aftman, you may have to restart your computer to use Wally.
 * [Wally](https://wally.run/install) - Required to install Luau packages.
 
 ### Create a development place
