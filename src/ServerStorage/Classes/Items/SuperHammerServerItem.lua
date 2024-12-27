@@ -25,16 +25,20 @@ local SuperHammerServerItem = {
 
 function SuperHammerServerItem.new(): ServerItem
 
-  local _contestant: ServerContestant?;
-  local _round: ServerRound?;
+  local _contestant: ServerContestant? = nil;
+  local _round: ServerRound? = nil;
   local _mode: Mode = "Dequipped";
-  local _meshPart: MeshPart?;
-  local _remoteFunction: RemoteFunction?;
-  local _itemNumber: number?;
-  local _chargeTime: number?;
+  local _meshPart: MeshPart? = nil;
+  local _remoteFunction: RemoteFunction? = nil;
+  local _itemNumber: number? = nil;
+  local _chargeTime: number? = nil;
+
+  local touchEvent;
 
   local function activate(self: ServerItem, mode: Mode): ()
     
+    assert(_contestant, "This item must be assigned to a contestant.");
+
     if mode == "Equipped" then
 
       assert(_contestant and _contestant.character and _meshPart);
@@ -71,15 +75,67 @@ function SuperHammerServerItem.new(): ServerItem
 
     elseif mode == "Swing" then
 
+      assert(_meshPart, "The hammer must be equipped before the player swings.");
+
+      print("Swing!");
       _mode = mode;
 
       local maxChargeBonusMultiplier = 1.2;
       local maxChargeSeconds = 3;
       local actualChargeBonusMultiplier = (if _chargeTime then math.min((os.time() - _chargeTime) / maxChargeSeconds, maxChargeBonusMultiplier) else 1);
       local baseDamage = 100;
-      local actualDamage = baseDamage * actualChargeBonusMultiplier;
+      -- local actualDamage = baseDamage * actualChargeBonusMultiplier;
+      local actualDamage = baseDamage;
 
       _chargeTime = nil;
+
+      -- 
+      if touchEvent then
+
+        touchEvent:Disconnect();
+
+      end;
+
+      local immuneContestants = {};
+      touchEvent = _meshPart.Touched:Connect(function(basePart)
+      
+        if _round then
+
+          for _, possibleEnemyContestant in _round.contestants do
+
+            task.spawn(function()
+            
+              local possibleEnemyCharacter = possibleEnemyContestant.character;
+              if possibleEnemyContestant ~= _contestant and not table.find(immuneContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
+
+                local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
+                if enemyHumanoid then
+
+                  -- Add immunity, then remove it after a second.
+                  print("Hit!");
+                  table.insert(immuneContestants, possibleEnemyContestant);
+                  task.delay(1, function()
+                  
+                    table.remove(immuneContestants, table.find(immuneContestants, possibleEnemyContestant));
+
+                  end);
+
+                  possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - actualDamage, {
+                    contestant = _contestant;
+                    itemID = SuperHammerServerItem.ID;
+                  });
+
+                end;
+
+              end;
+
+            end);
+
+          end;
+
+        end;
+
+      end);
 
       -- Play the swing animation.
 
@@ -109,9 +165,10 @@ function SuperHammerServerItem.new(): ServerItem
     
   end;
 
-  local function initialize(self: ServerItem, contestant: ServerContestant)
+  local function initialize(self: ServerItem, contestant: ServerContestant, round: ServerRound)
 
     _contestant = contestant;
+    _round = round;
     local meshPart = InsertService:CreateMeshPartAsync("rbxassetid://95860572822356", Enum.CollisionFidelity.Default, Enum.RenderFidelity.Automatic);
     meshPart:SetAttribute("Durability", 100);
     _meshPart = meshPart;

@@ -11,6 +11,7 @@ local ClientItem = require(script.Parent.Parent.ClientItem);
 type ClientItem = ClientItem.ClientItem;
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
+local ContextActionService = game:GetService("ContextActionService");
 
 local SuperHammerClientItem = {
   ID = 3;
@@ -29,6 +30,7 @@ function SuperHammerClientItem.new(): ClientItem
   local function breakdown(self: ClientItem)
 
     ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Item", `{self.ID}_{_itemNumber}`);
+    ContextActionService:UnbindAction("ActivateSuperHammer");
 
   end;
 
@@ -53,7 +55,20 @@ function SuperHammerClientItem.new(): ClientItem
       onActivate = function() self:activate() end;
       iconImage = "rbxassetid://17551046771";
     });
+    
     ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Item", hudButton);
+
+    local function handleHotkeyActivation(actionName: string, inputState: Enum.UserInputState, inputObject: InputObject)
+
+      if inputState == Enum.UserInputState.Begin then
+
+        self:activate();
+
+      end;
+
+    end;
+
+    ContextActionService:BindActionAtPriority("ActivateSuperHammer", handleHotkeyActivation, false, 1, Enum.UserInputType.MouseButton1)
 
   end;
 
