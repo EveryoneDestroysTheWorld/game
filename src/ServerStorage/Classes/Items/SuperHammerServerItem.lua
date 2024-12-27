@@ -5,6 +5,7 @@
 -- © 2024 Beastslash
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local InsertService = game:GetService("InsertService");
 local ServerStorage = game:GetService("ServerStorage");
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
 type ServerContestant = ServerContestant.ServerContestant;
@@ -92,17 +93,13 @@ function SuperHammerServerItem.new(): ServerItem
 
   local function initialize(self: ServerItem, contestant: ServerContestant)
 
-    print(0);
     _contestant = contestant;
-    local meshPart = ServerStorage.MeshParts.SuperHammer:Clone();
+    local meshPart = InsertService:CreateMeshPartAsync("rbxassetid://95860572822356", Enum.CollisionFidelity.Default, Enum.RenderFidelity.Automatic);
     meshPart:SetAttribute("Durability", 100);
     _meshPart = meshPart;
 
-    print(1)
-
     if contestant.player then
 
-      print(3);
       _remoteFunction, _itemNumber = createInventoryRemoteFunction(contestant.player, self.ID, function(mode: unknown)
       
         assert(mode == "Dequipped" or mode == "Equipped" or mode == "Swing" or mode == "Charge");
@@ -110,7 +107,6 @@ function SuperHammerServerItem.new(): ServerItem
 
       end);
 
-      print(2);
       ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID, _itemNumber);
 
     end;
