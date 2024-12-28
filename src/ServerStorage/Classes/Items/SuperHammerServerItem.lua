@@ -125,9 +125,10 @@ function SuperHammerServerItem.new(): ServerItem
         });
 
         -- Swing the hammer.
-        local maxChargeBonusMultiplier = 1.2;
-        local maxChargeSeconds = 3;
-        local actualChargeBonusMultiplier = math.min(1 + ((DateTime.now().UnixTimestampMillis - _chargeTime) / 1000 / maxChargeSeconds), maxChargeBonusMultiplier);
+        local maxChargeBonusMultiplier = 1.5;
+        local secondsTarget = 3;
+        local secondsPassed = (DateTime.now().UnixTimestampMillis - _chargeTime) / 1000;
+        local actualChargeBonusMultiplier = math.min(1 + (secondsPassed / secondsTarget) * (maxChargeBonusMultiplier - 1), maxChargeBonusMultiplier);
         local baseDamage = 10;
         local actualDamage = baseDamage * actualChargeBonusMultiplier;
 
@@ -152,6 +153,7 @@ function SuperHammerServerItem.new(): ServerItem
                     table.insert(immuneContestants, possibleEnemyContestant);
 
                     -- Take damage.
+                    print(actualDamage);
                     possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - actualDamage, {
                       contestant = _contestant;
                       itemID = self.ID;
