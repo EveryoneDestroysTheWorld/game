@@ -20,8 +20,6 @@ local SuperHammerClientItem = {
   iconImage = "rbxassetid://131350242938144";
 };
 
-export type Mode = "Dequipped" | "Equipped" | "Swing" | "Charge";
-
 function SuperHammerClientItem.new(): ClientItem
 
   local _itemNumber: number?;
