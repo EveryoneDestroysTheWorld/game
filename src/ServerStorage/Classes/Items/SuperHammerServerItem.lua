@@ -212,9 +212,9 @@ function SuperHammerServerItem.new(): ServerItem
 
     if contestant.player then
 
-      _remoteFunction, _itemNumber = createInventoryRemoteFunction(contestant.player, self.ID, function(mode: unknown)
+      _remoteFunction, _itemNumber = createInventoryRemoteFunction(contestant.player, self.ID, function(isActivation: unknown)
       
-        assert(mode == "Dequipped" or mode == "Equipped" or mode == "Swing" or mode == "Charge");
+        assert(typeof(isActivation) == "boolean");
         self:activate(mode);
 
       end);
