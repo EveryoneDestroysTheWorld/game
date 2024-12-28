@@ -33,7 +33,8 @@ function SuperHammerServerItem.new(): ServerItem
   local _itemNumber: number? = nil;
   local _chargeTime: number? = nil;
 
-  local touchEvent;
+  local touchEvent: RBXScriptConnection?;
+  local touchEventExpirationTask: thread?;
 
   local function activate(self: ServerItem, mode: Mode): ()
     
@@ -57,33 +58,39 @@ function SuperHammerServerItem.new(): ServerItem
 
       _meshPart.Name = "Handle";
       _meshPart.Parent = accessory;
+      _mode = mode;
 
       humanoid:AddAccessory(accessory);
 
-      _meshPart.Anchored = false;
-
-      -- Run the equip animation.
-      _mode = mode;
+      -- TODO: Run the equip animation.
 
     elseif mode == "Dequipped" then
 
-      -- Run the de-equip animation.
       assert(_meshPart);
 
       _meshPart.CanCollide = false;
       _meshPart.Transparency = 1;
 
+      -- TODO: Run the de-equip animation.
+
     elseif mode == "Swing" then
 
+      assert(_contestant.currentStamina >= 10, "The player's stamina must be 10 or greater.");
       assert(_meshPart, "The hammer must be equipped before the player swings.");
 
-      print("Swing!");
       _mode = mode;
 
+      -- Reduce the user's stamina.
+      _contestant:updateStamina(_contestant.currentStamina - 10, {
+        contestant = _contestant,
+        itemID = self.ID
+      });
+
+      -- Swing the hammer.
       local maxChargeBonusMultiplier = 1.2;
       local maxChargeSeconds = 3;
       local actualChargeBonusMultiplier = (if _chargeTime then math.min((os.time() - _chargeTime) / maxChargeSeconds, maxChargeBonusMultiplier) else 1);
-      local baseDamage = 100;
+      local baseDamage = 10;
       -- local actualDamage = baseDamage * actualChargeBonusMultiplier;
       local actualDamage = baseDamage;
 
@@ -93,6 +100,14 @@ function SuperHammerServerItem.new(): ServerItem
       if touchEvent then
 
         touchEvent:Disconnect();
+        touchEvent = nil;
+
+      end;
+
+      if touchEventExpirationTask then
+
+        task.cancel(touchEventExpirationTask);
+        touchEventExpirationTask = nil;
 
       end;
 
@@ -111,17 +126,13 @@ function SuperHammerServerItem.new(): ServerItem
                 local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
                 if enemyHumanoid then
 
-                  -- Add immunity, then remove it after a second.
+                  -- Add immunity.
                   table.insert(immuneContestants, possibleEnemyContestant);
-                  task.delay(1, function()
-                  
-                    table.remove(immuneContestants, table.find(immuneContestants, possibleEnemyContestant));
 
-                  end);
-
+                  -- Take damage.
                   possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - actualDamage, {
                     contestant = _contestant;
-                    itemID = SuperHammerServerItem.ID;
+                    itemID = self.ID;
                   });
 
                 end;
@@ -136,15 +147,26 @@ function SuperHammerServerItem.new(): ServerItem
 
       end);
 
-      -- Play the swing animation.
+      touchEventExpirationTask = task.delay(0.5, function()
+      
+        if touchEvent then
 
+          touchEvent:Disconnect();
+
+        end;
+
+        touchEventExpirationTask = nil;
+
+      end);
+
+      -- TODO: Play the swing animation.
 
     elseif mode == "Charge" then
 
       _mode = mode;
       _chargeTime = os.time();
 
-      -- Play the charge animation.
+      -- TODO: Play the charge animation.
       
     else
 
@@ -159,6 +181,22 @@ function SuperHammerServerItem.new(): ServerItem
     if _contestant and _contestant.player then
 
       ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(_contestant.player, self.ID);
+
+    end;
+
+    if _meshPart then
+
+      if _meshPart.Parent and _meshPart.Parent:IsA("Accessory") then
+
+        _meshPart.Parent:Destroy();
+
+      else
+
+        _meshPart:Destroy();
+
+      end;
+
+      _meshPart = nil;
 
     end;
     
