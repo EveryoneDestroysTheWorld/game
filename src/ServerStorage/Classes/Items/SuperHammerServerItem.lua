@@ -72,16 +72,16 @@ function SuperHammerServerItem.new(): ServerItem
       local meshPart = InsertService:CreateMeshPartAsync("rbxassetid://95860572822356", Enum.CollisionFidelity.Default, Enum.RenderFidelity.Automatic);
       meshPart:SetAttribute("Durability", 100);
       meshPart.Name = "Handle";
+      _meshPart = meshPart;
 
       local attachment = Instance.new("Attachment");
       attachment.Name = "RightGripAttachment";
       attachment.CFrame = CFrame.new(0, -2.9, 0);
-      attachment.Parent = _meshPart;
+      attachment.Parent = meshPart;
 
       local accessory = Instance.new("Accessory");
       accessory.Name = "Super Hammer";
 
-      _meshPart = meshPart;
       meshPart.Parent = accessory;
 
       humanoid:AddAccessory(accessory);
