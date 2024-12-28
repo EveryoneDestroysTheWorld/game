@@ -20,29 +20,50 @@ local SuperHammerClientItem = {
   iconImage = "rbxassetid://131350242938144";
 };
 
-export type Mode = "Dequipped" | "Equipped" | "Swing" | "Charge";
-
 function SuperHammerClientItem.new(): ClientItem
 
   local _itemNumber: number?;
-  local _mode: Mode = "Dequipped";
+  local isActivated: boolean = false;
+
+  local function toggleHotkeys(self: ClientItem)
+
+    if isActivated then
+
+      local function handleHotkeyActivation(actionName: string, inputState: Enum.UserInputState, inputObject: InputObject)
+
+        if inputState == Enum.UserInputState.Begin or inputState == Enum.UserInputState.End then
+
+          self:activate();
+
+        end;
+
+      end;
+
+      ContextActionService:BindActionAtPriority("ActivateSuperHammer", handleHotkeyActivation, false, 1, Enum.UserInputType.MouseButton1);
+
+    else 
+
+      ContextActionService:UnbindAction("ActivateSuperHammer");
+
+    end;
+
+  end
 
   local function breakdown(self: ClientItem)
 
     ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Item", `{self.ID}_{_itemNumber}`);
-    ContextActionService:UnbindAction("ActivateSuperHammer");
+
+    isActivated = false;
+    toggleHotkeys(self);
 
   end;
 
   local function activate(self: ClientItem): ()
 
     assert(_itemNumber);
-    
-    local newMode: Mode = if _mode == "Dequipped" then "Equipped" else "Swing";
-    _mode = newMode;
 
     local player: Player = Players.LocalPlayer;
-    ReplicatedStorage.Shared.Functions.ItemFunctions:FindFirstChild(`{player.UserId}_{self.ID}_{_itemNumber}`):InvokeServer(newMode);
+    ReplicatedStorage.Shared.Functions.ItemFunctions:FindFirstChild(`{player.UserId}_{self.ID}_{_itemNumber}`):InvokeServer(isActivated);
 
   end;
 
@@ -52,23 +73,17 @@ function SuperHammerClientItem.new(): ClientItem
     local hudButton = React.createElement(HUDButton, {
       type = "Item";
       key = `{self.ID}_{itemNumber}`;
-      onActivate = function() self:activate() end;
+      onActivate = function() 
+        
+        isActivated = not isActivated;
+        toggleHotkeys(self);
+        self:activate();
+      
+      end;
       iconImage = "rbxassetid://17551046771";
     });
     
     ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Item", hudButton);
-
-    local function handleHotkeyActivation(actionName: string, inputState: Enum.UserInputState, inputObject: InputObject)
-
-      if inputState == Enum.UserInputState.Begin then
-
-        self:activate();
-
-      end;
-
-    end;
-
-    ContextActionService:BindActionAtPriority("ActivateSuperHammer", handleHotkeyActivation, false, 1, Enum.UserInputType.MouseButton1)
 
   end;
 
