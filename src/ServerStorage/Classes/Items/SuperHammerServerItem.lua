@@ -265,7 +265,7 @@ function SuperHammerServerItem.new(): ServerItem
 
             end;
 
-            activate(self, action);
+            self:activate(action);
           
           end);
 
@@ -363,7 +363,7 @@ function SuperHammerServerItem.new(): ServerItem
 
       end);
 
-      touchEventExpirationTask = task.delay(10, function()
+      touchEventExpirationTask = task.delay(5, function()
       
         if touchEvent then
 
@@ -378,6 +378,46 @@ function SuperHammerServerItem.new(): ServerItem
         animationTrack:Stop();
 
         -- TODO: Dequip the hammer.
+        self:breakdown();
+
+        _meshPart.Anchored = true;
+        _meshPart.CanCollide = false;
+
+        local weld = _meshPart:FindFirstChild("AccessoryWeld");
+        if weld then
+
+          weld:Destroy();
+
+        end;
+
+        local attachment = _meshPart:FindFirstChild("RightGripAttachment");
+        if attachment and attachment:IsA("Attachment") then
+
+          local alignOrientation = Instance.new("AlignOrientation");
+          alignOrientation.CFrame = CFrame.new();
+          alignOrientation.Attachment0 = attachment;
+          alignOrientation.Mode = Enum.OrientationAlignmentMode.OneAttachment;
+          alignOrientation.MaxTorque = math.huge;
+          alignOrientation.Parent = _meshPart;
+
+          local alignPosition = Instance.new("AlignPosition");
+          alignPosition.Attachment0 = attachment;
+          alignPosition.Mode = Enum.PositionAlignmentMode.OneAttachment;
+          alignPosition.Position = _meshPart.Position + Vector3.new(0, 5, 0);
+          alignPosition.MaxForce = math.huge;
+          alignPosition.Parent = _meshPart;
+          
+          _meshPart.Anchored = false;
+
+
+          task.delay(0.3, function()
+
+            alignOrientation:Destroy();
+            alignPosition:Destroy();
+          
+          end);
+
+        end;
 
       end);
 
@@ -389,11 +429,15 @@ function SuperHammerServerItem.new(): ServerItem
 
     if _contestant and _contestant.player then
 
-      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(_contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(_contestant.player, self.ID, _specificItemID);
 
     end;
 
-    removeMeshPart();
+    task.delay(2, function()
+    
+      removeMeshPart();
+
+    end);
     
   end;
 
@@ -405,6 +449,7 @@ function SuperHammerServerItem.new(): ServerItem
     if contestant.player then
 
       local specificItemID = HttpService:GenerateGUID(false);
+      _specificItemID = specificItemID;
       _remoteFunction = createInventoryRemoteFunction(contestant.player, specificItemID, function(isActivation)
       
         assert(typeof(isActivation) == "boolean");
