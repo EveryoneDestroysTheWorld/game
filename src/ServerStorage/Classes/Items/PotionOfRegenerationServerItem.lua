@@ -14,6 +14,7 @@ local PotionOfRegenerationClientItem = require(ReplicatedStorage.Client.Classes.
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
+local HttpService = game:GetService("HttpService");
 
 local PotionOfRegenerationServerItem = {
   ID = PotionOfRegenerationClientItem.ID;
@@ -23,10 +24,10 @@ local PotionOfRegenerationServerItem = {
 
 function PotionOfRegenerationServerItem.new(): ServerItem
 
+  local _specificItemID: string?;
   local contestant: ServerContestant;
   local shouldHeal = true;
   local remoteFunction: RemoteFunction?;
-  local itemNumber: number = 1;
 
   local function activate(self: ServerItem)
 
@@ -52,7 +53,7 @@ function PotionOfRegenerationServerItem.new(): ServerItem
 
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.ID, itemNumber);
+      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.ID, _specificItemID);
 
     end;
 
@@ -70,13 +71,15 @@ function PotionOfRegenerationServerItem.new(): ServerItem
 
     if contestant.player then
 
-      remoteFunction, itemNumber = createInventoryRemoteFunction(contestant.player, self.ID, function()
+      local specificItemID = HttpService:GenerateGUID(false);
+      _specificItemID = specificItemID;
+      remoteFunction = createInventoryRemoteFunction(contestant.player, specificItemID, function()
       
         self:activate();
 
       end);
 
-      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID, itemNumber);
+      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID, specificItemID);
 
     end;
 

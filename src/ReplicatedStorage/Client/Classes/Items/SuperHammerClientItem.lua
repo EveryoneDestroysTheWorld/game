@@ -5,7 +5,6 @@
 -- Designer: Christian Toney (Christian_Toney)
 -- © 2024 Beastslash LLC
 
-local Players = game:GetService("Players");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ClientItem = require(script.Parent.Parent.ClientItem);
 type ClientItem = ClientItem.ClientItem;
@@ -22,8 +21,9 @@ local SuperHammerClientItem = {
 
 function SuperHammerClientItem.new(): ClientItem
 
-  local _itemNumber: number?;
+  local _specificItemID: string?;
   local isActivated: boolean = false;
+  local didServerSwing = false;
 
   local function toggleHotkeys(self: ClientItem)
 
@@ -31,11 +31,13 @@ function SuperHammerClientItem.new(): ClientItem
 
       local function handleHotkeyActivation(actionName: string, inputState: Enum.UserInputState, inputObject: InputObject)
 
-        if inputState == Enum.UserInputState.Begin or inputState == Enum.UserInputState.End then
+        if inputState == Enum.UserInputState.Begin or (inputState == Enum.UserInputState.End and not didServerSwing) then
 
           self:activate();
 
         end;
+
+        didServerSwing = false;
 
       end;
 
@@ -51,7 +53,8 @@ function SuperHammerClientItem.new(): ClientItem
 
   local function breakdown(self: ClientItem)
 
-    ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Item", `{self.ID}_{_itemNumber}`);
+    assert(_specificItemID);
+    ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Item", _specificItemID);
 
     isActivated = false;
     toggleHotkeys(self);
@@ -60,19 +63,17 @@ function SuperHammerClientItem.new(): ClientItem
 
   local function activate(self: ClientItem): ()
 
-    assert(_itemNumber);
-
-    local player: Player = Players.LocalPlayer;
-    ReplicatedStorage.Shared.Functions.ItemFunctions:FindFirstChild(`{player.UserId}_{self.ID}_{_itemNumber}`):InvokeServer(isActivated);
+    assert(_specificItemID);
+    ReplicatedStorage.Shared.Functions.ItemFunctions:FindFirstChild(_specificItemID):InvokeServer(isActivated);
 
   end;
 
-  local function initialize(self: ClientItem, itemNumber: number)
+  local function initialize(self: ClientItem, specificItemID: string)
 
-    _itemNumber = itemNumber;
+    _specificItemID = specificItemID;
     local hudButton = React.createElement(HUDButton, {
       type = "Item";
-      key = `{self.ID}_{itemNumber}`;
+      key = specificItemID;
       onActivate = function() 
         
         isActivated = not isActivated;
@@ -84,6 +85,17 @@ function SuperHammerClientItem.new(): ClientItem
     });
     
     ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Item", hudButton);
+
+    local event = ReplicatedStorage.Shared.Events.ItemEvents:FindFirstChild(_specificItemID);
+    if event and event:IsA("RemoteEvent") then
+
+      event.OnClientEvent:Connect(function()
+      
+        didServerSwing = true;
+
+      end);
+
+    end;
 
   end;
 

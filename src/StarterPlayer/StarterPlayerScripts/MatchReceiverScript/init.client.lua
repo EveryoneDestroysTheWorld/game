@@ -15,7 +15,7 @@ local RoundResultsWindow = require(script.ReactComponents.RoundResultsWindow);
 
 local initializedArchetype: ClientArchetype = nil;
 local initializedActions: {ClientAction} = {};
-local initializedItems: {{ClientItem}} = {};
+local initializedItems: {{[string]: ClientItem}} = {};
 
 -- Set up the UI.
 local player = Players.LocalPlayer;
@@ -91,20 +91,20 @@ ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function
 
 end;
 
-ReplicatedStorage.Shared.Functions.InitializeItem.OnClientInvoke = function(itemID: number, itemNumber: number, ...: any)
+ReplicatedStorage.Shared.Functions.InitializeItem.OnClientInvoke = function(itemID: number, specificItemID: string, ...: any)
 
   local item = ClientItem.get(itemID);
-  item:initialize(itemNumber, ...);
+  item:initialize(specificItemID, ...);
   initializedItems[itemID] = initializedItems[itemID] or {};
-  initializedItems[itemID][itemNumber] = item;
+  initializedItems[itemID][specificItemID] = item;
   print(`Item active: {item.name}`);
 
 end;
 
-ReplicatedStorage.Shared.Functions.BreakdownItem.OnClientInvoke = function(itemID: number, itemNumber: number)
+ReplicatedStorage.Shared.Functions.BreakdownItem.OnClientInvoke = function(itemID: number, specificItemID: string)
 
-  initializedItems[itemID][itemNumber]:breakdown();
-  initializedItems[itemID][itemNumber] = nil;
+  initializedItems[itemID][specificItemID]:breakdown();
+  initializedItems[itemID][specificItemID] = nil;
   rerenderRoots();
 
 end;

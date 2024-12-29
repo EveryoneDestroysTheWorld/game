@@ -15,8 +15,10 @@ local SuperHammerClientItem = require(ReplicatedStorage.Client.Classes.Items.Sup
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
+local createInventoryRemoteEvent = require(ServerStorage.Modules.createInventoryRemoteEvent);
 local Effect = require(script.Parent.Parent.Effect);
 type Effect = Effect.Effect;
+local HttpService = game:GetService("HttpService");
 
 local SuperHammerServerItem = {
   ID = SuperHammerClientItem.ID;
@@ -30,10 +32,11 @@ export type Style = "Normal" | "Combo" | "Hyper";
 function SuperHammerServerItem.new(): ServerItem
 
   local _contestant: ServerContestant? = nil;
+  local _specificItemID: string? = nil;
   local _round: ServerRound? = nil;
   local _meshPart: MeshPart? = nil;
   local _remoteFunction: RemoteFunction? = nil;
-  local _itemNumber: number? = nil;
+  local _remoteEvent: RemoteEvent? = nil;
   local _chargeTime: number? = nil;
   local style: Style = "Normal";
 
@@ -41,6 +44,7 @@ function SuperHammerServerItem.new(): ServerItem
   local touchEventExpirationTask: thread?;
   local staminaReductionTask: thread?;
   local staminaRecoverySuppressionEffect: Effect?;
+  local animationTrack: AnimationTrack;
 
   local function removeMeshPart()
 
@@ -78,9 +82,9 @@ function SuperHammerServerItem.new(): ServerItem
 
     if staminaReductionTask then
 
-      if coroutine.status(staminaReductionTask) == "running" then
+      if coroutine.status(staminaReductionTask) ~= "normal" then
 
-        task.cancel(staminaReductionTask);
+        coroutine.close(staminaReductionTask);
 
       end;
 
@@ -91,6 +95,12 @@ function SuperHammerServerItem.new(): ServerItem
     if staminaRecoverySuppressionEffect then
 
       _contestant:removeEffect(staminaRecoverySuppressionEffect);
+
+    end;
+
+    if animationTrack then
+
+      animationTrack:Stop(0);
 
     end;
 
@@ -183,7 +193,6 @@ function SuperHammerServerItem.new(): ServerItem
                     table.insert(immuneContestants, possibleEnemyContestant);
 
                     -- Take damage.
-                    print(actualDamage);
                     possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - actualDamage, {
                       contestantID = _contestant.ID;
                       itemID = self.ID;
@@ -213,6 +222,15 @@ function SuperHammerServerItem.new(): ServerItem
 
         end);
 
+        -- Run the swing animation.
+        local swingAnimation = Instance.new("Animation");
+        swingAnimation.AnimationId = "rbxassetid://138240382406912";
+
+        animationTrack = animator:LoadAnimation(swingAnimation);
+        animationTrack.Priority = Enum.AnimationPriority.Action;
+        animationTrack.Looped = false;
+        animationTrack:Play();
+
       else
 
         -- Set the charge time.
@@ -240,9 +258,15 @@ function SuperHammerServerItem.new(): ServerItem
           end;
 
           task.spawn(function()
-          
-            activate(self, "Swing");
 
+            if _remoteEvent and _contestant.player then
+
+              _remoteEvent:FireClient(_contestant.player);
+
+            end;
+
+            activate(self, action);
+          
           end);
 
         end);
@@ -251,7 +275,7 @@ function SuperHammerServerItem.new(): ServerItem
         local chargeAnimation = Instance.new("Animation");
         chargeAnimation.AnimationId = "rbxassetid://94520926777504";
 
-        local animationTrack = animator:LoadAnimation(chargeAnimation);
+        animationTrack = animator:LoadAnimation(chargeAnimation);
         animationTrack.Priority = Enum.AnimationPriority.Action;
         animationTrack.Looped = false;
         animationTrack:GetMarkerReachedSignal("FreezeFrame"):Connect(function()
@@ -269,8 +293,8 @@ function SuperHammerServerItem.new(): ServerItem
 
     end;
 
-    if _meshPart and _contestant.baseStamina >= math.huge then -- TODO: Remove this from PR
-    -- if _meshPart and _contestant.baseStamina >= 100 then
+    if _meshPart and _contestant.currentStamina >= math.huge then -- TODO: Remove this from PR
+    -- if _meshPart and _contestant.currentStamina >= 100 then
 
       -- Enable hyper mode.
       style = "Hyper";
@@ -294,7 +318,7 @@ function SuperHammerServerItem.new(): ServerItem
       local animation = Instance.new("Animation");
       animation.AnimationId = "rbxassetid://107190738789069";
       
-      local animationTrack = animator:LoadAnimation(animation);
+      animationTrack = animator:LoadAnimation(animation);
       animationTrack.Looped = true;
       animationTrack.Priority = Enum.AnimationPriority.Action;
       animationTrack:Play(0, 1, 2);
@@ -383,7 +407,8 @@ function SuperHammerServerItem.new(): ServerItem
 
     if contestant.player then
 
-      _remoteFunction, _itemNumber = createInventoryRemoteFunction(contestant.player, self.ID, function(isActivation: unknown)
+      local specificItemID = HttpService:GenerateGUID(false);
+      _remoteFunction = createInventoryRemoteFunction(contestant.player, specificItemID, function(isActivation)
       
         assert(typeof(isActivation) == "boolean");
         
@@ -392,7 +417,9 @@ function SuperHammerServerItem.new(): ServerItem
 
       end);
 
-      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID, _itemNumber);
+      _remoteEvent = createInventoryRemoteEvent(contestant.player, specificItemID);
+
+      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID, specificItemID);
 
     end;
 
