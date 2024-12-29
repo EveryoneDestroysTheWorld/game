@@ -27,38 +27,30 @@ function SuperHammerClientItem.new(): ClientItem
 
   local function toggleHotkeys(self: ClientItem)
 
-    if isActivated then
+    local function handleHotkeyActivation(actionName: string, inputState: Enum.UserInputState, inputObject: InputObject)
 
-      local function handleHotkeyActivation(actionName: string, inputState: Enum.UserInputState, inputObject: InputObject)
+      if inputState == Enum.UserInputState.Begin or (inputState == Enum.UserInputState.End and not didServerSwing) then
 
-        if inputState == Enum.UserInputState.Begin or (inputState == Enum.UserInputState.End and not didServerSwing) then
+        local didActivate, errorMessage = pcall(function()
+        
+          self:activate();
 
-          local didActivate, errorMessage = pcall(function()
-          
-            self:activate();
+        end);
+        
+        if not didActivate then
 
-          end);
-          
-          if not didActivate then
-
-            didServerSwing = inputState == Enum.UserInputState.Begin;
-            error(errorMessage, 0);
-
-          end;
+          didServerSwing = inputState == Enum.UserInputState.Begin;
+          error(errorMessage, 0);
 
         end;
 
-        didServerSwing = false;
-
       end;
 
-      ContextActionService:BindActionAtPriority("ActivateSuperHammer", handleHotkeyActivation, false, 1, Enum.UserInputType.MouseButton1);
-
-    else 
-
-      ContextActionService:UnbindAction("ActivateSuperHammer");
+      didServerSwing = false;
 
     end;
+
+    ContextActionService:BindActionAtPriority("ActivateSuperHammer", handleHotkeyActivation, false, 1, Enum.UserInputType.MouseButton1);
 
   end
 
@@ -66,8 +58,7 @@ function SuperHammerClientItem.new(): ClientItem
 
     assert(_specificItemID);
     ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Item", _specificItemID);
-
-    isActivated = false;
+    ContextActionService:UnbindAction("ActivateSuperHammer");
     toggleHotkeys(self);
 
   end;
@@ -87,7 +78,6 @@ function SuperHammerClientItem.new(): ClientItem
       key = specificItemID;
       onActivate = function() 
         
-        isActivated = not isActivated;
         toggleHotkeys(self);
         self:activate();
       

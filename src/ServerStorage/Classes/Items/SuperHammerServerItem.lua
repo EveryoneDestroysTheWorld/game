@@ -39,32 +39,13 @@ function SuperHammerServerItem.new(): ServerItem
   local _remoteEvent: RemoteEvent? = nil;
   local _chargeTime: number? = nil;
   local style: Style = "Normal";
+  local swipesLeft = 3;
 
   local touchEvent: RBXScriptConnection?;
   local touchEventExpirationTask: thread?;
   local staminaReductionTask: thread?;
   local staminaRecoverySuppressionEffect: Effect?;
   local animationTrack: AnimationTrack;
-
-  local function removeMeshPart()
-
-    if _meshPart then
-
-      if _meshPart.Parent and _meshPart.Parent:IsA("Accessory") then
-
-        _meshPart.Parent:Destroy();
-
-      else
-
-        _meshPart:Destroy();
-
-      end;
-
-      _meshPart = nil;
-
-    end;
-
-  end;
 
   local function activate(self: ServerItem, action: Action): ()
     
@@ -104,7 +85,11 @@ function SuperHammerServerItem.new(): ServerItem
 
     end;
 
-    if action == "Equip" then
+    if swipesLeft <= 0 then
+
+      self:breakdown();
+
+    elseif action == "Equip" then
 
       assert(not _meshPart, "Hammer is already equipped.");
       assert(_contestant and _contestant.character);
@@ -128,15 +113,6 @@ function SuperHammerServerItem.new(): ServerItem
 
       -- TODO: Run the equip animation.
 
-    elseif action == "Dequip" then
-
-      assert(_meshPart, "Hammer is already dequipped.");
-
-      -- TODO: Run the de-equip animation.
-
-      -- Remove the hammer after the animation.
-      removeMeshPart();
-
     elseif action == "Swing" then
 
       assert(_contestant.currentStamina >= 10, "The player's stamina must be 10 or greater.");
@@ -157,6 +133,8 @@ function SuperHammerServerItem.new(): ServerItem
       end;
 
       if _chargeTime then
+
+        swipesLeft -= 1;
 
         -- Reduce the user's stamina.
         _contestant:updateStamina(_contestant.currentStamina - 10, {
@@ -229,6 +207,15 @@ function SuperHammerServerItem.new(): ServerItem
         animationTrack = animator:LoadAnimation(swingAnimation);
         animationTrack.Priority = Enum.AnimationPriority.Action;
         animationTrack.Looped = false;
+        animationTrack.Stopped:Connect(function()
+        
+          if swipesLeft <= 0 then
+
+            self:breakdown();
+
+          end;
+
+        end);
         animationTrack:Play();
 
       else
@@ -265,7 +252,7 @@ function SuperHammerServerItem.new(): ServerItem
 
             end;
 
-            activate(self, action);
+            self:activate(action);
           
           end);
 
@@ -293,7 +280,7 @@ function SuperHammerServerItem.new(): ServerItem
 
     end;
 
-    if _meshPart and _contestant.currentStamina >= 100 then
+    if _meshPart and _contestant.currentStamina >= _contestant.baseStamina then
 
       -- Enable hyper mode.
       style = "Hyper";
@@ -363,7 +350,7 @@ function SuperHammerServerItem.new(): ServerItem
 
       end);
 
-      touchEventExpirationTask = task.delay(10, function()
+      touchEventExpirationTask = task.delay(5, function()
       
         if touchEvent then
 
@@ -377,7 +364,7 @@ function SuperHammerServerItem.new(): ServerItem
 
         animationTrack:Stop();
 
-        -- TODO: Dequip the hammer.
+        self:breakdown();
 
       end);
 
@@ -389,11 +376,81 @@ function SuperHammerServerItem.new(): ServerItem
 
     if _contestant and _contestant.player then
 
-      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(_contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(_contestant.player, self.ID, _specificItemID);
 
     end;
 
-    removeMeshPart();
+    if touchEvent then
+
+      touchEvent:Disconnect();
+      touchEvent = nil;
+
+    end;
+
+    if touchEventExpirationTask then
+
+      task.cancel(touchEventExpirationTask);
+      touchEventExpirationTask = nil;
+
+    end;
+
+    if _meshPart then
+
+      _meshPart.Anchored = true;
+      _meshPart.CanCollide = false;
+
+      local weld = _meshPart:FindFirstChild("AccessoryWeld");
+      if weld then
+
+        weld:Destroy();
+
+      end;
+
+      local attachment = _meshPart:FindFirstChild("RightGripAttachment");
+      if attachment and attachment:IsA("Attachment") then
+
+        local alignOrientation = Instance.new("AlignOrientation");
+        alignOrientation.CFrame = CFrame.new();
+        alignOrientation.Attachment0 = attachment;
+        alignOrientation.Mode = Enum.OrientationAlignmentMode.OneAttachment;
+        alignOrientation.MaxTorque = math.huge;
+        alignOrientation.Parent = _meshPart;
+
+        local alignPosition = Instance.new("AlignPosition");
+        alignPosition.Attachment0 = attachment;
+        alignPosition.Mode = Enum.PositionAlignmentMode.OneAttachment;
+        alignPosition.Position = _meshPart.Position + Vector3.new(0, 5, 0);
+        alignPosition.MaxForce = math.huge;
+        alignPosition.Parent = _meshPart;
+        
+        _meshPart.Anchored = false;
+
+        task.delay(0.3, function()
+
+          alignOrientation:Destroy();
+          alignPosition:Destroy();
+        
+        end);
+
+      end;
+
+      task.delay(2, function()
+      
+        if _meshPart.Parent and _meshPart.Parent:IsA("Accessory") then
+
+          _meshPart.Parent:Destroy();
+  
+        else
+  
+          _meshPart:Destroy();
+  
+        end;
+  
+        _meshPart = nil;
+
+      end);
+
+    end;
     
   end;
 
@@ -405,11 +462,10 @@ function SuperHammerServerItem.new(): ServerItem
     if contestant.player then
 
       local specificItemID = HttpService:GenerateGUID(false);
-      _remoteFunction = createInventoryRemoteFunction(contestant.player, specificItemID, function(isActivation)
-      
-        assert(typeof(isActivation) == "boolean");
+      _specificItemID = specificItemID;
+      _remoteFunction = createInventoryRemoteFunction(contestant.player, specificItemID, function()
         
-        local action: Action = if isActivation then (if _meshPart then "Swing" else "Equip") else "Dequip";
+        local action: Action = if _meshPart then "Swing" else "Equip";
         self:activate(action);
 
       end);
