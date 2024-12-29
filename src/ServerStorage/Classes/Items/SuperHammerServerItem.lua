@@ -40,6 +40,7 @@ function SuperHammerServerItem.new(): ServerItem
   local touchEvent: RBXScriptConnection?;
   local touchEventExpirationTask: thread?;
   local staminaReductionTask: thread?;
+  local staminaRecoverySuppressionEffect: Effect?;
 
   local function removeMeshPart()
 
@@ -82,8 +83,14 @@ function SuperHammerServerItem.new(): ServerItem
         task.cancel(staminaReductionTask);
 
       end;
-      
+
       staminaReductionTask = nil;
+
+    end;
+
+    if staminaRecoverySuppressionEffect then
+
+      _contestant:removeEffect(staminaRecoverySuppressionEffect);
 
     end;
 
@@ -213,7 +220,16 @@ function SuperHammerServerItem.new(): ServerItem
 
         -- Progressively lose stamina.
         staminaReductionTask = task.spawn(function()
-        
+
+          local effect = {
+            name = "Stamina recovery suppression",
+            id = "StaminaRecoverySuppression"
+          }
+
+          staminaRecoverySuppressionEffect = effect;
+
+          _contestant:addEffect(effect);
+
           while _contestant.currentStamina > 10 and task.wait(0.1) do
 
             _contestant:updateStamina(_contestant.currentStamina - 1, {
