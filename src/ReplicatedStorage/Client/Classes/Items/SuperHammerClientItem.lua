@@ -33,7 +33,18 @@ function SuperHammerClientItem.new(): ClientItem
 
         if inputState == Enum.UserInputState.Begin or (inputState == Enum.UserInputState.End and not didServerSwing) then
 
-          self:activate();
+          local didActivate, errorMessage = pcall(function()
+          
+            self:activate();
+
+          end);
+          
+          if not didActivate then
+
+            didServerSwing = inputState == Enum.UserInputState.Begin;
+            error(errorMessage, 0);
+
+          end;
 
         end;
 
