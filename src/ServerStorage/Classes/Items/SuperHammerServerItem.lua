@@ -77,10 +77,6 @@ function SuperHammerServerItem.new(): ServerItem
       assert(not _meshPart, "Hammer is already equipped.");
       assert(_contestant and _contestant.character);
 
-      -- Attach the hammer to the player's right hand.
-      local humanoid: Instance? = _contestant.character:FindFirstChild("Humanoid");
-      assert(humanoid and humanoid:IsA("Humanoid"));
-
       local meshPart = InsertService:CreateMeshPartAsync("rbxassetid://95860572822356", Enum.CollisionFidelity.Default, Enum.RenderFidelity.Automatic);
       meshPart:SetAttribute("Durability", 100);
       meshPart.Name = "Handle";
@@ -132,7 +128,7 @@ function SuperHammerServerItem.new(): ServerItem
 
         -- Reduce the user's stamina.
         _contestant:updateStamina(_contestant.currentStamina - 10, {
-          contestant = _contestant,
+          contestantID = _contestant.ID,
           itemID = self.ID
         });
 
@@ -167,7 +163,7 @@ function SuperHammerServerItem.new(): ServerItem
                     -- Take damage.
                     print(actualDamage);
                     possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - actualDamage, {
-                      contestant = _contestant;
+                      contestantID = _contestant.ID;
                       itemID = self.ID;
                     });
 
@@ -247,7 +243,7 @@ function SuperHammerServerItem.new(): ServerItem
 
                   -- Take damage.
                   possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 10, {
-                    contestant = _contestant;
+                    contestantID = _contestant.ID;
                     itemID = self.ID;
                   });
 
