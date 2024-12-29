@@ -103,6 +103,7 @@ local function startRound()
       local botContestant = ServerContestant.new({
         ID = i * 0.01;
         character = character;
+        effects = {};
         name = `NPC {i * 0.01}`;
         inventory = {};
         isBot = true;
@@ -405,6 +406,7 @@ local function checkPlayerList(player: Player)
         player = player;
         character = player.Character;
         name = player.Name;
+        effects = {};
         inventory = {};
         profile = profile;
         isBot = false;

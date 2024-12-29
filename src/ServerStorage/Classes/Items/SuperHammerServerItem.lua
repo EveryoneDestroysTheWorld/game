@@ -15,6 +15,8 @@ local SuperHammerClientItem = require(ReplicatedStorage.Client.Classes.Items.Sup
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
+local Effect = require(script.Parent.Parent.Effect);
+type Effect = Effect.Effect;
 
 local SuperHammerServerItem = {
   ID = SuperHammerClientItem.ID;
@@ -77,10 +79,6 @@ function SuperHammerServerItem.new(): ServerItem
       assert(not _meshPart, "Hammer is already equipped.");
       assert(_contestant and _contestant.character);
 
-      -- Attach the hammer to the player's right hand.
-      local humanoid: Instance? = _contestant.character:FindFirstChild("Humanoid");
-      assert(humanoid and humanoid:IsA("Humanoid"));
-
       local meshPart = InsertService:CreateMeshPartAsync("rbxassetid://95860572822356", Enum.CollisionFidelity.Default, Enum.RenderFidelity.Automatic);
       meshPart:SetAttribute("Durability", 100);
       meshPart.Name = "Handle";
@@ -132,7 +130,7 @@ function SuperHammerServerItem.new(): ServerItem
 
         -- Reduce the user's stamina.
         _contestant:updateStamina(_contestant.currentStamina - 10, {
-          contestant = _contestant,
+          contestantID = _contestant.ID,
           itemID = self.ID
         });
 
@@ -167,7 +165,7 @@ function SuperHammerServerItem.new(): ServerItem
                     -- Take damage.
                     print(actualDamage);
                     possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - actualDamage, {
-                      contestant = _contestant;
+                      contestantID = _contestant.ID;
                       itemID = self.ID;
                     });
 
@@ -213,6 +211,21 @@ function SuperHammerServerItem.new(): ServerItem
       -- Enable hyper mode.
       style = "Hyper";
 
+      -- Make the contestant invincible for 10 seconds.
+      local expirationTime = DateTime.now().UnixTimestampMillis + 10000;
+      local effect: Effect = {
+        name = "Invincibility",
+        id = "Invincibility",
+        expirationTimeMilliseconds = expirationTime,
+        onBeforeHealthChange = function(newHealth, oldHealth)
+
+          return if newHealth > oldHealth then newHealth else oldHealth;
+
+        end
+      };
+
+      _contestant:addEffect(effect);
+
       -- Add the animations.
       local animation = Instance.new("Animation");
       animation.AnimationId = "rbxassetid://107190738789069";
@@ -247,7 +260,7 @@ function SuperHammerServerItem.new(): ServerItem
 
                   -- Take damage.
                   possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 10, {
-                    contestant = _contestant;
+                    contestantID = _contestant.ID;
                     itemID = self.ID;
                   });
 
@@ -271,9 +284,13 @@ function SuperHammerServerItem.new(): ServerItem
 
         end;
 
+        _contestant:removeEffect(effect);
+
         touchEventExpirationTask = nil;
 
         animationTrack:Stop();
+
+        -- TODO: Dequip the hammer.
 
       end);
 
