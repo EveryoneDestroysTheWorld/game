@@ -39,6 +39,7 @@ function SuperHammerServerItem.new(): ServerItem
 
   local touchEvent: RBXScriptConnection?;
   local touchEventExpirationTask: thread?;
+  local staminaReductionTask: thread?;
 
   local function removeMeshPart()
 
@@ -73,6 +74,18 @@ function SuperHammerServerItem.new(): ServerItem
 
     local animator = humanoid:FindFirstChild("Animator");
     assert(animator and animator:IsA("Animator"), "Humanoid must have an Animator.");
+
+    if staminaReductionTask then
+
+      if coroutine.status(staminaReductionTask) == "running" then
+
+        task.cancel(staminaReductionTask);
+
+      end;
+      
+      staminaReductionTask = nil;
+
+    end;
 
     if action == "Equip" then
 
@@ -195,8 +208,42 @@ function SuperHammerServerItem.new(): ServerItem
 
       else
 
-        -- TODO: Progressly lose stamina and auto-activate if stamina reaches 10 or less.
+        -- Set the charge time.
         _chargeTime = DateTime.now().UnixTimestampMillis;
+
+        -- Progressively lose stamina.
+        staminaReductionTask = task.spawn(function()
+        
+          while _contestant.currentStamina > 10 and task.wait(0.1) do
+
+            _contestant:updateStamina(_contestant.currentStamina - 1, {
+              contestantID = _contestant.ID,
+              itemID = self.ID
+            });
+
+          end;
+
+          task.spawn(function()
+          
+            activate(self, "Swing");
+
+          end);
+
+        end);
+
+        -- Run the charge animation.
+        local chargeAnimation = Instance.new("Animation");
+        chargeAnimation.AnimationId = "rbxassetid://94520926777504";
+
+        local animationTrack = animator:LoadAnimation(chargeAnimation);
+        animationTrack.Priority = Enum.AnimationPriority.Action;
+        animationTrack.Looped = false;
+        animationTrack:GetMarkerReachedSignal("FreezeFrame"):Connect(function()
+        
+          animationTrack:AdjustSpeed(0);
+
+        end);
+        animationTrack:Play(0.1);
 
       end;
       
@@ -206,7 +253,8 @@ function SuperHammerServerItem.new(): ServerItem
 
     end;
 
-    if _meshPart and _contestant.baseStamina >= 100 then
+    if _meshPart and _contestant.baseStamina >= math.huge then -- TODO: Remove this from PR
+    -- if _meshPart and _contestant.baseStamina >= 100 then
 
       -- Enable hyper mode.
       style = "Hyper";
@@ -232,8 +280,10 @@ function SuperHammerServerItem.new(): ServerItem
       
       local animationTrack = animator:LoadAnimation(animation);
       animationTrack.Looped = true;
-      animationTrack.Priority = Enum.AnimationPriority.Core;
+      animationTrack.Priority = Enum.AnimationPriority.Action;
       animationTrack:Play(0, 1, 2);
+
+      animationTrack:AdjustSpeed(0);
 
       local immuneContestants = {};
       touchEvent = _meshPart.Touched:Connect(function(basePart)
