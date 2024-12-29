@@ -11,16 +11,28 @@ local ServerItem = require(script.Parent.ServerItem);
 type ServerItem = ServerItem.ServerItem;
 local Profile = require(ServerStorage.Classes.Profile);
 type Profile = Profile.Profile;
+local Cause = require(script.Parent.Cause);
+type Cause = Cause.Cause;
+local Effect = require(script.Parent.Effect);
+type Effect = Effect.Effect;
 
 export type ContestantProperties = {
   
+  -- This could be nil if the server hasn't assigned an archetype to the contestant yet.
+  archetypeID: number?;
+
+  -- The character reference of the contestant. This is here to easily reference characters of bot contestants.
+  -- If the contestant is a player, this is the same value as player.Character.
+  character: Model?;
+
+  currentStamina: number;
+
+  effects: {Effect};
+
   -- The ID of the contestant. 
   -- If the contestant is a bot, this is a unique temporary ID assigned by the server. It will be an irrational number.
   -- If the contestant is a player, this is the same value as player.UserId. It will be an integer.
   ID: number;
-
-  -- This could be nil if the server hasn't assigned an archetype to the contestant yet.
-  archetypeID: number?;
 
   -- The name of the contestant. This is here to easily reference bot names. 
   -- If the contestant is a player, this is the same value as player.DisplayName. To get the username, use player.Name.
@@ -32,15 +44,11 @@ export type ContestantProperties = {
   -- Is this contestant still a part of the game?
   isDisqualified: boolean;
 
-  -- The profile of the contestant. This should be nil if the contestant isn't a player.
-  profile: Profile?;
-
   -- The player reference of the contestant. This should be nil if the contestant isn't a player.
   player: Player?;
 
-  -- The character reference of the contestant. This is here to easily reference characters of bot contestants.
-  -- If the contestant is a player, this is the same value as player.Character.
-  character: Model?;
+  -- The profile of the contestant. This should be nil if the contestant isn't a player.
+  profile: Profile?;
 
   -- The team ID of the contestant. This will be nil if the game rules call for a free-for-all.
   teamID: number?;
@@ -51,22 +59,15 @@ export type ContestantProperties = {
 
   baseHealth: number;
 
-  currentStamina: number;
-
   baseStamina: number;
   
 }
 
-export type Cause = {
-  contestant: ServerContestant; 
-  actionID: number?; 
-  archetypeID: number?;
-  itemID: number?;
-};
-
 export type ContestantMethods = {
   addItemToInventory: (self: ServerContestant, item: ServerItem) -> ();
   removeItemFromInventory: (self: ServerContestant, item: ServerItem) -> ();
+  addEffect: (self: ServerContestant, effect: Effect) -> ();
+  removeEffect: (self: ServerContestant, effect: Effect) -> ();
   convertToClient: (self: ServerContestant) -> {any};
   disqualify: (self: ServerContestant) -> ();
   getInventoryItemIDs: (self: ServerContestant) -> {number};
@@ -194,11 +195,7 @@ function ServerContestant.__index:updateHealth(newHealth: number, cause: Cause?)
   local oldHealth = self.currentHealth;
   self.currentHealth = newHealth;
 
-  ReplicatedStorage.Shared.Events.HealthUpdated:FireAllClients(self.ID, newHealth, if cause then {
-    contestantID = cause.contestant.ID;
-    actionID = cause.actionID;
-    archetypeID = cause.archetypeID;
-  } else nil);
+  ReplicatedStorage.Shared.Events.HealthUpdated:FireAllClients(self.ID, newHealth, cause);
 
   events[self].onHealthUpdated:Fire(newHealth, oldHealth, cause);
 
@@ -209,11 +206,7 @@ function ServerContestant.__index:updateStamina(newStamina: number, cause: Cause
   local oldStamina = self.currentStamina;
   self.currentStamina = newStamina;
 
-  ReplicatedStorage.Shared.Events.StaminaUpdated:FireAllClients(self.ID, newStamina, if cause then {
-    contestantID = cause.contestant.ID;
-    actionID = cause.actionID;
-    archetypeID = cause.archetypeID;
-  } else nil);
+  ReplicatedStorage.Shared.Events.StaminaUpdated:FireAllClients(self.ID, newStamina, cause);
   
   events[self].onStaminaUpdated:Fire(newStamina, oldStamina, cause);
 

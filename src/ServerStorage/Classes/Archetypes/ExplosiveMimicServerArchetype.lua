@@ -53,8 +53,27 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
       local primaryPart = character.PrimaryPart;
       local targetPartDurability = targetPart and targetPart:GetAttribute("CurrentDurability") :: number?;
       local isTargetPartAlmostDestroyed = not contestantToAttack and not targetPart or targetPartDurability and targetPartDurability <= 35;
-      local enemyCharacter = cause and cause.contestant and cause.contestant.character;
-      if isTargetPartAlmostDestroyed and primaryPart and newHealth < oldHealth and cause and cause.contestant and enemyCharacter and cause.actionID and cause.actionID ~= 2 then
+      
+      -- Find the enemy character if there is one.
+      local enemyContestant;
+      if cause then
+
+        for _, possibleEnemyContestant in round.contestants do
+
+          if contestant.ID == cause.contestantID then
+
+            enemyContestant = possibleEnemyContestant;
+            break;
+
+          end;
+
+        end;
+
+      end;
+
+      local enemyCharacter = if enemyContestant then enemyContestant.character else nil;
+
+      if isTargetPartAlmostDestroyed and primaryPart and newHealth < oldHealth and enemyCharacter and cause and cause.actionID and cause.actionID ~= 2 then
 
         -- Determine if it is possible to get to the player before they kill the NPC.
         local enemyPrimaryPart = enemyCharacter.PrimaryPart;
@@ -74,7 +93,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
             cleanupTask();
 
-            local isEnemyInCriticalCondition = cause.contestant.currentHealth < 25;
+            local isEnemyInCriticalCondition = enemyContestant.currentHealth < 25;
             local hasEnemyAttackedPlayerAgain = DateTime.now().UnixTimestampMillis <= timeEnemyAttacked + 3000;
             local shouldForgiveEnemy = not isEnemyInCriticalCondition and not hasEnemyAttackedPlayerAgain;
             if shouldForgiveEnemy then
@@ -89,7 +108,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
           cleanupTask();
 
-          contestantToAttack = cause.contestant;
+          contestantToAttack = enemyContestant;
           timeEnemyAttacked = DateTime.now().UnixTimestampMillis;
 
           -- Forgive the enemy after 3 seconds of peace or when they get disqualified.
@@ -459,7 +478,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
   
                   table.insert(hitContestants, possibleEnemyContestant);
                   possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 50, {
-                    contestant = contestant;
+                    contestantID = contestant.ID;
                     archetypeID = ExplosiveMimicServerArchetype.ID;
                   });
   
