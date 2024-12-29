@@ -23,6 +23,7 @@ local SuperHammerServerItem = {
 };
 
 export type Action = "Equip" | "Swing" | "Dequip";
+export type Style = "Normal" | "Combo" | "Hyper";
 
 function SuperHammerServerItem.new(): ServerItem
 
@@ -32,6 +33,7 @@ function SuperHammerServerItem.new(): ServerItem
   local _remoteFunction: RemoteFunction? = nil;
   local _itemNumber: number? = nil;
   local _chargeTime: number? = nil;
+  local style: Style = "Normal";
 
   local touchEvent: RBXScriptConnection?;
   local touchEventExpirationTask: thread?;
@@ -59,6 +61,16 @@ function SuperHammerServerItem.new(): ServerItem
   local function activate(self: ServerItem, action: Action): ()
     
     assert(_contestant, "This item must be assigned to a contestant.");
+    assert(style ~= "Hyper", "Hammer is in hyper mode! No other actions are allowed.");
+
+    local character = _contestant.character;
+    assert(character, "The contestant must have a character.");
+
+    local humanoid = character:FindFirstChild("Humanoid");
+    assert(humanoid and humanoid:IsA("Humanoid"), "Character must have a Humanoid.");
+
+    local animator = humanoid:FindFirstChild("Animator");
+    assert(animator and animator:IsA("Animator"), "Humanoid must have an Animator.");
 
     if action == "Equip" then
 
@@ -193,6 +205,77 @@ function SuperHammerServerItem.new(): ServerItem
     else
 
       warn(`Unknown action selected: {action}`);
+
+    end;
+
+    if _meshPart and _contestant.baseStamina >= 100 then
+
+      -- Enable hyper mode.
+      style = "Hyper";
+
+      -- Add the animations.
+      local animation = Instance.new("Animation");
+      animation.AnimationId = "rbxassetid://107190738789069";
+      
+      local animationTrack = animator:LoadAnimation(animation);
+      animationTrack.Looped = true;
+      animationTrack.Priority = Enum.AnimationPriority.Core;
+      animationTrack:Play(0, 1, 2);
+
+      local immuneContestants = {};
+      touchEvent = _meshPart.Touched:Connect(function(basePart)
+        
+        if _round then
+
+          for _, possibleEnemyContestant in _round.contestants do
+
+            task.spawn(function()
+            
+              local possibleEnemyCharacter = possibleEnemyContestant.character;
+              if possibleEnemyContestant ~= _contestant and not table.find(immuneContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
+
+                local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
+                if enemyHumanoid then
+
+                  -- Add immunity.
+                  table.insert(immuneContestants, possibleEnemyContestant);
+                  task.delay(0.25, function()
+                  
+                    table.remove(immuneContestants, table.find(immuneContestants, possibleEnemyContestant));
+
+                  end);
+
+                  -- Take damage.
+                  possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 10, {
+                    contestant = _contestant;
+                    itemID = self.ID;
+                  });
+
+                end;
+
+              end;
+
+            end);
+
+          end;
+
+        end;
+
+      end);
+
+      touchEventExpirationTask = task.delay(10, function()
+      
+        if touchEvent then
+
+          touchEvent:Disconnect();
+
+        end;
+
+        touchEventExpirationTask = nil;
+
+        animationTrack:Stop();
+
+      end);
 
     end;
     
