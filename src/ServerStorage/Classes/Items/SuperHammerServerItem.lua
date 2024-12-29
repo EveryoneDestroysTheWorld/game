@@ -283,7 +283,7 @@ function SuperHammerServerItem.new(): ServerItem
           animationTrack:AdjustSpeed(0);
 
         end);
-        animationTrack:Play(0.1);
+        animationTrack:Play();
 
       end;
       
@@ -293,8 +293,7 @@ function SuperHammerServerItem.new(): ServerItem
 
     end;
 
-    if _meshPart and _contestant.currentStamina >= math.huge then -- TODO: Remove this from PR
-    -- if _meshPart and _contestant.currentStamina >= 100 then
+    if _meshPart and _contestant.currentStamina >= 100 then
 
       -- Enable hyper mode.
       style = "Hyper";
@@ -322,8 +321,6 @@ function SuperHammerServerItem.new(): ServerItem
       animationTrack.Looped = true;
       animationTrack.Priority = Enum.AnimationPriority.Action;
       animationTrack:Play(0, 1, 2);
-
-      animationTrack:AdjustSpeed(0);
 
       local immuneContestants = {};
       touchEvent = _meshPart.Touched:Connect(function(basePart)
