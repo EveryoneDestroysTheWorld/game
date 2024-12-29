@@ -84,7 +84,8 @@ export type ContestantEvents = {
   onArchetypeUpdated: RBXScriptSignal;
   onHealthUpdated: RBXScriptSignal<number, number, Cause?>;
   onStaminaUpdated: RBXScriptSignal<number, number, Cause?>;
-  onInventoryUpdated: RBXScriptSignal<{number}>
+  onInventoryUpdated: RBXScriptSignal<{number}>;
+  onEffectsUpdated: RBXScriptSignal<{Effect}>;
 }
 
 local ServerContestant = {
@@ -99,7 +100,7 @@ function ServerContestant.new(properties: ContestantProperties): ServerContestan
   local contestant = setmetatable(properties, ServerContestant) :: ServerContestant;
 
   -- Set up events.
-  local eventNames = {"onDisqualified", "onHealthUpdated", "onStaminaUpdated", "onArchetypeUpdated", "onCharacterUpdated", "onInventoryUpdated"};
+  local eventNames = {"onDisqualified", "onHealthUpdated", "onStaminaUpdated", "onArchetypeUpdated", "onCharacterUpdated", "onInventoryUpdated", "onEffectsUpdated"};
   events[contestant] = {};
   for _, eventName in ipairs(eventNames) do
 
@@ -121,6 +122,13 @@ function ServerContestant.__index:getInventoryItemIDs(): {number}
 
   end;
   return itemIDs;
+
+end;
+
+function ServerContestant.__index:addEffect(effect: Effect): ()
+
+  table.insert(self.effects, effect);
+  events[self].onEffectsUpdated:Fire(self.effects);
 
 end;
 
@@ -151,6 +159,24 @@ function ServerContestant.__index:removeItemFromInventory(item: ServerItem): ()
   end;
 
   events[self].onInventoryUpdated:Fire(self:getInventoryItemIDs());
+
+end;
+
+function ServerContestant.__index:removeEffect(effect: Effect): ()
+
+  -- Iterating backwards because the indexes can change after running table.remove().
+  for index = #self.effects, 1, -1 do
+
+    local possibleEffect = self.effects[index]
+    if possibleEffect == effect then
+
+      table.remove(self.effects, index);
+
+    end;
+
+  end;
+
+  events[self].onEffectsUpdated:Fire(self.effects);
 
 end;
 
@@ -193,6 +219,17 @@ end;
 function ServerContestant.__index:updateHealth(newHealth: number, cause: Cause?): ()
 
   local oldHealth = self.currentHealth;
+
+  for _, effect in self.effects do
+
+    if effect.onBeforeHealthChange then
+
+      newHealth = effect.onBeforeHealthChange(newHealth, oldHealth, cause);
+
+    end;
+
+  end;
+
   self.currentHealth = newHealth;
 
   ReplicatedStorage.Shared.Events.HealthUpdated:FireAllClients(self.ID, newHealth, cause);

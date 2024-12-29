@@ -15,6 +15,8 @@ local SuperHammerClientItem = require(ReplicatedStorage.Client.Classes.Items.Sup
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
+local Effect = require(script.Parent.Parent.Effect);
+type Effect = Effect.Effect;
 
 local SuperHammerServerItem = {
   ID = SuperHammerClientItem.ID;
@@ -209,6 +211,21 @@ function SuperHammerServerItem.new(): ServerItem
       -- Enable hyper mode.
       style = "Hyper";
 
+      -- Make the contestant invincible for 10 seconds.
+      local expirationTime = DateTime.now().UnixTimestampMillis + 10000;
+      local effect: Effect = {
+        name = "Invincibility",
+        id = "Invincibility",
+        expirationTimeMilliseconds = expirationTime,
+        onBeforeHealthChange = function(newHealth, oldHealth)
+
+          return if newHealth > oldHealth then newHealth else oldHealth;
+
+        end
+      };
+
+      _contestant:addEffect(effect);
+
       -- Add the animations.
       local animation = Instance.new("Animation");
       animation.AnimationId = "rbxassetid://107190738789069";
@@ -267,9 +284,13 @@ function SuperHammerServerItem.new(): ServerItem
 
         end;
 
+        _contestant:removeEffect(effect);
+
         touchEventExpirationTask = nil;
 
         animationTrack:Stop();
+
+        -- TODO: Dequip the hammer.
 
       end);
 

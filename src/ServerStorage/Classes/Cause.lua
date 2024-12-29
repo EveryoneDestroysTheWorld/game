@@ -3,6 +3,7 @@ export type Cause = {
   actionID: number?; 
   archetypeID: number?;
   itemID: number?;
+  effectID: number?;
 };
 
 return {};

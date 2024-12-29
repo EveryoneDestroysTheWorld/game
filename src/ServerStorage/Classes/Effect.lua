@@ -3,10 +3,12 @@ type Cause = Cause.Cause;
 
 export type Effect = {
   name: string;
+  id: string;
   description: string?;
-  endTimeMilliseconds: number?;
-  onBeforeHealthChange: ((increment: number, cause: Cause?) -> number)?;
-  onBeforeStaminaChange: ((increment: number, cause: Cause?) -> number)?;
+  expirationTimeMilliseconds: number?;
+  onActivate: (() -> ())?;
+  onBeforeHealthChange: ((newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
+  onBeforeStaminaChange: ((newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
 }
 
 return {};
