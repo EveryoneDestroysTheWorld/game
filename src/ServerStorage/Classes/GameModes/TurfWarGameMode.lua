@@ -202,10 +202,27 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
             isRecoveringStamina = true;
 
-            while contestant.currentHealth > 0 and contestant.currentStamina < contestant.baseStamina do
+            while contestant.currentHealth > 0 and contestant.currentStamina < contestant.baseStamina and task.wait(1) do
+              
+              -- Verify that stamina can be recovered.
+              local shouldRecover = true;
+              for _, effect in contestant.effects do
 
-              task.wait(1);
-              contestant:updateStamina(math.min(contestant.currentStamina + 5, contestant.baseStamina));
+                if effect.id == "StaminaRecoverySuppression" then
+
+                  shouldRecover = false;
+                  break;
+
+                end;
+
+              end;
+
+              -- Recover the contestant's stamina if we can.
+              if shouldRecover then
+
+                contestant:updateStamina(math.min(contestant.currentStamina + 5, contestant.baseStamina));
+
+              end;
 
             end;
 
