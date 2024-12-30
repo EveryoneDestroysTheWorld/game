@@ -339,7 +339,6 @@ function SuperHammerServerItem.new(): ServerItem
 
               if shouldSkipToDrive then
 
-                print("no!");
                 animationTrack.TimePosition = animationTrack:GetTimeOfKeyframe("Drive");
                 break;
 
