@@ -38,7 +38,7 @@ function SuperHammerServerItem.new(): ServerItem
   local _remoteFunction: RemoteFunction? = nil;
   local _remoteEvent: RemoteEvent? = nil;
   local _chargeTime: number? = nil;
-  local style: Style = "Normal";
+  local style: Style? = nil;
   local swipesLeft = 3;
 
   local touchEvent: RBXScriptConnection?;
@@ -49,8 +49,8 @@ function SuperHammerServerItem.new(): ServerItem
 
   local function activate(self: ServerItem, action: Action): ()
     
-    assert(_contestant, "This item must be assigned to a contestant.");
     assert(style ~= "Hyper", "Hammer is in hyper mode! No other actions are allowed.");
+    assert(_contestant, "This item must be assigned to a contestant.");
 
     local character = _contestant.character;
     assert(character, "The contestant must have a character.");
@@ -60,6 +60,13 @@ function SuperHammerServerItem.new(): ServerItem
 
     local animator = humanoid:FindFirstChild("Animator");
     assert(animator and animator:IsA("Animator"), "Humanoid must have an Animator.");
+
+    if not style then
+
+      style = "Combo" -- TODO: Remove this. It's only for testing.
+      -- style = if _contestant.currentStamina >= _contestant.baseStamina then "Hyper" elseif _contestant.currentStamina / _contestant.baseStamina >= 0.5 then "Combo" else "Normal";
+
+    end;
 
     if staminaReductionTask then
 
@@ -85,15 +92,13 @@ function SuperHammerServerItem.new(): ServerItem
 
     end;
 
-    if swipesLeft <= 0 then
-
-      self:breakdown();
-
-    elseif action == "Equip" then
+    local shouldSwing = true;
+    if not _meshPart then
 
       assert(not _meshPart, "Hammer is already equipped.");
       assert(_contestant and _contestant.character);
 
+      shouldSwing = false;
       local meshPart = InsertService:CreateMeshPartAsync("rbxassetid://95860572822356", Enum.CollisionFidelity.Default, Enum.RenderFidelity.Automatic);
       meshPart:SetAttribute("Durability", 100);
       meshPart.Name = "Handle";
@@ -111,9 +116,100 @@ function SuperHammerServerItem.new(): ServerItem
 
       humanoid:AddAccessory(accessory);
 
-      -- TODO: Run the equip animation.
+    end;
 
-    elseif action == "Swing" then
+    if swipesLeft <= 0 then
+      
+      self:breakdown();
+
+    elseif style == "Hyper" :: any then
+
+      assert(_meshPart);
+
+      -- Make the contestant invincible for 10 seconds.
+      local expirationTime = DateTime.now().UnixTimestampMillis + 10000;
+      local effect: Effect = {
+        name = "Invincibility",
+        id = "Invincibility",
+        expirationTimeMilliseconds = expirationTime,
+        onBeforeHealthChange = function(newHealth, oldHealth)
+
+          return if newHealth > oldHealth then newHealth else oldHealth;
+
+        end
+      };
+
+      _contestant:addEffect(effect);
+
+      -- Add the animations.
+      local animation = Instance.new("Animation");
+      animation.AnimationId = "rbxassetid://107190738789069";
+      
+      animationTrack = animator:LoadAnimation(animation);
+      animationTrack.Looped = true;
+      animationTrack.Priority = Enum.AnimationPriority.Action;
+      animationTrack:Play(0, 1, 2);
+
+      local immuneContestants = {};
+      touchEvent = _meshPart.Touched:Connect(function(basePart)
+        
+        if _round then
+
+          for _, possibleEnemyContestant in _round.contestants do
+
+            task.spawn(function()
+            
+              local possibleEnemyCharacter = possibleEnemyContestant.character;
+              if possibleEnemyContestant ~= _contestant and not table.find(immuneContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
+
+                local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
+                if enemyHumanoid then
+
+                  -- Add immunity.
+                  table.insert(immuneContestants, possibleEnemyContestant);
+                  task.delay(0.25, function()
+                  
+                    table.remove(immuneContestants, table.find(immuneContestants, possibleEnemyContestant));
+
+                  end);
+
+                  -- Take damage.
+                  possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 10, {
+                    contestantID = _contestant.ID;
+                    itemID = self.ID;
+                  });
+
+                end;
+
+              end;
+
+            end);
+
+          end;
+
+        end;
+
+      end);
+
+      touchEventExpirationTask = task.delay(10, function()
+      
+        if touchEvent then
+
+          touchEvent:Disconnect();
+
+        end;
+
+        _contestant:removeEffect(effect);
+
+        touchEventExpirationTask = nil;
+
+        animationTrack:Stop();
+
+        self:breakdown();
+
+      end);
+
+    elseif shouldSwing then
 
       assert(_contestant.currentStamina >= 10, "The player's stamina must be 10 or greater.");
       assert(_meshPart, "The hammer must be equipped before the player swings.");
@@ -134,8 +230,6 @@ function SuperHammerServerItem.new(): ServerItem
 
       if _chargeTime then
 
-        swipesLeft -= 1;
-
         -- Reduce the user's stamina.
         _contestant:updateStamina(_contestant.currentStamina - 10, {
           contestantID = _contestant.ID,
@@ -153,6 +247,7 @@ function SuperHammerServerItem.new(): ServerItem
         _chargeTime = nil;
 
         local immuneContestants = {};
+        local swipesLeftIfHit = swipesLeft - 1;
         touchEvent = _meshPart.Touched:Connect(function(basePart)
         
           if _round then
@@ -166,6 +261,9 @@ function SuperHammerServerItem.new(): ServerItem
 
                   local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
                   if enemyHumanoid then
+
+                    -- Remove a swipe.
+                    swipesLeft = swipesLeftIfHit;
 
                     -- Add immunity.
                     table.insert(immuneContestants, possibleEnemyContestant);
@@ -252,7 +350,7 @@ function SuperHammerServerItem.new(): ServerItem
 
             end;
 
-            self:activate(action);
+            self:activate();
           
           end);
 
@@ -273,100 +371,6 @@ function SuperHammerServerItem.new(): ServerItem
         animationTrack:Play();
 
       end;
-      
-    else
-
-      warn(`Unknown action selected: {action}`);
-
-    end;
-
-    if _meshPart and _contestant.currentStamina >= _contestant.baseStamina then
-
-      -- Enable hyper mode.
-      style = "Hyper";
-
-      -- Make the contestant invincible for 10 seconds.
-      local expirationTime = DateTime.now().UnixTimestampMillis + 10000;
-      local effect: Effect = {
-        name = "Invincibility",
-        id = "Invincibility",
-        expirationTimeMilliseconds = expirationTime,
-        onBeforeHealthChange = function(newHealth, oldHealth)
-
-          return if newHealth > oldHealth then newHealth else oldHealth;
-
-        end
-      };
-
-      _contestant:addEffect(effect);
-
-      -- Add the animations.
-      local animation = Instance.new("Animation");
-      animation.AnimationId = "rbxassetid://107190738789069";
-      
-      animationTrack = animator:LoadAnimation(animation);
-      animationTrack.Looped = true;
-      animationTrack.Priority = Enum.AnimationPriority.Action;
-      animationTrack:Play(0, 1, 2);
-
-      local immuneContestants = {};
-      touchEvent = _meshPart.Touched:Connect(function(basePart)
-        
-        if _round then
-
-          for _, possibleEnemyContestant in _round.contestants do
-
-            task.spawn(function()
-            
-              local possibleEnemyCharacter = possibleEnemyContestant.character;
-              if possibleEnemyContestant ~= _contestant and not table.find(immuneContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
-
-                local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
-                if enemyHumanoid then
-
-                  -- Add immunity.
-                  table.insert(immuneContestants, possibleEnemyContestant);
-                  task.delay(0.25, function()
-                  
-                    table.remove(immuneContestants, table.find(immuneContestants, possibleEnemyContestant));
-
-                  end);
-
-                  -- Take damage.
-                  possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 10, {
-                    contestantID = _contestant.ID;
-                    itemID = self.ID;
-                  });
-
-                end;
-
-              end;
-
-            end);
-
-          end;
-
-        end;
-
-      end);
-
-      touchEventExpirationTask = task.delay(5, function()
-      
-        if touchEvent then
-
-          touchEvent:Disconnect();
-
-        end;
-
-        _contestant:removeEffect(effect);
-
-        touchEventExpirationTask = nil;
-
-        animationTrack:Stop();
-
-        self:breakdown();
-
-      end);
 
     end;
     
@@ -465,8 +469,7 @@ function SuperHammerServerItem.new(): ServerItem
       _specificItemID = specificItemID;
       _remoteFunction = createInventoryRemoteFunction(contestant.player, specificItemID, function()
         
-        local action: Action = if _meshPart then "Swing" else "Equip";
-        self:activate(action);
+        self:activate();
 
       end);
 
