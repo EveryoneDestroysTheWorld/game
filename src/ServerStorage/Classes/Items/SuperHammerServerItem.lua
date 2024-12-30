@@ -88,7 +88,7 @@ function SuperHammerServerItem.new(): ServerItem
 
     if animationTrack then
 
-      animationTrack:Stop(0);
+      animationTrack:Stop(0.1);
 
     end;
 
@@ -300,12 +300,12 @@ function SuperHammerServerItem.new(): ServerItem
 
         -- Run the swing animation.
         local swingAnimation = Instance.new("Animation");
-        swingAnimation.AnimationId = "rbxassetid://138240382406912";
+        swingAnimation.AnimationId = `rbxassetid://{if style == "Combo" then "134304304008463" else "138240382406912"}`;
 
         animationTrack = animator:LoadAnimation(swingAnimation);
         animationTrack.Priority = Enum.AnimationPriority.Action;
         animationTrack.Looped = false;
-        animationTrack.Stopped:Connect(function()
+        animationTrack.Stopped:Once(function()
         
           if swipesLeft <= 0 then
 
@@ -314,7 +314,44 @@ function SuperHammerServerItem.new(): ServerItem
           end;
 
         end);
+
+        
+
         animationTrack:Play();
+
+        if style == "Combo" and _round then
+
+          animationTrack:GetMarkerReachedSignal("Impact"):Once(function()
+          
+            local shouldSkipToDrive = true;
+            for _, part in _meshPart:GetTouchingParts() do
+
+              for _, contestant in _round.contestants do
+
+                if contestant.ID ~= _contestant.ID and contestant.character and part:IsDescendantOf(contestant.character) then
+
+                  shouldSkipToDrive = false;
+                  break;
+
+                end;
+
+              end;
+
+              if shouldSkipToDrive then
+
+                print("no!");
+                animationTrack.TimePosition = animationTrack:GetTimeOfKeyframe("Drive");
+                break;
+
+              end;
+
+            end;
+            
+          end);
+
+        end;
+
+        animationTrack.TimePosition = if style == "Combo" then animationTrack:GetTimeOfKeyframe("Release") else 0;
 
       else
 
@@ -358,12 +395,12 @@ function SuperHammerServerItem.new(): ServerItem
 
         -- Run the charge animation.
         local chargeAnimation = Instance.new("Animation");
-        chargeAnimation.AnimationId = "rbxassetid://94520926777504";
+        chargeAnimation.AnimationId = "rbxassetid://134304304008463";
 
         animationTrack = animator:LoadAnimation(chargeAnimation);
         animationTrack.Priority = Enum.AnimationPriority.Action;
         animationTrack.Looped = false;
-        animationTrack:GetMarkerReachedSignal("FreezeFrame"):Connect(function()
+        animationTrack:GetMarkerReachedSignal("Release"):Connect(function()
         
           animationTrack:AdjustSpeed(0);
 
