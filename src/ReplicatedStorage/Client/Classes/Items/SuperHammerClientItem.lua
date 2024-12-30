@@ -59,7 +59,7 @@ function SuperHammerClientItem.new(): ClientItem
     assert(_specificItemID);
     ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Item", _specificItemID);
     ContextActionService:UnbindAction("ActivateSuperHammer");
-    toggleHotkeys(self);
+    _specificItemID = nil;
 
   end;
 

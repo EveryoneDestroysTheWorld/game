@@ -40,10 +40,13 @@ function SuperHammerServerItem.new(): ServerItem
   local _chargeTime: number? = nil;
   local style: Style? = nil;
   local swipesLeft = 3;
+  local comboCount = 0;
+  local originalWalkSpeed: number? = nil;
 
   local touchEvent: RBXScriptConnection?;
   local touchEventExpirationTask: thread?;
   local staminaReductionTask: thread?;
+  local comboBreakingTask: thread?;
   local staminaRecoverySuppressionEffect: Effect?;
   local animationTrack: AnimationTrack;
 
@@ -118,8 +121,15 @@ function SuperHammerServerItem.new(): ServerItem
 
     end;
 
-    if swipesLeft <= 0 then
+    if swipesLeft <= 0 and (comboCount == 0 or comboCount >= 10) then
       
+      if comboBreakingTask then
+
+        task.cancel(comboBreakingTask);
+        comboBreakingTask = nil;
+
+      end;
+
       self:breakdown();
 
     elseif style == "Hyper" :: any then
@@ -230,6 +240,13 @@ function SuperHammerServerItem.new(): ServerItem
 
       if _chargeTime then
 
+        if comboBreakingTask then
+
+          task.cancel(comboBreakingTask);
+          comboBreakingTask = nil;
+  
+        end;
+
         -- Reduce the user's stamina.
         _contestant:updateStamina(_contestant.currentStamina - 10, {
           contestantID = _contestant.ID,
@@ -241,13 +258,14 @@ function SuperHammerServerItem.new(): ServerItem
         local secondsTarget = 3;
         local secondsPassed = (DateTime.now().UnixTimestampMillis - _chargeTime) / 1000;
         local actualChargeBonusMultiplier = math.min(1 + (secondsPassed / secondsTarget) * (maxChargeBonusMultiplier - 1), maxChargeBonusMultiplier);
-        local baseDamage = 10;
+        local baseDamage = if style == "Normal" then 10 else 5;
         local actualDamage = baseDamage * actualChargeBonusMultiplier;
 
         _chargeTime = nil;
 
         local immuneContestants = {};
         local swipesLeftIfHit = swipesLeft - 1;
+        local comboCountIfHit = comboCount + 1;
         touchEvent = _meshPart.Touched:Connect(function(basePart)
         
           if _round then
@@ -264,6 +282,32 @@ function SuperHammerServerItem.new(): ServerItem
 
                     -- Remove a swipe.
                     swipesLeft = swipesLeftIfHit;
+
+                    -- Adjust the combo.
+                    if style == "Combo" then
+
+                      comboCount = comboCountIfHit;
+                      if not originalWalkSpeed then
+                        
+                        originalWalkSpeed = humanoid.WalkSpeed;
+                        humanoid.WalkSpeed = 0;
+
+                      end;
+
+                      if not comboBreakingTask then
+
+                        comboBreakingTask = task.delay(1, function()
+            
+                          print("combo broken");
+                          self:breakdown();
+            
+                        end);
+
+                        print(if comboCount >= 10 then "Excellent!!!" elseif comboCount >= 7 then "Cool!!" elseif comboCount >= 5 then "Great!" elseif comboCount >= 3 then "Good" else "Nice")
+
+                      end
+
+                    end;
 
                     -- Add immunity.
                     table.insert(immuneContestants, possibleEnemyContestant);
@@ -307,15 +351,13 @@ function SuperHammerServerItem.new(): ServerItem
         animationTrack.Looped = false;
         animationTrack.Stopped:Once(function()
         
-          if swipesLeft <= 0 then
+          if swipesLeft <= 0 and style == "Normal" then
 
             self:breakdown();
 
           end;
 
         end);
-
-        
 
         animationTrack:Play();
 
@@ -347,10 +389,14 @@ function SuperHammerServerItem.new(): ServerItem
             end;
             
           end);
+          
+          if animationTrack.Length > 0 then
+
+            animationTrack.TimePosition = animationTrack:GetTimeOfKeyframe("Release");
+
+          end
 
         end;
-
-        animationTrack.TimePosition = if style == "Combo" then animationTrack:GetTimeOfKeyframe("Release") else 0;
 
       else
 
@@ -417,6 +463,21 @@ function SuperHammerServerItem.new(): ServerItem
     if _contestant and _contestant.player then
 
       ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(_contestant.player, self.ID, _specificItemID);
+      _contestant = nil;
+
+    end;
+
+    if _remoteFunction then
+
+      _remoteFunction:Destroy();
+      _remoteFunction = nil;
+
+    end;
+
+    if _remoteEvent then
+
+      _remoteEvent:Destroy();
+      _remoteEvent = nil;
 
     end;
 
