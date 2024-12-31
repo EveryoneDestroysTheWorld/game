@@ -441,6 +441,8 @@ function SuperHammerServerItem.new(): ServerItem
 
             animationTrack:AdjustSpeed(0);
             animationTrack.TimePosition = animationTrack:GetTimeOfKeyframe("End");
+            task.wait(1);
+            animationTrack:Stop();
 
           else
 
