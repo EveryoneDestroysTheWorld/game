@@ -710,8 +710,7 @@ function SuperHammerServerItem.new(): ServerItem
     _contestant = contestant;
     _round = round;
 
-    style = "Combo";
-    -- style = if contestant.currentStamina >= contestant.baseStamina then "Hyper" elseif contestant.currentStamina / contestant.baseStamina >= 0.5 then "Combo" else "Normal";
+    style = if contestant.currentStamina >= contestant.baseStamina then "Hyper" elseif contestant.currentStamina / contestant.baseStamina >= 0.5 then "Combo" else "Normal";
 
     if contestant.player then
 
