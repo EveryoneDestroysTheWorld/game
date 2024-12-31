@@ -49,7 +49,7 @@ function SuperHammerServerItem.new(): ServerItem
   local comboBreakingTask: thread?;
   local staminaRecoverySuppressionEffect: Effect?;
   local animationTrack: AnimationTrack;
-  local stunLockObjects: {AlignOrientation | AlignPosition} = {};
+  local stunnedContestants: {[ServerContestant]: {AlignOrientation | AlignPosition}} = {};
 
   local function activate(self: ServerItem, action: Action): ()
     
@@ -286,6 +286,38 @@ function SuperHammerServerItem.new(): ServerItem
 
             if comboCount >= 10 then
 
+              -- Fling the victims.
+              for contestant, alignmentObjects in pairs(stunnedContestants) do
+
+                if contestant ~= _contestant then
+
+                  for _, alignmentObject in alignmentObjects do
+
+                    alignmentObject:Destroy();
+
+                  end;
+
+                  local humanoidRootPart = if contestant.character then contestant.character:FindFirstChild("HumanoidRootPart") else nil;
+                  local rootAttachment = if humanoidRootPart then humanoidRootPart:FindFirstChild("RootAttachment") else nil;
+                  if humanoidRootPart and humanoidRootPart:IsA("BasePart") and rootAttachment and rootAttachment:IsA("Attachment") then
+
+                    local linearVelocity = Instance.new("LinearVelocity");
+                    linearVelocity.Attachment0 = rootAttachment;
+                    linearVelocity.Parent = humanoidRootPart;
+                    linearVelocity.VectorVelocity = (humanoidRootPart.Position - _meshPart.Position).Unit * 500;
+                    linearVelocity.MaxForce = math.huge;
+                    task.delay(1, function()
+                    
+                      linearVelocity:Destroy();
+
+                    end);
+
+                  end;
+                  
+                end;
+
+              end;
+
               task.wait(0.5);
               self:breakdown();
 
@@ -314,72 +346,79 @@ function SuperHammerServerItem.new(): ServerItem
                 local possibleEnemyCharacter = possibleEnemyContestant.character;
                 if possibleEnemyContestant ~= _contestant and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) and not table.find(immuneContestants, possibleEnemyContestant) then
 
+                  onEnemyHit:Fire();
+
                   -- Remove a swipe.
                   if style == "Combo" then
 
-                    -- Freeze the user and the victim.
-                    local function stunLockCharacter(character: Model)
+                    if comboCount < 10 then
 
-                      local humanoid = character:FindFirstChild("Humanoid");
-                      if humanoid and humanoid:IsA("Humanoid") then
+                      -- Freeze the user and the victim.
+                      local function stunLockContestant(contestant: ServerContestant)
 
-                        humanoid.AutoRotate = false;
+                        if not contestant.character then
+
+                          return;
+
+                        end;
+
+                        local humanoid = contestant.character:FindFirstChild("Humanoid");
+                        if humanoid and humanoid:IsA("Humanoid") then
+
+                          humanoid.AutoRotate = false;
+
+                        end;
+
+                        local humanoidRootPart = contestant.character:FindFirstChild("HumanoidRootPart");
+                        if not humanoidRootPart or not humanoidRootPart:IsA("BasePart") then
+
+                          return;
+
+                        end;
+
+                        local attachment = humanoidRootPart:FindFirstChild("RootAttachment");
+                        if not attachment or not attachment:IsA("Attachment") then 
+                          
+                          return;
+
+                        end;
+
+                        stunnedContestants[contestant] = stunnedContestants[contestant] or {};
+                        if not humanoidRootPart:FindFirstChild("SuperHammerStunLockOrientation") then
+
+                          local alignOrientation = Instance.new("AlignOrientation");
+                          alignOrientation.Name = "SuperHammerStunLockOrientation";
+                          alignOrientation.Mode = Enum.OrientationAlignmentMode.OneAttachment;
+                          alignOrientation.CFrame = humanoidRootPart.CFrame;
+                          alignOrientation.MaxTorque = math.huge;
+                          alignOrientation.Attachment0 = attachment;
+                          alignOrientation.Parent = humanoidRootPart;
+                          table.insert(stunnedContestants[contestant], alignOrientation);
+
+                        end;
+
+                        if not humanoidRootPart:FindFirstChild("SuperHammerStunLockPosition") then
+
+                          local alignPosition = Instance.new("AlignPosition");
+                          alignPosition.Name = "SuperHammerStunLockPosition";
+                          alignPosition.Mode = Enum.PositionAlignmentMode.OneAttachment;
+                          alignPosition.Position = humanoidRootPart.Position;
+                          alignPosition.MaxForce = math.huge;
+                          alignPosition.Attachment0 = attachment;
+                          alignPosition.Parent = humanoidRootPart;
+                          table.insert(stunnedContestants[contestant], alignPosition);
+
+                        end;
 
                       end;
 
-                      local humanoidRootPart = character:FindFirstChild("HumanoidRootPart");
-                      if not humanoidRootPart or not humanoidRootPart:IsA("BasePart") then
-
-                        return;
-
-                      end;
-
-                      local attachment = humanoidRootPart:FindFirstChild("RootAttachment");
-                      if not attachment or not attachment:IsA("Attachment") then 
-                        
-                        return;
-
-                      end;
-
-                      if not humanoidRootPart:FindFirstChild("SuperHammerStunLockOrientation") then
-
-                        local alignOrientation = Instance.new("AlignOrientation");
-                        alignOrientation.Name = "SuperHammerStunLockOrientation";
-                        alignOrientation.Mode = Enum.OrientationAlignmentMode.OneAttachment;
-                        alignOrientation.CFrame = humanoidRootPart.CFrame;
-                        alignOrientation.MaxTorque = math.huge;
-                        alignOrientation.Attachment0 = attachment;
-                        alignOrientation.Parent = humanoidRootPart;
-                        table.insert(stunLockObjects, alignOrientation);
-
-                      end;
-
-                      if not humanoidRootPart:FindFirstChild("SuperHammerStunLockPosition") then
-
-                        local alignPosition = Instance.new("AlignPosition");
-                        alignPosition.Name = "SuperHammerStunLockPosition";
-                        alignPosition.Mode = Enum.PositionAlignmentMode.OneAttachment;
-                        alignPosition.Position = humanoidRootPart.Position;
-                        alignPosition.MaxForce = math.huge;
-                        alignPosition.Attachment0 = attachment;
-                        alignPosition.Parent = humanoidRootPart;
-                        table.insert(stunLockObjects, alignPosition);
-
-                      end;
+                      stunLockContestant(_contestant);
+                      stunLockContestant(possibleEnemyContestant);
 
                     end;
 
-                    if _contestant.character then
-                    
-                      stunLockCharacter(_contestant.character);
-
-                    end
-
-                    stunLockCharacter(possibleEnemyCharacter);
-
                   end;
 
-                  onEnemyHit:Fire();
 
                   -- Add immunity.
                   table.insert(immuneContestants, possibleEnemyContestant);
@@ -550,17 +589,20 @@ function SuperHammerServerItem.new(): ServerItem
 
     end;
 
-    for _, object in stunLockObjects do
+    for contestant, objects in pairs(stunnedContestants) do
 
-      local character = if object.Parent then object.Parent.Parent else nil;
-      local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
+      local humanoid = if contestant.character then contestant.character:FindFirstChild("Humanoid") else nil;
       if humanoid and humanoid:IsA("Humanoid") then
 
         humanoid.AutoRotate = true;
 
       end;
 
-      object:Destroy();
+      for _, object in objects do
+
+        object:Destroy();
+
+      end;
 
     end;
 
@@ -668,7 +710,8 @@ function SuperHammerServerItem.new(): ServerItem
     _contestant = contestant;
     _round = round;
 
-    style = if contestant.currentStamina >= contestant.baseStamina then "Hyper" elseif contestant.currentStamina / contestant.baseStamina >= 0.5 then "Combo" else "Normal";
+    style = "Combo";
+    -- style = if contestant.currentStamina >= contestant.baseStamina then "Hyper" elseif contestant.currentStamina / contestant.baseStamina >= 0.5 then "Combo" else "Normal";
 
     if contestant.player then
 
