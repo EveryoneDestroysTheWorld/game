@@ -441,8 +441,6 @@ function SuperHammerServerItem.new(): ServerItem
 
             animationTrack:AdjustSpeed(0);
             animationTrack.TimePosition = animationTrack:GetTimeOfKeyframe("End");
-            task.wait(1);
-            animationTrack:Stop();
 
           else
 
@@ -549,6 +547,12 @@ function SuperHammerServerItem.new(): ServerItem
   end;
   
   local function breakdown(self: ServerItem)
+
+    if animationTrack then
+
+      animationTrack:Stop();
+
+    end;
 
     for _, object in stunLockObjects do
 
