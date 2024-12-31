@@ -49,6 +49,7 @@ function SuperHammerServerItem.new(): ServerItem
   local comboBreakingTask: thread?;
   local staminaRecoverySuppressionEffect: Effect?;
   local animationTrack: AnimationTrack;
+  local stunLockObjects: {AlignOrientation | AlignPosition} = {};
 
   local function activate(self: ServerItem, action: Action): ()
     
@@ -121,7 +122,6 @@ function SuperHammerServerItem.new(): ServerItem
 
     end;
 
-    local stunLockedContestants = {};
     if (style == "Normal" and swipesLeft <= 0) or comboCount >= 10 then
 
       if isLocked then
@@ -260,7 +260,6 @@ function SuperHammerServerItem.new(): ServerItem
           itemID = self.ID
         });
 
-
         -- Swing the hammer.
         local maxChargeBonusMultiplier = 1.5;
         local secondsTarget = 3;
@@ -346,21 +345,31 @@ function SuperHammerServerItem.new(): ServerItem
 
                       end;
 
-                      local alignOrientation = Instance.new("AlignOrientation");
-                      alignOrientation.Name = "SuperHammerStunLockOrientation";
-                      alignOrientation.Mode = Enum.OrientationAlignmentMode.OneAttachment;
-                      alignOrientation.CFrame = humanoidRootPart.CFrame;
-                      alignOrientation.MaxTorque = math.huge;
-                      alignOrientation.Attachment0 = attachment;
-                      alignOrientation.Parent = humanoidRootPart;
+                      if not humanoidRootPart:FindFirstChild("SuperHammerStunLockOrientation") then
 
-                      local alignPosition = Instance.new("AlignPosition");
-                      alignPosition.Name = "SuperHammerStunLockPosition";
-                      alignPosition.Mode = Enum.PositionAlignmentMode.OneAttachment;
-                      alignPosition.Position = humanoidRootPart.Position;
-                      alignPosition.MaxForce = math.huge;
-                      alignPosition.Attachment0 = attachment;
-                      alignPosition.Parent = humanoidRootPart;
+                        local alignOrientation = Instance.new("AlignOrientation");
+                        alignOrientation.Name = "SuperHammerStunLockOrientation";
+                        alignOrientation.Mode = Enum.OrientationAlignmentMode.OneAttachment;
+                        alignOrientation.CFrame = humanoidRootPart.CFrame;
+                        alignOrientation.MaxTorque = math.huge;
+                        alignOrientation.Attachment0 = attachment;
+                        alignOrientation.Parent = humanoidRootPart;
+                        table.insert(stunLockObjects, alignOrientation);
+
+                      end;
+
+                      if not humanoidRootPart:FindFirstChild("SuperHammerStunLockPosition") then
+
+                        local alignPosition = Instance.new("AlignPosition");
+                        alignPosition.Name = "SuperHammerStunLockPosition";
+                        alignPosition.Mode = Enum.PositionAlignmentMode.OneAttachment;
+                        alignPosition.Position = humanoidRootPart.Position;
+                        alignPosition.MaxForce = math.huge;
+                        alignPosition.Attachment0 = attachment;
+                        alignPosition.Parent = humanoidRootPart;
+                        table.insert(stunLockObjects, alignPosition);
+
+                      end;
 
                     end;
 
@@ -538,6 +547,20 @@ function SuperHammerServerItem.new(): ServerItem
   end;
   
   local function breakdown(self: ServerItem)
+
+    for _, object in stunLockObjects do
+
+      local character = if object.Parent then object.Parent.Parent else nil;
+      local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
+      if humanoid and humanoid:IsA("Humanoid") then
+
+        humanoid.AutoRotate = true;
+
+      end;
+
+      object:Destroy();
+
+    end;
 
     if _contestant and _contestant.player then
 
