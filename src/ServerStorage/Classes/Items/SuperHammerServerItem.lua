@@ -641,17 +641,21 @@ function SuperHammerServerItem.new(): ServerItem
 
       task.delay(2, function()
       
-        if _meshPart.Parent and _meshPart.Parent:IsA("Accessory") then
+        if _meshPart then
 
-          _meshPart.Parent:Destroy();
-  
-        else
-  
-          _meshPart:Destroy();
-  
+          if _meshPart.Parent and _meshPart.Parent:IsA("Accessory") then
+
+            _meshPart.Parent:Destroy();
+    
+          else
+    
+            _meshPart:Destroy();
+    
+          end;
+    
+          _meshPart = nil;
+
         end;
-  
-        _meshPart = nil;
 
       end);
 

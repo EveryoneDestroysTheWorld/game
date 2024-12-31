@@ -11,6 +11,7 @@ local function ComboNotification(props: ComboNotificationProperties)
 
   local comboText, setComboText = React.useState(nil :: ("Nice" | "Good" | "Great!" | "Cool!!" | "Excellent!!!")?);
   local randomNumber, setRandomNumber = React.useState(nil :: number?);
+  local transparencyTask, setTransparencyTask = React.useState(nil :: thread?);
 
   React.useEffect(function()
   
@@ -37,14 +38,27 @@ local function ComboNotification(props: ComboNotificationProperties)
   React.useEffect(function()
   
     if ref.current then
-      
-      print(UDim2.new(1, ref.current.AbsoluteSize.X, 0, 30))
 
+      if transparencyTask then
+
+        task.cancel(transparencyTask);
+
+      end;
+
+      ref.current.TextTransparency = 0;
       ref.current.Position = UDim2.new(1, ref.current.AbsoluteSize.X, 0, 30);
 
       TweenService:Create(ref.current, TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
         Position = UDim2.new(1, -30, 0, 30);
       }):Play();
+
+      setTransparencyTask(task.delay(3, function()
+      
+        TweenService:Create(ref.current, TweenInfo.new(), {
+          TextTransparency = 1;
+        }):Play();
+
+      end));
 
     end;
 
