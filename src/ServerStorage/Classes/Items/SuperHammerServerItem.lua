@@ -41,7 +41,7 @@ function SuperHammerServerItem.new(): ServerItem
   local style: Style? = nil;
   local swipesLeft = 3;
   local comboCount = 0;
-  local originalWalkSpeed: number? = nil;
+  local isLocked = false;
 
   local touchEvent: RBXScriptConnection?;
   local touchEventExpirationTask: thread?;
@@ -123,7 +123,13 @@ function SuperHammerServerItem.new(): ServerItem
 
     local stunLockedContestants = {};
     if (style == "Normal" and swipesLeft <= 0) or comboCount >= 10 then
-      
+
+      if isLocked then
+
+        return;
+
+      end;
+
       if comboBreakingTask then
 
         task.cancel(comboBreakingTask);
@@ -254,10 +260,12 @@ function SuperHammerServerItem.new(): ServerItem
           itemID = self.ID
         });
 
+
         -- Swing the hammer.
         local maxChargeBonusMultiplier = 1.5;
         local secondsTarget = 3;
-        local secondsPassed = (DateTime.now().UnixTimestampMillis - _chargeTime) / 1000;
+        local chargeTimeDifference = DateTime.now().UnixTimestampMillis - _chargeTime;
+        local secondsPassed = chargeTimeDifference / 1000;
         local actualChargeBonusMultiplier = math.min(1 + (secondsPassed / secondsTarget) * (maxChargeBonusMultiplier - 1), maxChargeBonusMultiplier);
         local baseDamage = if style == "Normal" then 10 else 5;
         local actualDamage = baseDamage * actualChargeBonusMultiplier;
@@ -278,12 +286,21 @@ function SuperHammerServerItem.new(): ServerItem
 
             comboCount += 1;
 
-            comboBreakingTask = task.delay(1, function()
-            
-              print("combo broken");
+            if comboCount >= 10 then
+
+              task.wait(0.5);
               self:breakdown();
 
-            end);
+            else 
+
+              comboBreakingTask = task.delay(1.5, function()
+              
+                print("combo broken");
+                self:breakdown();
+
+              end);
+
+            end;
 
             print(if comboCount >= 10 then "Excellent!!!" elseif comboCount >= 7 then "Cool!!" elseif comboCount >= 5 then "Great!" elseif comboCount >= 3 then "Good" else "Nice")
 
@@ -407,42 +424,51 @@ function SuperHammerServerItem.new(): ServerItem
 
         end);
 
-        animationTrack:Play();
+        animationTrack:Play(0.1, 1, 1.15);
 
         if style == "Combo" and _round then
 
-          animationTrack:GetMarkerReachedSignal("Impact"):Once(function()
-          
-            local shouldSkipToDrive = true;
-            for _, part in _meshPart:GetTouchingParts() do
+          if comboCount == 9 then
 
-              for _, contestant in _round.contestants do
+            animationTrack:AdjustSpeed(0);
+            animationTrack.TimePosition = animationTrack:GetTimeOfKeyframe("End");
 
-                if contestant.ID ~= _contestant.ID and contestant.character and part:IsDescendantOf(contestant.character) then
+          else
 
-                  shouldSkipToDrive = false;
+            animationTrack:GetMarkerReachedSignal("Impact"):Once(function()
+            
+              local shouldSkipToDrive = true;
+              for _, part in _meshPart:GetTouchingParts() do
+
+                for _, contestant in _round.contestants do
+
+                  if contestant.ID ~= _contestant.ID and contestant.character and part:IsDescendantOf(contestant.character) then
+
+                    shouldSkipToDrive = false;
+                    break;
+
+                  end;
+
+                end;
+
+                if shouldSkipToDrive then
+
+                  animationTrack.TimePosition = animationTrack:GetTimeOfKeyframe("Drive");
                   break;
 
                 end;
 
               end;
-
-              if shouldSkipToDrive then
-
-                animationTrack.TimePosition = animationTrack:GetTimeOfKeyframe("Drive");
-                break;
-
-              end;
-
-            end;
+              
+            end);
             
-          end);
-          
-          if animationTrack.Length > 0 then
+            if animationTrack.Length > 0 then
 
-            animationTrack.TimePosition = animationTrack:GetTimeOfKeyframe("Release");
+              animationTrack.TimePosition = animationTrack:GetTimeOfKeyframe("Release");
 
-          end
+            end
+
+          end;
 
         end;
 
@@ -488,17 +514,22 @@ function SuperHammerServerItem.new(): ServerItem
 
         -- Run the charge animation.
         local chargeAnimation = Instance.new("Animation");
-        chargeAnimation.AnimationId = "rbxassetid://134304304008463";
+        chargeAnimation.AnimationId = `rbxassetid://{if comboCount == 9 then "100467112930853" else "134304304008463"}`;
 
         animationTrack = animator:LoadAnimation(chargeAnimation);
         animationTrack.Priority = Enum.AnimationPriority.Action;
-        animationTrack.Looped = false;
-        animationTrack:GetMarkerReachedSignal("Release"):Connect(function()
-        
-          animationTrack:AdjustSpeed(0);
+        animationTrack.Looped = comboCount == 9;
 
-        end);
-        animationTrack:Play();
+        if comboCount ~= 9 then
+
+          animationTrack:GetMarkerReachedSignal("Release"):Connect(function()
+          
+            animationTrack:AdjustSpeed(0);
+
+          end);
+        
+        end;
+        animationTrack:Play(0.1, 1, if comboCount == 9 then 9 else 1);
 
       end;
 
