@@ -38,19 +38,23 @@ function SuperHammerServerItem.new(): ServerItem
   local _remoteFunction: RemoteFunction? = nil;
   local _remoteEvent: RemoteEvent? = nil;
   local _chargeTime: number? = nil;
-  local style: Style = "Normal";
+  local style: Style? = nil;
   local swipesLeft = 3;
+  local comboCount = 0;
+  local isLocked = false;
 
   local touchEvent: RBXScriptConnection?;
   local touchEventExpirationTask: thread?;
   local staminaReductionTask: thread?;
+  local comboBreakingTask: thread?;
   local staminaRecoverySuppressionEffect: Effect?;
   local animationTrack: AnimationTrack;
+  local stunLockObjects: {AlignOrientation | AlignPosition} = {};
 
   local function activate(self: ServerItem, action: Action): ()
     
-    assert(_contestant, "This item must be assigned to a contestant.");
     assert(style ~= "Hyper", "Hammer is in hyper mode! No other actions are allowed.");
+    assert(_contestant, "This item must be assigned to a contestant.");
 
     local character = _contestant.character;
     assert(character, "The contestant must have a character.");
@@ -81,19 +85,17 @@ function SuperHammerServerItem.new(): ServerItem
 
     if animationTrack then
 
-      animationTrack:Stop(0);
+      animationTrack:Stop(0.1);
 
     end;
 
-    if swipesLeft <= 0 then
-
-      self:breakdown();
-
-    elseif action == "Equip" then
+    local shouldSwing = true;
+    if not _meshPart then
 
       assert(not _meshPart, "Hammer is already equipped.");
       assert(_contestant and _contestant.character);
 
+      shouldSwing = false;
       local meshPart = InsertService:CreateMeshPartAsync("rbxassetid://95860572822356", Enum.CollisionFidelity.Default, Enum.RenderFidelity.Automatic);
       meshPart:SetAttribute("Durability", 100);
       meshPart.Name = "Handle";
@@ -111,179 +113,28 @@ function SuperHammerServerItem.new(): ServerItem
 
       humanoid:AddAccessory(accessory);
 
-      -- TODO: Run the equip animation.
-
-    elseif action == "Swing" then
-
-      assert(_contestant.currentStamina >= 10, "The player's stamina must be 10 or greater.");
-      assert(_meshPart, "The hammer must be equipped before the player swings.");
-
-      if touchEvent then
-
-        touchEvent:Disconnect();
-        touchEvent = nil;
-
-      end;
-
-      if touchEventExpirationTask then
-
-        task.cancel(touchEventExpirationTask);
-        touchEventExpirationTask = nil;
-
-      end;
-
-      if _chargeTime then
-
-        swipesLeft -= 1;
-
-        -- Reduce the user's stamina.
-        _contestant:updateStamina(_contestant.currentStamina - 10, {
-          contestantID = _contestant.ID,
-          itemID = self.ID
-        });
-
-        -- Swing the hammer.
-        local maxChargeBonusMultiplier = 1.5;
-        local secondsTarget = 3;
-        local secondsPassed = (DateTime.now().UnixTimestampMillis - _chargeTime) / 1000;
-        local actualChargeBonusMultiplier = math.min(1 + (secondsPassed / secondsTarget) * (maxChargeBonusMultiplier - 1), maxChargeBonusMultiplier);
-        local baseDamage = 10;
-        local actualDamage = baseDamage * actualChargeBonusMultiplier;
-
-        _chargeTime = nil;
-
-        local immuneContestants = {};
-        touchEvent = _meshPart.Touched:Connect(function(basePart)
-        
-          if _round then
-
-            for _, possibleEnemyContestant in _round.contestants do
-
-              task.spawn(function()
-              
-                local possibleEnemyCharacter = possibleEnemyContestant.character;
-                if possibleEnemyContestant ~= _contestant and not table.find(immuneContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
-
-                  local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
-                  if enemyHumanoid then
-
-                    -- Add immunity.
-                    table.insert(immuneContestants, possibleEnemyContestant);
-
-                    -- Take damage.
-                    possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - actualDamage, {
-                      contestantID = _contestant.ID;
-                      itemID = self.ID;
-                    });
-
-                  end;
-
-                end;
-
-              end);
-
-            end;
-
-          end;
-
-        end);
-
-        touchEventExpirationTask = task.delay(0.5, function()
-        
-          if touchEvent then
-
-            touchEvent:Disconnect();
-
-          end;
-
-          touchEventExpirationTask = nil;
-
-        end);
-
-        -- Run the swing animation.
-        local swingAnimation = Instance.new("Animation");
-        swingAnimation.AnimationId = "rbxassetid://138240382406912";
-
-        animationTrack = animator:LoadAnimation(swingAnimation);
-        animationTrack.Priority = Enum.AnimationPriority.Action;
-        animationTrack.Looped = false;
-        animationTrack.Stopped:Connect(function()
-        
-          if swipesLeft <= 0 then
-
-            self:breakdown();
-
-          end;
-
-        end);
-        animationTrack:Play();
-
-      else
-
-        -- Set the charge time.
-        _chargeTime = DateTime.now().UnixTimestampMillis;
-
-        -- Progressively lose stamina.
-        staminaReductionTask = task.spawn(function()
-
-          local effect = {
-            name = "Stamina recovery suppression",
-            id = "StaminaRecoverySuppression"
-          }
-
-          staminaRecoverySuppressionEffect = effect;
-
-          _contestant:addEffect(effect);
-
-          while _contestant.currentStamina > 10 and task.wait(0.1) do
-
-            _contestant:updateStamina(_contestant.currentStamina - 1, {
-              contestantID = _contestant.ID,
-              itemID = self.ID
-            });
-
-          end;
-
-          task.spawn(function()
-
-            if _remoteEvent and _contestant.player then
-
-              _remoteEvent:FireClient(_contestant.player);
-
-            end;
-
-            self:activate(action);
-          
-          end);
-
-        end);
-
-        -- Run the charge animation.
-        local chargeAnimation = Instance.new("Animation");
-        chargeAnimation.AnimationId = "rbxassetid://94520926777504";
-
-        animationTrack = animator:LoadAnimation(chargeAnimation);
-        animationTrack.Priority = Enum.AnimationPriority.Action;
-        animationTrack.Looped = false;
-        animationTrack:GetMarkerReachedSignal("FreezeFrame"):Connect(function()
-        
-          animationTrack:AdjustSpeed(0);
-
-        end);
-        animationTrack:Play();
-
-      end;
-      
-    else
-
-      warn(`Unknown action selected: {action}`);
-
     end;
 
-    if _meshPart and _contestant.currentStamina >= _contestant.baseStamina then
+    if (style == "Normal" and swipesLeft <= 0) or comboCount >= 10 then
 
-      -- Enable hyper mode.
-      style = "Hyper";
+      if isLocked then
+
+        return;
+
+      end;
+
+      if comboBreakingTask then
+
+        task.cancel(comboBreakingTask);
+        comboBreakingTask = nil;
+
+      end;
+
+      self:breakdown();
+
+    elseif style == "Hyper" :: any then
+
+      assert(_meshPart);
 
       -- Make the contestant invincible for 10 seconds.
       local expirationTime = DateTime.now().UnixTimestampMillis + 10000;
@@ -350,7 +201,7 @@ function SuperHammerServerItem.new(): ServerItem
 
       end);
 
-      touchEventExpirationTask = task.delay(5, function()
+      touchEventExpirationTask = task.delay(10, function()
       
         if touchEvent then
 
@@ -368,15 +219,369 @@ function SuperHammerServerItem.new(): ServerItem
 
       end);
 
+    elseif shouldSwing then
+
+      assert(_contestant.currentStamina >= 10, "The player's stamina must be 10 or greater.");
+      assert(_meshPart, "The hammer must be equipped before the player swings.");
+
+      if touchEvent then
+
+        touchEvent:Disconnect();
+        touchEvent = nil;
+
+      end;
+
+      if touchEventExpirationTask then
+
+        task.cancel(touchEventExpirationTask);
+        touchEventExpirationTask = nil;
+
+      end;
+
+      if _chargeTime then
+
+        if comboBreakingTask then
+
+          task.cancel(comboBreakingTask);
+          comboBreakingTask = nil;
+  
+        end;
+
+        -- Reduce the user's stamina.
+        _contestant:updateStamina(_contestant.currentStamina - 10, {
+          contestantID = _contestant.ID,
+          itemID = self.ID
+        });
+
+        -- Swing the hammer.
+        local maxChargeBonusMultiplier = 1.5;
+        local secondsTarget = 3;
+        local chargeTimeDifference = DateTime.now().UnixTimestampMillis - _chargeTime;
+        local secondsPassed = chargeTimeDifference / 1000;
+        local actualChargeBonusMultiplier = math.min(1 + (secondsPassed / secondsTarget) * (maxChargeBonusMultiplier - 1), maxChargeBonusMultiplier);
+        local baseDamage = if style == "Normal" then 10 else 5;
+        local actualDamage = baseDamage * actualChargeBonusMultiplier;
+
+        _chargeTime = nil;
+
+        local immuneContestants = {};
+        local swipesLeftIfHit = swipesLeft - 1;
+        
+        local onEnemyHit = Instance.new("BindableEvent");
+        onEnemyHit.Event:Once(function()
+        
+          if style == "Normal" then
+
+            swipesLeft = swipesLeftIfHit;
+
+          elseif style == "Combo" then
+
+            comboCount += 1;
+
+            if _remoteEvent and _contestant.player then
+
+              _remoteEvent:FireClient(_contestant.player, "Combo", comboCount);
+
+            end;
+
+            if comboCount >= 10 then
+
+              task.wait(0.5);
+              self:breakdown();
+
+            else 
+
+              comboBreakingTask = task.delay(1.5, function()
+              
+                self:breakdown();
+
+              end);
+
+            end;
+
+          end
+
+        end);
+
+        touchEvent = _meshPart.Touched:Connect(function(basePart)
+        
+          if _round then
+
+            for _, possibleEnemyContestant in _round.contestants do
+
+              task.spawn(function()
+              
+                local possibleEnemyCharacter = possibleEnemyContestant.character;
+                if possibleEnemyContestant ~= _contestant and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) and not table.find(immuneContestants, possibleEnemyContestant) then
+
+                  -- Remove a swipe.
+                  if style == "Combo" then
+
+                    -- Freeze the user and the victim.
+                    local function stunLockCharacter(character: Model)
+
+                      local humanoid = character:FindFirstChild("Humanoid");
+                      if humanoid and humanoid:IsA("Humanoid") then
+
+                        humanoid.AutoRotate = false;
+
+                      end;
+
+                      local humanoidRootPart = character:FindFirstChild("HumanoidRootPart");
+                      if not humanoidRootPart or not humanoidRootPart:IsA("BasePart") then
+
+                        return;
+
+                      end;
+
+                      local attachment = humanoidRootPart:FindFirstChild("RootAttachment");
+                      if not attachment or not attachment:IsA("Attachment") then 
+                        
+                        return;
+
+                      end;
+
+                      if not humanoidRootPart:FindFirstChild("SuperHammerStunLockOrientation") then
+
+                        local alignOrientation = Instance.new("AlignOrientation");
+                        alignOrientation.Name = "SuperHammerStunLockOrientation";
+                        alignOrientation.Mode = Enum.OrientationAlignmentMode.OneAttachment;
+                        alignOrientation.CFrame = humanoidRootPart.CFrame;
+                        alignOrientation.MaxTorque = math.huge;
+                        alignOrientation.Attachment0 = attachment;
+                        alignOrientation.Parent = humanoidRootPart;
+                        table.insert(stunLockObjects, alignOrientation);
+
+                      end;
+
+                      if not humanoidRootPart:FindFirstChild("SuperHammerStunLockPosition") then
+
+                        local alignPosition = Instance.new("AlignPosition");
+                        alignPosition.Name = "SuperHammerStunLockPosition";
+                        alignPosition.Mode = Enum.PositionAlignmentMode.OneAttachment;
+                        alignPosition.Position = humanoidRootPart.Position;
+                        alignPosition.MaxForce = math.huge;
+                        alignPosition.Attachment0 = attachment;
+                        alignPosition.Parent = humanoidRootPart;
+                        table.insert(stunLockObjects, alignPosition);
+
+                      end;
+
+                    end;
+
+                    if _contestant.character then
+                    
+                      stunLockCharacter(_contestant.character);
+
+                    end
+
+                    stunLockCharacter(possibleEnemyCharacter);
+
+                  end;
+
+                  onEnemyHit:Fire();
+
+                  -- Add immunity.
+                  table.insert(immuneContestants, possibleEnemyContestant);
+
+                  -- Take damage.
+                  possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - actualDamage, {
+                    contestantID = _contestant.ID;
+                    itemID = self.ID;
+                  });
+
+                end;
+
+              end);
+
+            end;
+
+          end;
+
+        end);
+
+        touchEventExpirationTask = task.delay(0.5, function()
+        
+          if touchEvent then
+
+            touchEvent:Disconnect();
+
+          end;
+
+          touchEventExpirationTask = nil;
+
+        end);
+
+        -- Run the swing animation.
+        local swingAnimation = Instance.new("Animation");
+        swingAnimation.AnimationId = `rbxassetid://{if style == "Combo" then "134304304008463" else "138240382406912"}`;
+
+        animationTrack = animator:LoadAnimation(swingAnimation);
+        animationTrack.Priority = Enum.AnimationPriority.Action;
+        animationTrack.Looped = false;
+        animationTrack.Stopped:Once(function()
+        
+          if swipesLeft <= 0 and style == "Normal" then
+
+            self:breakdown();
+
+          end;
+
+        end);
+
+        animationTrack:Play(0.1, 1, 1.15);
+
+        if style == "Combo" and _round then
+
+          if comboCount == 9 then
+
+            animationTrack:AdjustSpeed(0);
+            animationTrack.TimePosition = animationTrack:GetTimeOfKeyframe("End");
+
+          else
+
+            animationTrack:GetMarkerReachedSignal("Impact"):Once(function()
+            
+              local shouldSkipToDrive = true;
+              for _, part in _meshPart:GetTouchingParts() do
+
+                for _, contestant in _round.contestants do
+
+                  if contestant.ID ~= _contestant.ID and contestant.character and part:IsDescendantOf(contestant.character) then
+
+                    shouldSkipToDrive = false;
+                    break;
+
+                  end;
+
+                end;
+
+                if shouldSkipToDrive then
+
+                  animationTrack.TimePosition = animationTrack:GetTimeOfKeyframe("Drive");
+                  break;
+
+                end;
+
+              end;
+              
+            end);
+            
+            if animationTrack.Length > 0 then
+
+              animationTrack.TimePosition = animationTrack:GetTimeOfKeyframe("Release");
+
+            end
+
+          end;
+
+        end;
+
+      else
+
+        -- Set the charge time.
+        _chargeTime = DateTime.now().UnixTimestampMillis;
+
+        -- Progressively lose stamina.
+        staminaReductionTask = task.spawn(function()
+
+          local effect = {
+            name = "Stamina recovery suppression",
+            id = "StaminaRecoverySuppression"
+          }
+
+          staminaRecoverySuppressionEffect = effect;
+
+          _contestant:addEffect(effect);
+
+          while _contestant.currentStamina > 10 and task.wait(0.1) do
+
+            _contestant:updateStamina(_contestant.currentStamina - 1, {
+              contestantID = _contestant.ID,
+              itemID = self.ID
+            });
+
+          end;
+
+          task.spawn(function()
+
+            if _remoteEvent and _contestant.player then
+
+              _remoteEvent:FireClient(_contestant.player, "Swing");
+
+            end;
+
+            self:activate();
+          
+          end);
+
+        end);
+
+        -- Run the charge animation.
+        local chargeAnimation = Instance.new("Animation");
+        chargeAnimation.AnimationId = `rbxassetid://{if comboCount == 9 then "100467112930853" else "134304304008463"}`;
+
+        animationTrack = animator:LoadAnimation(chargeAnimation);
+        animationTrack.Priority = Enum.AnimationPriority.Action;
+        animationTrack.Looped = comboCount == 9;
+
+        if comboCount ~= 9 then
+
+          animationTrack:GetMarkerReachedSignal("Release"):Connect(function()
+          
+            animationTrack:AdjustSpeed(0);
+
+          end);
+        
+        end;
+        animationTrack:Play(0.1, 1, if comboCount == 9 then 9 else 1);
+
+      end;
+
     end;
     
   end;
   
   local function breakdown(self: ServerItem)
 
+    if animationTrack then
+
+      animationTrack:Stop();
+
+    end;
+
+    for _, object in stunLockObjects do
+
+      local character = if object.Parent then object.Parent.Parent else nil;
+      local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
+      if humanoid and humanoid:IsA("Humanoid") then
+
+        humanoid.AutoRotate = true;
+
+      end;
+
+      object:Destroy();
+
+    end;
+
     if _contestant and _contestant.player then
 
       ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(_contestant.player, self.ID, _specificItemID);
+      _contestant = nil;
+
+    end;
+
+    if _remoteFunction then
+
+      _remoteFunction:Destroy();
+      _remoteFunction = nil;
+
+    end;
+
+    if _remoteEvent then
+
+      _remoteEvent:Destroy();
+      _remoteEvent = nil;
 
     end;
 
@@ -436,17 +641,21 @@ function SuperHammerServerItem.new(): ServerItem
 
       task.delay(2, function()
       
-        if _meshPart.Parent and _meshPart.Parent:IsA("Accessory") then
+        if _meshPart then
 
-          _meshPart.Parent:Destroy();
-  
-        else
-  
-          _meshPart:Destroy();
-  
+          if _meshPart.Parent and _meshPart.Parent:IsA("Accessory") then
+
+            _meshPart.Parent:Destroy();
+    
+          else
+    
+            _meshPart:Destroy();
+    
+          end;
+    
+          _meshPart = nil;
+
         end;
-  
-        _meshPart = nil;
 
       end);
 
@@ -459,14 +668,15 @@ function SuperHammerServerItem.new(): ServerItem
     _contestant = contestant;
     _round = round;
 
+    style = if contestant.currentStamina >= contestant.baseStamina then "Hyper" elseif contestant.currentStamina / contestant.baseStamina >= 0.5 then "Combo" else "Normal";
+
     if contestant.player then
 
       local specificItemID = HttpService:GenerateGUID(false);
       _specificItemID = specificItemID;
       _remoteFunction = createInventoryRemoteFunction(contestant.player, specificItemID, function()
         
-        local action: Action = if _meshPart then "Swing" else "Equip";
-        self:activate(action);
+        self:activate();
 
       end);
 

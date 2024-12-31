@@ -6,11 +6,14 @@
 -- © 2024 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local Players = game:GetService("Players");
 local ClientItem = require(script.Parent.Parent.ClientItem);
 type ClientItem = ClientItem.ClientItem;
 local React = require(ReplicatedStorage.Shared.Packages.react);
+local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
 local ContextActionService = game:GetService("ContextActionService");
+local ComboNotification = require(script.ComboNotification);
 
 local SuperHammerClientItem = {
   ID = 3;
@@ -21,6 +24,7 @@ local SuperHammerClientItem = {
 
 function SuperHammerClientItem.new(): ClientItem
 
+  local _gui: ScreenGui? = nil;
   local _specificItemID: string?;
   local isActivated: boolean = false;
   local didServerSwing = false;
@@ -59,7 +63,7 @@ function SuperHammerClientItem.new(): ClientItem
     assert(_specificItemID);
     ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Item", _specificItemID);
     ContextActionService:UnbindAction("ActivateSuperHammer");
-    toggleHotkeys(self);
+    _specificItemID = nil;
 
   end;
 
@@ -90,11 +94,24 @@ function SuperHammerClientItem.new(): ClientItem
     local event = ReplicatedStorage.Shared.Events.ItemEvents:FindFirstChild(_specificItemID);
     if event and event:IsA("RemoteEvent") then
 
-      event.OnClientEvent:Connect(function()
+      event.OnClientEvent:Connect(function(eventType: string)
       
-        didServerSwing = true;
+        didServerSwing = eventType == "Swing";
 
       end);
+
+      local gui = Instance.new("ScreenGui")
+      gui.Name = "ComboNotificationGUI";
+      gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui");
+      gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+      gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets;
+      gui.ResetOnSpawn = false;
+      gui.DisplayOrder = 1;
+      gui.Enabled = true;
+      _gui = gui;
+
+      local root = ReactRoblox.createRoot(gui);
+      root:render(React.createElement(ComboNotification, {event = event}));
 
     end;
 
