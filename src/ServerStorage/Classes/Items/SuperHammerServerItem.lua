@@ -65,13 +65,6 @@ function SuperHammerServerItem.new(): ServerItem
     local animator = humanoid:FindFirstChild("Animator");
     assert(animator and animator:IsA("Animator"), "Humanoid must have an Animator.");
 
-    if not style then
-
-      style = "Combo" -- TODO: Remove this. It's only for testing.
-      -- style = if _contestant.currentStamina >= _contestant.baseStamina then "Hyper" elseif _contestant.currentStamina / _contestant.baseStamina >= 0.5 then "Combo" else "Normal";
-
-    end;
-
     if staminaReductionTask then
 
       if coroutine.status(staminaReductionTask) ~= "normal" then
@@ -285,6 +278,12 @@ function SuperHammerServerItem.new(): ServerItem
 
             comboCount += 1;
 
+            if _remoteEvent and _contestant.player then
+
+              _remoteEvent:FireClient(_contestant.player, "Combo", comboCount);
+
+            end;
+
             if comboCount >= 10 then
 
               task.wait(0.5);
@@ -294,14 +293,11 @@ function SuperHammerServerItem.new(): ServerItem
 
               comboBreakingTask = task.delay(1.5, function()
               
-                print("combo broken");
                 self:breakdown();
 
               end);
 
             end;
-
-            print(if comboCount >= 10 then "Excellent!!!" elseif comboCount >= 7 then "Cool!!" elseif comboCount >= 5 then "Great!" elseif comboCount >= 3 then "Good" else "Nice")
 
           end
 
@@ -511,7 +507,7 @@ function SuperHammerServerItem.new(): ServerItem
 
             if _remoteEvent and _contestant.player then
 
-              _remoteEvent:FireClient(_contestant.player);
+              _remoteEvent:FireClient(_contestant.player, "Swing");
 
             end;
 
@@ -667,6 +663,9 @@ function SuperHammerServerItem.new(): ServerItem
 
     _contestant = contestant;
     _round = round;
+
+    style = "Combo" -- TODO: Remove this. It's only for testing.
+    -- style = if _contestant.currentStamina >= _contestant.baseStamina then "Hyper" elseif _contestant.currentStamina / _contestant.baseStamina >= 0.5 then "Combo" else "Normal";
 
     if contestant.player then
 

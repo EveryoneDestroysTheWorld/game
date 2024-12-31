@@ -5,7 +5,7 @@ registry = "test"
 [[package]]
 name = "demodemons/game"
 version = "0.1.0"
-dependencies = [["react", "jsdotlua/react@17.1.0"], ["react-roblox", "jsdotlua/react-roblox@17.1.0"]]
+dependencies = [["react", "jsdotlua/react@17.2.1"], ["react-roblox", "jsdotlua/react-roblox@17.1.0"]]
 
 [[package]]
 name = "jsdotlua/boolean"
@@ -54,27 +54,27 @@ dependencies = []
 
 [[package]]
 name = "jsdotlua/react"
-version = "17.1.0"
-dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.6"], ["shared", "jsdotlua/shared@17.1.0"]]
+version = "17.2.1"
+dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.6"], ["shared", "jsdotlua/shared@17.2.1"]]
 
 [[package]]
 name = "jsdotlua/react-reconciler"
 version = "17.1.0"
-dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.6"], ["promise", "jsdotlua/promise@3.5.2"], ["react", "jsdotlua/react@17.1.0"], ["scheduler", "jsdotlua/scheduler@17.1.0"], ["shared", "jsdotlua/shared@17.1.0"]]
+dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.6"], ["promise", "jsdotlua/promise@3.5.2"], ["react", "jsdotlua/react@17.2.1"], ["scheduler", "jsdotlua/scheduler@17.1.0"], ["shared", "jsdotlua/shared@17.2.1"]]
 
 [[package]]
 name = "jsdotlua/react-roblox"
 version = "17.1.0"
-dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.6"], ["react", "jsdotlua/react@17.1.0"], ["react-reconciler", "jsdotlua/react-reconciler@17.1.0"], ["scheduler", "jsdotlua/scheduler@17.1.0"], ["shared", "jsdotlua/shared@17.1.0"]]
+dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.6"], ["react", "jsdotlua/react@17.2.1"], ["react-reconciler", "jsdotlua/react-reconciler@17.1.0"], ["scheduler", "jsdotlua/scheduler@17.1.0"], ["shared", "jsdotlua/shared@17.2.1"]]
 
 [[package]]
 name = "jsdotlua/scheduler"
 version = "17.1.0"
-dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.6"], ["shared", "jsdotlua/shared@17.1.0"]]
+dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.6"], ["shared", "jsdotlua/shared@17.2.1"]]
 
 [[package]]
 name = "jsdotlua/shared"
-version = "17.1.0"
+version = "17.2.1"
 dependencies = [["luau-polyfill", "jsdotlua/luau-polyfill@1.2.6"]]
 
 [[package]]
