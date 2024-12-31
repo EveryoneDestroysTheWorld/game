@@ -121,7 +121,8 @@ function SuperHammerServerItem.new(): ServerItem
 
     end;
 
-    if swipesLeft <= 0 and (comboCount == 0 or comboCount >= 10) then
+    local stunLockedContestants = {};
+    if (style == "Normal" and swipesLeft <= 0) or comboCount >= 10 then
       
       if comboBreakingTask then
 
@@ -265,7 +266,31 @@ function SuperHammerServerItem.new(): ServerItem
 
         local immuneContestants = {};
         local swipesLeftIfHit = swipesLeft - 1;
-        local comboCountIfHit = comboCount + 1;
+        
+        local onEnemyHit = Instance.new("BindableEvent");
+        onEnemyHit.Event:Once(function()
+        
+          if style == "Normal" then
+
+            swipesLeft = swipesLeftIfHit;
+
+          elseif style == "Combo" then
+
+            comboCount += 1;
+
+            comboBreakingTask = task.delay(1, function()
+            
+              print("combo broken");
+              self:breakdown();
+
+            end);
+
+            print(if comboCount >= 10 then "Excellent!!!" elseif comboCount >= 7 then "Cool!!" elseif comboCount >= 5 then "Great!" elseif comboCount >= 3 then "Good" else "Nice")
+
+          end
+
+        end);
+
         touchEvent = _meshPart.Touched:Connect(function(basePart)
         
           if _round then
@@ -275,50 +300,73 @@ function SuperHammerServerItem.new(): ServerItem
               task.spawn(function()
               
                 local possibleEnemyCharacter = possibleEnemyContestant.character;
-                if possibleEnemyContestant ~= _contestant and not table.find(immuneContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
+                if possibleEnemyContestant ~= _contestant and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) and not table.find(immuneContestants, possibleEnemyContestant) then
 
-                  local enemyHumanoid = possibleEnemyCharacter:FindFirstChild("Humanoid");
-                  if enemyHumanoid then
+                  -- Remove a swipe.
+                  if style == "Combo" then
 
-                    -- Remove a swipe.
-                    swipesLeft = swipesLeftIfHit;
+                    -- Freeze the user and the victim.
+                    local function stunLockCharacter(character: Model)
 
-                    -- Adjust the combo.
-                    if style == "Combo" then
+                      local humanoid = character:FindFirstChild("Humanoid");
+                      if humanoid and humanoid:IsA("Humanoid") then
 
-                      comboCount = comboCountIfHit;
-                      if not originalWalkSpeed then
-                        
-                        originalWalkSpeed = humanoid.WalkSpeed;
-                        humanoid.WalkSpeed = 0;
+                        humanoid.AutoRotate = false;
 
                       end;
 
-                      if not comboBreakingTask then
+                      local humanoidRootPart = character:FindFirstChild("HumanoidRootPart");
+                      if not humanoidRootPart or not humanoidRootPart:IsA("BasePart") then
 
-                        comboBreakingTask = task.delay(1, function()
-            
-                          print("combo broken");
-                          self:breakdown();
-            
-                        end);
+                        return;
 
-                        print(if comboCount >= 10 then "Excellent!!!" elseif comboCount >= 7 then "Cool!!" elseif comboCount >= 5 then "Great!" elseif comboCount >= 3 then "Good" else "Nice")
+                      end;
 
-                      end
+                      local attachment = humanoidRootPart:FindFirstChild("RootAttachment");
+                      if not attachment or not attachment:IsA("Attachment") then 
+                        
+                        return;
+
+                      end;
+
+                      local alignOrientation = Instance.new("AlignOrientation");
+                      alignOrientation.Name = "SuperHammerStunLockOrientation";
+                      alignOrientation.Mode = Enum.OrientationAlignmentMode.OneAttachment;
+                      alignOrientation.CFrame = humanoidRootPart.CFrame;
+                      alignOrientation.MaxTorque = math.huge;
+                      alignOrientation.Attachment0 = attachment;
+                      alignOrientation.Parent = humanoidRootPart;
+
+                      local alignPosition = Instance.new("AlignPosition");
+                      alignPosition.Name = "SuperHammerStunLockPosition";
+                      alignPosition.Mode = Enum.PositionAlignmentMode.OneAttachment;
+                      alignPosition.Position = humanoidRootPart.Position;
+                      alignPosition.MaxForce = math.huge;
+                      alignPosition.Attachment0 = attachment;
+                      alignPosition.Parent = humanoidRootPart;
 
                     end;
 
-                    -- Add immunity.
-                    table.insert(immuneContestants, possibleEnemyContestant);
+                    if _contestant.character then
+                    
+                      stunLockCharacter(_contestant.character);
 
-                    -- Take damage.
-                    possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - actualDamage, {
-                      contestantID = _contestant.ID;
-                      itemID = self.ID;
-                    });
+                    end
+
+                    stunLockCharacter(possibleEnemyCharacter);
 
                   end;
+
+                  onEnemyHit:Fire();
+
+                  -- Add immunity.
+                  table.insert(immuneContestants, possibleEnemyContestant);
+
+                  -- Take damage.
+                  possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - actualDamage, {
+                    contestantID = _contestant.ID;
+                    itemID = self.ID;
+                  });
 
                 end;
 
