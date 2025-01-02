@@ -10,7 +10,7 @@ This game is being developed and published by Beastslash. To see a full list of 
 All pull requests should be based on design implementations and bug fixes. Please ensure that the design information exists in the [`design` repository](https://github.com/EveryoneDestroysTheWorld/design) before starting development on features. If it doesn't exist, propose it using the issues section in the design repository. After the feature is designed, ensure that the implementation issue exists on this repository.
 
 > [!NOTE]
-> This repository currently intends to comply with [v1.0.0](https://github.com/EveryoneDestroysTheWorld/design/tree/v1.0.0) of the Everyone Destroys the World design standards. Issues and pull requests that reference outdated versions will be closed, while requests that reference more recent versions of the design standards will be deprioritized. 
+> This repository currently intends to comply with [v1.0.0](https://github.com/EveryoneDestroysTheWorld/design/tree/v1.0.0) of the Everyone Destroys the World design standards. Issues and pull requests that reference features that are exclusive to older versions will be closed. 
 
 #### Creating a branch
 Use the `staging` branch to get the most stable version of the game. When the game is released, the most stable version will be on the `production` branch.
