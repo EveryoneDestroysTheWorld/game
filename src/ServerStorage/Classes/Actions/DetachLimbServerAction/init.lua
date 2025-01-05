@@ -1,6 +1,8 @@
 --!strict
--- Writer: Christian Toney (Sudobeast)
--- Designer: Christian Toney (Sudobeast)
+-- Writer: Christian Toney (Christian_Toney)
+-- Designer: Christian Toney (Christian_Toney)
+-- © 2024 – 2025 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local ServerStorage = game:GetService("ServerStorage");

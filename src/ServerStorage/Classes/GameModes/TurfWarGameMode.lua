@@ -1,6 +1,8 @@
 --!strict
--- Writer: Christian Toney (Christian_Toney)
+-- Programmer: Christian Toney (Christian_Toney)
 -- Designer: Christian Toney (Christian_Toney)
+-- © 2024 – 2025 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local GameMode = require(script.Parent.Parent.GameMode);
@@ -11,7 +13,7 @@ type ServerRound = ServerRound.ServerRound;
 
 -- This is the class.
 local TurfWarGameMode = {
-  id = 1;
+  id = script.Name:sub(1, script.Name:gsub("GameMode", ""):len());
   name = "Turf War";
   description = "";
 }; 
@@ -40,7 +42,7 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
   local events = {};
 
   local gameMode = GameMode.new({
-    id = TurfWarGameMode.ID;
+    id = TurfWarGameMode.id;
     name = TurfWarGameMode.name;
     description = TurfWarGameMode.description;
     start = function(self)
@@ -102,7 +104,7 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
                 for _, contestant in ipairs(round.contestants) do
 
-                  if contestant.ID == destroyerID then
+                  if contestant.id == destroyerID then
 
                     destroyerName = contestant.name;
                     break;
@@ -292,7 +294,7 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
   for _, contestant in ipairs(round.contestants) do
 
-    stats.contestants[tostring(contestant.ID)] = {
+    stats.contestants[tostring(contestant.id)] = {
       partsClaimed = 0;
       partsDestroyed = 0;
       partsRestored = 0;

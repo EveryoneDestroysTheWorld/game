@@ -1,7 +1,6 @@
 --!strict
 -- Programmers: Hati ---- Heavily modified edit of RocketFeet
 -- Designers: Christian Toney (Christian_Toney)
--- 
 -- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");

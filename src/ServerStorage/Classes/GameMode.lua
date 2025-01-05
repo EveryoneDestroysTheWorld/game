@@ -4,7 +4,7 @@
 export type GameModeProperties = {
   
   -- The stage's unique ID.
-  ID: number;
+  id: string;
   
   name: string;
 
@@ -30,7 +30,7 @@ function GameMode.new(properties: GameModeProperties): GameMode
   
 end
 
-function GameMode.get(gameModeID: number): GameModeClass
+function GameMode.get(gameModeID: string): GameModeClass
 
   for _, instance in ipairs(script.Parent.GameModes:GetChildren()) do
   
