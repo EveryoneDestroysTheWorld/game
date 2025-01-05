@@ -12,7 +12,7 @@ local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton)
 type ClientAction = ClientAction.ClientAction;
 
 local DetonateDetachedLimbsClientAction = {
-  ID = 3;
+  id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
   name = "Detonate Detached Limbs";
   iconImage = "rbxassetid://17771918066";
   description = "Explodes all detached limbs and regenerates them.";
@@ -30,7 +30,7 @@ function DetonateDetachedLimbsClientAction.new(): ClientAction
 
   local function activate(self: ClientAction)
 
-    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(`{player.UserId}_{DetonateDetachedLimbsClientAction.ID}`):InvokeServer();
+    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(`{player.UserId}_{DetonateDetachedLimbsClientAction.id}`):InvokeServer();
 
   end;
 
@@ -38,7 +38,7 @@ function DetonateDetachedLimbsClientAction.new(): ClientAction
 
     ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
       type = "Action";
-      key = self.ID;
+      key = self.id;
       onActivate = function() 
         
         self:activate();
@@ -51,7 +51,7 @@ function DetonateDetachedLimbsClientAction.new(): ClientAction
   end;
 
   local action = ClientAction.new({
-    ID = DetonateDetachedLimbsClientAction.ID;
+    id = DetonateDetachedLimbsClientAction.id;
     iconImage = DetonateDetachedLimbsClientAction.iconImage;
     name = DetonateDetachedLimbsClientAction.name;
     description = DetonateDetachedLimbsClientAction.description;

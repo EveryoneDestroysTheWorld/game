@@ -15,7 +15,7 @@ local downContestant = require(ServerStorage.Modules.downContestant);
 local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
 
 local UndeadConciousnessServerArchetype = {
-  ID = UndeadConciousnessClientArchetype.ID;
+  id = UndeadConciousnessClientArchetype.id;
   name = UndeadConciousnessClientArchetype.name;
   description = UndeadConciousnessClientArchetype.description;
   actionIDs = UndeadConciousnessClientArchetype.actionIDs;
@@ -172,7 +172,7 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
   
                     possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 20, {
                       contestant = contestant;
-                      archetypeID = UndeadConciousnessServerArchetype.ID;
+                      archetypeID = UndeadConciousnessServerArchetype.id;
                     });
   
                   end;
@@ -228,14 +228,14 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
 
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.id);
 
     end;
 
   end;
 
   return ServerArchetype.new({
-    ID = UndeadConciousnessServerArchetype.ID;
+    id = UndeadConciousnessServerArchetype.id;
     name = UndeadConciousnessServerArchetype.name;
     description = UndeadConciousnessServerArchetype.description;
     actionIDs = UndeadConciousnessServerArchetype.actionIDs;

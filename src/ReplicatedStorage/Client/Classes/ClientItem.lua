@@ -4,7 +4,7 @@
 -- © 2024 Beastslash
 
 export type ClientItemProperties = {
-  ID: number;
+  id: string;
   name: string;
   iconImage: string;
   description: string;
@@ -38,7 +38,7 @@ function ClientItem.new(properties: ClientItemProperties): ClientItem
   
 end
 
-function ClientItem.get(itemID: number): ClientItem
+function ClientItem.get(itemID: string): ClientItem
 
   for _, instance in ipairs(script.Parent.Items:GetChildren()) do
   

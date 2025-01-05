@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 export type ClientContestantProperties = {
   
-  ID: number;
+  id: number;
 
   archetypeID: number?;
   

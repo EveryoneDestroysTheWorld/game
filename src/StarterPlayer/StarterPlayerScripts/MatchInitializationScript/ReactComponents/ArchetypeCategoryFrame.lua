@@ -24,7 +24,7 @@ local function ArchetypeCategoryFrame(props: ArchetypeCategoryFrameProps)
 
     archetypeButtons[`Archetype{archetype.ID}`] = React.createElement(ArchetypeSelectionButton, {
       archetype = archetype;
-      isSelected = props.selectedArchetype and archetype.ID == props.selectedArchetype.ID;
+      isSelected = props.selectedArchetype and archetype.ID == props.selectedArchetype.id;
       onSelect = function()
 
         props.onArchetypeSelected(archetype);

@@ -211,7 +211,7 @@ local function MatchInitializationScreen()
 
           local didConfirmArchetype, errorMessage = pcall(function()
             
-            ReplicatedStorage.Shared.Functions.ChooseArchetype:InvokeServer(selectedArchetype.ID);
+            ReplicatedStorage.Shared.Functions.ChooseArchetype:InvokeServer(selectedArchetype.id);
 
           end);
 

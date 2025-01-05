@@ -11,7 +11,7 @@ local ClientAction = require(script.Parent.Parent.ClientAction);
 type ClientAction = ClientAction.ClientAction;
 
 local DetachLimbAction = {
-  ID = 4;
+  id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
   name = "Rocket Feet";
   description = "Fly, touch the sky!";
   iconImage = "rbxassetid://18464513809";
@@ -49,7 +49,7 @@ function DetachLimbAction.new(): ClientAction
 
   local function initialize(self: ClientAction)
 
-    remoteName = `{player.UserId}_{self.ID}`;
+    remoteName = `{player.UserId}_{self.id}`;
 
     local function checkJump(_, inputState: Enum.UserInputState)
 
@@ -162,7 +162,7 @@ function DetachLimbAction.new(): ClientAction
   end;
 
   local action = ClientAction.new({
-    ID = DetachLimbAction.ID;
+    id = DetachLimbAction.id;
     name = DetachLimbAction.name;
     iconImage = DetachLimbAction.iconImage;
     description = DetachLimbAction.description;

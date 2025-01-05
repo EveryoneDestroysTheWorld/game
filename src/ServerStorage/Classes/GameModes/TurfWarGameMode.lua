@@ -11,7 +11,7 @@ type ServerRound = ServerRound.ServerRound;
 
 -- This is the class.
 local TurfWarGameMode = {
-  ID = 1;
+  id = 1;
   name = "Turf War";
   description = "";
 }; 
@@ -40,7 +40,7 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
   local events = {};
 
   local gameMode = GameMode.new({
-    ID = TurfWarGameMode.ID;
+    id = TurfWarGameMode.ID;
     name = TurfWarGameMode.name;
     description = TurfWarGameMode.description;
     start = function(self)
@@ -282,7 +282,7 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
     toString = function(self)
 
       return HttpService:JSONDecode({
-        ID = self.ID;
+        id = self.id;
         stats = stats;
         totalStageParts = stats.totalStageParts;
       })

@@ -12,7 +12,7 @@ type ServerRound = ServerRound.ServerRound;
 local ServerStorage = game:GetService("ServerStorage");
 
 local ExplosivePunchServerAction = {
-  ID = ExplosivePunchClientAction.ID;
+  id = ExplosivePunchClientAction.id;
   name = ExplosivePunchClientAction.name;
   description = ExplosivePunchClientAction.description;
 };
@@ -62,8 +62,8 @@ function ExplosivePunchServerAction.new(): ServerAction
 
               table.insert(hitContestants, possibleEnemyContestant);
               possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 15, {
-                contestant = contestant;
-                actionID = ExplosivePunchServerAction.ID;
+                contestantID = contestant.id;
+                actionID = ExplosivePunchServerAction.id;
               });
 
             end;
@@ -160,7 +160,7 @@ function ExplosivePunchServerAction.new(): ServerAction
     if contestant.player then
     
       actionRemoteFunction = Instance.new("RemoteFunction");
-      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
       actionRemoteFunction.OnServerInvoke = function(player, chargeMode: "charging" | "release")
   
         assert(not chargeMode or (typeof(chargeMode) == "string" and (chargeMode == "charging" or chargeMode == "release")), "Charge mode must be nil, \"charging\", or \"release\"");  
@@ -184,7 +184,7 @@ function ExplosivePunchServerAction.new(): ServerAction
   end;
 
   return ServerAction.new({
-    ID = ExplosivePunchServerAction.ID;
+    id = ExplosivePunchServerAction.id;
     name = ExplosivePunchServerAction.name;
     description = ExplosivePunchServerAction.description;
     activate = activate;

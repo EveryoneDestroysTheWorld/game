@@ -23,7 +23,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
   if shouldCreateRound then
 
     round = ServerRound.new({
-      ID = HttpService:GenerateGUID();
+      id = HttpService:GenerateGUID();
       stageID = Stage.random().ID :: string;
       gameModeID = 1;
       contestantIDs = {};
@@ -101,7 +101,7 @@ local function startRound()
 
       -- Add the NPC to the contestant list.
       local botContestant = ServerContestant.new({
-        ID = i * 0.01;
+        id = i * 0.01;
         character = character;
         effects = {};
         name = `NPC {i * 0.01}`;
@@ -402,7 +402,7 @@ local function checkPlayerList(player: Player)
       -- Verify that the player has at least one archetype.
       local profile = Profile.fromID(playerID, true);    --- edit
       round:addContestant(ServerContestant.new({
-        ID = player.UserId;
+        id = player.UserId;
         player = player;
         character = player.Character;
         name = player.Name;

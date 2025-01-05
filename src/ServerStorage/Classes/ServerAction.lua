@@ -5,7 +5,7 @@ local ServerContestant = require(script.Parent.ServerContestant);
 type ServerContestant = ServerContestant.ServerContestant;
 
 export type ActionProperties = {
-  ID: number;
+  id: string;
   name: string;
   description: string;
   activate: (self: ServerAction, ...any) -> ();

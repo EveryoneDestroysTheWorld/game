@@ -1,7 +1,8 @@
 --!strict
 -- Programmers: Hati ---- Heavily modified edit of RocketFeet
--- Designers: Christian Toney (Sudobeast)
--- © 2024 Beastslash LLC
+-- Designers: Christian Toney (Christian_Toney)
+-- 
+-- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService")
@@ -15,7 +16,7 @@ type ServerRound = ServerRound.ServerRound;
 local ServerStorage = game:GetService("ServerStorage");
 
 local DiveBombServerAction = {
-	ID = DiveBombClientAction.ID;
+	id = DiveBombClientAction.id;
 	name = DiveBombClientAction.name;
 	description = DiveBombClientAction.description;
 };
@@ -88,8 +89,8 @@ local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant
 					size = size/3
 				end
 				contestant:updateHealth(contestant.currentHealth - size*3, {
-					contestant = contestant;
-					actionID = actionID;
+					contestantID = contestant.id;
+					actionID = DiveBombServerAction.id;
 				});
 			end
 		end
@@ -268,7 +269,7 @@ function DiveBombServerAction.new(): ServerAction
 		if contestant.player then
 
 			local remoteFunction = Instance.new("RemoteFunction");
-			remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+			remoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
 			remoteFunction.OnServerInvoke = function(player)
 	
 				if player == contestant.player then
@@ -292,7 +293,7 @@ function DiveBombServerAction.new(): ServerAction
 
 	return ServerAction.new({
 		name = DiveBombServerAction.name;
-		ID = DiveBombServerAction.ID;
+		id = DiveBombServerAction.id;
 		description = DiveBombServerAction.description;
 		breakdown = breakdown;
 		activate = activate;

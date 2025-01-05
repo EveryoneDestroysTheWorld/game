@@ -9,7 +9,7 @@
 export type ActionProperties = {
 
   -- The ID of the action. Keep this unique.
-  ID: number;
+  id: string;
 
   -- The name of the action.
   name: string;
@@ -61,7 +61,7 @@ function ClientAction.new(properties: ActionProperties): ClientAction
   
 end
 
-function ClientAction.get(actionID: number): ClientAction
+function ClientAction.get(actionID: string): ClientAction
 
   for _, instance in script.Parent.Actions:GetChildren() do
   

@@ -21,7 +21,7 @@ type Effect = Effect.Effect;
 local HttpService = game:GetService("HttpService");
 
 local SuperHammerServerItem = {
-  ID = SuperHammerClientItem.ID;
+  id = SuperHammerClientItem.id;
   name = SuperHammerClientItem.name;
   description = SuperHammerClientItem.description;
 };
@@ -186,7 +186,7 @@ function SuperHammerServerItem.new(): ServerItem
                   -- Take damage.
                   possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 10, {
                     contestantID = _contestant.ID;
-                    itemID = self.ID;
+                    itemID = self.id;
                   });
 
                 end;
@@ -250,7 +250,7 @@ function SuperHammerServerItem.new(): ServerItem
         -- Reduce the user's stamina.
         _contestant:updateStamina(_contestant.currentStamina - 10, {
           contestantID = _contestant.ID,
-          itemID = self.ID
+          itemID = self.id
         });
 
         -- Swing the hammer.
@@ -426,7 +426,7 @@ function SuperHammerServerItem.new(): ServerItem
                   -- Take damage.
                   possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - actualDamage, {
                     contestantID = _contestant.ID;
-                    itemID = self.ID;
+                    itemID = self.id;
                   });
 
                 end;
@@ -537,7 +537,7 @@ function SuperHammerServerItem.new(): ServerItem
 
             _contestant:updateStamina(_contestant.currentStamina - 1, {
               contestantID = _contestant.ID,
-              itemID = self.ID
+              itemID = self.id
             });
 
           end;
@@ -608,7 +608,7 @@ function SuperHammerServerItem.new(): ServerItem
 
     if _contestant and _contestant.player then
 
-      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(_contestant.player, self.ID, _specificItemID);
+      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(_contestant.player, self.id, _specificItemID);
       _contestant = nil;
 
     end;
@@ -724,14 +724,14 @@ function SuperHammerServerItem.new(): ServerItem
 
       _remoteEvent = createInventoryRemoteEvent(contestant.player, specificItemID);
 
-      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID, specificItemID);
+      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.id, specificItemID);
 
     end;
 
   end;
 
   local item = ServerItem.new({
-    ID = SuperHammerServerItem.ID;
+    id = SuperHammerServerItem.id;
     name = SuperHammerServerItem.name;
     description = SuperHammerServerItem.description;
     activate = activate;

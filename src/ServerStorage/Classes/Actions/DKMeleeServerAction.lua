@@ -16,7 +16,7 @@ local ServerStorage = game:GetService("ServerStorage");
 local displayObjects = ReplicatedStorage.Client.InGameDisplayObjects
 
 local MeleeServerAction = {
-	ID = MeleeClientAction.ID;
+	id = MeleeClientAction.id;
 	name = MeleeClientAction.name;
 	description = MeleeClientAction.description;
 };
@@ -51,7 +51,7 @@ local function damageEvent(primaryPart, round, contestant)
 							local newHealth = currentHealth - 15;
 							possibleEnemyContestant:updateHealth(newHealth, {
 								contestant = contestant;
-								actionID = MeleeServerAction.ID;
+								actionID = MeleeServerAction.id;
 							});
 
 						end
@@ -161,8 +161,8 @@ local function setOnFire(model, round, contestant)
 					if contestant["name"] == model.Name then
 						print(contestant)
 						contestant:updateHealth(contestant.currentHealth - 4, {
-							contestant = contestant;
-							actionID = MeleeServerAction.ID;
+							contestantID = contestant.id;
+							actionID = MeleeServerAction.id;
 						});
 					end
 				end
@@ -431,7 +431,7 @@ function MeleeServerAction.new(): ServerAction
 		if contestant.player then
 
 			local remoteFunction = Instance.new("RemoteFunction");
-			remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+			remoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
 			remoteFunction.OnServerInvoke = function(player)
 
 				if player == contestant.player then
@@ -458,7 +458,7 @@ function MeleeServerAction.new(): ServerAction
 
 	return ServerAction.new({
 		name = MeleeServerAction.name;
-		ID = MeleeServerAction.ID;
+		id = MeleeServerAction.id;
 		description = MeleeServerAction.description;
 		breakdown = breakdown;
 		activate = activate;

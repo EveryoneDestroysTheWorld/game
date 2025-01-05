@@ -21,7 +21,7 @@ type Stage = Stage.Stage;
 export type ServerRoundConstructorProperties = {
 
   -- This round's unique ID.
-  ID: string;
+  id: string;
 
   gameModeID: number;
   
@@ -122,7 +122,7 @@ function ServerRound.fromPrivateServerID(privateServerID: number): ServerRound
 
   -- Return the new round.
   return ServerRound.new({
-    ID = roundMetadata.ID;
+    id = roundMetadata.ID;
     stageID = roundMetadata.stageID;
     gameModeID = roundMetadata.gameModeID;
     contestantIDs = roundMetadata.contestantIDs;
@@ -164,7 +164,7 @@ function ServerRound.__index:start(): ()
 
           end;
           
-          if contestant.ID < 1 then
+          if contestant.id < 1 then
               
             archetype:runAutoPilot(actions);
           
@@ -173,7 +173,7 @@ function ServerRound.__index:start(): ()
         else
 
           contestant:disqualify();
-          warn(`Disqualified {contestant.name} ({contestant.ID}) because they don't have an archetype.`);
+          warn(`Disqualified {contestant.name} ({contestant.id}) because they don't have an archetype.`);
 
         end;
 
@@ -208,7 +208,7 @@ function ServerRound.__index:start(): ()
 
   end);
 
-  ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(self.ID, self.timeStarted);
+  ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(self.id, self.timeStarted);
 
 end;
 
@@ -217,7 +217,7 @@ function ServerRound.__index:addContestant(contestant: ServerContestant): ()
 
   table.insert(self.contestants, contestant);
   events[self].onContestantAdded:Fire(contestant);
-  ReplicatedStorage.Shared.Events.ContestantAdded:FireAllClients(self.ID, contestant:convertToClient());
+  ReplicatedStorage.Shared.Events.ContestantAdded:FireAllClients(self.id, contestant:convertToClient());
 
 end;
 
@@ -232,7 +232,7 @@ function ServerRound.__index:getClientConstructorProperties(): any
   end;
 
   return {
-    ID = self.ID;
+    id = self.id;
     contestants = contestants;
     status = self.status;
     duration = self.duration;
@@ -247,7 +247,7 @@ function ServerRound.__index:setStatus(newStatus: RoundStatus): ()
   local oldStatus = self.status;
   self.status = newStatus;
   events[self].onStatusChanged:Fire(newStatus, oldStatus);
-  ReplicatedStorage.Shared.Events.RoundStatusChanged:FireAllClients(self.ID, newStatus, oldStatus);
+  ReplicatedStorage.Shared.Events.RoundStatusChanged:FireAllClients(self.id, newStatus, oldStatus);
 
 end;
 
@@ -303,17 +303,17 @@ function ServerRound.__index:stop(forced: boolean?): ()
   local contestantIDs = {};
   for _, contestant in ipairs(self.contestants) do
 
-    if contestant.ID > 0 then
+    if contestant.id > 0 then
 
-      table.insert(contestantIDs, contestant.ID);
+      table.insert(contestantIDs, contestant.id);
 
     end;
 
   end;
 
-  -- DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.ID, self:toString(), contestantIDs);
+  -- DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.id, self:toString(), contestantIDs);
   events[self][if forced then "onStopped" else "onEnded"]:Fire();
-  ReplicatedStorage.Shared.Events[if forced then "RoundStopped" else "RoundEnded"]:FireAllClients(self.ID);
+  ReplicatedStorage.Shared.Events[if forced then "RoundStopped" else "RoundEnded"]:FireAllClients(self.id);
 
 end;
 
@@ -327,7 +327,7 @@ function ServerRound.__index:toString()
   end;
 
   return HttpService:JSONEncode({
-    ID = self.ID;
+    id = self.id;
     stageID = self.stageID;
     timeStarted = self.timeStarted;
     timeEnded = self.timeEnded;

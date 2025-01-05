@@ -12,7 +12,7 @@ local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton)
 type ClientAction = ClientAction.ClientAction;
 
 local ExplosivePunchAction = {
-  ID = 1;
+  id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
   iconImage = "rbxassetid://17771917538";
   name = "Explosive Punch";
   description = "Land explosive punches to your enemies.";
@@ -30,7 +30,7 @@ function ExplosivePunchAction.new(): ClientAction
 
   local function activate(self: ClientAction)
 
-    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(`{player.UserId}_{self.ID}`):InvokeServer();
+    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(`{player.UserId}_{self.id}`):InvokeServer();
 
   end;
 
@@ -38,7 +38,7 @@ function ExplosivePunchAction.new(): ClientAction
 
     ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
       type = "Action";
-      key = self.ID;
+      key = self.id;
       onActivate = function()
   
         self:activate();
@@ -63,7 +63,7 @@ function ExplosivePunchAction.new(): ClientAction
   end;
 
   local action = ClientAction.new({
-    ID = ExplosivePunchAction.ID;
+    id = ExplosivePunchAction.id;
     iconImage = ExplosivePunchAction.iconImage;
     name = ExplosivePunchAction.name;
     description = ExplosivePunchAction.description;

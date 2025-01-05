@@ -15,7 +15,7 @@ type ServerAction = ServerAction.ServerAction;
 local downContestant = require(ServerStorage.Modules.downContestant);
 
 local ExplosiveMimicServerArchetype = {
-  ID = ExplosiveMimicClientArchetype.ID;
+  id = ExplosiveMimicClientArchetype.id;
   name = ExplosiveMimicClientArchetype.name;
   description = ExplosiveMimicClientArchetype.description;
   actionIDs = ExplosiveMimicClientArchetype.actionIDs;
@@ -479,7 +479,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
                   table.insert(hitContestants, possibleEnemyContestant);
                   possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 50, {
                     contestantID = contestant.ID;
-                    archetypeID = ExplosiveMimicServerArchetype.ID;
+                    archetypeID = ExplosiveMimicServerArchetype.id;
                   });
   
                 end;
@@ -535,14 +535,14 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.id);
 
     end;
 
   end;
 
   return ServerArchetype.new({
-    ID = ExplosiveMimicServerArchetype.ID;
+    id = ExplosiveMimicServerArchetype.id;
     name = ExplosiveMimicServerArchetype.name;
     description = ExplosiveMimicServerArchetype.description;
     actionIDs = ExplosiveMimicServerArchetype.actionIDs;

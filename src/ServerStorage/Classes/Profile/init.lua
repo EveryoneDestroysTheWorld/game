@@ -42,7 +42,7 @@ export type Profile = typeof(setmetatable({}, {__index = Profile.__index})) & Pr
 function Profile.new(properties: ProfileProperties): Profile
   
   local player = {
-    ID = properties.ID;
+    id = properties.ID;
     timeFirstPlayed = properties.timeFirstPlayed;
     timeLastPlayed = properties.timeLastPlayed;
   };
@@ -60,7 +60,7 @@ function Profile.fromID(playerID: number, createIfNotFound: boolean?): Profile
 
     local playTime = DateTime.now().UnixTimestampMillis;
     playerData = HttpService:JSONEncode({
-      ID = playerID;
+      id = playerID;
       timeFirstPlayed = playTime;
       timeLastPlayed = playTime;
     });
@@ -91,7 +91,7 @@ function Profile.__index:createStage(): Stage.Stage
     permissionOverrides = {};
     members = {
       {
-        ID = self.ID;
+        id = self.id;
         role = "Admin";
       }
     };
@@ -100,14 +100,14 @@ function Profile.__index:createStage(): Stage.Stage
   stage:updateMetadata(HttpService:JSONDecode(stage:toString()));
 
   -- Add this stage to the player's inventory.
-  local stageInventoryKeyList = DataStore.Inventory:ListKeysAsync(`{self.ID}/stages`);
+  local stageInventoryKeyList = DataStore.Inventory:ListKeysAsync(`{self.id}/stages`);
   while not stageInventoryKeyList.IsFinished do
 
     stageInventoryKeyList:AdvanceToNextPageAsync();
 
   end;
   local latestKeys = stageInventoryKeyList:GetCurrentPage();
-  local latestKey = (latestKeys[#latestKeys] or {KeyName = `{self.ID}/stages/1`}).KeyName;
+  local latestKey = (latestKeys[#latestKeys] or {KeyName = `{self.id}/stages/1`}).KeyName;
   DataStore.Inventory:UpdateAsync(latestKey, function(encodedStageIDs)
     
     local stageIDs = HttpService:JSONDecode(encodedStageIDs or "{}");
@@ -117,7 +117,7 @@ function Profile.__index:createStage(): Stage.Stage
   end);
 
   -- Notify the player if they're here.
-  local player = Players:GetPlayerByUserId(self.ID);
+  local player = Players:GetPlayerByUserId(self.id);
   if player then
 
     ReplicatedStorage.Shared.Events.StageAdded:FireClient(player, stage);
@@ -132,7 +132,7 @@ end;
 function Profile.__index:getArchetypeIDs(): {number}
 
   local archetypeIDs = {};
-  local keyList = DataStore.Inventory:ListKeysAsync(`{self.ID}/archetypes`);
+  local keyList = DataStore.Inventory:ListKeysAsync(`{self.id}/archetypes`);
   repeat
 
     local keys = keyList:GetCurrentPage();
@@ -172,7 +172,7 @@ end;
 function Profile.__index:getStages(): {Stage.Stage}
 
   local stages = {};
-  local keyList = DataStore.Inventory:ListKeysAsync(`{self.ID}/stages`);
+  local keyList = DataStore.Inventory:ListKeysAsync(`{self.id}/stages`);
   repeat
 
     local keys = keyList:GetCurrentPage();
@@ -272,12 +272,12 @@ function Profile.__index:updateArchetypeIDs(newArchetypeList: {number}): ()
 
   for pageNumber, page in ipairs(pages) do
 
-    DataStore.Inventory:SetAsync(`{self.ID}/archetypes/{pageNumber}`, HttpService:JSONEncode(page));
+    DataStore.Inventory:SetAsync(`{self.id}/archetypes/{pageNumber}`, HttpService:JSONEncode(page));
 
   end;
 
   -- Removed unused pages from the datastore.
-  local keyList = DataStore.Inventory:ListKeysAsync(`{self.ID}/archetypes`);
+  local keyList = DataStore.Inventory:ListKeysAsync(`{self.id}/archetypes`);
   repeat
 
     local keys = keyList:GetCurrentPage();

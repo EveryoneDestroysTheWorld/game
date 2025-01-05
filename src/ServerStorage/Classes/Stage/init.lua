@@ -197,6 +197,7 @@ function Stage.fromID(id: string): Stage
   local encodedStageData = DataStoreService:GetDataStore("StageMetadata"):GetAsync(id);
   assert(encodedStageData, `Stage {id} doesn't exist.`);
   
+  -- TODO: Replace "ID" with "id".
   local stageData = HttpService:JSONDecode(encodedStageData);
   stageData.ID = id;
   

@@ -16,7 +16,7 @@ local ContextActionService = game:GetService("ContextActionService");
 local ComboNotification = require(script.ComboNotification);
 
 local SuperHammerClientItem = {
-  ID = 3;
+  id = script.Name:sub(1, script.Name:gsub("ClientItem", ""):len());
   name = "Super Hammer";
   description = "Players can use the Giant Hammer to destroy structures and give their enemies a nice facial. Can be thrown, but the player gotta get it back themself!";
   iconImage = "rbxassetid://131350242938144";
@@ -118,7 +118,7 @@ function SuperHammerClientItem.new(): ClientItem
   end;
 
   return ClientItem.new({
-    ID = SuperHammerClientItem.ID;
+    id = SuperHammerClientItem.id;
     iconImage = SuperHammerClientItem.iconImage;
     name = SuperHammerClientItem.name;
     description = SuperHammerClientItem.description;

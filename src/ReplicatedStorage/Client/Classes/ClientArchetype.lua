@@ -4,7 +4,7 @@
 
 export type ClientArchetypeProperties = {
   
-  ID: number;
+  id: string;
   
   name: string;
 
@@ -32,7 +32,7 @@ function ClientArchetype.new(properties: ClientArchetypeProperties): ClientArche
   
 end
 
-function ClientArchetype.get(archetypeID: number): ClientArchetype
+function ClientArchetype.get(archetypeID: string): ClientArchetype
 
   for _, instance in ipairs(script.Parent.Archetypes:GetChildren()) do
   

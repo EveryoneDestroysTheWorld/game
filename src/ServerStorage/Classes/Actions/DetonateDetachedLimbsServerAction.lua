@@ -12,7 +12,7 @@ local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
 
 local DetonateDetachedLimbsServerAction = {
-  ID = DetonateDetachedLimbsClientAction.ID;
+  id = DetonateDetachedLimbsClientAction.id;
   name = DetonateDetachedLimbsClientAction.name;
   description = DetonateDetachedLimbsClientAction.description;
 };
@@ -23,7 +23,7 @@ function DetonateDetachedLimbsServerAction.new(): ServerAction
   local round: ServerRound = nil;
   local function activate()
 
-    for limbName, instance in pairs(ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.ID}_GetDetachedLimbs`):Invoke(contestant)) do
+    for limbName, instance in pairs(ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.id}_GetDetachedLimbs`):Invoke(contestant)) do
 
       -- Use task.spawn so that they all explode at the same time.
       task.spawn(function()
@@ -48,8 +48,8 @@ function DetonateDetachedLimbsServerAction.new(): ServerAction
 
                 table.insert(hitContestants, possibleEnemyContestant);
                 possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 15, {
-                  contestant = contestant;
-                  actionID = DetonateDetachedLimbsServerAction.ID;
+                  contestantID = contestant.id;
+                  actionID = DetonateDetachedLimbsServerAction.id;
                 });
 
               end;
@@ -105,7 +105,7 @@ function DetonateDetachedLimbsServerAction.new(): ServerAction
     if contestant.player then
     
       local actionRemoteFunction = Instance.new("RemoteFunction");
-      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
       actionRemoteFunction.OnServerInvoke = function(player)
   
         if player == contestant.player then
@@ -129,7 +129,7 @@ function DetonateDetachedLimbsServerAction.new(): ServerAction
 
   return ServerAction.new({
     name = DetonateDetachedLimbsServerAction.name;
-    ID = DetonateDetachedLimbsServerAction.ID;
+    id = DetonateDetachedLimbsServerAction.id;
     description = DetonateDetachedLimbsServerAction.description;
     breakdown = breakdown;
     activate = activate;

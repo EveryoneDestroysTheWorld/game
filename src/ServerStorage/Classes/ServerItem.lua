@@ -4,12 +4,13 @@
 -- Equip functions should be manually handled on a case-by-case basis.
 -- 
 -- Programmers: Christian Toney (Christian_Toney)
--- © 2024 Beastslash LLC
+-- © 2024 – 2025 Beastslash LLC
 
 export type ServerItemProperties = {
 
   -- The ID of the item. Keep this unique.
-  ID: number;
+  id: string;
+
   name: string;
 
   -- The description of the item. 
