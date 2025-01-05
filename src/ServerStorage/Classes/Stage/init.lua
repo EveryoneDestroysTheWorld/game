@@ -20,14 +20,14 @@ type PermissionOverride = {
 };
 
 type StageMemberObject = {
-  ID: number;
+  id: number;
   role: "Admin";
 };
 
 type StageConstructorProperties = {
 
   -- The stage's unique ID.
-  ID: string?;
+  id: string?;
   
   -- A list of stage overrides.
   permissionOverrides: {PermissionOverride};
@@ -199,7 +199,7 @@ function Stage.fromID(id: string): Stage
   
   -- TODO: Replace "ID" with "id".
   local stageData = HttpService:JSONDecode(encodedStageData);
-  stageData.ID = id;
+  stageData.id = id;
   
   return Stage.new(stageData);
   
@@ -208,14 +208,14 @@ end
 -- Verifies that this stage has an ID. If it doesn't, then it finds and adds one.
 function Stage.__index:verifyID(): ()
   
-  while not self.ID do
+  while not self.id do
 
     -- Generate a stage ID.
     local possibleID = HttpService:GenerateGUID();
     local canGetStage = pcall(function() Stage.fromID(possibleID) end);
     if not canGetStage then 
 
-      self.ID = possibleID;
+      self.id = possibleID;
 
     end;
     
@@ -230,7 +230,7 @@ function Stage.__index:updateBuildData(newBuildData: {string}): ()
 
   for index, chunk in ipairs(newBuildData) do
 
-    DataStore.StageBuildData:SetAsync(`{self.ID}/{index}`, chunk);
+    DataStore.StageBuildData:SetAsync(`{self.id}/{index}`, chunk);
     events.onBuildDataUpdateProgressChanged:Fire(index, #newBuildData);
 
   end
@@ -243,7 +243,7 @@ function Stage.__index:updateMetadata(newData: UpdatableStageProperties): ()
 
   self:verifyID();
 
-  DataStore.StageMetadata:UpdateAsync(self.ID, function(encodedOldMetadata)
+  DataStore.StageMetadata:UpdateAsync(self.id, function(encodedOldMetadata)
   
     local newMetadata = HttpService:JSONDecode(encodedOldMetadata or "{}");
     for key, value in pairs(newData) do
@@ -280,7 +280,7 @@ function Stage.__index:delete(): ()
   end;
 
   -- Delete build data.
-  local keyList = DataStore.StageBuildData:ListKeysAsync(self.ID);
+  local keyList = DataStore.StageBuildData:ListKeysAsync(self.id);
   repeat
 
     local keys = keyList:GetCurrentPage();
@@ -299,10 +299,10 @@ function Stage.__index:delete(): ()
   until keyList.IsFinished;
   
   -- Delete metadata.
-  DataStore.StageMetadata:RemoveAsync(self.ID);
+  DataStore.StageMetadata:RemoveAsync(self.id);
 
   -- Tell the player.
-  print(`Stage {self.ID} has been successfully deleted.`);
+  print(`Stage {self.id} has been successfully deleted.`);
   events.onDelete:Fire();
   
 end
@@ -425,12 +425,12 @@ function Stage.__index:publish(): ()
   end;
 
   -- Add this stage to the published stages list.
-  DataStore.PublishedStages:SetAsync(self.ID, DateTime.now().UnixTimestampMillis);
+  DataStore.PublishedStages:SetAsync(self.id, DateTime.now().UnixTimestampMillis);
 
   -- Mark this stage has published.
   self:updateMetadata({isPublished = true});
 
-  print(`Successfully published Stage {self.ID}.`);
+  print(`Successfully published Stage {self.id}.`);
 
 end;
 
@@ -441,19 +441,19 @@ function Stage.__index:unpublish(): ()
   assert(self.isPublished, "This stage is already unpublished.");
 
   -- Remove this stage from the published stages list.
-  DataStore.PublishedStages:RemoveAsync(self.ID);
+  DataStore.PublishedStages:RemoveAsync(self.id);
 
   -- Mark this stage has unpublished.
   self:updateMetadata({isPublished = false});
 
-  print(`Successfully unpublished Stage {self.ID}.`);
+  print(`Successfully unpublished Stage {self.id}.`);
 
 end;
 
 -- Returns this stage's build data.
 function Stage.__index:getBuildData(): StageBuildData
 
-  local keyList = DataStore.StageBuildData:ListKeysAsync(self.ID);
+  local keyList = DataStore.StageBuildData:ListKeysAsync(self.id);
   local buildDataEncoded = {};
   repeat
 

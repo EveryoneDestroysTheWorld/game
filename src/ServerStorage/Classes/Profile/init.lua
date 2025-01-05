@@ -16,7 +16,7 @@ local Stage = require(script.Parent.Stage);
 type ProfileProperties = {
   
   -- The player's ID.
-  ID: number;
+  id: number;
 
   timeFirstPlayed: number;
 
@@ -31,8 +31,8 @@ local Profile = {
 export type ProfileMethods = {
   delete: (self: Profile) -> ();
   createStage: (self: Profile) -> ();
-  getArchetypeIDs: (self: Profile) -> {number};
-  updateArchetypeIDs: (self: Profile, newArchetypeIDList: {number}) -> ();
+  getArchetypeIDs: (self: Profile) -> {string};
+  updateArchetypeIDs: (self: Profile, newArchetypeIDList: {string}) -> ();
   getStages: (self: Profile) -> ();
 }
 
@@ -42,7 +42,7 @@ export type Profile = typeof(setmetatable({}, {__index = Profile.__index})) & Pr
 function Profile.new(properties: ProfileProperties): Profile
   
   local player = {
-    id = properties.ID;
+    id = properties.id;
     timeFirstPlayed = properties.timeFirstPlayed;
     timeLastPlayed = properties.timeLastPlayed;
   };
@@ -92,7 +92,7 @@ function Profile.__index:createStage(): Stage.Stage
     members = {
       {
         id = self.id;
-        role = "Admin";
+        role = "Admin" :: "Admin";
       }
     };
   });
@@ -111,7 +111,7 @@ function Profile.__index:createStage(): Stage.Stage
   DataStore.Inventory:UpdateAsync(latestKey, function(encodedStageIDs)
     
     local stageIDs = HttpService:JSONDecode(encodedStageIDs or "{}");
-    table.insert(stageIDs, stage.ID);
+    table.insert(stageIDs, stage.id);
     return HttpService:JSONEncode(stageIDs);
 
   end);
@@ -129,7 +129,7 @@ function Profile.__index:createStage(): Stage.Stage
 end;
 
 -- Returns a list of archetype IDs.
-function Profile.__index:getArchetypeIDs(): {number}
+function Profile.__index:getArchetypeIDs(): {string}
 
   local archetypeIDs = {};
   local keyList = DataStore.Inventory:ListKeysAsync(`{self.id}/archetypes`);
@@ -245,10 +245,10 @@ function Profile.__index:getStages(): {Stage.Stage}
 end;
 
 -- Updates the player's owned archetype ID list.
-function Profile.__index:updateArchetypeIDs(newArchetypeList: {number}): ()
+function Profile.__index:updateArchetypeIDs(newArchetypeList: {string}): ()
 
   -- Divide the IDs into separate lists to comply with Roblox's datastore limitations.
-  local pages: {{number}} = {};
+  local pages: {{string}} = {};
   local currentPage = 1;
   pages[currentPage] = newArchetypeList;
   while pages[currentPage] do

@@ -24,8 +24,8 @@ local didSuccessfullyInitializeRound, message = pcall(function()
 
     round = ServerRound.new({
       id = HttpService:GenerateGUID();
-      stageID = Stage.random().ID :: string;
-      gameModeID = 1;
+      stageID = Stage.random().id :: string;
+      gameModeID = "TurfWar";
       contestantIDs = {};
       duration = 180;
       status = "Waiting for players" :: "Waiting for players";
@@ -87,7 +87,7 @@ local function startRound()
 
       else 
 
-        warn(`Contestant {contestant.name} ({contestant.ID}) doesn't have a team.`)
+        warn(`Contestant {contestant.name} ({contestant.id}) doesn't have a team.`)
 
       end;
 
@@ -136,7 +136,7 @@ local function startRound()
 
     end;
 
-    ReplicatedStorage.Shared.Functions.GetArchetypeIDs.OnServerInvoke = function(player): {number}
+    ReplicatedStorage.Shared.Functions.GetArchetypeIDs.OnServerInvoke = function(player): {string}
 
       local contestant = getContestantFromPlayer(player);
       assert(contestant, `{player.Name} ({player.UserId}) isn't a contestant in this round, so it is unnecessary to get the archetype list.`);
@@ -144,27 +144,27 @@ local function startRound()
 
       -- Verify that the player has the default archetypes.
       local archetypeIDs = contestant.profile:getArchetypeIDs();
-      local newArchetypeIDs: {number}? = nil;
-      for i = 1, 4 do
+      local _newArchetypeIDs: {string}? = nil;
+      for _, archetypeID in {"ExplosiveMimic", "BatterUpDemon", "DraconicKnight", "UndeadConciousness"} do
 
-        if not table.find(archetypeIDs, i) then
+        if not table.find(archetypeIDs, archetypeID) then
 
-          newArchetypeIDs = newArchetypeIDs or table.clone(archetypeIDs);
-          table.insert(newArchetypeIDs :: {number}, i);
+          local newArchetypeIDs = _newArchetypeIDs or table.clone(archetypeIDs);
+          table.insert(newArchetypeIDs, archetypeID);
+          _newArchetypeIDs = newArchetypeIDs;
 
         end;
 
       end;
 
       -- Return the archetype IDs.
-      if newArchetypeIDs then
+      if _newArchetypeIDs then
 
-        contestant.profile:updateArchetypeIDs(newArchetypeIDs);
-        return newArchetypeIDs;
+        contestant.profile:updateArchetypeIDs(_newArchetypeIDs);
 
       end;
 
-      return archetypeIDs;
+      return _newArchetypeIDs or archetypeIDs;
 
     end;
 
@@ -201,7 +201,7 @@ local function startRound()
 
               for _, archetype in ipairs(ServerArchetype.getAll()) do
 
-                table.insert(ownedArchetypeIDs, archetype.ID);
+                table.insert(ownedArchetypeIDs, archetype.id);
 
               end;
 
@@ -345,7 +345,7 @@ local function startRound()
           -- Privately let every player teammate know about the change.
           if possibleTeammate.teamID == contestant.teamID then
 
-            ReplicatedStorage.Shared.Events.ArchetypePrivatelyChosen:FireClient(possibleTeammate.player, contestant.ID, archetypeID);
+            ReplicatedStorage.Shared.Events.ArchetypePrivatelyChosen:FireClient(possibleTeammate.player, contestant.id, archetypeID);
 
           end;
 
