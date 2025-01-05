@@ -29,9 +29,9 @@ export type ClientContestantProperties = {
 }
 
 export type Cause = {
-  archetypeID: number;
+  archetypeID: string;
   contestantID: number;
-  actionID: number?;
+  actionID: string?;
 }
 
 export type ClientContestantMethods = {

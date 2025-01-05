@@ -185,7 +185,7 @@ function SuperHammerServerItem.new(): ServerItem
 
                   -- Take damage.
                   possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 10, {
-                    contestantID = _contestant.ID;
+                    contestantID = _contestant.id;
                     itemID = self.id;
                   });
 
@@ -249,7 +249,7 @@ function SuperHammerServerItem.new(): ServerItem
 
         -- Reduce the user's stamina.
         _contestant:updateStamina(_contestant.currentStamina - 10, {
-          contestantID = _contestant.ID,
+          contestantID = _contestant.id,
           itemID = self.id
         });
 
@@ -425,7 +425,7 @@ function SuperHammerServerItem.new(): ServerItem
 
                   -- Take damage.
                   possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - actualDamage, {
-                    contestantID = _contestant.ID;
+                    contestantID = _contestant.id;
                     itemID = self.id;
                   });
 
@@ -486,7 +486,7 @@ function SuperHammerServerItem.new(): ServerItem
 
                 for _, contestant in _round.contestants do
 
-                  if contestant.ID ~= _contestant.ID and contestant.character and part:IsDescendantOf(contestant.character) then
+                  if contestant.id ~= _contestant.id and contestant.character and part:IsDescendantOf(contestant.character) then
 
                     shouldSkipToDrive = false;
                     break;
@@ -536,7 +536,7 @@ function SuperHammerServerItem.new(): ServerItem
           while _contestant.currentStamina > 10 and task.wait(0.1) do
 
             _contestant:updateStamina(_contestant.currentStamina - 1, {
-              contestantID = _contestant.ID,
+              contestantID = _contestant.id,
               itemID = self.id
             });
 

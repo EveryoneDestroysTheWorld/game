@@ -48,7 +48,7 @@ local function MatchInitializationScreen()
     local ownTeamID: number?;
     for _, contestant in contestants do
 
-      if contestant.ID == player.UserId then
+      if contestant.id == player.UserId then
 
         ownTeamID = contestant.teamID;
         break;
@@ -59,7 +59,7 @@ local function MatchInitializationScreen()
 
     for _, contestant in contestants do
 
-      local isRival = contestant.ID ~= player.UserId and not ownTeamID or contestant.teamID ~= ownTeamID;
+      local isRival = contestant.id ~= player.UserId and not ownTeamID or contestant.teamID ~= ownTeamID;
       local selectedTable = if isRival then newRivalTeammateCards else newAllyTeammateCards;
       local teammateCard = React.createElement(TeammateCard, {
         contestant = contestant;

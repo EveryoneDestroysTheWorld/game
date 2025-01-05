@@ -60,7 +60,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
         for _, possibleEnemyContestant in round.contestants do
 
-          if contestant.ID == cause.contestantID then
+          if contestant.id == cause.contestantID then
 
             enemyContestant = possibleEnemyContestant;
             break;
@@ -73,7 +73,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
       local enemyCharacter = if enemyContestant then enemyContestant.character else nil;
 
-      if isTargetPartAlmostDestroyed and primaryPart and newHealth < oldHealth and enemyCharacter and cause and cause.actionID and cause.actionID ~= 2 then
+      if isTargetPartAlmostDestroyed and primaryPart and newHealth < oldHealth and enemyCharacter and cause and cause.actionID and cause.actionID ~= "DetachLimb" then
 
         -- Determine if it is possible to get to the player before they kill the NPC.
         local enemyPrimaryPart = enemyCharacter.PrimaryPart;
@@ -204,7 +204,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
       -- STRATEGIC LIMB DETONATION
         -- If the bot sees an enemy nearby its detached limb, detonate it.
-      local detachLimbFunction = ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.ID}_GetDetachedLimbs`) :: BindableFunction?;
+      local detachLimbFunction = ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.id}_GetDetachedLimbs`) :: BindableFunction?;
       if detachLimbFunction then
 
         local detachedLimbs = detachLimbFunction:Invoke();
@@ -478,7 +478,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
   
                   table.insert(hitContestants, possibleEnemyContestant);
                   possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 50, {
-                    contestantID = contestant.ID;
+                    contestantID = contestant.id;
                     archetypeID = ExplosiveMimicServerArchetype.id;
                   });
   

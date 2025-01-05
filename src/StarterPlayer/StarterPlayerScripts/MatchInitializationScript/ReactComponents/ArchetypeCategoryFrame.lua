@@ -22,9 +22,9 @@ local function ArchetypeCategoryFrame(props: ArchetypeCategoryFrameProps)
   local archetypeButtons = {};
   for _, archetype in ipairs(props.archetypes) do
 
-    archetypeButtons[`Archetype{archetype.ID}`] = React.createElement(ArchetypeSelectionButton, {
+    archetypeButtons[`Archetype{archetype.id}`] = React.createElement(ArchetypeSelectionButton, {
       archetype = archetype;
-      isSelected = props.selectedArchetype and archetype.ID == props.selectedArchetype.id;
+      isSelected = props.selectedArchetype and archetype.id == props.selectedArchetype.id;
       onSelect = function()
 
         props.onArchetypeSelected(archetype);

@@ -55,7 +55,7 @@ local function DestructionBar(props: DestructionBarProps)
 
       for _, contestant in props.round.contestants do
 
-        if contestant.ID == tonumber(contestantID) then
+        if contestant.id == tonumber(contestantID) then
 
           if contestant.teamID then
 

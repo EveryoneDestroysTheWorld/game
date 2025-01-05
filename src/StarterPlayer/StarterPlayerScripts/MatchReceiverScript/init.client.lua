@@ -15,7 +15,7 @@ local RoundResultsWindow = require(script.ReactComponents.RoundResultsWindow);
 
 local initializedArchetype: ClientArchetype = nil;
 local initializedActions: {ClientAction} = {};
-local initializedItems: {{[string]: ClientItem}} = {};
+local initializedItems: {[string]: {[string]: ClientItem}} = {};
 
 -- Set up the UI.
 local player = Players.LocalPlayer;
@@ -73,7 +73,7 @@ ReplicatedStorage.Client.Functions.DestroyHUDButton.OnInvoke = function(buttonTy
 
 end;
 
-ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function(archetypeID: number)
+ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function(archetypeID: string)
 
   -- Set up the archetype and actions.
   initializedArchetype = ClientArchetype.get(archetypeID);
@@ -91,7 +91,7 @@ ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function
 
 end;
 
-ReplicatedStorage.Shared.Functions.InitializeItem.OnClientInvoke = function(itemID: number, specificItemID: string, ...: any)
+ReplicatedStorage.Shared.Functions.InitializeItem.OnClientInvoke = function(itemID: string, specificItemID: string, ...: any)
 
   local item = ClientItem.get(itemID);
   item:initialize(specificItemID, ...);
@@ -101,7 +101,7 @@ ReplicatedStorage.Shared.Functions.InitializeItem.OnClientInvoke = function(item
 
 end;
 
-ReplicatedStorage.Shared.Functions.BreakdownItem.OnClientInvoke = function(itemID: number, specificItemID: string)
+ReplicatedStorage.Shared.Functions.BreakdownItem.OnClientInvoke = function(itemID: string, specificItemID: string)
 
   initializedItems[itemID][specificItemID]:breakdown();
   initializedItems[itemID][specificItemID] = nil;
@@ -131,9 +131,9 @@ ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function()
 
   end;
 
-  for _, itemList in initializedItems do
+  for _, itemList in pairs(initializedItems) do
 
-    for _, item in itemList do
+    for _, item in pairs(itemList) do
 
       item:breakdown();
       print(`Item disabled: {item.name}`);
