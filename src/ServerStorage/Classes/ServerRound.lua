@@ -23,7 +23,7 @@ export type ServerRoundConstructorProperties = {
   -- This round's unique ID.
   id: string;
 
-  gameModeID: number;
+  gameModeID: string;
   
   -- This stage's ID.
   stageID: string;
@@ -110,7 +110,7 @@ function ServerRound.fromPrivateServerID(privateServerID: number): ServerRound
   assert(typeof(roundMetadata) == "table", "Round metadata isn't a table.");
   assert(typeof(roundMetadata.ID) == "string", "Round ID isn't a string.");
   assert(typeof(roundMetadata.stageID) == "string", "Stage ID isn't a string.");
-  assert(typeof(roundMetadata.gameModeID) == "number", "Game mode ID isn't a number.");
+  assert(typeof(roundMetadata.gameModeID) == "string", "Game mode ID isn't a string.");
   assert(typeof(roundMetadata.contestantIDs) == "table", "Round contestant IDs isn't a table.");
 
   for index, possibleContestantID in pairs(roundMetadata.contestantIDs) do
@@ -160,7 +160,7 @@ function ServerRound.__index:start(): ()
             local action = ServerAction.get(actionID);
             action:initialize(contestant, self);
             table.insert(self.actions :: {ServerAction}, action);
-            actions[actionID] = action;
+            table.insert(actions, action);
 
           end;
           

@@ -60,7 +60,7 @@ function ServerItem.new(properties: ServerItemProperties): ServerItem
 end
 
 -- Returns a ServerItem based on the ID.
-function ServerItem.get(itemID: number): ServerItem
+function ServerItem.get(itemID: string): ServerItem
 
   for _, instance in ipairs(script.Parent.Items:GetChildren()) do
   

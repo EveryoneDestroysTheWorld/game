@@ -38,7 +38,7 @@ function ServerAction.new(properties: ActionProperties): ServerAction
   
 end
 
-function ServerAction.get(actionID: number): ServerAction
+function ServerAction.get(actionID: string): ServerAction
 
   for _, instance in ipairs(script.Parent.Actions:GetChildren()) do
   

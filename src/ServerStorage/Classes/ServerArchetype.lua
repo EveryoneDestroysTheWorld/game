@@ -8,7 +8,7 @@ type ServerAction = ServerAction.ServerAction;
 
 export type ServerArchetypeProperties = {
   
-  ID: number;
+  id: string;
   
   name: string;
 
@@ -16,7 +16,7 @@ export type ServerArchetypeProperties = {
 
   type: "Fighter" | "Defender" | "Destroyer" | "Supporter";
 
-  actionIDs: {number};
+  actionIDs: {string};
 
   -- Using "...any" because Roblox considers just accessing ServerRound for types as a cyclic dependency.
   initialize: (self: ServerArchetype, ...any) -> ();
@@ -43,7 +43,7 @@ function ServerArchetype.new(properties: ServerArchetypeProperties): ServerArche
   
 end
 
-function ServerArchetype.get(archetypeID: number): ServerArchetype
+function ServerArchetype.get(archetypeID: string): ServerArchetype
 
   for _, instance in ipairs(script.Parent.Archetypes:GetChildren()) do
   

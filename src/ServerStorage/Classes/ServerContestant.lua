@@ -19,7 +19,7 @@ type Effect = Effect.Effect;
 export type ContestantProperties = {
   
   -- This could be nil if the server hasn't assigned an archetype to the contestant yet.
-  archetypeID: number?;
+  archetypeID: string?;
 
   -- The character reference of the contestant. This is here to easily reference characters of bot contestants.
   -- If the contestant is a player, this is the same value as player.Character.
@@ -71,7 +71,7 @@ export type ContestantMethods = {
   convertToClient: (self: ServerContestant) -> {any};
   disqualify: (self: ServerContestant) -> ();
   getInventoryItemIDs: (self: ServerContestant) -> {string};
-  updateArchetypeID: (self: ServerContestant, newArchetypeID: number) -> ();
+  updateArchetypeID: (self: ServerContestant, newArchetypeID: string) -> ();
   updateCharacter: (self: ServerContestant, newCharacter: Model?) -> ();
   updateInventory: (self: ServerContestant, newInventory: {ServerItem}) -> ();
   updateHealth: (self: ServerContestant, newHealth: number, cause: Cause?) -> ();
@@ -210,7 +210,7 @@ function ServerContestant.__index:convertToClient(): {any}
 
 end;
 
-function ServerContestant.__index:updateArchetypeID(newArchetypeID: number): ()
+function ServerContestant.__index:updateArchetypeID(newArchetypeID: string): ()
 
   self.archetypeID = newArchetypeID;
   events[self].onArchetypeUpdated:Fire(newArchetypeID);

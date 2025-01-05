@@ -14,7 +14,7 @@ export type ClientArchetypeProperties = {
 
   iconImage: string;
 
-  actionIDs: {number};
+  actionIDs: {string};
 
   breakdown: (self: ClientArchetype) -> ();
   
