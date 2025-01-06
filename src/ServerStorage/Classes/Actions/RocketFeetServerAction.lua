@@ -1,6 +1,8 @@
 --!strict
--- Writer: Christian Toney (Sudobeast)
--- Designer: Christian Toney (Sudobeast)
+-- Programmer: Christian Toney (Christian_Toney)
+-- Designer: Christian Toney (Christian_Toney)
+-- © 2024 – 2025 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
 type ServerContestant = ServerContestant.ServerContestant;
@@ -12,7 +14,7 @@ type ServerRound = ServerRound.ServerRound;
 local ServerStorage = game:GetService("ServerStorage");
 
 local RocketFeetServerAction = {
-  ID = RocketFeetClientAction.ID;
+  id = RocketFeetClientAction.id;
   name = RocketFeetClientAction.name;
   description = RocketFeetClientAction.description;
 };
@@ -54,8 +56,8 @@ function RocketFeetServerAction.new(): ServerAction
 
                   table.insert(hitContestants, possibleEnemyContestant);
                   possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 15, {
-                    contestant = contestant;
-                    actionID = RocketFeetServerAction.ID;
+                    contestantID = contestant.id;
+                    actionID = RocketFeetServerAction.id;
                   });
 
                 end;
@@ -163,7 +165,7 @@ function RocketFeetServerAction.new(): ServerAction
     if contestant.player then
 
       local remoteFunction = Instance.new("RemoteFunction");
-      remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+      remoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
       remoteFunction.OnServerInvoke = function(player)
   
         if player == contestant.player then
@@ -187,7 +189,7 @@ function RocketFeetServerAction.new(): ServerAction
 
   return ServerAction.new({
     name = RocketFeetServerAction.name;
-    ID = RocketFeetServerAction.ID;
+    id = RocketFeetServerAction.id;
     description = RocketFeetServerAction.description;
     breakdown = breakdown;
     activate = activate;

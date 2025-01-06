@@ -88,7 +88,7 @@ local function ArchetypeSelectionFrame(props: ArchetypeInformationFrameProps)
       text = "CONFIRM";
       LayoutOrder = 1;
       textSize = if shouldUseFullSpacing then 12 else 8;
-      isDisabled = props.isConfirmingArchetype or props.selectedArchetype == nil or props.selectedArchetype.ID == confirmedArchetypeID;
+      isDisabled = props.isConfirmingArchetype or props.selectedArchetype == nil or props.selectedArchetype.id == confirmedArchetypeID;
       onClick = function()
 
         props.onSelectionConfirmed();

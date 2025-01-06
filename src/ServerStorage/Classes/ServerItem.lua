@@ -4,12 +4,13 @@
 -- Equip functions should be manually handled on a case-by-case basis.
 -- 
 -- Programmers: Christian Toney (Christian_Toney)
--- © 2024 Beastslash LLC
+-- © 2024 – 2025 Beastslash LLC
 
 export type ServerItemProperties = {
 
   -- The ID of the item. Keep this unique.
-  ID: number;
+  id: string;
+
   name: string;
 
   -- The description of the item. 
@@ -59,14 +60,14 @@ function ServerItem.new(properties: ServerItemProperties): ServerItem
 end
 
 -- Returns a ServerItem based on the ID.
-function ServerItem.get(itemID: number): ServerItem
+function ServerItem.get(itemID: string): ServerItem
 
   for _, instance in ipairs(script.Parent.Items:GetChildren()) do
   
     if instance:IsA("ModuleScript") then
   
       local item = require(instance) :: any;
-      if item.ID == itemID then
+      if item.id == itemID then
   
         return item.new();
   

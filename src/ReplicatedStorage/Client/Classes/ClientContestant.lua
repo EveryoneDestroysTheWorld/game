@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 export type ClientContestantProperties = {
   
-  ID: number;
+  id: number;
 
   archetypeID: number?;
   
@@ -29,9 +29,9 @@ export type ClientContestantProperties = {
 }
 
 export type Cause = {
-  archetypeID: number;
+  archetypeID: string;
   contestantID: number;
-  actionID: number?;
+  actionID: string?;
 }
 
 export type ClientContestantMethods = {
@@ -69,7 +69,7 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
 
   ReplicatedStorage.Shared.Events.ArchetypePrivatelyChosen.OnClientEvent:Connect(function(contestantID: number, archetypeID: number)
   
-    if contestantID == contestant.ID then
+    if contestantID == contestant.id then
 
       contestant.archetypeID = archetypeID;
       events[contestant].onArchetypePrivatelyChosen:Fire(archetypeID);
@@ -80,7 +80,7 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
 
   ReplicatedStorage.Shared.Events.CharacterUpdated.OnClientEvent:Connect(function(contestantID: number, characterName: string?)
 
-    if contestantID == contestant.ID then
+    if contestantID == contestant.id then
 
       local character = workspace:FindFirstChild(characterName);
       contestant.character = character;
@@ -92,7 +92,7 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
 
   ReplicatedStorage.Shared.Events.ContestantArchetypeUpdated.OnClientEvent:Connect(function(contestantID: number, archetypeID: number)
   
-    if contestantID == contestant.ID then
+    if contestantID == contestant.id then
 
       contestant.archetypeID = archetypeID;
       events[contestant].onArchetypeUpdated:Fire(archetypeID);
@@ -103,7 +103,7 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
 
   ReplicatedStorage.Shared.Events.HealthUpdated.OnClientEvent:Connect(function(contestantID: number, newHealth: number, cause: Cause?)
   
-    if contestantID == contestant.ID then
+    if contestantID == contestant.id then
 
       contestant.currentHealth = newHealth;
       events[contestant].onHealthUpdated:Fire(newHealth, cause);
@@ -114,7 +114,7 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
 
   ReplicatedStorage.Shared.Events.StaminaUpdated.OnClientEvent:Connect(function(contestantID: number, newStamina: number, cause: Cause?)
   
-    if contestantID == contestant.ID then
+    if contestantID == contestant.id then
 
       contestant.currentStamina = newStamina;
       events[contestant].onStaminaUpdated:Fire(newStamina, cause);

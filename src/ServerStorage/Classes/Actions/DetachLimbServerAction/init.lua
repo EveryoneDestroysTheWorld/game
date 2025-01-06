@@ -1,6 +1,8 @@
 --!strict
--- Writer: Christian Toney (Sudobeast)
--- Designer: Christian Toney (Sudobeast)
+-- Writer: Christian Toney (Christian_Toney)
+-- Designer: Christian Toney (Christian_Toney)
+-- © 2024 – 2025 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local ServerStorage = game:GetService("ServerStorage");
@@ -12,7 +14,7 @@ local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
 
 local DetachLimbServerAction = {
-  ID = DetachLimbClientAction.ID;
+  id = DetachLimbClientAction.id;
   name = DetachLimbClientAction.name;
   description = DetachLimbClientAction.description;
 };
@@ -34,10 +36,10 @@ function DetachLimbServerAction.new(): ServerAction
     
     -- Make the cloned limb look like the player's limb.
     local character = contestant.character;
-    assert(character, `Contestant {contestant.ID} doesn't have a character.`);
+    assert(character, `Contestant {contestant.id} doesn't have a character.`);
 
     local humanoid = character:FindFirstChild("Humanoid") :: Humanoid?;
-    assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.ID}'s humanoid.`);
+    assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.id}'s humanoid.`);
 
     local function toggleLimbHighlight(limb: BasePart, isEnabled: boolean)
 
@@ -70,7 +72,7 @@ function DetachLimbServerAction.new(): ServerAction
     if humanoid.RigType == Enum.HumanoidRigType.R15 and limbName ~= "Head" then
       
       local cloneLimbContainer = Instance.new("Model");
-      cloneLimbContainer.Name = `{contestant.ID}_ExplosiveLimb_{limbName}`;
+      cloneLimbContainer.Name = `{contestant.id}_ExplosiveLimb_{limbName}`;
 
       local realLimbs = {};
       if limbName == "Torso" then
@@ -165,7 +167,7 @@ function DetachLimbServerAction.new(): ServerAction
       assert(realLimb and realLimb:IsA("BasePart"), `Couldn't find {limbName}.`);
   
       local limbClone = realLimb:Clone() :: BasePart;
-      limbClone.Name = `{contestant.ID}_ExplosiveLimb_{limbClone.Name}`;
+      limbClone.Name = `{contestant.id}_ExplosiveLimb_{limbClone.Name}`;
       limbClone.CanCollide = true;
       limbClone.Parent = workspace;
 
@@ -294,7 +296,7 @@ function DetachLimbServerAction.new(): ServerAction
 
     contestant = newContestant;
     round = newRound;
-    bindableFunction.Name = `{contestant.ID}_GetDetachedLimbs`;
+    bindableFunction.Name = `{contestant.id}_GetDetachedLimbs`;
     bindableFunction.OnInvoke = function()
   
       return detachedLimbs;
@@ -306,7 +308,7 @@ function DetachLimbServerAction.new(): ServerAction
     if contestant.player then
       
       local actionRemoteFunction = Instance.new("RemoteFunction");
-      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
       actionRemoteFunction.OnServerInvoke = function(player, limbName: string)
 
         assert(typeof(limbName) == "string", "Limb name must be a string");  
@@ -331,7 +333,7 @@ function DetachLimbServerAction.new(): ServerAction
   end;
 
   return ServerAction.new({
-    ID = DetachLimbServerAction.ID;
+    id = DetachLimbServerAction.id;
     name = DetachLimbServerAction.name;
     description = DetachLimbServerAction.description;
     activate = activate;

@@ -9,13 +9,11 @@ type ClientContestant = ClientContestant.ClientContestant;
 type ClientArchetype = ClientArchetype.ClientArchetype;
 
 local DraconicKnightClientArchetype = {
-  ID = 3;
+  id = script.Name:sub(1, script.Name:gsub("ClientArchetype", ""):len());
   name = "Draconic Knight";
   description = "Fly above the enemy and let the vengence flow";
   iconImage = "rbxassetid://18584519829";
-
-  actionIDs = {6, 7, 8, 9, 10};
-
+  actionIDs = {"DKFlight", "DKDiveBomb", "DKMelee", "DKTarBomb", "DKFireBeam"};
   type = "Defender" :: "Defender";
 };
 
@@ -30,7 +28,7 @@ function DraconicKnightClientArchetype.new(): ClientArchetype
   end;
 
   return ClientArchetype.new({
-    ID = DraconicKnightClientArchetype.ID;
+    id = DraconicKnightClientArchetype.id;
     iconImage = DraconicKnightClientArchetype.iconImage;
     name = DraconicKnightClientArchetype.name;
     description = DraconicKnightClientArchetype.description;

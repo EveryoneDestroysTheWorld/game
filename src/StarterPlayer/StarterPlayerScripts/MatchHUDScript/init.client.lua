@@ -33,7 +33,7 @@ local function setupGUI()
     local contestant: ClientContestant?;
     for _, possibleContestant in round.contestants do
 
-      if possibleContestant.ID == player.UserId then
+      if possibleContestant.id == player.UserId then
 
         contestant = possibleContestant;
         break;

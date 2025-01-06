@@ -14,7 +14,7 @@ local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
 
 local RocketLauncherServerItem = {
-  ID = RocketLauncherClientItem.ID;
+  id = RocketLauncherClientItem.id;
   name = RocketLauncherClientItem.name;
   description = RocketLauncherClientItem.description;
 };
@@ -30,7 +30,7 @@ function RocketLauncherServerItem.new(contestant: ServerContestant, round: Serve
     
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.id);
 
     end;
 
@@ -42,14 +42,14 @@ function RocketLauncherServerItem.new(contestant: ServerContestant, round: Serve
 
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.id);
 
     end;
 
   end;
 
   local item = ServerItem.new({
-    ID = RocketLauncherServerItem.ID;
+    id = RocketLauncherServerItem.id;
     name = RocketLauncherServerItem.name;
     description = RocketLauncherServerItem.description;
     activate = activate;

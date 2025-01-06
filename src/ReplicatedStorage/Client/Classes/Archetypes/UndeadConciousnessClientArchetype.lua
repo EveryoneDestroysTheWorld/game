@@ -8,7 +8,7 @@ local ClientContestant = require(script.Parent.Parent.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
 type ClientArchetype = ClientArchetype.ClientArchetype;
 local UndeadConciousnessClientArchetype = {
-  ID = 4;
+  id = script.Name:sub(1, script.Name:gsub("ClientArchetype", ""):len());
   name = "Undead Conciousness";
   description = "You can be unfortunate enough that no one would save you while downed, but with undead yourself, you can hunt down your enemies for vengeance!";
   actionIDs = {};
@@ -25,7 +25,7 @@ function UndeadConciousnessClientArchetype.new(): ClientArchetype
   end;
 
   return ClientArchetype.new({
-    ID = UndeadConciousnessClientArchetype.ID;
+    id = UndeadConciousnessClientArchetype.id;
     name = UndeadConciousnessClientArchetype.name;
     description = UndeadConciousnessClientArchetype.description;
     actionIDs = UndeadConciousnessClientArchetype.actionIDs;

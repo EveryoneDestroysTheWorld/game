@@ -1,6 +1,9 @@
 --!strict
--- Written by Christian Toney (Sudobeast)
 -- This module represents an Archetype, which contains a list of powers.
+-- 
+-- Programmers: Christian Toney (Christian_Toney)
+-- © 2024 – 2025 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ClientContestant = require(script.Parent.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
@@ -8,7 +11,8 @@ type ClientContestant = ClientContestant.ClientContestant;
 export type RoundStatus = "Waiting for players" | "Contestant selection" | "Matchup preview" | "Stage preview" | "Pre-round countdown" | "Active";
 
 export type RoundProperties = {
-  ID: string;  
+
+  id: string;  
   
   -- This stage's ID.
   stageID: string;
@@ -22,6 +26,7 @@ export type RoundProperties = {
   status: RoundStatus;
 
   contestants: {ClientContestant};
+
 }
 
 local ClientRound = {
@@ -67,7 +72,7 @@ function ClientRound.new(properties: RoundProperties): ClientRound
   
     for index, contestant in ipairs(round.contestants) do
 
-      if contestant.ID == contestantID then
+      if contestant.id == contestantID then
 
         table.remove(round.contestants, index);
         events.onContestantRemoved:Fire(contestant);
@@ -88,7 +93,7 @@ function ClientRound.new(properties: RoundProperties): ClientRound
 
   ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function(roundID: string)
   
-    if roundID == round.ID then
+    if roundID == round.id then
 
       events.onEnded:Fire();
 
@@ -98,7 +103,7 @@ function ClientRound.new(properties: RoundProperties): ClientRound
 
   ReplicatedStorage.Shared.Events.RoundStarted.OnClientEvent:Connect(function(roundID: string, startTime: number)
   
-    if roundID == round.ID then
+    if roundID == round.id then
 
       round.timeStarted = startTime;
       events.onStarted:Fire();
@@ -109,7 +114,7 @@ function ClientRound.new(properties: RoundProperties): ClientRound
 
   ReplicatedStorage.Shared.Events.RoundStopped.OnClientEvent:Connect(function(roundID: string)
   
-    if roundID == round.ID then
+    if roundID == round.id then
 
       events.onStopped:Fire();
 

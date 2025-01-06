@@ -15,7 +15,7 @@ local downContestant = require(ServerStorage.Modules.downContestant);
 local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
 
 local UndeadConciousnessServerArchetype = {
-  ID = UndeadConciousnessClientArchetype.ID;
+  id = UndeadConciousnessClientArchetype.id;
   name = UndeadConciousnessClientArchetype.name;
   description = UndeadConciousnessClientArchetype.description;
   actionIDs = UndeadConciousnessClientArchetype.actionIDs;
@@ -83,10 +83,10 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
 
       -- Verify that we have the required instances.
       local character = contestant.character;
-      assert(character, `Couldn't find {contestant.ID}'s character.`);
+      assert(character, `Couldn't find {contestant.id}'s character.`);
       
       local humanoid = character:FindFirstChild("Humanoid") :: Humanoid?;
-      assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.ID}'s humanoid.`);
+      assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.id}'s humanoid.`);
   
       -- Slow down the player.
       humanoid.WalkSpeed = 12;
@@ -171,8 +171,8 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
                     end);
   
                     possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 20, {
-                      contestant = contestant;
-                      archetypeID = UndeadConciousnessServerArchetype.ID;
+                      contestantID = contestant.id;
+                      archetypeID = UndeadConciousnessServerArchetype.id;
                     });
   
                   end;
@@ -221,21 +221,20 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
     end);
 
     -- Give the player a random item. 
-    -- local randomItem = ServerItem.random(); -- TODO: Uncomment before merging PR
-    local randomItem = ServerItem.get(3);
+    local randomItem = ServerItem.random(); -- TODO: Uncomment before merging PR
     randomItem:initialize(contestant, round);
     contestant:addItemToInventory(randomItem);
 
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.id);
 
     end;
 
   end;
 
   return ServerArchetype.new({
-    ID = UndeadConciousnessServerArchetype.ID;
+    id = UndeadConciousnessServerArchetype.id;
     name = UndeadConciousnessServerArchetype.name;
     description = UndeadConciousnessServerArchetype.description;
     actionIDs = UndeadConciousnessServerArchetype.actionIDs;

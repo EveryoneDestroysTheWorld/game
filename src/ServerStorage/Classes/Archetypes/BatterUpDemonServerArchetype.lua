@@ -14,7 +14,7 @@ local downContestant = require(ServerStorage.Modules.downContestant);
 local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
 
 local BatterUpDemonServerArchetype = {
-  ID = BatterUpDemonClientArchetype.ID;
+  id = BatterUpDemonClientArchetype.id;
   name = BatterUpDemonClientArchetype.name;
   description = BatterUpDemonClientArchetype.description;
   actionIDs = BatterUpDemonClientArchetype.actionIDs;
@@ -65,7 +65,7 @@ function BatterUpDemonServerArchetype.new(): ServerArchetype
 
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.id);
 
     end;
 
@@ -100,7 +100,7 @@ function BatterUpDemonServerArchetype.new(): ServerArchetype
   end;
 
   return ServerArchetype.new({
-    ID = BatterUpDemonServerArchetype.ID;
+    id = BatterUpDemonServerArchetype.id;
     name = BatterUpDemonServerArchetype.name;
     description = BatterUpDemonServerArchetype.description;
     actionIDs = BatterUpDemonServerArchetype.actionIDs;

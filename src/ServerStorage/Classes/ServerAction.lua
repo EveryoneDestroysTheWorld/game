@@ -5,7 +5,7 @@ local ServerContestant = require(script.Parent.ServerContestant);
 type ServerContestant = ServerContestant.ServerContestant;
 
 export type ActionProperties = {
-  ID: number;
+  id: string;
   name: string;
   description: string;
   activate: (self: ServerAction, ...any) -> ();
@@ -38,14 +38,14 @@ function ServerAction.new(properties: ActionProperties): ServerAction
   
 end
 
-function ServerAction.get(actionID: number): ServerAction
+function ServerAction.get(actionID: string): ServerAction
 
   for _, instance in ipairs(script.Parent.Actions:GetChildren()) do
   
     if instance:IsA("ModuleScript") then
   
       local action = require(instance) :: any;
-      if action.ID == actionID then
+      if action.id == actionID then
   
         return action.new();
   

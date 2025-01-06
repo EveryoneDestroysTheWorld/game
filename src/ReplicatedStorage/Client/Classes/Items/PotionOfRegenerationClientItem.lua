@@ -12,7 +12,7 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
 
 local PotionOfRegenerationClientItem = {
-  ID = 1;
+  id = script.Name:sub(1, script.Name:gsub("ClientItem", ""):len());
   name = "Potion of Regeneration";
   description = "Drinking this item for 3 seconds (which can be cancelled in the process) will regenerate your health by +4 HP per second for 20 seconds.";
   iconImage = "rbxassetid://97864489690791";
@@ -51,7 +51,7 @@ function PotionOfRegenerationClientItem.new(): ClientItem
   end;
 
   return ClientItem.new({
-    ID = PotionOfRegenerationClientItem.ID;
+    id = PotionOfRegenerationClientItem.id;
     iconImage = PotionOfRegenerationClientItem.iconImage;
     name = PotionOfRegenerationClientItem.name;
     description = PotionOfRegenerationClientItem.description;

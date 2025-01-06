@@ -1,7 +1,8 @@
 --!strict
 -- Programmers: Hati ---- Heavily modified edit of RocketFeet
--- Designers: Christian Toney (Sudobeast)
--- © 2024 Beastslash LLC
+-- Designers: Christian Toney (Christian_Toney)
+-- 
+-- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService")
@@ -15,12 +16,10 @@ type ServerRound = ServerRound.ServerRound;
 local ServerStorage = game:GetService("ServerStorage");
 
 local TarBombServerAction = {
-	ID = TarBombClientAction.ID;
+	id = TarBombClientAction.id;
 	name = TarBombClientAction.name;
 	description = TarBombClientAction.description;
 };
-
-
 
 local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant: ServerContestant, size, player)
 
@@ -54,8 +53,8 @@ local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant
 					size = size/2
 				end
 				contestant:updateHealth(contestant.currentHealth - size*3, {
-					contestant = contestant;
-					actionID = actionID;
+					contestantID = contestant.id;
+					actionID = TarBombServerAction.id;
 				});
 			end
 		end
@@ -311,7 +310,7 @@ function TarBombServerAction.new(): ServerAction
 		if contestant.player then
 
 			local remoteFunction = Instance.new("RemoteFunction");
-			remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+			remoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
 			remoteFunction.OnServerInvoke = function(player)
 	
 				if player == contestant.player then
@@ -335,7 +334,7 @@ function TarBombServerAction.new(): ServerAction
 
 	return ServerAction.new({
 		name = TarBombServerAction.name;
-		ID = TarBombServerAction.ID;
+		id = TarBombServerAction.id;
 		description = TarBombServerAction.description;
 		breakdown = breakdown;
 		activate = activate;
@@ -343,8 +342,5 @@ function TarBombServerAction.new(): ServerAction
 	});
 
 end;
-
-
-
 
 return TarBombServerAction;

@@ -13,7 +13,7 @@ local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
 type ClientAction = ClientAction.ClientAction;
 
 local DiveBombAction = {
-	ID = 7;
+	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 	iconImage = "rbxassetid://17771917538";
 	name = "Dive Bomb";
 	description = "Rush to target location, stunning enemies in an area and dealing damage to EVERYONE nearby.";
@@ -94,7 +94,7 @@ function DiveBombAction.new(): ClientAction
 		}));
 
 		player = Players.LocalPlayer;
-		remoteName = `{player.UserId}_{self.ID}`;
+		remoteName = `{player.UserId}_{self.id}`;
 
 		local function checkJump(_, inputState: Enum.UserInputState)
 
@@ -116,7 +116,7 @@ function DiveBombAction.new(): ClientAction
 	end;
 
 	return ClientAction.new({
-		ID = DiveBombAction.ID;
+		id = DiveBombAction.id;
 		iconImage = DiveBombAction.iconImage;
 		name = DiveBombAction.name;
 		description = DiveBombAction.description;

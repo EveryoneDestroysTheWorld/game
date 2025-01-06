@@ -9,7 +9,7 @@ type ClientContestant = ClientContestant.ClientContestant;
 type ClientArchetype = ClientArchetype.ClientArchetype;
 
 local BatterUpDemonClientArchetype = {
-  ID = 2;
+  id = script.Name:sub(1, script.Name:gsub("ClientArchetype", ""):len());
   name = "Batter-Up Demon";
   description = "You'll never strike out with this one.";
   iconImage = "rbxassetid://18584519829";
@@ -28,7 +28,7 @@ function BatterUpDemonClientArchetype.new(): ClientArchetype
   end;
 
   return ClientArchetype.new({
-    ID = BatterUpDemonClientArchetype.ID;
+    id = BatterUpDemonClientArchetype.id;
     iconImage = BatterUpDemonClientArchetype.iconImage;
     name = BatterUpDemonClientArchetype.name;
     description = BatterUpDemonClientArchetype.description;

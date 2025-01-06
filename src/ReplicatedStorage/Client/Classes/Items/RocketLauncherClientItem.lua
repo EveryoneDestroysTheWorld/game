@@ -9,7 +9,7 @@ local ClientItem = require(script.Parent.Parent.ClientItem);
 type ClientItem = ClientItem.ClientItem;
 
 local RocketLauncherClientItem = {
-  ID = 2;
+  id = script.Name:sub(1, script.Name:gsub("ClientItem", ""):len());
   name = "Rocket Launcher";
   description = "Equip a quad-barrel rocket launcher on pickup. Disables most actions, but allows you to fire up to 4 powerful shots capable of destroying terrain and enemies alike.";
   iconImage = "rbxassetid://97864489690791";
@@ -30,7 +30,7 @@ function RocketLauncherClientItem.new(): ClientItem
   end;
 
   return ClientItem.new({
-    ID = RocketLauncherClientItem.ID;
+    id = RocketLauncherClientItem.id;
     iconImage = RocketLauncherClientItem.iconImage;
     name = RocketLauncherClientItem.name;
     description = RocketLauncherClientItem.description;

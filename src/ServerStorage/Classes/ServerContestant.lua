@@ -9,7 +9,7 @@ local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContesta
 type ClientContestant = ClientContestant.ClientContestant;
 local ServerItem = require(script.Parent.ServerItem);
 type ServerItem = ServerItem.ServerItem;
-local Profile = require(ServerStorage.Classes.Profile);
+local Profile = require(ServerStorage.Packages.Profile);
 type Profile = Profile.Profile;
 local Cause = require(script.Parent.Cause);
 type Cause = Cause.Cause;
@@ -19,7 +19,7 @@ type Effect = Effect.Effect;
 export type ContestantProperties = {
   
   -- This could be nil if the server hasn't assigned an archetype to the contestant yet.
-  archetypeID: number?;
+  archetypeID: string?;
 
   -- The character reference of the contestant. This is here to easily reference characters of bot contestants.
   -- If the contestant is a player, this is the same value as player.Character.
@@ -32,7 +32,7 @@ export type ContestantProperties = {
   -- The ID of the contestant. 
   -- If the contestant is a bot, this is a unique temporary ID assigned by the server. It will be an irrational number.
   -- If the contestant is a player, this is the same value as player.UserId. It will be an integer.
-  ID: number;
+  id: number;
 
   -- The name of the contestant. This is here to easily reference bot names. 
   -- If the contestant is a player, this is the same value as player.DisplayName. To get the username, use player.Name.
@@ -70,8 +70,8 @@ export type ContestantMethods = {
   removeEffect: (self: ServerContestant, effect: Effect) -> ();
   convertToClient: (self: ServerContestant) -> {any};
   disqualify: (self: ServerContestant) -> ();
-  getInventoryItemIDs: (self: ServerContestant) -> {number};
-  updateArchetypeID: (self: ServerContestant, newArchetypeID: number) -> ();
+  getInventoryItemIDs: (self: ServerContestant) -> {string};
+  updateArchetypeID: (self: ServerContestant, newArchetypeID: string) -> ();
   updateCharacter: (self: ServerContestant, newCharacter: Model?) -> ();
   updateInventory: (self: ServerContestant, newInventory: {ServerItem}) -> ();
   updateHealth: (self: ServerContestant, newHealth: number, cause: Cause?) -> ();
@@ -113,14 +113,16 @@ function ServerContestant.new(properties: ContestantProperties): ServerContestan
   
 end
 
-function ServerContestant.__index:getInventoryItemIDs(): {number}
+function ServerContestant.__index:getInventoryItemIDs(): {string}
 
   local itemIDs = {};
+
   for _, item in self.inventory do
 
-    table.insert(itemIDs, item.ID);
+    table.insert(itemIDs, item.id);
 
   end;
+
   return itemIDs;
 
 end;
@@ -192,7 +194,7 @@ end;
 function ServerContestant.__index:convertToClient(): {any}
 
   return {
-    ID = self.ID;
+    id = self.id;
     archetypeID = self.archetypeID;
     isDisqualified = self.isDisqualified;
     player = self.player;
@@ -208,11 +210,11 @@ function ServerContestant.__index:convertToClient(): {any}
 
 end;
 
-function ServerContestant.__index:updateArchetypeID(newArchetypeID: number): ()
+function ServerContestant.__index:updateArchetypeID(newArchetypeID: string): ()
 
   self.archetypeID = newArchetypeID;
   events[self].onArchetypeUpdated:Fire(newArchetypeID);
-  ReplicatedStorage.Shared.Events.ContestantArchetypeUpdated:FireAllClients(self.ID, newArchetypeID);
+  ReplicatedStorage.Shared.Events.ContestantArchetypeUpdated:FireAllClients(self.id, newArchetypeID);
 
 end;
 
@@ -232,7 +234,7 @@ function ServerContestant.__index:updateHealth(newHealth: number, cause: Cause?)
 
   self.currentHealth = newHealth;
 
-  ReplicatedStorage.Shared.Events.HealthUpdated:FireAllClients(self.ID, newHealth, cause);
+  ReplicatedStorage.Shared.Events.HealthUpdated:FireAllClients(self.id, newHealth, cause);
 
   events[self].onHealthUpdated:Fire(newHealth, oldHealth, cause);
 
@@ -243,7 +245,7 @@ function ServerContestant.__index:updateStamina(newStamina: number, cause: Cause
   local oldStamina = self.currentStamina;
   self.currentStamina = newStamina;
 
-  ReplicatedStorage.Shared.Events.StaminaUpdated:FireAllClients(self.ID, newStamina, cause);
+  ReplicatedStorage.Shared.Events.StaminaUpdated:FireAllClients(self.id, newStamina, cause);
   
   events[self].onStaminaUpdated:Fire(newStamina, oldStamina, cause);
 
@@ -252,7 +254,7 @@ end;
 function ServerContestant.__index:updateCharacter(newCharacter: Model?): ()
 
   self.character = newCharacter;
-  ReplicatedStorage.Shared.Events.CharacterUpdated:FireAllClients(self.ID, if newCharacter then newCharacter.Name else nil);
+  ReplicatedStorage.Shared.Events.CharacterUpdated:FireAllClients(self.id, if newCharacter then newCharacter.Name else nil);
   events[self].onCharacterUpdated:Fire(newCharacter);
 
 end;
@@ -269,7 +271,7 @@ end;
 function ServerContestant.__index:toString()
 
   return HttpService:JSONEncode({
-    ID = self.ID;
+    id = self.id;
     archetypeID = self.archetypeID;
   });
 
