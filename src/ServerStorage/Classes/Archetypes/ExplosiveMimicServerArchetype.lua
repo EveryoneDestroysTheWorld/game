@@ -511,7 +511,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
   
               if part:IsA("BasePart") then
   
-                part:SetNetworkOwner(nil);
+                part:SetNetworkOwner();
   
               end;
   

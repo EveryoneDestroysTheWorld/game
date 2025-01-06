@@ -37,7 +37,7 @@ return function(character: Model): Model
 
     if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
 
-      part:SetNetworkOwner(nil)
+      part:SetNetworkOwner()
 
     end
 
