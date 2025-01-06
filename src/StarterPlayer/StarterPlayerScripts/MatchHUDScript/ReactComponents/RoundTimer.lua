@@ -12,7 +12,8 @@ type RoundTimerProps = {
 
 local function RoundTimer(props: RoundTimerProps)
 
-  local secondsLeft, setSecondsLeft = React.useState(nil);
+  local secondsLeft, setSecondsLeft = React.useState(nil :: number?);
+  local roundEndTimeMS, setRoundEndTimeMS = React.useState(nil :: number?);
   local didRoundStop, setDidRoundStop = React.useState(false);
 
   React.useEffect(function()
@@ -25,7 +26,7 @@ local function RoundTimer(props: RoundTimerProps)
         local roundStartTime = props.round.timeStarted;
         if props.round.status == "Active" and roundDuration and roundStartTime then
 
-          setSecondsLeft(math.floor((roundStartTime + roundDuration * 1000 - DateTime.now().UnixTimestampMillis) / 1000) :: any)
+          setRoundEndTimeMS(roundStartTime + roundDuration * 1000);
 
         end;
 
@@ -47,29 +48,31 @@ local function RoundTimer(props: RoundTimerProps)
 
   React.useEffect(function()
 
-    task.delay(1, function()
-    
-      if secondsLeft and secondsLeft > 0 and not didRoundStop then
+    if roundEndTimeMS then
 
-        setSecondsLeft(secondsLeft - 1);
+      task.wait(1);
+      if (not secondsLeft or secondsLeft > 0) and not didRoundStop then
+
+        setSecondsLeft(math.floor((roundEndTimeMS - DateTime.now().UnixTimestampMillis) / 1000))
   
       end;
 
-    end);
+    end;
 
-  end, {secondsLeft});
+  end, {roundEndTimeMS :: unknown, secondsLeft});
 
   local time = "-:--";
   if secondsLeft then
 
     local seconds = secondsLeft % 60;
+    local secondsString = `{seconds}`;
     if seconds < 10 then
 
-      seconds = `0{seconds}`;
+      secondsString = `0{seconds}`;
 
     end;
-    local minutes = (secondsLeft - tonumber(seconds) or 0) / 60;
-    time = `{minutes}:{seconds}`;
+    local minutes = (secondsLeft - seconds or 0) / 60;
+    time = `{minutes}:{secondsString}`;
 
   end;
 
