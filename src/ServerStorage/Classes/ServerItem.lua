@@ -67,7 +67,7 @@ function ServerItem.get(itemID: string): ServerItem
     if instance:IsA("ModuleScript") then
   
       local item = require(instance) :: any;
-      if item.ID == itemID then
+      if item.id == itemID then
   
         return item.new();
   

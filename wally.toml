@@ -13,5 +13,5 @@ react = "jsdotlua/react@17.2.1"
 react-roblox = "jsdotlua/react-roblox@17.1.0"
 
 [server-dependencies]
-Stage = "christian-toney/edtw-stage@1.0.6"
+Stage = "christian-toney/edtw-stage@1.0.7"
 Profile = "christian-toney/edtw-profile@1.0.1"

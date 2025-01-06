@@ -50,7 +50,7 @@ function ServerArchetype.get(archetypeID: string): ServerArchetype
     if instance:IsA("ModuleScript") then
   
       local archetype = require(instance) :: any;
-      if archetype.ID == archetypeID then
+      if archetype.id == archetypeID then
   
         return archetype.new();
   

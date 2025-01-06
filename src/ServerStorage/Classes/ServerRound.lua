@@ -109,7 +109,7 @@ function ServerRound.fromPrivateServerID(privateServerID: number): ServerRound
   assert(typeof(roundMetadataEncoded) == "string", "Couldn't find a round metadata.");
   local roundMetadata = HttpService:JSONDecode(roundMetadataEncoded);
   assert(typeof(roundMetadata) == "table", "Round metadata isn't a table.");
-  assert(typeof(roundMetadata.ID) == "string", "Round ID isn't a string.");
+  assert(typeof(roundMetadata.id) == "string", "Round ID isn't a string.");
   assert(typeof(roundMetadata.stageID) == "string", "Stage ID isn't a string.");
   assert(typeof(roundMetadata.gameModeID) == "string", "Game mode ID isn't a string.");
   assert(typeof(roundMetadata.contestantIDs) == "table", "Round contestant IDs isn't a table.");
@@ -123,7 +123,7 @@ function ServerRound.fromPrivateServerID(privateServerID: number): ServerRound
 
   -- Return the new round.
   return ServerRound.new({
-    id = roundMetadata.ID;
+    id = roundMetadata.id;
     stageID = roundMetadata.stageID;
     gameModeID = roundMetadata.gameModeID;
     contestantIDs = roundMetadata.contestantIDs;

@@ -37,7 +37,7 @@ function GameMode.get(gameModeID: string): GameModeClass
     if instance:IsA("ModuleScript") then
   
       local gameMode = require(instance) :: any;
-      if gameMode.ID == gameModeID then
+      if gameMode.id == gameModeID then
   
         return gameMode;
   

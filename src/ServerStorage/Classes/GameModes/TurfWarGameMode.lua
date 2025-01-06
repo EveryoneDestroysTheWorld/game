@@ -63,7 +63,7 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
           if newDurability <= 0 then
 
-            basePart:SetAttribute("DestroyerID", contestant.ID);
+            basePart:SetAttribute("DestroyerID", contestant.id);
 
           end;
           basePart:SetAttribute("CurrentDurability", newDurability);

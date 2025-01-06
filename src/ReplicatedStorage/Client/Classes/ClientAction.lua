@@ -68,7 +68,7 @@ function ClientAction.get(actionID: string): ClientAction
     if instance:IsA("ModuleScript") then
   
       local action = require(instance) :: any;
-      if action.ID == actionID then
+      if action.id == actionID then
   
         return action.new();
   
