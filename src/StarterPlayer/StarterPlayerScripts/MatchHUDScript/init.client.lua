@@ -5,7 +5,6 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 local DestructionBar = require(script.ReactComponents.DestructionBar);
 local StatBarContainer = require(script.ReactComponents.StatBarContainer);
-local CenteredRoundTimer = require(script.ReactComponents.CenteredRoundTimer);
 local RoundTimer = require(script.ReactComponents.RoundTimer);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
@@ -46,7 +45,6 @@ local function setupGUI()
   
     local root = ReactRoblox.createRoot(popupContainer);
     root:render(React.createElement(React.Fragment, {}, {
-      CenteredRoundTimer = React.createElement(CenteredRoundTimer, {round = round});
       DestructionBar = React.createElement(DestructionBar, {round = round});
       StatBarContainer = React.createElement(StatBarContainer, {contestant = contestant});
       RoundTimer = React.createElement(RoundTimer, {round = round});

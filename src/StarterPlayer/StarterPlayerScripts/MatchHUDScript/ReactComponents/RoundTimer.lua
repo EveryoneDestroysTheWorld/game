@@ -5,6 +5,7 @@ local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 local Colors = require(ReplicatedStorage.Client.Colors);
 local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
+local TextService = game:GetService("TextService");
 
 type RoundTimerProps = {
   round: ClientRound;
@@ -12,9 +13,13 @@ type RoundTimerProps = {
 
 local function RoundTimer(props: RoundTimerProps)
 
-  local secondsLeft, setSecondsLeft = React.useState(nil :: number?);
   local roundEndTimeMS, setRoundEndTimeMS = React.useState(nil :: number?);
   local didRoundStop, setDidRoundStop = React.useState(false);
+  local totalMilliseconds, setTotalMilliseconds = React.useState(0);
+  local largestCharacterSize, setLargestCharacterSize = React.useState(0);
+  local shouldUseMaximumSize = useResponsiveDesign({minimumWidth = 700});
+  local textSize = if shouldUseMaximumSize then 30 else 8;
+  local font = Font.fromId(11702779517, Enum.FontWeight.SemiBold, Enum.FontStyle.Italic);
 
   React.useEffect(function()
 
@@ -47,71 +52,77 @@ local function RoundTimer(props: RoundTimerProps)
   end, {props.round});
 
   React.useEffect(function()
+    
+    local largestNumberSize = 0;
+    local params = Instance.new("GetTextBoundsParams");
+    params.Size = textSize;
+    params.Width = 0;
+    params.Font = font;
+    for number = 0, 9 do
 
-    if roundEndTimeMS then
+      params.Text = `{number}`;
+      largestNumberSize = math.max(TextService:GetTextBoundsAsync(params).X, largestNumberSize);
 
-      task.wait(1);
-      if (not secondsLeft or secondsLeft > 0) and not didRoundStop then
+    end;
+    setLargestCharacterSize(largestNumberSize);
 
-        setSecondsLeft(math.floor((roundEndTimeMS - DateTime.now().UnixTimestampMillis) / 1000))
+  end, {shouldUseMaximumSize});
+
+  React.useEffect(function()
   
-      end;
+    if not didRoundStop and roundEndTimeMS then
+
+      task.wait();
+      setTotalMilliseconds(math.max(roundEndTimeMS - DateTime.now().UnixTimestampMillis, 0));
 
     end;
 
-  end, {roundEndTimeMS :: unknown, secondsLeft});
+  end, {totalMilliseconds :: unknown, roundEndTimeMS, didRoundStop});
 
-  local time = "-:--";
-  if secondsLeft then
+  local timeString;
+  if roundEndTimeMS then
 
-    local seconds = secondsLeft % 60;
-    local secondsString = `{seconds}`;
-    if seconds < 10 then
+    local totalSeconds = totalMilliseconds / 1000;
+    local minutes = math.floor(totalSeconds / 60);
+    local seconds = math.floor(totalSeconds % 60);
+    local milliseconds = math.floor(totalMilliseconds % 1000);
+    timeString = `{minutes}:{if seconds >= 10 then seconds else `0{seconds}`}.{if milliseconds >= 100 then milliseconds elseif milliseconds >= 10 then `0{milliseconds}` else `00{milliseconds}`}`;
 
-      secondsString = `0{seconds}`;
+    local timerParts = {};
+    for index, character in timeString:split("") do
+
+      local isNumber = not not tonumber(character);
+      local part = React.createElement("TextLabel", {
+        Text = character;
+        FontFace = font;
+        BackgroundTransparency = 1;
+        LayoutOrder = index;
+        TextSize = textSize;
+        Size = UDim2.new(0, if isNumber then largestCharacterSize else 0, 0, 0);
+        TextXAlignment = Enum.TextXAlignment.Center;
+        AutomaticSize = if isNumber then Enum.AutomaticSize.Y else Enum.AutomaticSize.XY;
+        TextColor3 = if totalSeconds <= 60 then Colors.DemoDemonsRed else Color3.new(1, 1, 1);
+      });
+
+      table.insert(timerParts, part);
 
     end;
-    local minutes = (secondsLeft - seconds or 0) / 60;
-    time = `{minutes}:{secondsString}`;
+
+    return React.createElement("Frame", {
+      BackgroundTransparency = 1;
+      AnchorPoint = Vector2.new(1, 0);
+      AutomaticSize = Enum.AutomaticSize.XY;
+      Position = UDim2.new(1, -15, 0, 15);
+      Size = UDim2.new();
+    }, {
+      UIListLayout = React.createElement("UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal;
+        SortOrder = Enum.SortOrder.LayoutOrder;
+      });
+      Parts = React.createElement(React.Fragment, {}, timerParts);
+    });
 
   end;
-
-  local shouldUseMaximumSize = useResponsiveDesign({minimumWidth = 700});
-
-  return React.createElement("Frame", {
-    BackgroundColor3 = Color3.new(0, 0, 0);
-    BackgroundTransparency = 0.2;
-    AutomaticSize = Enum.AutomaticSize.XY;
-    Size = UDim2.new();
-    AnchorPoint = Vector2.new(1, 0);
-    Position = UDim2.new(1, -15, 0, 15);
-    BorderSizePixel = 0;
-  }, {
-    UICorner = React.createElement("UICorner", {
-      CornerRadius = UDim.new(0, 5);
-    });
-    UIPadding = React.createElement("UIPadding", {
-      PaddingBottom = UDim.new(0, if shouldUseMaximumSize then 5 else 1);
-      PaddingLeft = UDim.new(0, if shouldUseMaximumSize then 10 else 5);
-      PaddingRight = UDim.new(0, if shouldUseMaximumSize then 10 else 5);
-    });
-    UISizeConstraint = React.createElement("UISizeConstraint", {
-      MinSize = Vector2.new(if shouldUseMaximumSize then 63 else 18, 0);
-    });
-    UIListLayout = React.createElement("UIListLayout", {
-      HorizontalAlignment = Enum.HorizontalAlignment.Center;
-      VerticalAlignment = Enum.VerticalAlignment.Center;
-    });
-    CurrentTime = React.createElement("TextLabel", {
-      Text = time;
-      FontFace = Font.fromId(12187371840);
-      BackgroundTransparency = 1;
-      TextSize = if shouldUseMaximumSize then 30 else 8;
-      AutomaticSize = Enum.AutomaticSize.XY;
-      Size = UDim2.new();
-      TextColor3 = if secondsLeft and secondsLeft <= 60 then Colors.DemoDemonsRed else Color3.new(1, 1, 1);
-    });
-  });
 
 end;
 
