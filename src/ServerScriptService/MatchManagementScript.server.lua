@@ -7,13 +7,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local Players = game:GetService("Players");
 local HttpService = game:GetService("HttpService");
-local Stage = require(ServerStorage.Classes.Stage);
+local Stage = require(ServerStorage.Packages.Stage);
 local ServerRound = require(ServerStorage.Classes.ServerRound);
 local ServerContestant = require(ServerStorage.Classes.ServerContestant);
 type ServerContestant = ServerContestant.ServerContestant;
 local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
 type ServerArchetype = ServerArchetype.ServerArchetype;
-local Profile = require(ServerStorage.Classes.Profile);
+local Profile = require(ServerStorage.Packages.Profile);
 
 -- Initialize the round.
 local round;

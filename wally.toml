@@ -1,5 +1,5 @@
 [package]
-name = "demodemons/game"
+name = "everyonedestroystheworld/turf-war"
 version = "0.1.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
@@ -11,3 +11,7 @@ shared-packages = "game.ReplicatedStorage.Packages"
 [dependencies]
 react = "jsdotlua/react@17.2.1"
 react-roblox = "jsdotlua/react-roblox@17.1.0"
+
+[server-dependencies]
+Stage = "christian-toney/edtw-stage@1.0.6"
+Profile = "christian-toney/edtw-profile@1.0.1"

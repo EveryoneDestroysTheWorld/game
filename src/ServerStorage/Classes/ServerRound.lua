@@ -15,7 +15,8 @@ type ServerAction = ServerAction.ServerAction;
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 type RoundStatus = ClientRound.RoundStatus;
-local Stage = require(script.Parent.Stage);
+local ServerStorage = game:GetService("ServerStorage");
+local Stage = require(ServerStorage.Packages.Stage);
 type Stage = Stage.Stage;
 
 export type ServerRoundConstructorProperties = {
