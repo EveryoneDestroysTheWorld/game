@@ -291,15 +291,35 @@ local function startRound()
             local character = ServerStorage.NPCRigs.Rig:Clone();
             character.Name = contestant.name;
             character.Parent = workspace;
-            for _, part in ipairs(character:GetDescendants()) do
 
-              if part:IsA("BasePart") then
+            local function resetNetworkOwnership(instance: Instance)
 
-                part:SetNetworkOwner(nil);
+              if instance:IsA("BasePart") then
+
+                while not instance:CanSetNetworkOwnership() do 
+                  
+                  task.wait();
+
+                end;
+                
+                instance:SetNetworkOwner();
 
               end;
 
             end;
+
+            character.DescendantAdded:Connect(resetNetworkOwnership);
+
+            for _, part in ipairs(character:GetDescendants()) do
+
+              if part:IsA("BasePart") then
+
+                part:SetNetworkOwner();
+
+              end;
+
+            end;
+
             contestant:updateCharacter(character);
 
           end;
