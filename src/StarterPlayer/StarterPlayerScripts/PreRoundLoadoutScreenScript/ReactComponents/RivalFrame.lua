@@ -16,13 +16,13 @@ local function RivalFrame(props: {quadrant: "Q1" | "Q2" | "Q3" | "Q4"})
     
     task.spawn(function()
 
-      -- Rumble the frame.
       local frame = frameRef.current;
       local uiScale = uiScaleRef.current;
       if frame and uiScale then
 
         task.wait(if props.quadrant == "Q2" then 0 elseif props.quadrant == "Q1" then 0.3 elseif props.quadrant == "Q4" then 0.6 else 0.9);
 
+        -- Rumble the frame.
         frame.Visible = true;
 
         local originalPosition = frame.Position;
@@ -39,7 +39,8 @@ local function RivalFrame(props: {quadrant: "Q1" | "Q2" | "Q3" | "Q4"})
         TweenService:Create(frame, TweenInfo.new(0.02), {
           Position = originalPosition;
         }):Play();
-          
+        
+        -- Transition the frame outwards.
         task.wait(2);
         
         local goalScale = 1.75;
