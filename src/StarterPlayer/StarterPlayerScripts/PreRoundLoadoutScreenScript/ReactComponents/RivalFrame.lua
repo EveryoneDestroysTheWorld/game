@@ -10,7 +10,7 @@ local function RivalFrame(props: {quadrant: "Q1" | "Q2" | "Q3" | "Q4"})
   local frameAnchorPoint = Vector2.new(if props.quadrant == "Q2" or props.quadrant == "Q3" then 0 else 1, if props.quadrant == "Q1" or props.quadrant == "Q2" then 0 else 1);
   local textAnchorPoint = Vector2.new(if props.quadrant == "Q1" or props.quadrant == "Q4" then 0 else 1, if props.quadrant == "Q3" or props.quadrant == "Q4" then 0 else 1);
 
-  local shade = math.random(2, 33);
+  local shade = React.useState(math.random(2, 33));
 
   React.useEffect(function()
     
