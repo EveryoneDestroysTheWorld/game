@@ -2,8 +2,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local TweenService = game:GetService("TweenService");
+local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
+type ClientContestant = ClientContestant.ClientContestant;
 
-local function RivalFrame(props: {quadrant: "Q1" | "Q2" | "Q3" | "Q4"})
+local function RivalFrame(props: {quadrant: "Q1" | "Q2" | "Q3" | "Q4"; contestant: ClientContestant})
 
   local frameRef = React.useRef(nil :: Frame?);
   local uiScaleRef = React.useRef(nil :: UIScale?);
@@ -77,7 +79,7 @@ local function RivalFrame(props: {quadrant: "Q1" | "Q2" | "Q3" | "Q4"})
       AnchorPoint = textAnchorPoint;
       AutomaticSize = Enum.AutomaticSize.XY;
       BackgroundTransparency = 1;
-      Text = "Username";
+      Text = props.contestant.name;
       FontFace = Font.fromId(11702779517, Enum.FontWeight.Bold);
       TextSize = 14;
       TextColor3 = Color3.new(1, 1, 1);

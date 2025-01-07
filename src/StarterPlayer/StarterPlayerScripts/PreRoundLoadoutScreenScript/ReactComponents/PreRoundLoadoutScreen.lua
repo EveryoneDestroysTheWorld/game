@@ -8,27 +8,57 @@ local RivalFrameContainer = require(script.Parent.RivalFrameContainer);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 type RoundStatus = ClientRound.RoundStatus;
+local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
+type ClientContestant = ClientContestant.ClientContestant;
+local filterTable = require(ReplicatedStorage.Shared.Modules.FilterTable);
 
 local function PreRoundLoadoutScreen()
 
   local shouldShowRivals, setShouldShowRivals = React.useState(false);
   local roundStatus: RoundStatus?, setRoundStatus = React.useState(nil :: RoundStatus?);
+  local rivalContestants: {ClientContestant}?, setRivalContestants = React.useState({});
   local frameRef = React.useRef(nil :: Frame?);
 
   React.useEffect(function()
   
-    local round = ClientRound.fromServerRound();
-    round.onStatusChanged:Connect(function()
+    task.spawn(function()
     
+      local round = ClientRound.fromServerRound();
+      round.onStatusChanged:Connect(function()
+      
+        setRoundStatus(round.status);
+
+      end);
+
+      local function updateEnemyContestants()
+
+        local selfContestant = filterTable(round.contestants, function(contestant)
+          
+          return contestant.id == game:GetService("Players").LocalPlayer.UserId;
+
+        end)[1];
+
+        local rivalContestants = filterTable(round.contestants, function(contestant)
+          
+          return selfContestant.teamID ~= contestant.teamID;
+
+        end);
+
+        setRivalContestants(rivalContestants);
+
+      end;
+
+      round.onContestantAdded:Connect(updateEnemyContestants);
+
+      updateEnemyContestants();
       setRoundStatus(round.status);
 
     end);
-    setRoundStatus(round.status);
 
   end, {});
 
   React.useEffect(function()
-  
+
     local frame = frameRef.current;
     if shouldShowRivals and frame then
 
@@ -57,7 +87,7 @@ local function PreRoundLoadoutScreen()
     ref = frameRef;
   }, {
     RivalFrameContainer = if shouldShowRivals then
-      React.createElement(RivalFrameContainer)
+      React.createElement(RivalFrameContainer, {rivalContestants = rivalContestants})
     else nil;
     WaitingMessage = if not shouldShowRivals then
       React.createElement(WaitingMessage)
