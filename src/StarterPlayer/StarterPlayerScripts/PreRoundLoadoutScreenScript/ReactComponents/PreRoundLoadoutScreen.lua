@@ -10,6 +10,7 @@ type ClientRound = ClientRound.ClientRound;
 type RoundStatus = ClientRound.RoundStatus;
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
+local ActiveRoundNotification = require(script.Parent.ActiveRoundNotification);
 
 local function PreRoundLoadoutScreen()
 
@@ -81,26 +82,29 @@ local function PreRoundLoadoutScreen()
 
   end, {shouldShowTeams});
 
-  return React.createElement("Frame", {
-    Size = UDim2.new(1, 0, 1, 0);
-    BackgroundColor3 = if shouldShowTeams then Color3.new(1, 1, 1) else Color3.new(0, 0, 0);
-    BorderSizePixel = 0;
-    ref = frameRef;
-  }, {
-    ContestantInformationContainer = if shouldShowTeams then
-      React.createElement(ContestantInformationContainer, {teams = teams})
-    else nil;
-    WaitingMessage = if not shouldShowTeams then
-      React.createElement(WaitingMessage)
-    else nil;
-    TransitionCircle = if not shouldShowTeams then
-      React.createElement(TransitionCircle, {
-        roundStatus = roundStatus;
-        onTransitionEnd = function()
-          setShouldShowTeams(true);
-        end;
-      })
-    else nil
+  return if roundStatus == "Active" then 
+    React.createElement(ActiveRoundNotification)
+  else
+    React.createElement("Frame", {
+      Size = UDim2.new(1, 0, 1, 0);
+      BackgroundColor3 = if shouldShowTeams then Color3.new(1, 1, 1) else Color3.new(0, 0, 0);
+      BorderSizePixel = 0;
+      ref = frameRef;
+    }, {
+      ContestantInformationContainer = if shouldShowTeams then
+        React.createElement(ContestantInformationContainer, {teams = teams})
+      else nil;
+      WaitingMessage = if not shouldShowTeams then
+        React.createElement(WaitingMessage)
+      else nil;
+      TransitionCircle = if not shouldShowTeams then
+        React.createElement(TransitionCircle, {
+          roundStatus = roundStatus;
+          onTransitionEnd = function()
+            setShouldShowTeams(true);
+          end;
+        })
+      else nil;
   });
 
 end;

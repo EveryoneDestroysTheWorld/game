@@ -59,12 +59,18 @@ local function ContestantFrame(props: {contestant: ClientContestant; index: numb
 
   end;
 
+  local sound = React.useState(`rbxassetid://{({"9001303285", "8595980577", "12221967", "157167203", "1905367471", "9117969687", "4809574295", "3125624765"})[math.random(1, 8)]}`);
+
   return React.createElement("Frame", {
     BackgroundTransparency = 1;
     Size = UDim2.new(0, 30, 0, 30);
     SizeConstraint = Enum.SizeConstraint.RelativeYY;
     LayoutOrder = props.index;
   }, {
+    ContestantMusic = React.createElement("Sound", {
+      Playing = props.currentContestantIndex == props.index and (not props.contestant.teamID or props.contestant.teamID == props.currentTeamIndex);
+      SoundId = sound;
+    });
     Frame = React.createElement("Frame", {
       BackgroundTransparency = if shouldPresent then 0 else 1;
       BackgroundColor3 = Color3.fromRGB(shade, shade, shade);
