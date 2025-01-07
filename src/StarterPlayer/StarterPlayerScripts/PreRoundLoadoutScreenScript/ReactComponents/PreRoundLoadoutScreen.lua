@@ -4,19 +4,18 @@ local TweenService = game:GetService("TweenService");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local WaitingMessage = require(script.Parent.WaitingMessage);
 local TransitionCircle = require(script.Parent.TransitionCircle);
-local RivalFrameContainer = require(script.Parent.RivalFrameContainer);
+local ContestantInformationContainer = require(script.Parent.ContestantInformationContainer);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 type RoundStatus = ClientRound.RoundStatus;
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
-local filterTable = require(ReplicatedStorage.Shared.Modules.FilterTable);
 
 local function PreRoundLoadoutScreen()
 
-  local shouldShowRivals, setShouldShowRivals = React.useState(false);
+  local shouldShowTeams, setShouldShowTeams = React.useState(false);
   local roundStatus: RoundStatus?, setRoundStatus = React.useState(nil :: RoundStatus?);
-  local rivalContestants: {ClientContestant}?, setRivalContestants = React.useState({});
+  local teams, setTeams = React.useState({});
   local frameRef = React.useRef(nil :: Frame?);
 
   React.useEffect(function()
@@ -30,27 +29,29 @@ local function PreRoundLoadoutScreen()
 
       end);
 
-      local function updateEnemyContestants()
+      local function updateTeams()
 
-        local selfContestant = filterTable(round.contestants, function(contestant)
-          
-          return contestant.id == game:GetService("Players").LocalPlayer.UserId;
+        local newTeams = {};
 
-        end)[1];
+        for _, contestant in round.contestants do
 
-        local rivalContestants = filterTable(round.contestants, function(contestant)
-          
-          return selfContestant.teamID ~= contestant.teamID;
+          if not newTeams[contestant.teamID] then
 
-        end);
+            newTeams[contestant.teamID] = {};
 
-        setRivalContestants(rivalContestants);
+          end;
+
+          table.insert(newTeams[contestant.teamID], contestant);
+
+        end;
+
+        setTeams(newTeams);
 
       end;
 
-      round.onContestantAdded:Connect(updateEnemyContestants);
+      round.onContestantAdded:Connect(updateTeams);
+      round.onContestantRemoved:Connect(updateTeams);
 
-      updateEnemyContestants();
       setRoundStatus(round.status);
 
     end);
@@ -60,7 +61,7 @@ local function PreRoundLoadoutScreen()
   React.useEffect(function()
 
     local frame = frameRef.current;
-    if shouldShowRivals and frame then
+    if shouldShowTeams and frame then
 
       task.delay(2, function()
       
@@ -78,25 +79,25 @@ local function PreRoundLoadoutScreen()
 
     end;
 
-  end, {shouldShowRivals});
+  end, {shouldShowTeams});
 
   return React.createElement("Frame", {
     Size = UDim2.new(1, 0, 1, 0);
-    BackgroundColor3 = if shouldShowRivals then Color3.new(1, 1, 1) else Color3.new(0, 0, 0);
+    BackgroundColor3 = if shouldShowTeams then Color3.new(1, 1, 1) else Color3.new(0, 0, 0);
     BorderSizePixel = 0;
     ref = frameRef;
   }, {
-    RivalFrameContainer = if shouldShowRivals then
-      React.createElement(RivalFrameContainer, {rivalContestants = rivalContestants})
+    ContestantInformationContainer = if shouldShowTeams then
+      React.createElement(ContestantInformationContainer, {teams = teams})
     else nil;
-    WaitingMessage = if not shouldShowRivals then
+    WaitingMessage = if not shouldShowTeams then
       React.createElement(WaitingMessage)
     else nil;
-    TransitionCircle = if not shouldShowRivals then
+    TransitionCircle = if not shouldShowTeams then
       React.createElement(TransitionCircle, {
         roundStatus = roundStatus;
         onTransitionEnd = function()
-          setShouldShowRivals(true);
+          setShouldShowTeams(true);
         end;
       })
     else nil
