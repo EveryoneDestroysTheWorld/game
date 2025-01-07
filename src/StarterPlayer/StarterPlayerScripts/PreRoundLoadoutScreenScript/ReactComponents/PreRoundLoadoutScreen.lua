@@ -4,6 +4,7 @@ local TweenService = game:GetService("TweenService");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local WaitingMessage = require(script.Parent.WaitingMessage);
 local TransitionCircle = require(script.Parent.TransitionCircle);
+local RivalFrameContainer = require(script.Parent.RivalFrameContainer);
 
 local function PreRoundLoadoutScreen()
 
@@ -40,6 +41,9 @@ local function PreRoundLoadoutScreen()
     BorderSizePixel = 0;
     ref = frameRef;
   }, {
+    RivalFrameContainer = if shouldShowRivals then
+      React.createElement(RivalFrameContainer)
+    else nil;
     WaitingMessage = if not shouldShowRivals then
       React.createElement(WaitingMessage)
     else nil;
