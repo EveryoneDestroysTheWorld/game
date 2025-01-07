@@ -18,14 +18,14 @@ local Profile = require(ServerStorage.Packages.Profile);
 local round;
 local didSuccessfullyInitializeRound, message = pcall(function()
 
-  if script:HasTag("Debug-AllPlayersAreContestants") then
+  if script:HasTag("DebugAllPlayersAreContestants") then
 
     round = ServerRound.new({
       id = HttpService:GenerateGUID();
       stageID = Stage.random().id :: string;
       gameModeID = "TurfWar";
       contestantIDs = {};
-      duration = script:GetAttribute("Debug-RoundDuration");
+      duration = script:GetAttribute("DebugRoundDuration");
       status = "Waiting for players" :: "Waiting for players";
     });
 
