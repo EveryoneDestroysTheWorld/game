@@ -145,7 +145,7 @@ function ServerRound.__index:start(): ()
   self.actions = {};
   for _, contestant in ipairs(self.contestants) do
 
-    task.spawn(function()
+    local function updateArchetype()
 
       local isSuccess, errorMessage = pcall(function()
 
@@ -187,7 +187,10 @@ function ServerRound.__index:start(): ()
 
       end;
 
-    end);
+    end;
+
+    contestant.onArchetypeUpdated:Connect(updateArchetype);
+    task.spawn(updateArchetype);
 
   end;
 
@@ -205,7 +208,11 @@ function ServerRound.__index:start(): ()
   onEndedEvent = self.onEnded:Connect(function()
   
     onEndedEvent:Disconnect();
-    task.cancel(timer);
+    if coroutine.status(timer) == "running" then
+
+      task.cancel(timer);
+
+    end;
 
   end);
 
