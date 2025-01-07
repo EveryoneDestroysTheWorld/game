@@ -171,11 +171,6 @@ function ServerRound.__index:start(): ()
           
           end;
 
-        else
-
-          contestant:disqualify();
-          warn(`Disqualified {contestant.name} ({contestant.id}) because they don't have an archetype.`);
-
         end;
 
       end);
@@ -197,24 +192,28 @@ function ServerRound.__index:start(): ()
   self.timeStarted = DateTime.now().UnixTimestampMillis;
   events[self].onTimeStartedChanged:Fire();
 
-  -- Start a timer.
-  local timer = task.delay(self.duration, function()
-  
-    self:stop();
+  if self.duration then
 
-  end);
+    -- Start a timer.
+    local timer = task.delay(self.duration, function()
+    
+      self:stop();
 
-  local onEndedEvent;
-  onEndedEvent = self.onEnded:Connect(function()
-  
-    onEndedEvent:Disconnect();
-    if coroutine.status(timer) == "running" then
+    end);
 
-      task.cancel(timer);
+    local onEndedEvent;
+    onEndedEvent = self.onEnded:Connect(function()
+    
+      onEndedEvent:Disconnect();
+      if coroutine.status(timer) == "running" then
 
-    end;
+        task.cancel(timer);
 
-  end);
+      end;
+
+    end);
+
+  end;
 
   ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(self.id, self.timeStarted);
 
