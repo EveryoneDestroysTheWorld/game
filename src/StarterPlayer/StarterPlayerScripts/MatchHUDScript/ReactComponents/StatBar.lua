@@ -138,6 +138,7 @@ local function StatBar(props: StatBarProps)
         Position = UDim2.new(if isHealthBar then 1 else 0, 0, 0, 0);
         AnchorPoint = Vector2.new(if isHealthBar then 1 else 0, 0);
         BackgroundTransparency = 0.5;
+        Size = UDim2.new(0, 0, 1, 0);
         BorderSizePixel = 0;
         ref = currentStatBarRef;
       });

@@ -164,63 +164,115 @@ local didSuccessfullyInitializeRound, message = pcall(function()
     end;
   
     -- Show each contestant their rivals.
-    round:setStatus("Matchup preview");
-  
-    task.wait(3);
-    
-    round:setStatus("Initializing character models");
-  
-    for _, contestant in ipairs(round.contestants) do
-  
+    local viewingPlayers = {};
+    for _, contestant in round.contestants do
+
       if contestant.player then
-  
-        contestant.player:LoadCharacter();
-        contestant:updateCharacter(contestant.player.Character);
-  
-      else
-  
-        local character = ServerStorage.NPCRigs.Rig:Clone();
-        character.Name = contestant.name;
-        character.Parent = workspace;
-  
-        local function resetNetworkOwnership(instance: Instance)
-  
-          if instance:IsA("BasePart") then
-  
-            while not instance:CanSetNetworkOwnership() do 
-              
-              task.wait();
-  
-            end;
-            
-            instance:SetNetworkOwner();
-  
-          end;
-  
-        end;
-  
-        character.DescendantAdded:Connect(resetNetworkOwnership);
-  
-        for _, part in ipairs(character:GetDescendants()) do
-  
-          if part:IsA("BasePart") then
-  
-            part:SetNetworkOwner();
-  
-          end;
-  
-        end;
-  
-        contestant:updateCharacter(character);
-  
+
+        table.insert(viewingPlayers, contestant.player);
+
       end;
+
+    end;
+
+    round:setStatus("Matchup preview");
+
+    -- Force continuation after a specific time.
+    local completionEvent;
+    local forceCompletionTask;
+    local goalTime = DateTime.now().UnixTimestamp + 7;
+
+    local function continueProcess()
+
+      if #viewingPlayers > 0 then
+
+        return;
+
+      end;
+
+      if forceCompletionTask and coroutine.status(forceCompletionTask) == "suspended" then
+
+        task.cancel(forceCompletionTask);
+
+      end;
+
+      if goalTime > DateTime.now().UnixTimestamp then
+
+        task.wait(goalTime - DateTime.now().UnixTimestamp);
+
+      end;
+
+      completionEvent:Disconnect();
+
+      round:setStatus("Initializing character models");
   
-    end; 
+      for _, contestant in ipairs(round.contestants) do
+    
+        if contestant.player then
+    
+          contestant.player:LoadCharacter();
+          contestant:updateCharacter(contestant.player.Character);
+    
+        else
+    
+          local character = ServerStorage.NPCRigs.Rig:Clone();
+          character.Name = contestant.name;
+          character.Parent = workspace;
+    
+          local function resetNetworkOwnership(instance: Instance)
+    
+            if instance:IsA("BasePart") then
+    
+              while not instance:CanSetNetworkOwnership() do 
+                
+                task.wait();
+    
+              end;
+              
+              instance:SetNetworkOwner();
+    
+            end;
+    
+          end;
+    
+          character.DescendantAdded:Connect(resetNetworkOwnership);
+    
+          for _, part in ipairs(character:GetDescendants()) do
+    
+            if part:IsA("BasePart") then
+    
+              part:SetNetworkOwner();
+    
+            end;
+    
+          end;
+    
+          contestant:updateCharacter(character);
+    
+        end;
+    
+      end;
+    
+      -- All clear!
+      round:setStatus("Active");
+      round:start();
+
+    end;
+
+    completionEvent = ReplicatedStorage.Shared.Events.MatchupPreviewCompleted.OnServerEvent:Connect(function(player)
+      
+      table.remove(viewingPlayers, table.find(viewingPlayers, player));
+      continueProcess();
+
+    end);
   
-    -- All clear!
-    round:setStatus("Active");
-    round:start();
-  
+    forceCompletionTask = task.delay(10, function()
+      
+      viewingPlayers = {};
+      continueProcess();
+
+    end);
+
   end;
   
   local function checkPlayerList(player: Player)

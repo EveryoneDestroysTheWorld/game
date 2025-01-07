@@ -64,48 +64,35 @@ local function PreRoundLoadoutScreen()
     local frame = frameRef.current;
     if shouldShowTeams and frame then
 
-      task.delay(2, function()
-      
-        local tween = TweenService:Create(frame, TweenInfo.new(), {
-          BackgroundTransparency = 1;
-        });
-
-        tween.Completed:Once(function()
-        
-        end);
-
-        tween:Play();
-
-      end);
-
     end;
 
   end, {shouldShowTeams});
 
-  return if roundStatus == "Active" then 
-    React.createElement(ActiveRoundNotification)
-  else
-    React.createElement("Frame", {
-      Size = UDim2.new(1, 0, 1, 0);
-      BackgroundColor3 = if shouldShowTeams then Color3.new(1, 1, 1) else Color3.new(0, 0, 0);
-      BorderSizePixel = 0;
-      ref = frameRef;
-    }, {
-      ContestantInformationContainer = if shouldShowTeams then
-        React.createElement(ContestantInformationContainer, {teams = teams})
-      else nil;
-      WaitingMessage = if not shouldShowTeams then
-        React.createElement(WaitingMessage)
-      else nil;
-      TransitionCircle = if not shouldShowTeams then
-        React.createElement(TransitionCircle, {
-          roundStatus = roundStatus;
-          onTransitionEnd = function()
-            setShouldShowTeams(true);
-          end;
-        })
-      else nil;
-  });
+  return
+    if roundStatus == "Active" then 
+      React.createElement(ActiveRoundNotification)
+    else
+      React.createElement("Frame", {
+        Size = UDim2.new(1, 0, 1, 0);
+        BackgroundColor3 = if shouldShowTeams then Color3.new(1, 1, 1) else Color3.new(0, 0, 0);
+        BorderSizePixel = 0;
+        ref = frameRef;
+      }, {
+        ContestantInformationContainer = if shouldShowTeams then
+          React.createElement(ContestantInformationContainer, {teams = teams})
+        else nil;
+        WaitingMessage = if not shouldShowTeams then
+          React.createElement(WaitingMessage)
+        else nil;
+        TransitionCircle = if not shouldShowTeams then
+          React.createElement(TransitionCircle, {
+            roundStatus = roundStatus;
+            onTransitionEnd = function()
+              setShouldShowTeams(true);
+            end;
+          })
+        else nil;
+      })
 
 end;
 

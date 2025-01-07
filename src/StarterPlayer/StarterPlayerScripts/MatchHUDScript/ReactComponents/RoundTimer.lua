@@ -18,7 +18,7 @@ local function RoundTimer(props: RoundTimerProps)
   local totalMilliseconds, setTotalMilliseconds = React.useState(0);
   local largestCharacterSize, setLargestCharacterSize = React.useState(0);
   local shouldUseMaximumSize = useResponsiveDesign({minimumWidth = 700});
-  local textSize = if shouldUseMaximumSize then 30 else 8;
+  local textSize = if shouldUseMaximumSize then 30 else 14;
   local font = Font.fromId(11702779517, Enum.FontWeight.SemiBold, Enum.FontStyle.Italic);
 
   React.useEffect(function()

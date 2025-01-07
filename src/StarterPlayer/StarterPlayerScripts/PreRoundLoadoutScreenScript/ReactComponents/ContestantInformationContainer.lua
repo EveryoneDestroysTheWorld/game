@@ -29,6 +29,10 @@ local function ContestantInformationContainer(props: {teams: {{ClientContestant}
 
       end);
 
+    else
+
+      ReplicatedStorage.Shared.Events.MatchupPreviewCompleted:FireServer();
+
     end;
 
   end, {props.teams :: any, teamIndex, contestantIndex});

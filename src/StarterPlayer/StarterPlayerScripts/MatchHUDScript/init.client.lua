@@ -54,8 +54,4 @@ local function setupGUI()
 
 end;
 
-player.CharacterAdded:Connect(function()
-
-  task.delay(1, setupGUI);
-
-end);
+player.CharacterAdded:Connect(setupGUI);
