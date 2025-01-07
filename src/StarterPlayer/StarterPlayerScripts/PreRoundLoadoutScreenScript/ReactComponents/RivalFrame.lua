@@ -13,27 +13,44 @@ local function RivalFrame(props: {quadrant: "Q1" | "Q2" | "Q3" | "Q4"})
   local shade = math.random(2, 33);
 
   React.useEffect(function()
-
-    task.delay(if props.quadrant == "Q2" then 0 elseif props.quadrant == "Q1" then 0.3 elseif props.quadrant == "Q4" then 0.6 else 0.9, function()
     
+    task.spawn(function()
+
+      -- Rumble the frame.
       local frame = frameRef.current;
       local uiScale = uiScaleRef.current;
       if frame and uiScale then
 
+        task.wait(if props.quadrant == "Q2" then 0 elseif props.quadrant == "Q1" then 0.3 elseif props.quadrant == "Q4" then 0.6 else 0.9);
+
         frame.Visible = true;
-        task.delay(2, function()
+
+        local originalPosition = frame.Position;
+        for i = 1, 10 do
+
+          local rumbleIntensity = 5;
+          TweenService:Create(frame, TweenInfo.new(0.02), {
+            Position = UDim2.new(frame.Position.X.Scale, math.random(0, rumbleIntensity) * (if math.random(0, 100) > 50 then -1 else 1), frame.Position.Y.Scale, math.random(0, rumbleIntensity) * (if math.random(0, 100) > 50 then -1 else 1));
+          }):Play();
+          task.wait(0.02);
+
+        end;
+
+        TweenService:Create(frame, TweenInfo.new(0.02), {
+          Position = originalPosition;
+        }):Play();
+          
+        task.wait(2);
         
-          local goalScale = 2;
+        local goalScale = 1.75;
 
-          TweenService:Create(frame, TweenInfo.new(2), {
-            Position = UDim2.new(frame.Position.X.Scale + goalScale * frame.Size.X.Scale * (if frame.AnchorPoint.X == 0 then -1 else 1), 0, frame.Position.Y.Scale + goalScale * frame.Size.Y.Scale * (if frame.AnchorPoint.Y == 0 then -1 else 1), 0);
-          }):Play();
+        TweenService:Create(frame, TweenInfo.new(2), {
+          Position = UDim2.new(frame.Position.X.Scale + goalScale * frame.Size.X.Scale * (if frame.AnchorPoint.X == 0 then -1 else 1), 0, frame.Position.Y.Scale + goalScale * frame.Size.Y.Scale * (if frame.AnchorPoint.Y == 0 then -1 else 1), 0);
+        }):Play();
 
-          TweenService:Create(uiScale, TweenInfo.new(0.75), {
-            Scale = goalScale;
-          }):Play();
-
-        end);
+        TweenService:Create(uiScale, TweenInfo.new(0.75), {
+          Scale = goalScale;
+        }):Play();
 
       end;
 
