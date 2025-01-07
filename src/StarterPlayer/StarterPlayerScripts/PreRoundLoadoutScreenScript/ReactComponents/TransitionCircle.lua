@@ -2,37 +2,35 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local TweenService = game:GetService("TweenService");
+local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
+type RoundStatus = ClientRound.RoundStatus;
 
-local function WaitingMessage(props: {onTransitionEnd: () -> ()})
+local function WaitingMessage(props: {onTransitionEnd: () -> (); roundStatus: RoundStatus?})
 
   local circleRef = React.useRef(nil :: Frame?);
   React.useEffect(function()
 
     local circle = circleRef.current;
-    if circle then
+    if circle and props.roundStatus == "Matchup preview" then
 
-      task.delay(5, function()
+      local viewportSize = workspace.CurrentCamera.ViewportSize;
+      local newSize = math.max(viewportSize.X, viewportSize.Y) * 1.25;
+
+      local tween = TweenService:Create(circle, TweenInfo.new(1.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut), {
+        Size = UDim2.new(0, newSize, 0, newSize);
+      });
+
+      tween.Completed:Once(function()
       
-        local viewportSize = workspace.CurrentCamera.ViewportSize;
-        local newSize = math.max(viewportSize.X, viewportSize.Y) * 1.25;
+        props.onTransitionEnd();
 
-        local tween = TweenService:Create(circle, TweenInfo.new(1.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut), {
-          Size = UDim2.new(0, newSize, 0, newSize);
-        });
-
-        tween.Completed:Once(function()
-        
-          props.onTransitionEnd();
-
-        end);
-
-        tween:Play();
-      
       end);
+
+      tween:Play();
 
     end;
 
-  end, {});
+  end, {props.roundStatus});
 
   return React.createElement("Frame", {
     Size = UDim2.new();

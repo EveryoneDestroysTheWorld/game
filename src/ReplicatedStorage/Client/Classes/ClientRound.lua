@@ -86,8 +86,12 @@ function ClientRound.new(properties: RoundProperties): ClientRound
 
   ReplicatedStorage.Shared.Events.RoundStatusChanged.OnClientEvent:Connect(function(roundID: string, newStatus: RoundStatus, oldStatus: RoundStatus)
   
-    round.status = newStatus;
-    events.onStatusChanged:Fire(newStatus, oldStatus);
+    if roundID == round.id then
+
+      round.status = newStatus;
+      events.onStatusChanged:Fire(newStatus, oldStatus);
+
+    end;
 
   end);
 

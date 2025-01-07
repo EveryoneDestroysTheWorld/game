@@ -1,69 +1,69 @@
 -- --!strict
--- -- Profile.lua
--- -- Writers: Christian "Sudobeast" Toney and Hati :))))
--- -- This script controls the round and lobby management stuff.
+-- Programmers: Christian Toney (Christian_Toney) and Hati (hati_bati) :))))
+-- This script controls the round management stuff.
 
--- local ReplicatedStorage = game:GetService("ReplicatedStorage");
--- local ServerStorage = game:GetService("ServerStorage");
--- local Players = game:GetService("Players");
--- local HttpService = game:GetService("HttpService");
--- local Stage = require(ServerStorage.Packages.Stage);
--- local ServerRound = require(ServerStorage.Classes.ServerRound);
--- local ServerContestant = require(ServerStorage.Classes.ServerContestant);
--- type ServerContestant = ServerContestant.ServerContestant;
--- local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
--- type ServerArchetype = ServerArchetype.ServerArchetype;
--- local Profile = require(ServerStorage.Packages.Profile);
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local ServerStorage = game:GetService("ServerStorage");
+local Players = game:GetService("Players");
+local HttpService = game:GetService("HttpService");
+local Stage = require(ServerStorage.Packages.Stage);
+local ServerRound = require(ServerStorage.Classes.ServerRound);
+local ServerContestant = require(ServerStorage.Classes.ServerContestant);
+type ServerContestant = ServerContestant.ServerContestant;
+local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
+type ServerArchetype = ServerArchetype.ServerArchetype;
+local Profile = require(ServerStorage.Packages.Profile);
 
--- -- Initialize the round.
--- local round;
--- local didSuccessfullyInitializeRound, message = pcall(function()
+-- Initialize the round.
+local round;
+local didSuccessfullyInitializeRound, message = pcall(function()
 
---   local shouldCreateRound = true;
---   if shouldCreateRound then
+  if script:HasTag("Debug-AllPlayersAreContestants") then
 
---     round = ServerRound.new({
---       id = HttpService:GenerateGUID();
---       stageID = Stage.random().id :: string;
---       gameModeID = "TurfWar";
---       contestantIDs = {};
---       duration = 180;
---       status = "Waiting for players" :: "Waiting for players";
---     });
+    round = ServerRound.new({
+      id = HttpService:GenerateGUID();
+      stageID = Stage.random().id :: string;
+      gameModeID = "TurfWar";
+      contestantIDs = {};
+      duration = script:GetAttribute("Debug-RoundDuration");
+      status = "Waiting for players" :: "Waiting for players";
+    });
 
---   elseif game.PrivateServerId ~= "" then
+  elseif game.PrivateServerId ~= "" then
 
---     round = ServerRound.fromPrivateServerID(game.PrivateServerId);
---     assert(round.stageID, "Round didn't have a stage ID.");
+    round = ServerRound.fromPrivateServerID(game.PrivateServerId);
+    assert(round.stageID, "Round didn't have a stage ID.");
 
---   end;
+  end;
   
---   round.stage:download().Parent = workspace;
+  round.stage:download().Parent = workspace;
 
--- end);
+end);
 
--- if not didSuccessfullyInitializeRound then
+if not didSuccessfullyInitializeRound then
 
---   ReplicatedStorage.Shared.Events.RoundStopped:FireAllClients()
+  ReplicatedStorage.Shared.Events.RoundStopped:FireAllClients()
   
---   Players.PlayerAdded:Connect(function(player)
+  Players.PlayerAdded:Connect(function(player)
   
---     ReplicatedStorage.Shared.Events.RoundStopped:FireClient(player);
+    ReplicatedStorage.Shared.Events.RoundStopped:FireClient(player);
 
---   end);
+  end);
   
---   error(message);
+  error(message);
 
--- end;
+end;
 
--- ReplicatedStorage.Shared.Functions.GetRound.OnServerInvoke = function()
+ReplicatedStorage.Shared.Functions.GetRound.OnServerInvoke = function()
 
---   assert(round, "The server hasn't initialized the round yet.");
+  assert(round, "The server hasn't initialized the round yet.");
 
---   -- Convert the ServerRound to a ClientRound.
---   return round:getClientConstructorProperties();
+  -- Convert the ServerRound to a ClientRound.
+  return round:getClientConstructorProperties();
 
--- end;
+end;
+
+round:setStatus("Matchup preview");
 
 -- -- Get the match info.
 -- local expectedPlayerIDs = {};
