@@ -68,7 +68,7 @@ export type ServerRoundMethods = {
   addContestant: (self: ServerRound, contestant: ServerContestant) -> ();
   getClientConstructorProperties: (self: ServerRound) -> any;
   setStatus: (self: ServerRound, newStatus: RoundStatus) -> ();
-  start: (self: ServerRound, stageModel: Model) -> ();
+  start: (self: ServerRound) -> ();
   stop: (self: ServerRound, forced: boolean?) -> ();
   setGameMode: (self: ServerRound, gameMode: GameMode) -> ();
   toString: (self: ServerRound) -> string;
