@@ -18,9 +18,13 @@ local function setupGUI()
 
     if shouldEnable and not gui then
 
-      local gui = Instance.new("ScreenGui");
-      gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui");
-      root = ReactRoblox.createRoot(gui);
+      local newGUI = Instance.new("ScreenGui");
+      gui = newGUI;
+      newGUI.Parent = Players.LocalPlayer:WaitForChild("PlayerGui");
+      newGUI.Name = "ArchetypeSelectorGUI";
+      newGUI.DisplayOrder = 1;
+      newGUI.ScreenInsets = Enum.ScreenInsets.None;
+      root = ReactRoblox.createRoot(newGUI);
 
     end;
 
@@ -34,6 +38,7 @@ local function setupGUI()
           if gui then
 
             gui:Destroy();
+            gui = nil;
 
           end;
 
@@ -63,6 +68,7 @@ local function setupGUI()
 
   round.onEnded:Once(function()
 
+    script.ToggleSelector.OnInvoke = nil;
     ContextActionService:UnbindAction("ToggleArchetypeMenu");
 
   end);

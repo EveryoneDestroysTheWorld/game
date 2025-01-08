@@ -6,9 +6,12 @@ type ClientRound = ClientRound.ClientRound;
 local Button = require(ReplicatedStorage.Client.ReactComponents.Button);
 local Players = game:GetService("Players");
 local SearchBox = require(script.Parent.SearchBox);
+local TweenService = game:GetService("TweenService");
 
 type RoundTimerProps = {
   round: ClientRound;
+  shouldOpen: boolean;
+  onClose: () -> ();
 }
 
 local function ArchetypeSelectorScreen(props: RoundTimerProps)
@@ -16,12 +19,35 @@ local function ArchetypeSelectorScreen(props: RoundTimerProps)
   local query, setQuery = React.useState("");
   local selection, setSelection = React.useState(nil :: string?);
 
+  React.useEffect(function(): ()
+  
+    if props.shouldOpen then
+
+      -- Run animations.
+
+    else
+
+      props.onClose();
+
+      -- local tween = TweenService:Create(instance, tweenInfo, propertyTable);
+
+      -- tween.Completed:Once(props.onClose);
+
+      -- return function()
+
+      --   tween:Cancel();
+
+      -- end;
+
+    end;
+
+  end, {props.onClose :: unknown, props.shouldOpen})
+
   return React.createElement("Frame", {
-    AnchorPoint = Vector2.new(0.5, 1);
-    BackgroundTransparency = 1;
-    AutomaticSize = Enum.AutomaticSize.Y;
-    Position = UDim2.new(0.5, 0, 1, -30);
-    Size = UDim2.new(0, 200, 0, 0);
+    BackgroundColor3 = Color3.new();
+    BorderSizePixel = 0;
+    BackgroundTransparency = 0.6;
+    Size = UDim2.new(1, 0, 1, 0);
   }, {
     SearchBox = React.createElement(SearchBox, {
       onChange = function(newQuery: string)
