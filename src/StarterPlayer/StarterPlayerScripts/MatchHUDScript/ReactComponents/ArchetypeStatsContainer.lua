@@ -5,7 +5,6 @@ local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 local StatContainer = require(script.Parent.StatContainer);
 local Button = require(ReplicatedStorage.Client.ReactComponents.Button);
-local ArchetypeSelector = require(script.Parent.ArchetypeSelector);
 local Players = game:GetService("Players");
 
 type RoundTimerProps = {
@@ -13,8 +12,6 @@ type RoundTimerProps = {
 }
 
 local function ArchetypeStatsContainer(props: RoundTimerProps)
-
-  local isArchetypeSelectorOpen, setIsArchetypeSelectorOpen = React.useState(false);
 
   local focusedContestant;
   for _, contestant in props.round.contestants do
@@ -62,13 +59,11 @@ local function ArchetypeStatsContainer(props: RoundTimerProps)
         });
       })
     else nil;
-    ArchetypeSelector = if isArchetypeSelectorOpen then React.createElement(ArchetypeSelector) else nil;
     ArchetypeButton = React.createElement(Button, {
-      LayoutOrder = 3;
+      LayoutOrder = 2;
       Text = "CHOOSE AN ARCHETYPE";
       [React.Event.Activated] = function()
 
-        setIsArchetypeSelectorOpen(not isArchetypeSelectorOpen);
 
       end;
     });
