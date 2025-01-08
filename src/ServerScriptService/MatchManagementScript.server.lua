@@ -13,6 +13,7 @@ type ServerContestant = ServerContestant.ServerContestant;
 local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
 type ServerArchetype = ServerArchetype.ServerArchetype;
 local Profile = require(ServerStorage.Packages.Profile);
+local StarterPlayerScripts = game:GetService("StarterPlayer").StarterPlayerScripts;
 
 -- Initialize the round.
 local round;
@@ -196,7 +197,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
 
       end;
 
-      if goalTime > DateTime.now().UnixTimestamp then
+      if goalTime > DateTime.now().UnixTimestamp and not StarterPlayerScripts.PreRoundLoadoutScreenScript:HasTag("DebugSkipCutscene") then
 
         task.wait(goalTime - DateTime.now().UnixTimestamp);
 

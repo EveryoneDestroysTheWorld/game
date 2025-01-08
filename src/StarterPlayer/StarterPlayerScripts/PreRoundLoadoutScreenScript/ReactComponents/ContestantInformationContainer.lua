@@ -12,7 +12,11 @@ local function ContestantInformationContainer(props: {teams: {{ClientContestant}
 
   React.useEffect(function()
   
-    if props.teams[teamIndex] then
+    if not props.teams[teamIndex] or script.Parent.Parent:HasTag("DebugSkipCutscene") then
+
+      ReplicatedStorage.Shared.Events.MatchupPreviewCompleted:FireServer();
+
+    else
 
       task.delay(0.5, function()
       
@@ -28,10 +32,6 @@ local function ContestantInformationContainer(props: {teams: {{ClientContestant}
         end;
 
       end);
-
-    else
-
-      ReplicatedStorage.Shared.Events.MatchupPreviewCompleted:FireServer();
 
     end;
 
