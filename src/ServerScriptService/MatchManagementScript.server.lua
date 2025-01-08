@@ -91,7 +91,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
       contestant.profile:updateArchetypeIDs(_newArchetypeIDs);
   
     end;
-  
+
     return _newArchetypeIDs or archetypeIDs;
   
   end;
