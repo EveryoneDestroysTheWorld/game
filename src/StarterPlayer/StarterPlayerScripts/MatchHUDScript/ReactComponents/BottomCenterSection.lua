@@ -12,6 +12,7 @@ type RoundTimerProps = {
 local function BottomCenterSection(props: RoundTimerProps)
 
   return React.createElement("Frame", {
+    Size = UDim2.new(1, 0, 1, 0);
     BackgroundTransparency = 1;
   }, {
     ArchetypeStatsContainer = React.createElement(ArchetypeStatsContainer, {round = props.round});

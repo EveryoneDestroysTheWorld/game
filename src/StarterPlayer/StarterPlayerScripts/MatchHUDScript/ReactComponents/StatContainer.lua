@@ -22,6 +22,7 @@ local function StatContainer(props: StatContainerProperties)
       SortOrder = Enum.SortOrder.LayoutOrder;
       Padding = UDim.new(0, 5);
       FillDirection = Enum.FillDirection.Horizontal;
+      VerticalAlignment = Enum.VerticalAlignment.Center;
     });
     ImageLabel = React.createElement("ImageLabel", {
       Size = UDim2.new(1, 0, 1, 0);
