@@ -70,6 +70,7 @@ local function ContestantFrame(props: {contestant: ClientContestant; index: numb
     ContestantMusic = React.createElement("Sound", {
       Playing = props.currentContestantIndex == props.index and (not props.contestant.teamID or props.contestant.teamID == props.currentTeamIndex);
       SoundId = sound;
+      Volume = 0.3;
     });
     Frame = React.createElement("Frame", {
       BackgroundTransparency = if shouldPresent then 0 else 1;

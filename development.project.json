@@ -13,6 +13,10 @@
         }
       }
     },
+    "Workspace": {
+      "$path": "src/Workspace",
+      "$ignoreUnknownInstances": true
+    },
     "Players": {
       "$properties": {
         "CharacterAutoLoads": false

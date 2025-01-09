@@ -73,11 +73,6 @@ local function ArchetypeSelectorScreen(props: RoundTimerProps)
         Size = 12;
       });
     }, Lighting);
-    ArchetypeSelectorColorCorrection = ReactRoblox.createPortal({
-      React.createElement("ColorCorrectionEffect", {
-        Saturation = -1;
-      });
-    }, Lighting);
   });
 
 end;
