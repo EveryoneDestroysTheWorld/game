@@ -14,6 +14,8 @@ local function setupGUI()
   local gui: ScreenGui? = nil;
   local root;
 
+  local archetypeIDs = ReplicatedStorage.Shared.Functions.GetArchetypeIDs:InvokeServer();
+
   local function toggleMenu(shouldEnable: boolean)
 
     if shouldEnable and not gui then
@@ -30,6 +32,8 @@ local function setupGUI()
 
     if root then
 
+      ReplicatedStorage.Client.Functions.ToggleHUD:Invoke(false);
+      
       root:render(React.createElement(ArchetypeSelectorScreen, {
         round = round;
         shouldOpen = shouldEnable;
@@ -39,10 +43,12 @@ local function setupGUI()
 
             gui:Destroy();
             gui = nil;
+            root:unmount();
 
           end;
 
         end;
+        archetypeIDs = archetypeIDs;
       }));
 
     end;
@@ -60,15 +66,15 @@ local function setupGUI()
   end;
   
   ContextActionService:BindAction("ToggleArchetypeMenu", checkKeybind, false, Enum.KeyCode.H);
-  script.ToggleSelector.OnInvoke = function()
+  ReplicatedStorage.Client.Functions.ToggleSelector.OnInvoke = function(shouldEnable: boolean?)
 
-    toggleMenu(not gui);
+    toggleMenu(if typeof(shouldEnable) == "boolean" then shouldEnable else not gui);
 
   end;
 
   round.onEnded:Once(function()
 
-    script.ToggleSelector.OnInvoke = nil;
+    ReplicatedStorage.Client.Functions.ToggleSelector.OnInvoke = nil;
     ContextActionService:UnbindAction("ToggleArchetypeMenu");
 
   end);

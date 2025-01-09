@@ -145,15 +145,24 @@ function ServerRound.__index:start(): ()
   self.actions = {};
   for _, contestant in ipairs(self.contestants) do
 
+    local oldArchetype: ServerArchetype?;
+
     local function updateArchetype()
 
       local isSuccess, errorMessage = pcall(function()
+
+        if oldArchetype then
+
+          oldArchetype:breakdown();
+
+        end;
 
         if contestant.archetypeID then
 
           local archetype = ServerArchetype.get(contestant.archetypeID);
           archetype:initialize(contestant, self);
           table.insert(self.archetypes :: {ServerArchetype}, archetype);
+          oldArchetype = archetype;
 
           local actions = {};
           for _, actionID in ipairs(archetype.actionIDs) do

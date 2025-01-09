@@ -4,6 +4,7 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 local ContextActionService = game:GetService("ContextActionService");
+local Fonts = require(ReplicatedStorage.Client.Fonts);
 
 type RoundTimerProps = {
   value: string;
@@ -20,6 +21,7 @@ local function SearchBox(properties: RoundTimerProps)
 
       if inputState == Enum.UserInputState.Begin and textBoxRef.current and not textBoxRef.current:IsFocused() then
 
+        task.wait();
         textBoxRef.current:CaptureFocus();
 
       end;
@@ -36,24 +38,36 @@ local function SearchBox(properties: RoundTimerProps)
 
   end, {});
 
-  return React.createElement("Frame", {
-    AnchorPoint = Vector2.new(0.5, 1);
-    BackgroundTransparency = 1;
+  local function refresh()
+
+    if textBoxRef.current then
+
+      properties.onChange(textBoxRef.current.Text);
+
+    end;
+
+  end;
+
+  return React.createElement("TextBox", {
+    BackgroundColor3 = Color3.new();
+    BorderSizePixel = 0;
     AutomaticSize = Enum.AutomaticSize.Y;
-    Position = UDim2.new(0.5, 0, 1, -30);
-    Size = UDim2.new(0, 200, 0, 0);
+    Size = UDim2.new(1, 0, 0, 30);
+    PlaceholderText = "Press / and type to search for an archetype";
+    ref = textBoxRef;
+    Text = "";
+    ClearTextOnFocus = false;
+    TextColor3 = Color3.new(1, 1, 1);
+    TextXAlignment = Enum.TextXAlignment.Left;
+    LayoutOrder = 1;
+    FontFace = Fonts.Regular;
+    TextSize = 14;
+    PlaceholderColor3 = Color3.fromRGB(204, 204, 204);
+    [React.Change.Text] = refresh;
   }, {
-    TextBox = React.createElement("TextBox", {
-      [React.Event.InputBegan] = function()
-
-        if textBoxRef.current then
-
-          properties.onChange(textBoxRef.current.Text);
-
-        end;
-
-      end;
-      ref = textBoxRef;
+    UIPadding = React.createElement("UIPadding", {
+      PaddingLeft = UDim.new(0, 15);
+      PaddingRight = UDim.new(0, 15);
     })
   });
 

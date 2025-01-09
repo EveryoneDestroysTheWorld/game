@@ -48,6 +48,12 @@ local function setupGUI()
       BottomCenterSection = React.createElement(BottomCenterSection, {round = round});
     }));
 
+    ReplicatedStorage.Client.Functions.ToggleHUD.OnInvoke = function(shouldEnable: boolean?)
+
+      popupContainer.Enabled = if typeof(shouldEnable) == "boolean" then shouldEnable else not popupContainer.Enabled;
+
+    end;
+
   end;
 
 end;

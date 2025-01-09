@@ -64,6 +64,7 @@ local function ArchetypeStatsContainer(props: RoundTimerProps)
       Text = "CHOOSE AN ARCHETYPE";
       [React.Event.Activated] = function()
 
+        ReplicatedStorage.Client.Functions.ToggleSelector:Invoke(true);
 
       end;
     });

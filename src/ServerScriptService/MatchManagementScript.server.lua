@@ -96,7 +96,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
   
   end;
   
-  ReplicatedStorage.Shared.Functions.ChooseArchetype.OnServerInvoke = function(player: Player, archetypeID: unknown): ()
+  ReplicatedStorage.Shared.Functions.UpdateContestantArchetype.OnServerInvoke = function(player: Player, archetypeID: unknown): ()
   
     -- Verify that the player is a contestant.
     local contestant = getContestantFromPlayer(player);

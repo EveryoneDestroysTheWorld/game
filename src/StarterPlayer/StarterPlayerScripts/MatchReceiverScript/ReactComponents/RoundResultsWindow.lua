@@ -6,7 +6,7 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local TeamFrame = require(script.Parent.TeamFrame);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
-local filterTable = require(ReplicatedStorage.Shared.Modules.FilterTable);
+local filterTable = require(ReplicatedStorage.Shared.Modules.filterTable);
 local PersonalStatsFrame = require(script.Parent.PersonalStatsFrame);
 
 export type RoundResultsWindowProperties = {
