@@ -92,12 +92,12 @@ local function ArchetypeStatsContainer(props: RoundTimerProps)
           HealthStatContainer = React.createElement(StatContainer, {
             iconImage = "rbxassetid://89195253844423",
             layoutOrder = 1;
-            value = contestant.currentHealth;
+            contestant = contestant;
           });
           StaminaStatContainer = React.createElement(StatContainer, {
             iconImage = "rbxassetid://124027369520548",
             layoutOrder = 2;
-            value = contestant.currentStamina;
+            contestant = contestant;
           });
         })
       else nil;

@@ -12,6 +12,7 @@ type ServerItem = ServerItem.ServerItem;
 local RocketLauncherClientItem = require(ReplicatedStorage.Client.Classes.Items.RocketLauncherClientItem);
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
+local HttpService = game:GetService("HttpService");
 
 local RocketLauncherServerItem = {
   id = RocketLauncherClientItem.id;
@@ -20,6 +21,8 @@ local RocketLauncherServerItem = {
 };
 
 function RocketLauncherServerItem.new(contestant: ServerContestant, round: ServerRound): ServerItem
+
+  local _specificItemID;
 
   local function activate(self: ServerItem)
     
@@ -30,7 +33,7 @@ function RocketLauncherServerItem.new(contestant: ServerContestant, round: Serve
     
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.id);
+      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.id, _specificItemID);
 
     end;
 
@@ -40,9 +43,12 @@ function RocketLauncherServerItem.new(contestant: ServerContestant, round: Serve
 
     contestant = newContestant;
 
+    local specificItemID = HttpService:GenerateGUID(false);
+    _specificItemID = specificItemID;
+
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.id);
+      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.id, specificItemID);
 
     end;
 

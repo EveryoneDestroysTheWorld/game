@@ -26,6 +26,17 @@ reverb.Parent = sound;
 sound.Parent = workspace;
 sound:Play();
 
+round.onStopped:Connect(function()
+
+  local originalPosition = sound.TimePosition;
+  while wait(0.5) do
+
+    sound.TimePosition = originalPosition;
+
+  end;
+
+end);
+
 round.onEnded:Wait();
 
 sound:Destroy();

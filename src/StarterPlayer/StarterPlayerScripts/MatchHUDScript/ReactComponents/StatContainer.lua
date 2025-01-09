@@ -3,14 +3,56 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
+local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
+type ClientContestant = ClientContestant.ClientContestant;
 
 type StatContainerProperties = {
   iconImage: string;
-  value: string;
+  contestant: ClientContestant;
   layoutOrder: number;
 }
 
 local function StatContainer(props: StatContainerProperties)
+
+  local value, setValue = React.useState("--");
+
+  React.useEffect(function()
+  
+    local event;
+
+    if props.layoutOrder == 1 then
+
+      event = props.contestant.onHealthUpdated:Connect(function()
+      
+        setValue(`{props.contestant.currentHealth}`);
+
+      end);
+
+      setValue(`{props.contestant.currentHealth}`);
+
+    else
+
+      event = props.contestant.onStaminaUpdated:Connect(function()
+      
+        setValue(`{props.contestant.currentStamina}`);
+
+      end);
+
+      setValue(`{props.contestant.currentStamina}`);
+
+    end;
+
+    return function()
+
+      if event then
+
+        event:Disconnect();
+
+      end;
+
+    end;
+
+  end, {props.layoutOrder :: unknown, props.contestant});
 
   return React.createElement("Frame", {
     AutomaticSize = Enum.AutomaticSize.XY;
@@ -36,7 +78,7 @@ local function StatContainer(props: StatContainerProperties)
     CurrentValueLabel = React.createElement("TextLabel", {
       BackgroundTransparency = 1;
       LayoutOrder = 2;
-      Text = props.value;
+      Text = value;
       FontFace = Font.fromId(11702779517, Enum.FontWeight.Regular);
       TextSize = 14;
       AutomaticSize = Enum.AutomaticSize.XY;
