@@ -3,14 +3,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
-local DestructionBar = require(script.ReactComponents.DestructionBar);
-local StatBarContainer = require(script.ReactComponents.StatBarContainer);
-local CenteredRoundTimer = require(script.ReactComponents.CenteredRoundTimer);
 local RoundTimer = require(script.ReactComponents.RoundTimer);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
+local BottomCenterSection = require(script.ReactComponents.BottomCenterSection);
 
 local popupContainer = nil;
 local player = Players.LocalPlayer;
@@ -46,18 +44,18 @@ local function setupGUI()
   
     local root = ReactRoblox.createRoot(popupContainer);
     root:render(React.createElement(React.Fragment, {}, {
-      CenteredRoundTimer = React.createElement(CenteredRoundTimer, {round = round});
-      DestructionBar = React.createElement(DestructionBar, {round = round});
-      StatBarContainer = React.createElement(StatBarContainer, {contestant = contestant});
       RoundTimer = React.createElement(RoundTimer, {round = round});
+      BottomCenterSection = React.createElement(BottomCenterSection, {round = round});
     }));
+
+    ReplicatedStorage.Client.Functions.ToggleHUD.OnInvoke = function(shouldEnable: boolean?)
+
+      popupContainer.Enabled = if typeof(shouldEnable) == "boolean" then shouldEnable else not popupContainer.Enabled;
+
+    end;
 
   end;
 
 end;
 
-player.CharacterAdded:Connect(function()
-
-  task.delay(1, setupGUI);
-
-end);
+player.CharacterAdded:Connect(setupGUI);

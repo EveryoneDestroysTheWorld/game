@@ -4,7 +4,7 @@ export type ClientContestantProperties = {
   
   id: number;
 
-  archetypeID: number?;
+  archetypeID: string?;
   
   isDisqualified: boolean;
 

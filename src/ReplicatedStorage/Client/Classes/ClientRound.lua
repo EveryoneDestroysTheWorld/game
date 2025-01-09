@@ -8,7 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ClientContestant = require(script.Parent.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
 
-export type RoundStatus = "Waiting for players" | "Contestant selection" | "Matchup preview" | "Stage preview" | "Pre-round countdown" | "Active";
+export type RoundStatus = "Waiting for players" | "Contestant selection" | "Matchup preview" | "Initializing character models" | "Pre-round countdown" | "Active";
 
 export type RoundProperties = {
 
@@ -86,8 +86,12 @@ function ClientRound.new(properties: RoundProperties): ClientRound
 
   ReplicatedStorage.Shared.Events.RoundStatusChanged.OnClientEvent:Connect(function(roundID: string, newStatus: RoundStatus, oldStatus: RoundStatus)
   
-    round.status = newStatus;
-    events.onStatusChanged:Fire(newStatus, oldStatus);
+    if roundID == round.id then
+
+      round.status = newStatus;
+      events.onStatusChanged:Fire(newStatus, oldStatus);
+
+    end;
 
   end);
 

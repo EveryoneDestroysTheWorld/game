@@ -56,6 +56,12 @@ function SuperHammerServerItem.new(): ServerItem
     assert(style ~= "Hyper", "Hammer is in hyper mode! No other actions are allowed.");
     assert(_contestant, "This item must be assigned to a contestant.");
 
+    if not style then
+
+      style = if _contestant.currentStamina >= _contestant.baseStamina then "Hyper" elseif _contestant.currentStamina / _contestant.baseStamina >= 0.5 then "Combo" else "Normal";
+
+    end;
+
     local character = _contestant.character;
     assert(character, "The contestant must have a character.");
 
@@ -709,8 +715,6 @@ function SuperHammerServerItem.new(): ServerItem
 
     _contestant = contestant;
     _round = round;
-
-    style = if contestant.currentStamina >= contestant.baseStamina then "Hyper" elseif contestant.currentStamina / contestant.baseStamina >= 0.5 then "Combo" else "Normal";
 
     if contestant.player then
 

@@ -68,7 +68,7 @@ export type ServerRoundMethods = {
   addContestant: (self: ServerRound, contestant: ServerContestant) -> ();
   getClientConstructorProperties: (self: ServerRound) -> any;
   setStatus: (self: ServerRound, newStatus: RoundStatus) -> ();
-  start: (self: ServerRound, stageModel: Model) -> ();
+  start: (self: ServerRound) -> ();
   stop: (self: ServerRound, forced: boolean?) -> ();
   setGameMode: (self: ServerRound, gameMode: GameMode) -> ();
   toString: (self: ServerRound) -> string;
@@ -145,15 +145,24 @@ function ServerRound.__index:start(): ()
   self.actions = {};
   for _, contestant in ipairs(self.contestants) do
 
-    task.spawn(function()
+    local oldArchetype: ServerArchetype?;
+
+    local function updateArchetype()
 
       local isSuccess, errorMessage = pcall(function()
+
+        if oldArchetype then
+
+          oldArchetype:breakdown();
+
+        end;
 
         if contestant.archetypeID then
 
           local archetype = ServerArchetype.get(contestant.archetypeID);
           archetype:initialize(contestant, self);
           table.insert(self.archetypes :: {ServerArchetype}, archetype);
+          oldArchetype = archetype;
 
           local actions = {};
           for _, actionID in ipairs(archetype.actionIDs) do
@@ -171,11 +180,6 @@ function ServerRound.__index:start(): ()
           
           end;
 
-        else
-
-          contestant:disqualify();
-          warn(`Disqualified {contestant.name} ({contestant.id}) because they don't have an archetype.`);
-
         end;
 
       end);
@@ -187,27 +191,38 @@ function ServerRound.__index:start(): ()
 
       end;
 
-    end);
+    end;
+
+    contestant.onArchetypeUpdated:Connect(updateArchetype);
+    task.spawn(updateArchetype);
 
   end;
 
   self.timeStarted = DateTime.now().UnixTimestampMillis;
   events[self].onTimeStartedChanged:Fire();
 
-  -- Start a timer.
-  local timer = task.delay(self.duration, function()
-  
-    self:stop();
+  if self.duration then
 
-  end);
+    -- Start a timer.
+    local timer = task.delay(self.duration, function()
+    
+      self:stop();
 
-  local onEndedEvent;
-  onEndedEvent = self.onEnded:Connect(function()
-  
-    onEndedEvent:Disconnect();
-    task.cancel(timer);
+    end);
 
-  end);
+    local onEndedEvent;
+    onEndedEvent = self.onEnded:Connect(function()
+    
+      onEndedEvent:Disconnect();
+      if coroutine.status(timer) == "running" then
+
+        task.cancel(timer);
+
+      end;
+
+    end);
+
+  end;
 
   ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(self.id, self.timeStarted);
 

@@ -91,17 +91,24 @@ ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function
 
 end;
 
-ReplicatedStorage.Shared.Functions.InitializeItem.OnClientInvoke = function(itemID: string, specificItemID: string, ...: any)
+ReplicatedStorage.Shared.Functions.InitializeItem.OnClientInvoke = function(itemID: string?, specificItemID: string?, ...: any)
+
+  assert(itemID);
+  assert(specificItemID, `Item {itemID} didn't give an specific ID.`);
 
   local item = ClientItem.get(itemID);
   item:initialize(specificItemID, ...);
   initializedItems[itemID] = initializedItems[itemID] or {};
-  initializedItems[itemID][specificItemID] = item;
+
+  initializedItems[itemID][specificItemID :: string] = item;
   print(`Item active: {item.name}`);
 
 end;
 
-ReplicatedStorage.Shared.Functions.BreakdownItem.OnClientInvoke = function(itemID: string, specificItemID: string)
+ReplicatedStorage.Shared.Functions.BreakdownItem.OnClientInvoke = function(itemID: string?, specificItemID: string?)
+
+  assert(itemID);
+  assert(specificItemID, `Item {itemID} didn't give an specific ID.`);
 
   initializedItems[itemID][specificItemID]:breakdown();
   initializedItems[itemID][specificItemID] = nil;
