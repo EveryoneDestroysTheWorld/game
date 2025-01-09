@@ -138,6 +138,9 @@ local function SearchResultList(properties: SearchResultListProperties)
       SortOrder = Enum.SortOrder.LayoutOrder;
       Padding = UDim.new(0, 5);
     });
+    UISizeConstraint = React.createElement("UISizeConstraint", {
+      MaxSize = Vector2.new(700, math.huge);
+    });
     UIPadding = React.createElement("UIPadding", {
       PaddingRight = UDim.new(0, 5);
     });

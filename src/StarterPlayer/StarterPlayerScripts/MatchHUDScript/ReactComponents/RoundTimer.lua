@@ -118,6 +118,7 @@ local function RoundTimer(props: RoundTimerProps)
       UIListLayout = React.createElement("UIListLayout", {
         FillDirection = Enum.FillDirection.Horizontal;
         SortOrder = Enum.SortOrder.LayoutOrder;
+        VerticalAlignment = Enum.VerticalAlignment.Bottom;
       });
       Parts = React.createElement(React.Fragment, {}, timerParts);
     });

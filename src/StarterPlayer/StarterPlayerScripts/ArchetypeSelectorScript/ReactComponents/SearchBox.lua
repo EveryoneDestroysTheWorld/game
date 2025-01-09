@@ -68,7 +68,10 @@ local function SearchBox(properties: RoundTimerProps)
     UIPadding = React.createElement("UIPadding", {
       PaddingLeft = UDim.new(0, 15);
       PaddingRight = UDim.new(0, 15);
-    })
+    });
+    UISizeConstraint = React.createElement("UISizeConstraint", {
+      MaxSize = Vector2.new(700, math.huge);
+    });
   });
 
 end;

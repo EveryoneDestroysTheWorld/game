@@ -5,5 +5,10 @@
     "Looped": true,
     "Playing": true,
     "Volume": 0.2
-  }
+  },
+  "children": [
+    {
+      "className": "ReverbSoundEffect"
+    }
+  ]
 }

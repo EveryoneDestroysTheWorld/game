@@ -50,6 +50,7 @@ local function ArchetypeSelectorScreen(props: RoundTimerProps)
     UIListLayout = React.createElement("UIListLayout", {
       SortOrder = Enum.SortOrder.LayoutOrder;
       Padding = UDim.new(0, 5);
+      HorizontalAlignment = Enum.HorizontalAlignment.Center; -- TODO: Consider having archetypes previews on the left, while having this menu on the right?
     });
     UIPadding = React.createElement("UIPadding", {
       PaddingLeft = UDim.new(0, 30);
