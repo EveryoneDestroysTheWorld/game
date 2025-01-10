@@ -49,6 +49,7 @@ jobs:
           ROBLOX_PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
         run: | 
           curl \
+          --fail-with-body \
           -H "x-api-key: $ROBLOX_API_KEY" \
           -H "Content-Type: application/xml" \
           --data-binary @build.rbxl \
