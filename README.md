@@ -1,5 +1,5 @@
-# Everyone Destroys the World
-Everyone Destroys the World is a battle game by Beastslash where you get magical powers and items to wreck the stage and win. 
+# Everyone Destroys the World: Turf War
+Turf War is a game mode where players get magical powers and items to wreck the stage and win. This repository serves as an implementation of the Turf War design standards.
 
 ## Credits
 This game is being developed and published by Beastslash. To see a full list of people on the Everyone Destroys the World Team and outside contributors, see [CONTRIBUTORS.md](./CONTRIBUTORS.md).
