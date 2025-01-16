@@ -171,13 +171,14 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
       -- Keep track of downed players.
       for _, contestant in round.contestants do
 
-        contestant.statistics = {
+        contestant:mergeStatistics({
           partsClaimed = 0;
           partsDestroyed = 0;
           partsRestored = 0;
+          recoveryCount = 0;
           eliminationCount = 0;
           deathCount = 0;
-        };
+        });
 
         local isRecoveringStamina = false;
         local function recoverStamina()

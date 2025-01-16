@@ -9,12 +9,13 @@ local Fonts = require(ReplicatedStorage.Client.Fonts);
 export type PlayerSelectionContainerProperties = {
   teams: {
     [number]: {ClientContestant}
-  }
+  };
+  selectedContestant: ClientContestant?;
+  onSelectedContestantChanged: (contestant: ClientContestant) -> ();
 }
 
 local function PlayerSelectionContainer(properties: PlayerSelectionContainerProperties)
 
-  local selectedContestant: ClientContestant?, setSelectedContestant = React.useState(nil :: ClientContestant?);
   local teamContainers, setTeamContainers = React.useState({});
   React.useEffect(function()
   
@@ -23,12 +24,12 @@ local function PlayerSelectionContainer(properties: PlayerSelectionContainerProp
 
       table.insert(newTeamContainers, React.createElement(TeamSelectionContainer, {
         key = teamID;
-        LayoutOrder = teamID;
+        LayoutOrder = if teamID == 1 then teamID else 3;
         members = members;
-        selectedContestant = selectedContestant;
-        onSelectedContestantChanged = function(selectedContestant)
+        selectedContestant = properties.selectedContestant;
+        onSelectedContestantChanged = function(contestant)
 
-          setSelectedContestant(selectedContestant);
+          properties.onSelectedContestantChanged(contestant);
 
         end;
       }));
@@ -36,7 +37,7 @@ local function PlayerSelectionContainer(properties: PlayerSelectionContainerProp
     end;
     setTeamContainers(newTeamContainers);
 
-  end, {properties.teams :: unknown, selectedContestant});
+  end, {properties.teams :: unknown, properties.selectedContestant, properties.onSelectedContestantChanged});
 
   return React.createElement("Frame", {
     BackgroundTransparency = 1;
@@ -50,13 +51,14 @@ local function PlayerSelectionContainer(properties: PlayerSelectionContainerProp
       VerticalAlignment = Enum.VerticalAlignment.Center;
       FillDirection = Enum.FillDirection.Horizontal;
     });
-    SelectedPlayerName = if selectedContestant then
+    SelectedPlayerName = if properties.selectedContestant then
       React.createElement("TextLabel", {
         BackgroundTransparency = 1;
         TextColor3 = Color3.new(1, 1, 1);
         FontFace = Fonts.Bold;
         TextSize = 14;
-        Text = selectedContestant.name
+        LayoutOrder = 2;
+        Text = properties.selectedContestant.name
       })
     else nil;
     TeamContainerList = React.createElement(React.Fragment, {}, teamContainers);

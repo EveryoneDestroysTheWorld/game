@@ -40,8 +40,7 @@ local function TeamSelectionContainer(properties: PlayerSelectionContainerProper
 
   return React.createElement("Frame", {
     BackgroundTransparency = 1;
-    Size = UDim2.new(1, 0, 0, 20);
-    AutomaticSize = Enum.AutomaticSize.Y;
+    Size = UDim2.new(0, 0, 0, 20);
     LayoutOrder = properties.LayoutOrder;
   }, {
     UIListLayout = React.createElement("UIListLayout", {

@@ -277,7 +277,7 @@ function ServerContestant.__index:mergeStatistics(newStatistics: PatchableTurfWa
   
   end;
 
-  ReplicatedStorage.Shared.Events.GameModeStatsUpdated:FireAllClients(self.id, self.statistics);
+  ReplicatedStorage.Shared.Events.ContestantStatisticsUpdated:FireAllClients(self.id, self.statistics, oldStats, cause);
 
 end;
 
