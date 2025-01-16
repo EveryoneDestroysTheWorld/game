@@ -22,6 +22,7 @@ local function ProgressBarContainer(properties: ProgressBarContainerProperties)
 
       -- Count the claimed parts per team.
       local countList = {};
+      local winningTeamID = nil;
       for teamID, contestantList in properties.teams do
 
         local claimedPartCount = 0;
@@ -37,6 +38,12 @@ local function ProgressBarContainer(properties: ProgressBarContainerProperties)
 
         countList[teamID] = claimedPartCount;
 
+        if not winningTeamID or claimedPartCount > countList[winningTeamID] then
+
+          winningTeamID = teamID;
+
+        end;
+
       end;
 
       local totalStagePartCount = ReplicatedStorage.Shared.Functions.GetTotalStagePartCount:InvokeServer();
@@ -45,7 +52,10 @@ local function ProgressBarContainer(properties: ProgressBarContainerProperties)
 
         table.insert(newTeamContainers, React.createElement(TeamProgressBarContainer, {
           key = teamID,
+          LayoutOrder = teamID;
           percentage = partDestructionCount / totalStagePartCount;
+          didTeamWin = winningTeamID == teamID;
+          isLastTeam = teamID == countList[#countList]
         }));
 
       end;
