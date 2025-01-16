@@ -1,5 +1,5 @@
 export type Cause = {
-  contestantID: number; 
+  contestantID: number?; 
   actionID: string?; 
   archetypeID: string?;
   itemID: string?;

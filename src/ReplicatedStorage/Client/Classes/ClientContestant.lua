@@ -1,4 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
+type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
 
 export type ClientContestantProperties = {
   
@@ -24,7 +26,9 @@ export type ClientContestantProperties = {
 
   currentStamina: number?;
 
-  baseStamina: number?
+  baseStamina: number?;
+
+  statistics: TurfWarContestantStatistics?;
   
 }
 
@@ -41,9 +45,9 @@ export type ClientContestantEvents = {
   onDisqualified: RBXScriptSignal;
   onHealthUpdated: RBXScriptSignal;
   onStaminaUpdated: RBXScriptSignal;
-  onArchetypePrivatelyChosen: RBXScriptSignal;
   onArchetypeUpdated: RBXScriptSignal;
   onCharacterUpdated: RBXScriptSignal;
+  onStatisticsUpdated: RBXScriptSignal;
 }
 
 local ClientContestant = {
@@ -58,7 +62,7 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
   local contestant = setmetatable(properties, ClientContestant) :: ClientContestant;
 
   -- Set up events.
-  local eventNames = {"onDisqualified", "onHealthUpdated", "onStaminaUpdated", "onArchetypePrivatelyChosen", "onArchetypeUpdated", "onCharacterUpdated"};
+  local eventNames = {"onDisqualified", "onHealthUpdated", "onStaminaUpdated", "onArchetypeUpdated", "onCharacterUpdated", "onStatisticsUpdated"};
   events[contestant] = {};
   for _, eventName in ipairs(eventNames) do
 
@@ -66,17 +70,6 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
     (contestant :: {})[eventName] = events[contestant][eventName].Event;
 
   end
-
-  ReplicatedStorage.Shared.Events.ArchetypePrivatelyChosen.OnClientEvent:Connect(function(contestantID: number, archetypeID: number)
-  
-    if contestantID == contestant.id then
-
-      contestant.archetypeID = archetypeID;
-      events[contestant].onArchetypePrivatelyChosen:Fire(archetypeID);
-
-    end;
-    
-  end);
 
   ReplicatedStorage.Shared.Events.CharacterUpdated.OnClientEvent:Connect(function(contestantID: number, characterName: string?)
 
@@ -118,6 +111,17 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
 
       contestant.currentStamina = newStamina;
       events[contestant].onStaminaUpdated:Fire(newStamina, cause);
+
+    end;
+
+  end);
+
+  ReplicatedStorage.Shared.Events.ContestantStatisticsUpdated.OnClientEvent:Connect(function(contestantID: number, newStats: TurfWarContestantStatistics, oldStats: TurfWarContestantStatistics?, cause: Cause?)
+  
+    if contestantID == contestant.id then
+
+      contestant.statistics = newStats;
+      events[contestant].onStatisticsUpdated:Fire(newStats, oldStats, cause);
 
     end;
 
