@@ -2,7 +2,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ContentContainer = require(script.Parent.ContentContainer);
-local OptionsContainer = require(script.Parent.OptionsContainer);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 
@@ -29,7 +28,6 @@ local function ProgressReportScreen(properties: ProgressReportScreenProperties)
       PaddingBottom = UDim.new(0, 30);
     });
     ContentContainer = React.createElement(ContentContainer, {round = properties.round});
-    OptionsContainer = React.createElement(OptionsContainer);
   });
 
 end;
