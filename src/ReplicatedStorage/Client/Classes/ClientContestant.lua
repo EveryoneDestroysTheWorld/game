@@ -1,4 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
+type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
 
 export type ClientContestantProperties = {
   
@@ -24,7 +26,9 @@ export type ClientContestantProperties = {
 
   currentStamina: number?;
 
-  baseStamina: number?
+  baseStamina: number?;
+
+  statistics: TurfWarContestantStatistics?;
   
 }
 

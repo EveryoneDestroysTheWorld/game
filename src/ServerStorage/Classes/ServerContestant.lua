@@ -15,6 +15,9 @@ local Cause = require(script.Parent.Cause);
 type Cause = Cause.Cause;
 local Effect = require(script.Parent.Effect);
 type Effect = Effect.Effect;
+local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
+type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
+type PatchableTurfWarContestantStatistics = TurfWarContestantStatistics.PatchableContestantTurfWarStatistics;
 
 export type ContestantProperties = {
   
@@ -60,6 +63,8 @@ export type ContestantProperties = {
   baseHealth: number;
 
   baseStamina: number;
+
+  statistics: TurfWarContestantStatistics?;
   
 }
 
@@ -76,6 +81,7 @@ export type ContestantMethods = {
   updateInventory: (self: ServerContestant, newInventory: {ServerItem}) -> ();
   updateHealth: (self: ServerContestant, newHealth: number, cause: Cause?) -> ();
   updateStamina: (self: ServerContestant, newStamina: number, cause: Cause?) -> ();
+  mergeStatistics: (self: ServerContestant, newStatistics: PatchableTurfWarContestantStatistics, cause: Cause?) -> ();
   toString: (self: ServerContestant) -> string;
 }
 
@@ -206,6 +212,7 @@ function ServerContestant.__index:convertToClient(): {any}
     baseHealth = self.baseHealth;
     currentStamina = self.currentStamina;
     baseStamina = self.baseStamina;
+    statistics = self.statistics;
   };
 
 end;
@@ -248,6 +255,29 @@ function ServerContestant.__index:updateStamina(newStamina: number, cause: Cause
   ReplicatedStorage.Shared.Events.StaminaUpdated:FireAllClients(self.id, newStamina, cause);
   
   events[self].onStaminaUpdated:Fire(newStamina, oldStamina, cause);
+
+end;
+
+function ServerContestant.__index:mergeStatistics(newStatistics: PatchableTurfWarContestantStatistics, cause: Cause?): ()
+
+  local oldStats = self.statistics;
+  if oldStats then
+
+    for key, value in newStatistics do
+
+      oldStats[key] = value;
+
+    end;
+
+    self.statistics = oldStats;
+
+  else
+
+    self.statistics = newStatistics :: TurfWarContestantStatistics;
+  
+  end;
+
+  ReplicatedStorage.Shared.Events.GameModeStatsUpdated:FireAllClients(self.id, self.statistics);
 
 end;
 
