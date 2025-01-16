@@ -1,5 +1,6 @@
 {
   "name": "Everyone Destroys the World (Staging): Turf War",
+  "globIgnorePaths": ["**/*.production.lua", "**/*.staging.lua", "**/*.development.lua"],
   "servePlaceIds": [17711502472],
   "tree": {
     "$className": "DataModel",
@@ -32,6 +33,9 @@
       "$path": "src/ServerStorage",
       "Packages": {
         "$path": "ServerPackages"
+      },
+      "PlaceMap": {
+        "$path": "src/ServerStorage/PlaceMap.staging.lua"
       }
     },
     "StarterPlayer": {

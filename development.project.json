@@ -1,5 +1,6 @@
 {
   "name": "Everyone Destroys the World (Dev): Turf War",
+  "globIgnorePaths": ["**/*.production.lua", "**/*.staging.lua", "**/*.development.lua"],
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
@@ -29,6 +30,9 @@
       "$path": "src/ServerStorage",
       "Packages": {
         "$path": "ServerPackages"
+      },
+      "PlaceMap": {
+        "$path": "src/ServerStorage/PlaceMap.development.lua"
       }
     },
     "StarterPlayer": {
