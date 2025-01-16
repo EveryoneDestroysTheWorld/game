@@ -4,6 +4,7 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
 local TeamSelectionContainer = require(script.Parent.TeamSelectionContainer);
+local Fonts = require(ReplicatedStorage.Client.Fonts);
 
 export type PlayerSelectionContainerProperties = {
   teams: {
@@ -13,7 +14,7 @@ export type PlayerSelectionContainerProperties = {
 
 local function PlayerSelectionContainer(properties: PlayerSelectionContainerProperties)
 
-  local selectedContestant, setSelectedContestant = React.useState(nil);
+  local selectedContestant: ClientContestant?, setSelectedContestant = React.useState(nil :: ClientContestant?);
   local teamContainers, setTeamContainers = React.useState({});
   React.useEffect(function()
   
@@ -51,7 +52,11 @@ local function PlayerSelectionContainer(properties: PlayerSelectionContainerProp
     });
     SelectedPlayerName = if selectedContestant then
       React.createElement("TextLabel", {
-        Text = ""
+        BackgroundTransparency = 1;
+        TextColor3 = Color3.new(1, 1, 1);
+        FontFace = Fonts.Bold;
+        TextSize = 14;
+        Text = selectedContestant.name
       })
     else nil;
     TeamContainerList = React.createElement(React.Fragment, {}, teamContainers);

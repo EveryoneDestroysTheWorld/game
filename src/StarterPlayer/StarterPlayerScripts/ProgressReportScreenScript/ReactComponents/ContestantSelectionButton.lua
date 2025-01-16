@@ -9,6 +9,7 @@ export type PlayerSelectionContainerProperties = {
   selectedContestant: ClientContestant?;
   onSelected: () -> ();
   isSelected: boolean;
+  didWin: boolean;
   LayoutOrder: number;
 }
 
@@ -25,10 +26,20 @@ local function ContestantSelectionButton(properties: PlayerSelectionContainerPro
       properties.onSelected();
 
     end;
+    Text = "";
   }, {
     UICorner = React.createElement("UICorner", {
       CornerRadius = UDim.new(1, 0);
     });
+    WinIndicator = if properties.didWin then
+      React.createElement("ImageLabel", {
+        BackgroundTransparency = 1;
+        Size = UDim2.new(1, -5, 1, -5);
+        Position = UDim2.new(0, 10, 0, -10);
+        Rotation = 30;
+        Image = "rbxassetid://125480383929162";
+      })
+    else nil;
   });
 
 end;

@@ -25,6 +25,7 @@ local function TeamSelectionContainer(properties: PlayerSelectionContainerProper
         key = contestant.id;
         contestant = contestant;
         isSelected = properties.selectedContestant == contestant;
+        didWin = properties.didWin;
         onSelected = function()
 
           properties.onSelectedContestantChanged(contestant);
