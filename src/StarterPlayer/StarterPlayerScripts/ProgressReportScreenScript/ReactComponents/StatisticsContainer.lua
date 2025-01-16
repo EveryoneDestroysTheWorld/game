@@ -13,6 +13,18 @@ export type ProgressReportScreenProperties = {
 
 local function StatisticsContainer(properties: ProgressReportScreenProperties)
 
+  local totalPartCount, setTotalPartCount = React.useState(0);
+  
+  React.useEffect(function()
+  
+    task.spawn(function()
+    
+      setTotalPartCount(ReplicatedStorage.Shared.Functions.GetTotalStagePartCount:InvokeServer());
+
+    end);
+
+  end, {});
+  
   return React.createElement("Frame", {
     BackgroundTransparency = 1;
     LayoutOrder = 3;
@@ -27,31 +39,37 @@ local function StatisticsContainer(properties: ProgressReportScreenProperties)
       LayoutOrder = 1;
       name = "Claims";
       value = properties.statistics.partsClaimed;
+      totalValue = totalPartCount;
     });
     DestructionsContainer = React.createElement(StatisticContainer, {
       LayoutOrder = 2;
       name = "Destructions";
       value = properties.statistics.partsDestroyed;
+      totalValue = 0;
     });
     RestorationsContainer = React.createElement(StatisticContainer, {
       LayoutOrder = 3;
       name = "Restorations";
       value = properties.statistics.partsRestored;
+      totalValue = 0;
     });
     EliminationsContainer = React.createElement(StatisticContainer, {
       LayoutOrder = 4;
       name = "Eliminations";
       value = properties.statistics.eliminationCount;
+      totalValue = 0;
     });
     RecoveriesContainer = React.createElement(StatisticContainer, {
       LayoutOrder = 5;
       name = "Recoveries";
       value = properties.statistics.recoveryCount;
+      totalValue = 0;
     });
     DeathsContainer = React.createElement(StatisticContainer, {
       LayoutOrder = 6;
       name = "Deaths";
       value = properties.statistics.deathCount;
+      totalValue = 0;
     });
   });
 

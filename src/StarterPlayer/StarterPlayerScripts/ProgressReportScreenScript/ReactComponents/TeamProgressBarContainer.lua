@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
+local Fonts = require(ReplicatedStorage.Client.Fonts);
 
 export type TeamProgressBarContainerProperties = {
   LayoutOrder: number;
@@ -24,7 +25,7 @@ local function TeamProgressBarContainer(properties: TeamProgressBarContainerProp
   
   return React.createElement("Frame", {
     BackgroundColor3 = teamColor;
-    BackgroundTransparency = 0.6;
+    BackgroundTransparency = if properties.didTeamWin then 0 else 0.6;
     Size = UDim2.new(properties.percentage, 0, 1, 0);
     LayoutOrder = properties.LayoutOrder;
   }, {
@@ -64,8 +65,10 @@ local function TeamProgressBarContainer(properties: TeamProgressBarContainerProp
       BackgroundTransparency = 1;
       AnchorPoint = Vector2.new(if properties.LayoutOrder == 1 then 0 elseif properties.isLastTeam then 1 else 0.5, 0.5);
       Position = UDim2.new(if properties.LayoutOrder == 1 then 0 elseif properties.isLastTeam then 1 else 0.5, if properties.LayoutOrder == 1 then 5 elseif properties.isLastTeam then -5 else 0, 0.5, 0);
-      Text = math.floor(properties.percentage * 100);
+      Text = `{math.floor(properties.percentage * 100)}%`;
       TextColor3 = Color3.new(1, 1, 1);
+      TextSize = 14;
+      FontFace = Fonts.Regular;
       TextTransparency = if properties.didTeamWin then 0 else 0.3;
     });
   });

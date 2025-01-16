@@ -49,8 +49,6 @@ local function ContentContainer(properties: ContentContainerProperties)
 
   end, {properties.round});
 
-  print(selectedContestant and selectedContestant.statistics);
-
   return React.createElement("Frame", {
     BackgroundTransparency = 1;
     LayoutOrder = 1;
@@ -62,6 +60,9 @@ local function ContentContainer(properties: ContentContainerProperties)
     });
     UIFlexItem = React.createElement("UIFlexItem", {
       FlexMode = Enum.UIFlexMode.Fill;
+    });
+    UISizeConstraint = React.createElement("UISizeConstraint", {
+      MaxSize = Vector2.new(720, math.huge);
     });
     ProgressBarContainer = React.createElement(ProgressBarContainer, {teams = teams});
     PlayerSelectionContainer = React.createElement(PlayerSelectionContainer, {

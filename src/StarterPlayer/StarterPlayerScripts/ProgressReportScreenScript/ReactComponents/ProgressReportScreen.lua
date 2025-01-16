@@ -20,6 +20,7 @@ local function ProgressReportScreen(properties: ProgressReportScreenProperties)
     UIListLayout = React.createElement("UIListLayout", {
       SortOrder = Enum.SortOrder.LayoutOrder;
       VerticalFlex = Enum.UIFlexAlignment.SpaceBetween;
+      HorizontalAlignment = Enum.HorizontalAlignment.Center;
     });
     UIPadding = React.createElement("UIPadding", {
       PaddingLeft = UDim.new(0, 30);

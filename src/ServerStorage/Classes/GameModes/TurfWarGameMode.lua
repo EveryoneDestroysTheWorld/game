@@ -227,6 +227,22 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
               deathCount = contestant.statistics.deathCount + 1;
             }, cause);
 
+            if cause and cause.contestantID then
+
+              for _, possibleMurderer in round.contestants do
+
+                if possibleMurderer.id == cause.contestantID and possibleMurderer.statistics then
+
+                  possibleMurderer:mergeStatistics({
+                    eliminationCount = possibleMurderer.statistics.eliminationCount + 1;
+                  });
+
+                end;
+
+              end;
+
+            end;
+
           end;
 
         end;

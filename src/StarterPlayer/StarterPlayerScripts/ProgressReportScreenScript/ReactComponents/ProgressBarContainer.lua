@@ -55,7 +55,7 @@ local function ProgressBarContainer(properties: ProgressBarContainerProperties)
           LayoutOrder = teamID;
           percentage = partDestructionCount / totalStagePartCount;
           didTeamWin = winningTeamID == teamID;
-          isLastTeam = teamID == countList[#countList]
+          isLastTeam = teamID == #countList
         }));
 
       end;
@@ -73,9 +73,9 @@ local function ProgressBarContainer(properties: ProgressBarContainerProperties)
     LayoutOrder = 1;
   }, {
     UIListLayout = React.createElement("UIListLayout", {
-      Padding = UDim.new(0, 10);
       SortOrder = Enum.SortOrder.LayoutOrder;
       FillDirection = Enum.FillDirection.Horizontal;
+      HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween;
     });
     UIPadding = React.createElement("UIPadding", {
       PaddingLeft = UDim.new(0, 5);

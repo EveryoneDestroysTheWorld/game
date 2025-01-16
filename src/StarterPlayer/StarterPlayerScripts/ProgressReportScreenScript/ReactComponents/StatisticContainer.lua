@@ -11,6 +11,7 @@ export type ProgressReportScreenProperties = {
   LayoutOrder: number;
   name: string;
   value: number;
+  totalValue: number;
 }
 
 local function StatisticContainer(properties: ProgressReportScreenProperties)
@@ -60,7 +61,6 @@ local function StatisticContainer(properties: ProgressReportScreenProperties)
         TextColor3 = Color3.new(1, 1, 1);
         FontFace = Fonts.SemiBold;
         LayoutOrder = 1;
-        TextTransparency = 0.3;
         TextSize = 14;
         Text = properties.value;
       });
@@ -82,7 +82,7 @@ local function StatisticContainer(properties: ProgressReportScreenProperties)
         LayoutOrder = 3;
         TextTransparency = 0.3;
         TextSize = 14;
-        Text = "0";
+        Text = properties.totalValue;
       });
     })
   });
