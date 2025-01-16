@@ -12,6 +12,7 @@ export type ProgressReportScreenProperties = {
   name: string;
   value: number;
   totalValue: number;
+  isTopAchiever: boolean;
 }
 
 local function StatisticContainer(properties: ProgressReportScreenProperties)
@@ -28,6 +29,7 @@ local function StatisticContainer(properties: ProgressReportScreenProperties)
       SortOrder = Enum.SortOrder.LayoutOrder;
       FillDirection = Enum.FillDirection.Horizontal;
       HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween;
+      VerticalAlignment = Enum.VerticalAlignment.Center;
       Padding = UDim.new(0, 2);
     });
     UIPadding = React.createElement("UIPadding", {
@@ -54,13 +56,23 @@ local function StatisticContainer(properties: ProgressReportScreenProperties)
         Padding = UDim.new(0, 5);
         FillDirection = Enum.FillDirection.Horizontal;
         SortOrder = Enum.SortOrder.LayoutOrder;
+        VerticalAlignment = Enum.VerticalAlignment.Center;
       });
+      TopAchieverIndicator = if properties.isTopAchiever then
+        React.createElement("ImageLabel", {
+          Image = "rbxassetid://99547872782306";
+          BackgroundTransparency = 1;
+          Size = UDim2.new(0, 15, 0, 15);
+          ImageColor3 = Color3.fromRGB(255, 218, 33);
+          SizeConstraint = Enum.SizeConstraint.RelativeYY;
+        })
+      else nil;
       PersonalValueTextLabel = React.createElement("TextLabel", {
         BackgroundTransparency = 1;
         AutomaticSize = Enum.AutomaticSize.XY;
         TextColor3 = Color3.new(1, 1, 1);
         FontFace = Fonts.SemiBold;
-        LayoutOrder = 1;
+        LayoutOrder = 2;
         TextSize = 14;
         Text = properties.value;
       });
@@ -69,7 +81,7 @@ local function StatisticContainer(properties: ProgressReportScreenProperties)
         AutomaticSize = Enum.AutomaticSize.XY;
         TextColor3 = Color3.new(1, 1, 1);
         FontFace = Fonts.Regular;
-        LayoutOrder = 2;
+        LayoutOrder = 3;
         TextTransparency = 0.3;
         TextSize = 14;
         Text = "/";
@@ -79,7 +91,7 @@ local function StatisticContainer(properties: ProgressReportScreenProperties)
         AutomaticSize = Enum.AutomaticSize.XY;
         TextColor3 = Color3.new(1, 1, 1);
         FontFace = Fonts.Regular;
-        LayoutOrder = 3;
+        LayoutOrder = 4;
         TextTransparency = 0.3;
         TextSize = 14;
         Text = properties.totalValue;

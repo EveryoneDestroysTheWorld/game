@@ -74,9 +74,10 @@ local function ContentContainer(properties: ContentContainerProperties)
 
       end;
     });
-    StatisticsContainer = if selectedContestant and selectedContestant.statistics then
+    StatisticsContainer = if selectedContestant then
       React.createElement(StatisticsContainer, {
-        statistics = selectedContestant.statistics
+        selectedContestant = selectedContestant;
+        teams = teams;
       })
     else nil;
   });

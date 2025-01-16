@@ -3,10 +3,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
+local Players = game:GetService("Players");
 
 export type PlayerSelectionContainerProperties = {
-  members: {ClientContestant};
-  selectedContestant: ClientContestant?;
+  contestant: ClientContestant;
   onSelected: () -> ();
   isSelected: boolean;
   didWin: boolean;
@@ -14,6 +14,21 @@ export type PlayerSelectionContainerProperties = {
 }
 
 local function ContestantSelectionButton(properties: PlayerSelectionContainerProperties)
+
+  local thumbnail, setThumbnail = React.useState();
+
+  React.useEffect(function()
+  
+    if properties.contestant.player then
+
+      local userId = properties.contestant.player.UserId;
+      local thumbType = Enum.ThumbnailType.HeadShot;
+      local thumbSize = Enum.ThumbnailSize.Size420x420;
+      setThumbnail(Players:GetUserThumbnailAsync(userId, thumbType, thumbSize));
+
+    end
+
+  end, {properties.contestant});
 
   return React.createElement("TextButton", {
     BackgroundTransparency = 0.6;
@@ -38,6 +53,13 @@ local function ContestantSelectionButton(properties: PlayerSelectionContainerPro
         Position = UDim2.new(0, 10, 0, -10);
         Rotation = 30;
         Image = "rbxassetid://125480383929162";
+      })
+    else nil;
+    ImageLabel = if thumbnail then
+      React.createElement("ImageLabel", {
+        BackgroundTransparency = 1;
+        Image = thumbnail;
+        Size = UDim2.new(1, 0, 1, 0);
       })
     else nil;
   });
