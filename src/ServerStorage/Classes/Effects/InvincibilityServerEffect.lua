@@ -1,35 +1,36 @@
 --!strict
 local ServerStorage = game:GetService("ServerStorage");
 
-local Cause = require(ServerStorage.Types["Cause.types"]);
-type Cause = Cause.Cause;
-local ServerEffect = require(script.Parent.Parent.ServerEffect);
-type ServerEffect = ServerEffect.ServerEffect;
+local types = require(ServerStorage.Classes.types);
 
-export type InvincibilityServerEffectProperties = {
-  expirationTimeMilliseconds: number;
+local InvincibilityServerEffect = {
+  name = "Invincibility";
+  id = script.Name:sub(1, script.Name:gsub("ServerEffect", ""):len());
+  __index = {} :: types.InvincibilityServerEffect;
 }
 
-return function(properties: InvincibilityServerEffectProperties): ServerEffect
+function InvincibilityServerEffect.new(properties: types.InvinicbilityServerEffectConstructorProperties): types.InvincibilityServerEffect
 
-  local function updateContestantStamina(effect: ServerEffect, newStamina: number, oldStamina: number): number
-
-    return math.max(oldStamina, newStamina);
-
-  end;
-
-  local function updateContestantHealth(effect: ServerEffect, newHealth: number, oldHealth: number): number
-
-    return math.max(oldHealth, newHealth);
-
-  end;
-
-  return {
-    name = "Invincibility";
-    id = script.Name:sub(1, script.Name:gsub("ServerEffect", ""):len());
-    updateContestantStamina = updateContestantStamina;
-    expirationTimeMilliseconds = properties.expirationTimeMilliseconds,
-    updateContestantHealth = updateContestantHealth;
+  local effect = {
+    expirationTimeMilliseconds = properties.expirationTimeMilliseconds;
+    name = InvincibilityServerEffect.name;
+    id = InvincibilityServerEffect.id;
   };
 
+  return (setmetatable(effect, InvincibilityServerEffect) :: unknown) :: types.InvincibilityServerEffect
+
 end;
+
+function InvincibilityServerEffect.__index:updateContestantStamina(newStamina: number, oldStamina: number): number
+
+  return math.max(oldStamina, newStamina);
+
+end;
+
+function InvincibilityServerEffect.__index:updateContestantHealth(newHealth: number, oldHealth: number): number
+
+  return math.max(oldHealth, newHealth);
+
+end;
+
+return InvincibilityServerEffect;

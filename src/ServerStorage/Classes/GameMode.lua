@@ -1,36 +1,16 @@
 --!strict
 -- Written by Christian Toney (Sudobeast)
 -- This module represents a Action.
-export type GameModeProperties = {
-  
-  -- The stage's unique ID.
-  id: string;
-  
-  name: string;
-
-  description: string;
-
-  start: (self: GameMode) -> ();
-
-  breakdown: (self: GameMode) -> ();
-
-  toString: (self: GameMode) -> string;
-  
-};
-
 local GameMode = {};
+local types = require(script.Parent.types);
 
-export type GameMode = GameModeProperties;
+function GameMode.new(properties: types.GameModeProperties): types.GameMode
 
-export type GameModeClass = GameModeProperties & {new: (...any) -> GameMode};
-
-function GameMode.new(properties: GameModeProperties): GameMode
-
-  return properties :: GameMode;
+  return properties :: types.GameMode;
   
 end
 
-function GameMode.get(gameModeID: string): GameModeClass
+function GameMode.get(gameModeID: string): types.GameModeClass
 
   for _, instance in ipairs(script.Parent.GameModes:GetChildren()) do
   

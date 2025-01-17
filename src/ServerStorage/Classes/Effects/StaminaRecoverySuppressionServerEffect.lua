@@ -1,23 +1,30 @@
 --!strict
 local ServerStorage = game:GetService("ServerStorage");
 
-local Cause = require(ServerStorage.Types["Cause.types"]);
-type Cause = Cause.Cause;
-local ServerEffect = require(script.Parent.Parent.ServerEffect);
-type ServerEffect = ServerEffect.ServerEffect;
+local types = require(ServerStorage.Classes.types);
 
-return function(): ServerEffect
+local StaminaRecoverySuppressionServerEffect = {
+  name = "Stamina recovery suppression";
+  id = script.Name:sub(1, script.Name:gsub("ServerEffect", ""):len());
+  __index = {} :: types.InvincibilityServerEffect;
+}
 
-  local function updateContestantStamina(effect: ServerEffect, newStamina: number, oldStamina: number): number
+function StaminaRecoverySuppressionServerEffect.new(properties: types.InvinicbilityServerEffectConstructorProperties): types.InvincibilityServerEffect
 
-    return oldStamina;
-
-  end;
-
-  return {
-    name = "Stamina recovery suppression";
-    id = script.Name:sub(1, script.Name:gsub("ServerEffect", ""):len());
-    updateContestantStamina = updateContestantStamina;
+  local effect = {
+    expirationTimeMilliseconds = properties.expirationTimeMilliseconds;
+    name = StaminaRecoverySuppressionServerEffect.name;
+    id = StaminaRecoverySuppressionServerEffect.id;
   };
 
+  return (setmetatable(effect, StaminaRecoverySuppressionServerEffect) :: unknown) :: types.InvincibilityServerEffect
+
 end;
+
+function StaminaRecoverySuppressionServerEffect.__index:updateContestantStamina(newStamina: number, oldStamina: number): number
+
+  return oldStamina;
+
+end;
+
+return StaminaRecoverySuppressionServerEffect;

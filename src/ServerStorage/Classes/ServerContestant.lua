@@ -1,107 +1,27 @@
 --!strict
--- Written by Christian Toney (Sudobeast)
--- This module represents an Archetype, which contains a list of powers.
+-- This module represents a contestant.
+-- 
+-- Programmers: Christian Toney (Christian_Toney)
+-- © 2024 – 2025 Beastslash LLC
 
 local HttpService = game:GetService("HttpService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
-local ServerItem = require(script.Parent.ServerItem);
-type ServerItem = ServerItem.ServerItem;
 local Profile = require(ServerStorage.Packages.Profile);
 type Profile = Profile.Profile;
-local Cause = require(ServerStorage.Types["Cause.types"]);
-type Cause = Cause.Cause;
-local ServerEffect = require(script.Parent.ServerEffect);
-type ServerEffect = ServerEffect.ServerEffect;
 local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
 type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
 type PatchableTurfWarContestantStatistics = TurfWarContestantStatistics.PatchableContestantTurfWarStatistics;
-
-export type ContestantProperties = {
-  
-  -- This could be nil if the server hasn't assigned an archetype to the contestant yet.
-  archetypeID: string?;
-
-  -- The character reference of the contestant. This is here to easily reference characters of bot contestants.
-  -- If the contestant is a player, this is the same value as player.Character.
-  character: Model?;
-
-  currentStamina: number;
-
-  effects: {ServerEffect};
-
-  -- The ID of the contestant. 
-  -- If the contestant is a bot, this is a unique temporary ID assigned by the server. It will be an irrational number.
-  -- If the contestant is a player, this is the same value as player.UserId. It will be an integer.
-  id: number;
-
-  -- The name of the contestant. This is here to easily reference bot names. 
-  -- If the contestant is a player, this is the same value as player.DisplayName. To get the username, use player.Name.
-  name: string;
-
-  -- Is this contestant created by the server?
-  isBot: boolean;
-
-  -- Is this contestant still a part of the game?
-  isDisqualified: boolean;
-
-  -- The player reference of the contestant. This should be nil if the contestant isn't a player.
-  player: Player?;
-
-  -- The profile of the contestant. This should be nil if the contestant isn't a player.
-  profile: Profile?;
-
-  -- The team ID of the contestant. This will be nil if the game rules call for a free-for-all.
-  teamID: number?;
-
-  inventory: {ServerItem};
-
-  currentHealth: number;
-
-  baseHealth: number;
-
-  baseStamina: number;
-
-  statistics: TurfWarContestantStatistics?;
-  
-}
-
-export type ContestantMethods = {
-  addItemToInventory: (self: ServerContestant, item: ServerItem) -> ();
-  removeItemFromInventory: (self: ServerContestant, item: ServerItem) -> ();
-  addEffect: (self: ServerContestant, effect: ServerEffect) -> ();
-  removeEffect: (self: ServerContestant, effect: ServerEffect) -> ();
-  convertToClient: (self: ServerContestant) -> {any};
-  disqualify: (self: ServerContestant) -> ();
-  getInventoryItemIDs: (self: ServerContestant) -> {string};
-  updateArchetypeID: (self: ServerContestant, newArchetypeID: string) -> ();
-  updateCharacter: (self: ServerContestant, newCharacter: Model?) -> ();
-  updateInventory: (self: ServerContestant, newInventory: {ServerItem}) -> ();
-  updateHealth: (self: ServerContestant, newHealth: number, cause: Cause?) -> ();
-  updateStamina: (self: ServerContestant, newStamina: number, cause: Cause?) -> ();
-  mergeStatistics: (self: ServerContestant, newStatistics: PatchableTurfWarContestantStatistics, cause: Cause?) -> ();
-  toString: (self: ServerContestant) -> string;
-}
-
-export type ContestantEvents = {
-  onDisqualified: RBXScriptSignal;
-  onArchetypeUpdated: RBXScriptSignal;
-  onHealthUpdated: RBXScriptSignal<number, number, Cause?>;
-  onStaminaUpdated: RBXScriptSignal<number, number, Cause?>;
-  onInventoryUpdated: RBXScriptSignal<{number}>;
-  onEffectsUpdated: RBXScriptSignal<{ServerEffect}>;
-}
+local types = require(script.Parent.types);
 
 local ServerContestant = {
-  __index = {} :: ContestantMethods;
+  __index = {} :: types.ServerContestantMethods;
 };
 
-export type ServerContestant = ContestantProperties & ContestantEvents & ContestantMethods;
-
 local events: {[any]: {[string]: BindableEvent}} = {};
-function ServerContestant.new(properties: ContestantProperties): ServerContestant
+function ServerContestant.new(properties: types.ServerContestantProperties): types.ServerContestant
 
   local contestant = setmetatable(properties, ServerContestant);
 
@@ -133,21 +53,32 @@ function ServerContestant.__index:getInventoryItemIDs(): {string}
 
 end;
 
-function ServerContestant.__index:addEffect(effect: ServerEffect): ()
+function ServerContestant.__index:addEffect(effect: types.ServerEffect<unknown>): ()
 
   table.insert(self.effects, effect);
+
+  if effect.activate then
+
+    task.spawn(function()
+    
+      effect.activate(effect, self);
+
+    end);
+
+  end;
+
   events[self].onEffectsUpdated:Fire(self.effects);
 
 end;
 
-function ServerContestant.__index:addItemToInventory(item: ServerItem): ()
+function ServerContestant.__index:addItemToInventory(item: types.ServerItem): ()
 
   table.insert(self.inventory, item);
   events[self].onInventoryUpdated:Fire(self:getInventoryItemIDs());
 
 end;
 
-function ServerContestant.__index:removeItemFromInventory(item: ServerItem): ()
+function ServerContestant.__index:removeItemFromInventory(item: types.ServerItem): ()
 
   -- Iterating backwards because the indexes can change after running table.remove().
   for index = #self.inventory, 1, -1 do
@@ -170,13 +101,23 @@ function ServerContestant.__index:removeItemFromInventory(item: ServerItem): ()
 
 end;
 
-function ServerContestant.__index:removeEffect(effect: ServerEffect): ()
+function ServerContestant.__index:removeEffect(effect: types.ServerEffect<unknown>): ()
 
   -- Iterating backwards because the indexes can change after running table.remove().
   for index = #self.effects, 1, -1 do
 
     local possibleEffect = self.effects[index]
     if possibleEffect == effect then
+
+      if effect.deactivate then
+
+        task.spawn(function()
+        
+          effect.deactivate(effect, self);
+
+        end);
+        
+      end;
 
       table.remove(self.effects, index);
 
@@ -188,7 +129,7 @@ function ServerContestant.__index:removeEffect(effect: ServerEffect): ()
 
 end;
 
-function ServerContestant.__index:updateInventory(newInventory: {ServerItem}): ()
+function ServerContestant.__index:updateInventory(newInventory: {types.ServerItem}): ()
 
   self.inventory = newInventory;
 
@@ -225,7 +166,7 @@ function ServerContestant.__index:updateArchetypeID(newArchetypeID: string): ()
 
 end;
 
-function ServerContestant.__index:updateHealth(newHealth: number, cause: Cause?): ()
+function ServerContestant.__index:updateHealth(newHealth: number, cause: types.Cause?): ()
 
   local oldHealth = self.currentHealth;
 
@@ -247,7 +188,7 @@ function ServerContestant.__index:updateHealth(newHealth: number, cause: Cause?)
 
 end;
 
-function ServerContestant.__index:updateStamina(newStamina: number, cause: Cause?): ()
+function ServerContestant.__index:updateStamina(newStamina: number, cause: types.Cause?): ()
 
   local oldStamina = self.currentStamina;
 
@@ -269,7 +210,7 @@ function ServerContestant.__index:updateStamina(newStamina: number, cause: Cause
 
 end;
 
-function ServerContestant.__index:mergeStatistics(newStatistics: PatchableTurfWarContestantStatistics, cause: Cause?): ()
+function ServerContestant.__index:mergeStatistics(newStatistics: PatchableTurfWarContestantStatistics, cause: types.Cause?): ()
 
   local oldStats = self.statistics;
   if oldStats then

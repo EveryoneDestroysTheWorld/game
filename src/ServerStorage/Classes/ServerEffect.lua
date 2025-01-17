@@ -1,47 +1,31 @@
-local ServerStorage = game:GetService("ServerStorage");
+--!strict
 
-local Cause = require(ServerStorage.Types["Cause.types"]);
-type Cause = Cause.Cause;
+local types = require(script.Parent.types);
 
-export type ServerEffect = {
-  name: string;
-  id: string;
-  description: string?;
-  expirationTimeMilliseconds: number?;
-  activate: ((effect: ServerEffect, ...any) -> ())?;
-  deactivate: ((effect: ServerEffect, ...any) -> ())?;
-  updateContestantHealth: ((effect: ServerEffect, newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
-  updateContestantStamina: ((effect: ServerEffect, newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
-}
-
-local ServerEffect = {};
+local ServerEffect: types.ServerEffectFactory = {} :: types.ServerEffectFactory;
 
 -- Returns a ServerItem based on the ID.
-function ServerEffect.get(itemID: string): ServerEffect
+function ServerEffect.get(effectID: string): types.ServerEffectClass
 
-  local instance = script.Parent.Effects:FindFirstChild(itemID);
-  if instance:IsA("ModuleScript") then
+  local instance = script.Parent.Effects:FindFirstChild(`{effectID}ServerEffect`);
+  if instance and instance:IsA("ModuleScript") then
 
-    local item = require(instance) :: any;
-    if item.id == itemID then
-
-      return setmetatable(item, {});
-
-    end;
+    local effect = require(instance) :: any;
+    return effect;
 
   end
 
-  error(`Couldn't find item from ID {itemID}.`);
+  error(`Couldn't find item from ID {effectID}.`);
 
 end;
 
 -- Returns a random ServerEffect
-function ServerEffect.random(): ServerEffect
+function ServerEffect.random(): types.ServerEffectClass
 
-  local children = script.Parent.ServerEffect:GetChildren();
+  local children = script.Parent.Effects:GetChildren();
   local selectedChild = children[math.random(1, #children)];
-  local item = require(selectedChild) :: any;
-  return setmetatable(item, {});
+  local effect = require(selectedChild) :: any;
+  return effect;
 
 end;
 

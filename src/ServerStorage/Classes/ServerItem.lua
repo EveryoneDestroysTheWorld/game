@@ -6,42 +6,12 @@
 -- Programmers: Christian Toney (Christian_Toney)
 -- © 2024 – 2025 Beastslash LLC
 
-export type ServerItemProperties = {
-
-  -- The ID of the item. Keep this unique.
-  id: string;
-
-  name: string;
-
-  -- The description of the item. 
-  description: string;
-
-  -- The function to activate the item on the server side.
-  -- You can manually activate the item some other way too.
-  activate: (self: ServerItem, ...any) -> ();
-
-  -- The function to "break down" the item. This usually runs after the round ends and sometimes after item use.
-  -- You can manually break down the item some other way too.
-  breakdown: (self: ServerItem, ...any) -> ();
-
-  -- The function to initialize the item. This usually runs after the player receives an item. 
-  -- This function does not mean the player activated the item. Use :activate() instead.
-  initialize: (self: ServerItem, ...any) -> ();
-
-};
-
-export type ServerItemEvents = {
-
-  -- Called when the item activates.
-  onActivate: RBXScriptSignal<"Press" | "Hold">;
-
-}
+local types = require(script.Parent.types);
 
 local ServerItem = {};
-export type ServerItem = ServerItemProperties & ServerItemEvents;
 
 -- Returns a new ServerItem.
-function ServerItem.new(properties: ServerItemProperties): ServerItem
+function ServerItem.new(properties: types.ServerItemProperties): types.ServerItem
 
   local item = properties;
 
@@ -55,12 +25,12 @@ function ServerItem.new(properties: ServerItemProperties): ServerItem
 
   end
 
-  return item :: ServerItem;
+  return item :: types.ServerItem;
   
 end
 
 -- Returns a ServerItem based on the ID.
-function ServerItem.get(itemID: string): ServerItem
+function ServerItem.get(itemID: string): types.ServerItem
 
   for _, instance in ipairs(script.Parent.Items:GetChildren()) do
   
@@ -82,7 +52,7 @@ function ServerItem.get(itemID: string): ServerItem
 end;
 
 -- Returns a random ServerItem.
-function ServerItem.random(): ServerItem
+function ServerItem.random(): types.ServerItem
 
   local children = script.Parent.Items:GetChildren();
   local selectedChild = children[math.random(1, #children)];

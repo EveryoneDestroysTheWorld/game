@@ -4,15 +4,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local PathfindingService = game:GetService("PathfindingService");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local ExplosiveMimicClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.ExplosiveMimicClientArchetype);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-local ServerAction = require(script.Parent.Parent.ServerAction);
-type ServerRound = ServerRound.ServerRound;
-type ServerContestant = ServerContestant.ServerContestant;
-type ServerArchetype = ServerArchetype.ServerArchetype;
-type ServerAction = ServerAction.ServerAction;
 local downContestant = require(ServerStorage.Modules.downContestant);
+local types = require(ServerStorage.Classes.types);
 
 local ExplosiveMimicServerArchetype = {
   id = ExplosiveMimicClientArchetype.id;
@@ -22,19 +16,19 @@ local ExplosiveMimicServerArchetype = {
   type = ExplosiveMimicClientArchetype.type;
 };
 
-function ExplosiveMimicServerArchetype.new(): ServerArchetype
+function ExplosiveMimicServerArchetype.new(): types.ServerArchetype
 
-  local contestant: ServerContestant = nil;
-  local round: ServerRound = nil;
+  local contestant: types.ServerContestant = nil;
+  local round: types.ServerRound = nil;
   local disqualificationEvent: RBXScriptConnection;
 
-  local function breakdown(self: ServerArchetype)
+  local function breakdown(self: types.ServerArchetype)
 
     disqualificationEvent:Disconnect();
 
   end;
 
-  local function runAutoPilot(self: ServerArchetype, actions: {ServerAction})
+  local function runAutoPilot(self: types.ServerArchetype, actions: {types.ServerAction})
 
     -- Make sure the contestant has a character.
     local character = contestant.character
@@ -44,7 +38,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
       -- If the bot gets attacked while destroying a part, determine the damage taken per hit and the amount of time to the bot's disqualification.
       -- If the bot can break the part at least 3 seconds before it gets disqualified, continue breaking the part and escape the enemy's trajectory;
       -- otherwise, escape immediately.
-    local contestantToAttack: ServerContestant?;
+    local contestantToAttack: types.ServerContestant?;
     local timeEnemyAttacked: number = 0;
     local targetPart: BasePart?;
     local forgivenessTask;
@@ -410,7 +404,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
   end;
 
-  local function initialize(self: ServerArchetype, newContestant: ServerContestant, newRound: ServerRound)
+  local function initialize(self: types.ServerArchetype, newContestant: types.ServerContestant, newRound: types.ServerRound)
 
     -- Set up the self-destruct.
     contestant = newContestant;

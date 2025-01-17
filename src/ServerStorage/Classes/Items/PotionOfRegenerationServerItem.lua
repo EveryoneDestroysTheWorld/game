@@ -6,15 +6,11 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
 local ServerItem = require(script.Parent.Parent.ServerItem);
-type ServerItem = ServerItem.ServerItem;
 local PotionOfRegenerationClientItem = require(ReplicatedStorage.Client.Classes.Items.PotionOfRegenerationClientItem);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
 local HttpService = game:GetService("HttpService");
+local types = require(ServerStorage.Classes.types);
 
 local PotionOfRegenerationServerItem = {
   id = PotionOfRegenerationClientItem.id;
@@ -22,14 +18,14 @@ local PotionOfRegenerationServerItem = {
   description = PotionOfRegenerationClientItem.description;
 };
 
-function PotionOfRegenerationServerItem.new(): ServerItem
+function PotionOfRegenerationServerItem.new(): types.ServerItem
 
   local _specificItemID: string?;
-  local contestant: ServerContestant;
+  local contestant: types.ServerContestant;
   local shouldHeal = true;
   local remoteFunction: RemoteFunction?;
 
-  local function activate(self: ServerItem)
+  local function activate(self: types.ServerItem)
 
     for currentSecond = 1, 3 do
 
@@ -47,7 +43,7 @@ function PotionOfRegenerationServerItem.new(): ServerItem
     
   end;
   
-  local function breakdown(self: ServerItem)
+  local function breakdown(self: types.ServerItem)
 
     shouldHeal = false;
 
@@ -65,7 +61,7 @@ function PotionOfRegenerationServerItem.new(): ServerItem
     
   end;
 
-  local function initialize(self: ServerItem, newContestant: ServerContestant)
+  local function initialize(self: types.ServerItem, newContestant: types.ServerContestant)
 
     contestant = newContestant;
 

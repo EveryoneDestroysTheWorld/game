@@ -15,8 +15,6 @@ export type ClientContestantProperties = {
 
   character: Model?;
 
-  effects: {};
-
   name: string;
 
   isBot: boolean;

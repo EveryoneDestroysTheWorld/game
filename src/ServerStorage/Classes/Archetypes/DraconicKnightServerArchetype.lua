@@ -3,16 +3,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local InsertService = game:GetService("InsertService");
 local ServerStorage = game:GetService("ServerStorage");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local DraconicKnightClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.DraconicKnightClientArchetype);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-local ServerAction = require(script.Parent.Parent.ServerAction);
-type ServerRound = ServerRound.ServerRound;
-type ServerContestant = ServerContestant.ServerContestant;
-type ServerArchetype = ServerArchetype.ServerArchetype;
-type ServerAction = ServerAction.ServerAction;
 local downContestant = require(ServerStorage.Modules.downContestant);
 local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
+local types = require(ServerStorage.Classes.types)
 
 local DraconicKnightServerArchetype = {
   id = DraconicKnightClientArchetype.id;
@@ -22,15 +16,15 @@ local DraconicKnightServerArchetype = {
   type = DraconicKnightClientArchetype.type;
 };
 
-function DraconicKnightServerArchetype.new(): ServerArchetype
+function DraconicKnightServerArchetype.new(): types.ServerArchetype
 
-  local contestant: ServerContestant = nil;
-  local round: ServerRound = nil;
+  local contestant: types.ServerContestant = nil;
+  local round: types.ServerRound = nil;
   local wingProp: Model?;
   local events: {RBXScriptConnection} = {};
   local ragdollClone;
 
-  local function breakdown(self: ServerArchetype)
+  local function breakdown(self: types.ServerArchetype)
 
     for _, event in events do
 
@@ -52,7 +46,7 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
 
   end;
 
-  local function runAutoPilot(self: ServerArchetype, actions: {ServerAction})
+  local function runAutoPilot(self: types.ServerArchetype, actions: {types.ServerAction})
 
     -- Make sure the contestant has a character.
     local character = contestant.character
@@ -66,7 +60,7 @@ function DraconicKnightServerArchetype.new(): ServerArchetype
 
   end;
 
-  local function initialize(self: ServerArchetype, newContestant: ServerContestant, newRound: ServerRound)
+  local function initialize(self: types.ServerArchetype, newContestant: types.ServerContestant, newRound: types.ServerRound)
 
     contestant = newContestant;
     round = newRound;

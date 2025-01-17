@@ -7,20 +7,13 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local InsertService = game:GetService("InsertService");
 local ServerStorage = game:GetService("ServerStorage");
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
 local ServerItem = require(script.Parent.Parent.ServerItem);
-type ServerItem = ServerItem.ServerItem;
 local SuperHammerClientItem = require(ReplicatedStorage.Client.Classes.Items.SuperHammerClientItem);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
-local createInvincibilityServerEffect = require(ServerStorage.Classes.Effects.InvincibilityServerEffect);
-local createStaminaRecoverySuppressionServerEffect = require(ServerStorage.Classes.Effects.StaminaRecoverySuppressionServerEffect);
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
 local createInventoryRemoteEvent = require(ServerStorage.Modules.createInventoryRemoteEvent);
 local ServerEffect = require(ServerStorage.Classes.ServerEffect);
-type ServerEffect = ServerEffect.ServerEffect;
 local HttpService = game:GetService("HttpService");
+local types = require(ServerStorage.Classes.types);
 
 local SuperHammerServerItem = {
   id = SuperHammerClientItem.id;
@@ -31,11 +24,11 @@ local SuperHammerServerItem = {
 export type Action = "Equip" | "Swing" | "Dequip";
 export type Style = "Normal" | "Combo" | "Hyper";
 
-function SuperHammerServerItem.new(): ServerItem
+function SuperHammerServerItem.new(): types.ServerItem
 
-  local _contestant: ServerContestant? = nil;
+  local _contestant: types.ServerContestant? = nil;
   local _specificItemID: string? = nil;
-  local _round: ServerRound? = nil;
+  local _round: types.ServerRound? = nil;
   local _meshPart: MeshPart? = nil;
   local _remoteFunction: RemoteFunction? = nil;
   local _remoteEvent: RemoteEvent? = nil;
@@ -49,11 +42,11 @@ function SuperHammerServerItem.new(): ServerItem
   local touchEventExpirationTask: thread?;
   local staminaReductionTask: thread?;
   local comboBreakingTask: thread?;
-  local staminaRecoverySuppressionEffect: ServerEffect?;
+  local staminaRecoverySuppressionEffect: types.ServerEffect?;
   local animationTrack: AnimationTrack;
-  local stunnedContestants: {[ServerContestant]: {AlignOrientation | AlignPosition}} = {};
+  local stunnedContestants: {[types.ServerContestant]: {AlignOrientation | AlignPosition}} = {};
 
-  local function activate(self: ServerItem, action: Action): ()
+  local function activate(self: types.ServerItem, action: Action): ()
     
     assert(style ~= "Hyper", "Hammer is in hyper mode! No other actions are allowed.");
     assert(_contestant, "This item must be assigned to a contestant.");
@@ -145,11 +138,14 @@ function SuperHammerServerItem.new(): ServerItem
       assert(_meshPart);
 
       -- Make the contestant invincible for 10 seconds.
-      local invincibilityEffect = createInvincibilityServerEffect({
+      local invincibilityEffect = ServerEffect.get("Invincibility").new({
         expirationTimeMilliseconds = DateTime.now().UnixTimestampMillis + 10000;
       });
 
+      local holdingHeavyItemEffect = ServerEffect.get("HoldingHeavyItem").new();
+
       _contestant:addEffect(invincibilityEffect);
+      _contestant:addEffect(holdingHeavyItemEffect);
 
       -- Add the animations.
       local animation = Instance.new("Animation");
@@ -210,6 +206,7 @@ function SuperHammerServerItem.new(): ServerItem
         end;
 
         _contestant:removeEffect(invincibilityEffect);
+        _contestant:removeEffect(holdingHeavyItemEffect);
 
         touchEventExpirationTask = nil;
 
@@ -354,7 +351,7 @@ function SuperHammerServerItem.new(): ServerItem
                     if comboCount < 10 then
 
                       -- Freeze the user and the victim.
-                      local function stunLockContestant(contestant: ServerContestant)
+                      local function stunLockContestant(contestant: types.ServerContestant)
 
                         if not contestant.character then
 
@@ -524,7 +521,7 @@ function SuperHammerServerItem.new(): ServerItem
         -- Progressively lose stamina.
         staminaReductionTask = task.spawn(function()
 
-          local effect = createStaminaRecoverySuppressionServerEffect();
+          local effect = ServerEffect.get("StaminaRecoverySuppression").new();
 
           staminaRecoverySuppressionEffect = effect;
 
@@ -578,7 +575,7 @@ function SuperHammerServerItem.new(): ServerItem
     
   end;
   
-  local function breakdown(self: ServerItem)
+  local function breakdown(self: types.ServerItem)
 
     if animationTrack then
 
@@ -702,7 +699,7 @@ function SuperHammerServerItem.new(): ServerItem
     
   end;
 
-  local function initialize(self: ServerItem, contestant: ServerContestant, round: ServerRound)
+  local function initialize(self: types.ServerItem, contestant: types.ServerContestant, round: types.ServerRound)
 
     _contestant = contestant;
     _round = round;

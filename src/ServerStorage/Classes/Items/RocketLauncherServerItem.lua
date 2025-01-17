@@ -5,16 +5,12 @@
 -- © 2024 Beastslash
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
 local ServerItem = require(script.Parent.Parent.ServerItem);
-type ServerItem = ServerItem.ServerItem;
 local RocketLauncherClientItem = require(ReplicatedStorage.Client.Classes.Items.RocketLauncherClientItem);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
 local HttpService = game:GetService("HttpService");
 local ServerStorage = game:GetService("ServerStorage");
-local createHoldingHeavyItemEffect = require(ServerStorage.Classes.Effects.HoldingHeavyItemEffect);
+local ServerEffect = require(ServerStorage.Classes.ServerEffect);
+local types = require(ServerStorage.Classes.types);
 
 local RocketLauncherServerItem = {
   id = RocketLauncherClientItem.id;
@@ -22,13 +18,15 @@ local RocketLauncherServerItem = {
   description = RocketLauncherClientItem.description;
 };
 
-function RocketLauncherServerItem.new(contestant: ServerContestant, round: ServerRound): ServerItem
+function RocketLauncherServerItem.new(contestant: types.ServerContestant, round: types.ServerRound): types.ServerItem
 
   local _specificItemID;
   local isEquipped = false;
-  local effect = createHoldingHeavyItemEffect();
+  local effect = ServerEffect.get("HoldingHeavyItem").new({
+    contestant = contestant;
+  });
 
-  local function activate(self: ServerItem)
+  local function activate(self: types.ServerItem)
     
     if not isEquipped then
 
@@ -41,7 +39,7 @@ function RocketLauncherServerItem.new(contestant: ServerContestant, round: Serve
     
   end;
   
-  local function breakdown(self: ServerItem)
+  local function breakdown(self: types.ServerItem)
     
     if contestant.player then
 
@@ -53,7 +51,7 @@ function RocketLauncherServerItem.new(contestant: ServerContestant, round: Serve
 
   end;
 
-  local function initialize(self: ServerItem, newContestant: ServerContestant)
+  local function initialize(self: types.ServerItem, newContestant: types.ServerContestant)
 
     contestant = newContestant;
 

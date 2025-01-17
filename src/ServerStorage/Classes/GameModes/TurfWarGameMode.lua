@@ -6,12 +6,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local GameMode = require(script.Parent.Parent.GameMode);
-type GameMode = GameMode.GameMode;
 local HttpService = game:GetService("HttpService");
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
-local Cause = require(ServerStorage.Types["Cause.types"]);
-type Cause = Cause.Cause;
+local types = require(ServerStorage.Classes.types);
 
 -- This is the class.
 local TurfWarGameMode = {
@@ -20,7 +16,7 @@ local TurfWarGameMode = {
   description = "";
 };
 
-function TurfWarGameMode.new(round: ServerRound): GameMode
+function TurfWarGameMode.new(round: types.ServerRound): types.GameMode
 
   local events = {};
 
@@ -202,7 +198,7 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
         table.insert(events, contestant.onStaminaUpdated:Connect(recoverStamina));
 
-        local function trackEliminations(newHealth: number, oldHealth: number, cause: Cause?)
+        local function trackEliminations(newHealth: number, oldHealth: number, cause: types.Cause?)
 
           if newHealth <= 0 and oldHealth > 0 and contestant.statistics then
 

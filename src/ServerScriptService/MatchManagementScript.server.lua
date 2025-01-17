@@ -9,11 +9,9 @@ local HttpService = game:GetService("HttpService");
 local Stage = require(ServerStorage.Packages.Stage);
 local ServerRound = require(ServerStorage.Classes.ServerRound);
 local ServerContestant = require(ServerStorage.Classes.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
-local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
-type ServerArchetype = ServerArchetype.ServerArchetype;
 local Profile = require(ServerStorage.Packages.Profile);
 local StarterPlayerScripts = game:GetService("StarterPlayer").StarterPlayerScripts;
+local types = require(ServerStorage.Classes.types);
 
 -- Initialize the round.
 local round;
@@ -48,7 +46,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
   
   end;
   
-  local function getContestantFromPlayer(player: Player): ServerContestant?
+  local function getContestantFromPlayer(player: Player): types.ServerContestant?
   
     for _, contestant in ipairs(round.contestants) do
   
@@ -102,6 +100,9 @@ local didSuccessfullyInitializeRound, message = pcall(function()
     local contestant = getContestantFromPlayer(player);
     local playerIdentifier = `{player.Name} ({player.UserId})`;
     assert(contestant, `{playerIdentifier} isn't a contestant in this round, so it is unnecessary for them to choose an archetype.`);
+
+    local archetypeLocks = ServerStorage.Functions.GetArchetypeLocks:Invoke(contestant.id);
+    assert(not archetypeLocks, "Archetypes are currently locked.");
     assert(contestant.profile, `Couldn't find the {playerIdentifier}'s profile.`);
   
     -- Verify that the contestant has that archetype.

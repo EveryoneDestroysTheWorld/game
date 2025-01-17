@@ -19,17 +19,29 @@ local function ArchetypeStatsContainer(props: RoundTimerProps)
 
   local contestant, setContestant = React.useState(nil :: ClientContestant?);
   local archetypeName: string?, setArchetypeName = React.useState(nil :: string?);
-  local canSelectArchetype, setCanSelectArchetype = React.useState(false);
+  local canSelectArchetype, setCanSelectArchetype = React.useState(true);
 
   React.useEffect(function()
   
-    if contestant then
+    local event = ReplicatedStorage.Shared.Events.ArchetypeLocksChanged.OnClientEvent:Connect(function(archetypeLocks)
+    
+      setCanSelectArchetype(not not archetypeLocks[1]);
 
-      setCanSelectArchetype(contestan)
+    end);
 
+    task.spawn(function()
+    
+      setCanSelectArchetype(ReplicatedStorage.Shared.Functions.GetArchetypeLocks:InvokeServer());
+
+    end);
+
+    return function()
+
+      event:Disconnect();
+      
     end;
 
-  end, {contestant});
+  end, {});
 
   React.useEffect(function()
   
@@ -115,8 +127,8 @@ local function ArchetypeStatsContainer(props: RoundTimerProps)
       ArchetypeButton = React.createElement(Button, {
         LayoutOrder = 2;
         Text = if archetypeName then archetypeName:upper() else "CHOOSE AN ARCHETYPE";
-        isDisabled = contestant.;
-        [React.Event.Activated] = function()
+        isDisabled = not canSelectArchetype;
+        onActivated = function()
 
           ReplicatedStorage.Client.Functions.ToggleSelector:Invoke(true);
 

@@ -7,7 +7,8 @@ local Square = require(script.Parent.Square);
 export type ButtonProperties = {
   Text: string;
   LayoutOrder: number;
-  [typeof(React.Event.Activated)]: () -> ()
+  isDisabled: boolean?;
+  onActivated: () -> ()
 }
 
 local function Button(properties: ButtonProperties)
@@ -19,7 +20,15 @@ local function Button(properties: ButtonProperties)
     BorderSizePixel = 0;
     BackgroundColor3 = Color3.new();
     Text = "";
-    [React.Event.Activated] = properties[React.Event.Activated];
+    [React.Event.Activated] = function()
+
+      if properties.isDisabled then
+
+        properties.onActivated();
+
+      end;
+
+    end;
   }, {
     DecorationContainer = React.createElement("Frame", {
       Size = UDim2.new(1, 0, 1, 0);
