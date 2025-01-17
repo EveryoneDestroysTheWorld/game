@@ -23,9 +23,22 @@ local RocketLauncherServerItem = {
 function RocketLauncherServerItem.new(contestant: ServerContestant, round: ServerRound): ServerItem
 
   local _specificItemID;
+  local isEquipped = false;
+  local effect = {
+    name = "Holding heavy item",
+    id = "HoldingHeavyItem"
+  };
 
   local function activate(self: ServerItem)
     
+    if not isEquipped then
+
+      -- Lock archetypes and actions.
+      isEquipped = true;
+
+      contestant:addEffect(effect);
+
+    end;
     
   end;
   
