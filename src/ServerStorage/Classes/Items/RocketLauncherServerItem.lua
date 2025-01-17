@@ -13,6 +13,8 @@ local RocketLauncherClientItem = require(ReplicatedStorage.Client.Classes.Items.
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
 local HttpService = game:GetService("HttpService");
+local ServerStorage = game:GetService("ServerStorage");
+local createHoldingHeavyItemEffect = require(ServerStorage.Classes.Effects.HoldingHeavyItemEffect);
 
 local RocketLauncherServerItem = {
   id = RocketLauncherClientItem.id;
@@ -24,10 +26,7 @@ function RocketLauncherServerItem.new(contestant: ServerContestant, round: Serve
 
   local _specificItemID;
   local isEquipped = false;
-  local effect = {
-    name = "Holding heavy item",
-    id = "HoldingHeavyItem"
-  };
+  local effect = createHoldingHeavyItemEffect();
 
   local function activate(self: ServerItem)
     
@@ -49,6 +48,8 @@ function RocketLauncherServerItem.new(contestant: ServerContestant, round: Serve
       ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.id, _specificItemID);
 
     end;
+
+    contestant:removeEffect(effect);
 
   end;
 

@@ -8,7 +8,8 @@ export type ServerEffect = {
   id: string;
   description: string?;
   expirationTimeMilliseconds: number?;
-  onActivate: (() -> ())?;
+  activate: ((effect: ServerEffect, ...any) -> ())?;
+  deactivate: ((effect: ServerEffect, ...any) -> ())?;
   updateContestantHealth: ((effect: ServerEffect, newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
   updateContestantStamina: ((effect: ServerEffect, newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
 }
