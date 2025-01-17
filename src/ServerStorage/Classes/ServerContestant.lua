@@ -11,10 +11,10 @@ local ServerItem = require(script.Parent.ServerItem);
 type ServerItem = ServerItem.ServerItem;
 local Profile = require(ServerStorage.Packages.Profile);
 type Profile = Profile.Profile;
-local Cause = require(script.Parent.Cause);
+local Cause = require(ServerStorage.Types["Cause.types"]);
 type Cause = Cause.Cause;
-local Effect = require(script.Parent.Effect);
-type Effect = Effect.Effect;
+local ServerEffect = require(script.Parent.ServerEffect);
+type ServerEffect = ServerEffect.ServerEffect;
 local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
 type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
 type PatchableTurfWarContestantStatistics = TurfWarContestantStatistics.PatchableContestantTurfWarStatistics;
@@ -30,7 +30,7 @@ export type ContestantProperties = {
 
   currentStamina: number;
 
-  effects: {Effect};
+  effects: {ServerEffect};
 
   -- The ID of the contestant. 
   -- If the contestant is a bot, this is a unique temporary ID assigned by the server. It will be an irrational number.
@@ -71,8 +71,8 @@ export type ContestantProperties = {
 export type ContestantMethods = {
   addItemToInventory: (self: ServerContestant, item: ServerItem) -> ();
   removeItemFromInventory: (self: ServerContestant, item: ServerItem) -> ();
-  addEffect: (self: ServerContestant, effect: Effect) -> ();
-  removeEffect: (self: ServerContestant, effect: Effect) -> ();
+  addEffect: (self: ServerContestant, effect: ServerEffect) -> ();
+  removeEffect: (self: ServerContestant, effect: ServerEffect) -> ();
   convertToClient: (self: ServerContestant) -> {any};
   disqualify: (self: ServerContestant) -> ();
   getInventoryItemIDs: (self: ServerContestant) -> {string};
@@ -91,19 +91,19 @@ export type ContestantEvents = {
   onHealthUpdated: RBXScriptSignal<number, number, Cause?>;
   onStaminaUpdated: RBXScriptSignal<number, number, Cause?>;
   onInventoryUpdated: RBXScriptSignal<{number}>;
-  onEffectsUpdated: RBXScriptSignal<{Effect}>;
+  onEffectsUpdated: RBXScriptSignal<{ServerEffect}>;
 }
 
 local ServerContestant = {
   __index = {} :: ContestantMethods;
 };
 
-export type ServerContestant = typeof(setmetatable({}, ServerContestant)) & ContestantProperties & ContestantEvents & ContestantMethods;
+export type ServerContestant = ContestantProperties & ContestantEvents & ContestantMethods;
 
 local events: {[any]: {[string]: BindableEvent}} = {};
 function ServerContestant.new(properties: ContestantProperties): ServerContestant
 
-  local contestant = setmetatable(properties, ServerContestant) :: ServerContestant;
+  local contestant = setmetatable(properties, ServerContestant);
 
   -- Set up events.
   local eventNames = {"onDisqualified", "onHealthUpdated", "onStaminaUpdated", "onArchetypeUpdated", "onCharacterUpdated", "onInventoryUpdated", "onEffectsUpdated"};
@@ -111,11 +111,11 @@ function ServerContestant.new(properties: ContestantProperties): ServerContestan
   for _, eventName in ipairs(eventNames) do
 
     events[contestant][eventName] = Instance.new("BindableEvent");
-    (contestant :: {})[eventName] = events[contestant][eventName].Event;
+    contestant[eventName] = events[contestant][eventName].Event;
 
   end
 
-  return contestant;
+  return contestant :: any;
   
 end
 
@@ -133,7 +133,7 @@ function ServerContestant.__index:getInventoryItemIDs(): {string}
 
 end;
 
-function ServerContestant.__index:addEffect(effect: Effect): ()
+function ServerContestant.__index:addEffect(effect: ServerEffect): ()
 
   table.insert(self.effects, effect);
   events[self].onEffectsUpdated:Fire(self.effects);
@@ -170,7 +170,7 @@ function ServerContestant.__index:removeItemFromInventory(item: ServerItem): ()
 
 end;
 
-function ServerContestant.__index:removeEffect(effect: Effect): ()
+function ServerContestant.__index:removeEffect(effect: ServerEffect): ()
 
   -- Iterating backwards because the indexes can change after running table.remove().
   for index = #self.effects, 1, -1 do
@@ -231,9 +231,9 @@ function ServerContestant.__index:updateHealth(newHealth: number, cause: Cause?)
 
   for _, effect in self.effects do
 
-    if effect.onBeforeHealthChange then
+    if effect.updateContestantHealth then
 
-      newHealth = effect.onBeforeHealthChange(newHealth, oldHealth, cause);
+      newHealth = effect.updateContestantHealth(effect, newHealth, oldHealth, cause);
 
     end;
 
@@ -250,6 +250,17 @@ end;
 function ServerContestant.__index:updateStamina(newStamina: number, cause: Cause?): ()
 
   local oldStamina = self.currentStamina;
+
+  for _, effect in self.effects do
+
+    if effect.updateContestantStamina then
+
+      newStamina = effect.updateContestantStamina(effect, newStamina, oldStamina, cause);
+
+    end;
+
+  end;
+
   self.currentStamina = newStamina;
 
   ReplicatedStorage.Shared.Events.StaminaUpdated:FireAllClients(self.id, newStamina, cause);

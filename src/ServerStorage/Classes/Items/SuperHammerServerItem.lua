@@ -14,10 +14,12 @@ type ServerItem = ServerItem.ServerItem;
 local SuperHammerClientItem = require(ReplicatedStorage.Client.Classes.Items.SuperHammerClientItem);
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
+local createInvincibilityServerEffect = require(ServerStorage.Classes.Effects.InvincibilityServerEffect);
+local createStaminaRecoverySuppressionServerEffect = require(ServerStorage.Classes.Effects.StaminaRecoverySuppressionServerEffect);
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
 local createInventoryRemoteEvent = require(ServerStorage.Modules.createInventoryRemoteEvent);
-local Effect = require(script.Parent.Parent.Effect);
-type Effect = Effect.Effect;
+local ServerEffect = require(ServerStorage.Classes.ServerEffect);
+type ServerEffect = ServerEffect.ServerEffect;
 local HttpService = game:GetService("HttpService");
 
 local SuperHammerServerItem = {
@@ -47,7 +49,7 @@ function SuperHammerServerItem.new(): ServerItem
   local touchEventExpirationTask: thread?;
   local staminaReductionTask: thread?;
   local comboBreakingTask: thread?;
-  local staminaRecoverySuppressionEffect: Effect?;
+  local staminaRecoverySuppressionEffect: ServerEffect?;
   local animationTrack: AnimationTrack;
   local stunnedContestants: {[ServerContestant]: {AlignOrientation | AlignPosition}} = {};
 
@@ -143,19 +145,11 @@ function SuperHammerServerItem.new(): ServerItem
       assert(_meshPart);
 
       -- Make the contestant invincible for 10 seconds.
-      local expirationTime = DateTime.now().UnixTimestampMillis + 10000;
-      local effect: Effect = {
-        name = "Invincibility",
-        id = "Invincibility",
-        expirationTimeMilliseconds = expirationTime,
-        onBeforeHealthChange = function(newHealth, oldHealth)
+      local invincibilityEffect = createInvincibilityServerEffect({
+        expirationTimeMilliseconds = DateTime.now().UnixTimestampMillis + 10000;
+      });
 
-          return if newHealth > oldHealth then newHealth else oldHealth;
-
-        end
-      };
-
-      _contestant:addEffect(effect);
+      _contestant:addEffect(invincibilityEffect);
 
       -- Add the animations.
       local animation = Instance.new("Animation");
@@ -215,7 +209,7 @@ function SuperHammerServerItem.new(): ServerItem
 
         end;
 
-        _contestant:removeEffect(effect);
+        _contestant:removeEffect(invincibilityEffect);
 
         touchEventExpirationTask = nil;
 
@@ -530,10 +524,7 @@ function SuperHammerServerItem.new(): ServerItem
         -- Progressively lose stamina.
         staminaReductionTask = task.spawn(function()
 
-          local effect = {
-            name = "Stamina recovery suppression",
-            id = "StaminaRecoverySuppression"
-          }
+          local effect = createStaminaRecoverySuppressionServerEffect();
 
           staminaRecoverySuppressionEffect = effect;
 

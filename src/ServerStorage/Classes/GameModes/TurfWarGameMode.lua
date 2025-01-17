@@ -10,7 +10,7 @@ type GameMode = GameMode.GameMode;
 local HttpService = game:GetService("HttpService");
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
-local Cause = require(script.Parent.Parent.Cause);
+local Cause = require(ServerStorage.Types["Cause.types"]);
 type Cause = Cause.Cause;
 
 -- This is the class.
@@ -189,25 +189,8 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
             while contestant.currentHealth > 0 and contestant.currentStamina < contestant.baseStamina and task.wait(1) do
               
-              -- Verify that stamina can be recovered.
-              local shouldRecover = true;
-              for _, effect in contestant.effects do
-
-                if effect.id == "StaminaRecoverySuppression" then
-
-                  shouldRecover = false;
-                  break;
-
-                end;
-
-              end;
-
               -- Recover the contestant's stamina if we can.
-              if shouldRecover then
-
-                contestant:updateStamina(math.min(contestant.currentStamina + 5, contestant.baseStamina));
-
-              end;
+              contestant:updateStamina(math.min(contestant.currentStamina + 5, contestant.baseStamina));
 
             end;
 
