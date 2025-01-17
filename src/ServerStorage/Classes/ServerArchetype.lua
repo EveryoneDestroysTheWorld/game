@@ -1,49 +1,20 @@
 --!strict
--- Written by Christian Toney (Sudobeast)
 -- This module represents an Archetype, which contains a list of powers.
-local ServerContestant = require(script.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
-local ServerAction = require(script.Parent.ServerAction);
-type ServerAction = ServerAction.ServerAction;
+-- 
+-- Programmers: Christian Toney (Christian_Toney)
+-- © 2024 – 2025 Beastslash LLC
 
-export type ServerArchetypeProperties = {
-  
-  id: string;
-  
-  name: string;
-
-  description: string?;
-
-  type: "Fighter" | "Defender" | "Destroyer" | "Supporter";
-
-  actionIDs: {string};
-
-  -- Using "...any" because Roblox considers just accessing ServerRound for types as a cyclic dependency.
-  initialize: (self: ServerArchetype, ...any) -> ();
-  
-}
-
-export type ServerArchetypeMethods = {
-
-  breakdown: (self: ServerArchetype) -> ();
-
-  runAutoPilot: (self: ServerArchetype, actions: {ServerAction}) -> ();
-
-}
+local types = require(script.Parent.types);
 
 local ServerArchetype = {}
 
-export type ServerArchetype = ServerArchetypeProperties & ServerArchetypeMethods;
+function ServerArchetype.new(properties: types.ServerArchetypeProperties): types.ServerArchetype
 
-export type ServerArchetypeClass = ServerArchetypeProperties & {new: (...any) -> ServerArchetype};
-
-function ServerArchetype.new(properties: ServerArchetypeProperties): ServerArchetype
-
-  return properties :: ServerArchetype;
+  return properties :: types.ServerArchetype;
   
 end
 
-function ServerArchetype.get(archetypeID: string): ServerArchetype
+function ServerArchetype.get(archetypeID: string): types.ServerArchetype
 
   for _, instance in ipairs(script.Parent.Archetypes:GetChildren()) do
   
@@ -64,7 +35,7 @@ function ServerArchetype.get(archetypeID: string): ServerArchetype
 
 end;
 
-function ServerArchetype.getAll(): {ServerArchetypeClass}
+function ServerArchetype.getAll(): {types.ServerArchetypeClass}
 
   local archetypes = {};
   

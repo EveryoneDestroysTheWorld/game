@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
 local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
 type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
 

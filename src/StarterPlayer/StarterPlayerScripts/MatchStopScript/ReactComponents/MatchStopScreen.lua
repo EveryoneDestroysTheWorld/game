@@ -178,7 +178,9 @@ local function MatchStoppagePopup()
         BackgroundTransparency = transparency;
         TextTransparency = transparency;
         Visible = contentFrameSizeScale == 1;
-        onClick = function()
+        onActivated = function()
+
+          -- Teleport back to the arena.
 
         end;
       });

@@ -5,13 +5,10 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
-type ServerAction = ServerAction.ServerAction;
 local DetonateDetachedLimbsClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetonateDetachedLimbsClientAction);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
+local types = require(ServerStorage.Classes.types);
+local assertContestantIsNotActionLocked = require(ServerStorage.Modules.assertContestantIsNotActionLocked);
 
 local DetonateDetachedLimbsServerAction = {
   id = DetonateDetachedLimbsClientAction.id;
@@ -19,11 +16,14 @@ local DetonateDetachedLimbsServerAction = {
   description = DetonateDetachedLimbsClientAction.description;
 };
 
-function DetonateDetachedLimbsServerAction.new(): ServerAction
+function DetonateDetachedLimbsServerAction.new(): types.ServerAction
 
-  local contestant: ServerContestant = nil;
-  local round: ServerRound = nil;
+  local contestant: types.ServerContestant = nil;
+  local round: types.ServerRound = nil;
   local function activate()
+
+    -- Verify that actions aren't locked.
+    assertContestantIsNotActionLocked(contestant);
 
     for limbName, instance in pairs(ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.id}_GetDetachedLimbs`):Invoke(contestant)) do
 
@@ -99,7 +99,7 @@ function DetonateDetachedLimbsServerAction.new(): ServerAction
 
   end;
 
-  local function initialize(self: ServerAction, newContestant: ServerContestant, newRound: ServerRound)
+  local function initialize(self: types.ServerAction, newContestant: types.ServerContestant, newRound: types.ServerRound)
 
     contestant = newContestant;
     round = newRound;

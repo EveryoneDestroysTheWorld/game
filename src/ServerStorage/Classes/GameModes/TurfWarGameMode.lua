@@ -6,12 +6,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local GameMode = require(script.Parent.Parent.GameMode);
-type GameMode = GameMode.GameMode;
 local HttpService = game:GetService("HttpService");
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
-local Cause = require(script.Parent.Parent.Cause);
-type Cause = Cause.Cause;
+local types = require(ServerStorage.Classes.types);
 
 -- This is the class.
 local TurfWarGameMode = {
@@ -20,7 +16,7 @@ local TurfWarGameMode = {
   description = "";
 };
 
-function TurfWarGameMode.new(round: ServerRound): GameMode
+function TurfWarGameMode.new(round: types.ServerRound): types.GameMode
 
   local events = {};
 
@@ -189,25 +185,8 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
             while contestant.currentHealth > 0 and contestant.currentStamina < contestant.baseStamina and task.wait(1) do
               
-              -- Verify that stamina can be recovered.
-              local shouldRecover = true;
-              for _, effect in contestant.effects do
-
-                if effect.id == "StaminaRecoverySuppression" then
-
-                  shouldRecover = false;
-                  break;
-
-                end;
-
-              end;
-
               -- Recover the contestant's stamina if we can.
-              if shouldRecover then
-
-                contestant:updateStamina(math.min(contestant.currentStamina + 5, contestant.baseStamina));
-
-              end;
+              contestant:updateStamina(math.min(contestant.currentStamina + 5, contestant.baseStamina));
 
             end;
 
@@ -219,7 +198,7 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
         table.insert(events, contestant.onStaminaUpdated:Connect(recoverStamina));
 
-        local function trackEliminations(newHealth: number, oldHealth: number, cause: Cause?)
+        local function trackEliminations(newHealth: number, oldHealth: number, cause: types.Cause?)
 
           if newHealth <= 0 and oldHealth > 0 and contestant.statistics then
 

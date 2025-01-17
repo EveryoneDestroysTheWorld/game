@@ -2,17 +2,11 @@
 local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local UndeadConciousnessClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.UndeadConciousnessClientArchetype);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-local ServerAction = require(script.Parent.Parent.ServerAction);
 local ServerItem = require(script.Parent.Parent.ServerItem);
-type ServerRound = ServerRound.ServerRound;
-type ServerContestant = ServerContestant.ServerContestant;
-type ServerArchetype = ServerArchetype.ServerArchetype;
-type ServerAction = ServerAction.ServerAction;
 local downContestant = require(ServerStorage.Modules.downContestant);
 local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
+local types = require(ServerStorage.Classes.types);
 
 local UndeadConciousnessServerArchetype = {
   id = UndeadConciousnessClientArchetype.id;
@@ -22,10 +16,10 @@ local UndeadConciousnessServerArchetype = {
   type = UndeadConciousnessClientArchetype.type;
 };
 
-function UndeadConciousnessServerArchetype.new(): ServerArchetype
+function UndeadConciousnessServerArchetype.new(): types.ServerArchetype
 
-  local contestant: ServerContestant;
-  local round: ServerRound;
+  local contestant: types.ServerContestant;
+  local round: types.ServerRound;
   local isContestantStunned = false;
   local breakdownEventList: {
     [BasePart]: RBXScriptConnection;
@@ -34,7 +28,7 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
   } = {};
 
   local ragdollClone;
-  local function breakdown(self: ServerArchetype)
+  local function breakdown(self: types.ServerArchetype)
 
     for _, event in pairs(breakdownEventList) do
 
@@ -50,7 +44,7 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
 
   end;
 
-  local function runAutoPilot(self: ServerArchetype, actions: {ServerAction})
+  local function runAutoPilot(self: types.ServerArchetype, actions: {types.ServerAction})
 
     -- Make sure the contestant has a character.
     local character = contestant.character
@@ -64,7 +58,7 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
 
   end;
 
-  local function initialize(self: ServerArchetype, newContestant: ServerContestant, newRound: ServerRound)
+  local function initialize(self: types.ServerArchetype, newContestant: types.ServerContestant, newRound: types.ServerRound)
 
     contestant = newContestant;
     round = newRound;

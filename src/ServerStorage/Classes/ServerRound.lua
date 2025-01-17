@@ -1,90 +1,26 @@
 --!strict
 -- Writer: Christian Toney (Sudobeast)
 -- This module represents a ServerRound.
+
 local HttpService = game:GetService("HttpService");
-local GameMode = require(script.Parent.GameMode);
-type GameMode = GameMode.GameMode;
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local DataStoreService = game:GetService("DataStoreService");
-local ServerContestant = require(script.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
+local GameMode = require(script.Parent.GameMode);
 local ServerArchetype = require(script.Parent.ServerArchetype);
-type ServerArchetype = ServerArchetype.ServerArchetype;
 local ServerAction = require(script.Parent.ServerAction);
-type ServerAction = ServerAction.ServerAction;
-local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
-type ClientRound = ClientRound.ClientRound;
-type RoundStatus = ClientRound.RoundStatus;
 local ServerStorage = game:GetService("ServerStorage");
 local Stage = require(ServerStorage.Packages.Stage);
-type Stage = Stage.Stage;
-
-export type ServerRoundConstructorProperties = {
-
-  -- This round's unique ID.
-  id: string;
-
-  gameModeID: string;
-  
-  -- This stage's ID.
-  stageID: string;
-
-  status: RoundStatus;
-
-  timeStarted: number?;
-
-  duration: number?;
-
-  timeEnded: number?;
-
-  contestantIDs: {number};
-
-}
-
-export type ServerRoundProperties = ServerRoundConstructorProperties & {  
-
-  stage: Stage;
-
-  archetypes: {ServerArchetype};
-
-  actions: {ServerAction};
-
-  contestants: {ServerContestant};
-
-  gameMode: GameMode?;
-
-};
-
-export type ServerRoundEvents = {
-  onStopped: RBXScriptSignal;
-  onEnded: RBXScriptSignal;
-  onStatusChanged: RBXScriptSignal;
-  onContestantAdded: RBXScriptSignal;
-  onContestantRemoved: RBXScriptSignal;
-  onTimeStartedChanged: RBXScriptSignal;
-}
-
-export type ServerRoundMethods = {
-  addContestant: (self: ServerRound, contestant: ServerContestant) -> ();
-  getClientConstructorProperties: (self: ServerRound) -> any;
-  setStatus: (self: ServerRound, newStatus: RoundStatus) -> ();
-  start: (self: ServerRound) -> ();
-  stop: (self: ServerRound, forced: boolean?) -> ();
-  setGameMode: (self: ServerRound, gameMode: GameMode) -> ();
-  toString: (self: ServerRound) -> string;
-}
-
-local ServerRound = {
-  __index = {} :: ServerRoundMethods;
-};
-
-export type ServerRound = typeof(setmetatable({}, ServerRound)) & ServerRoundProperties & ServerRoundEvents & ServerRoundMethods;
+local types = require(script.Parent.types);
 
 local events: {[any]: {[string]: BindableEvent}} = {};
 
-function ServerRound.new(properties: ServerRoundConstructorProperties & {stage: Stage?}): ServerRound
+local ServerRound = {
+  __index = {} :: types.ServerRound;
+};
 
-  local round = setmetatable(properties, ServerRound) :: ServerRound;
+function ServerRound.new(properties: types.ServerRoundConstructorProperties & {stage: Stage.Stage?}): types.ServerRound
+
+  local round = setmetatable(properties, ServerRound) :: types.ServerRound;
   round.contestants = {};
   round.actions = {};
   round.archetypes = {};
@@ -102,7 +38,7 @@ function ServerRound.new(properties: ServerRoundConstructorProperties & {stage: 
   
 end;
 
-function ServerRound.fromPrivateServerID(privateServerID: number): ServerRound
+function ServerRound.fromPrivateServerID(privateServerID: number): types.ServerRound
 
   -- Verify metadata integrity.
   local roundMetadataEncoded = DataStoreService:GetDataStore("PrivateServerRoundMetadata"):GetAsync(privateServerID);
@@ -127,7 +63,7 @@ function ServerRound.fromPrivateServerID(privateServerID: number): ServerRound
     stageID = roundMetadata.stageID;
     gameModeID = roundMetadata.gameModeID;
     contestantIDs = roundMetadata.contestantIDs;
-    status = "Waiting for players" :: RoundStatus;
+    status = "Waiting for players" :: types.RoundStatus;
   });
 
 end;
@@ -138,14 +74,14 @@ function ServerRound.__index:start(): ()
 
   -- Run the game mode.
   self.gameMode = GameMode.get(self.gameModeID).new(self);
-  (self.gameMode :: GameMode):start();
+  (self.gameMode :: types.GameMode):start();
 
   -- Ready the archetypes and actions.
   self.archetypes = {};
   self.actions = {};
   for _, contestant in ipairs(self.contestants) do
 
-    local oldArchetype: ServerArchetype?;
+    local oldArchetype: types.ServerArchetype?;
 
     local function updateArchetype()
 
@@ -161,7 +97,7 @@ function ServerRound.__index:start(): ()
 
           local archetype = ServerArchetype.get(contestant.archetypeID);
           archetype:initialize(contestant, self);
-          table.insert(self.archetypes :: {ServerArchetype}, archetype);
+          table.insert(self.archetypes :: {types.ServerArchetype}, archetype);
           oldArchetype = archetype;
 
           local actions = {};
@@ -169,7 +105,7 @@ function ServerRound.__index:start(): ()
 
             local action = ServerAction.get(actionID);
             action:initialize(contestant, self);
-            table.insert(self.actions :: {ServerAction}, action);
+            table.insert(self.actions :: {types.ServerAction}, action);
             table.insert(actions, action);
 
           end;
@@ -228,8 +164,7 @@ function ServerRound.__index:start(): ()
 
 end;
 
--- Add a contestant to the round.
-function ServerRound.__index:addContestant(contestant: ServerContestant): ()
+function ServerRound.__index:addContestant(contestant: types.ServerContestant): ()
 
   table.insert(self.contestants, contestant);
   events[self].onContestantAdded:Fire(contestant);
@@ -258,7 +193,7 @@ function ServerRound.__index:getClientConstructorProperties(): any
 
 end;
 
-function ServerRound.__index:setStatus(newStatus: RoundStatus): ()
+function ServerRound.__index:setStatus(newStatus: types.RoundStatus): ()
 
   local oldStatus = self.status;
   self.status = newStatus;
@@ -267,7 +202,7 @@ function ServerRound.__index:setStatus(newStatus: RoundStatus): ()
 
 end;
 
-function ServerRound.__index:setGameMode(gameMode: GameMode): ()
+function ServerRound.__index:setGameMode(gameMode: types.GameMode): ()
 
   self.gameMode = gameMode;
 
@@ -301,7 +236,7 @@ function ServerRound.__index:stop(forced: boolean?): ()
 
   if self.actions then
 
-    for _, action in ipairs(self.actions :: {ServerAction}) do
+    for _, action in ipairs(self.actions :: {types.ServerAction}) do
 
       task.spawn(function() 
         

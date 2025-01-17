@@ -4,14 +4,11 @@
 -- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local ServerStorage = game:GetService("ServerStorage");
-type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
-type ServerAction = ServerAction.ServerAction;
 local DetachLimbClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetachLimbClientAction);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
+local types = require(ServerStorage.Classes.types);
+local assertContestantIsNotActionLocked = require(ServerStorage.Modules.assertContestantIsNotActionLocked);
 
 local DetachLimbServerAction = {
   id = DetachLimbClientAction.id;
@@ -19,16 +16,18 @@ local DetachLimbServerAction = {
   description = DetachLimbClientAction.description;
 };
 
-function DetachLimbServerAction.new(): ServerAction
+function DetachLimbServerAction.new(): types.ServerAction
   
-  local contestant: ServerContestant = nil;
-  local round: ServerRound = nil;
+  local contestant: types.ServerContestant = nil;
 
   local validLimbNames = {"Head", "Torso", "LeftArm", "RightArm", "LeftLeg", "RightLeg"};
   local detachedLimbs: {[string]: BasePart | Model} = {};
   local bindableFunction = Instance.new("BindableFunction");
 
-  local function activate(self: ServerAction, limbName: string?)
+  local function activate(self: types.ServerAction, limbName: string?)
+
+    -- Verify that actions aren't locked.
+    assertContestantIsNotActionLocked(contestant);
 
     -- Verify variable types to maintain server security.
     assert(typeof(limbName) == "string", "Limb name must be a string.");
@@ -292,10 +291,9 @@ function DetachLimbServerAction.new(): ServerAction
 
   end;
 
-  local function initialize(self: ServerAction, newContestant: ServerContestant, newRound: ServerRound)
+  local function initialize(self: types.ServerAction, newContestant: types.ServerContestant, newRound: types.ServerRound)
 
     contestant = newContestant;
-    round = newRound;
     bindableFunction.Name = `{contestant.id}_GetDetachedLimbs`;
     bindableFunction.OnInvoke = function()
   
