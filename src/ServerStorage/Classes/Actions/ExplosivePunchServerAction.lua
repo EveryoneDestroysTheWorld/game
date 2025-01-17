@@ -27,10 +27,17 @@ function ExplosivePunchServerAction.new(): types.ServerAction
 
   local latestActivationTimes = {0, 0};
   local currentAnimationTrack = nil;
+  local minimumRequiredStamina = 5;
   local function activate(self: types.ServerAction)
 
     -- Verify that actions aren't locked.
     assertContestantIsNotActionLocked(contestant);
+
+    -- Ensure the contestant has enough stamina.
+    assert(contestant.currentStamina >= minimumRequiredStamina, "Contestant doesn't have enough stamina.");
+    contestant:updateStamina(math.max(contestant.currentStamina - minimumRequiredStamina, 0), {
+      actionID = self.id;
+    });
 
     -- Run the animation.
     local animator = humanoid:FindFirstChild("Animator");
