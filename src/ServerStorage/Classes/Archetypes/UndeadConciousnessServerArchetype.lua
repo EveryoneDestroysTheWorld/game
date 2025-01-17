@@ -85,18 +85,6 @@ function UndeadConciousnessServerArchetype.new(): types.ServerArchetype
       -- Slow down the player.
       humanoid.WalkSpeed = 12;
   
-      -- Allow the player to revive disqualified allies and give them this archetype.
-      for _, possibleAllyContestant in ipairs(round.contestants) do
-  
-        -- To be implemented when teams are implemented.
-        possibleAllyContestant.onDisqualified:Connect(function()
-        
-          
-  
-        end);
-  
-      end;
-  
       -- If the player gets dealt 30 damage, stun them for 3 seconds.
       if breakdownEventList.healthUpdateEvent then
   
@@ -163,7 +151,7 @@ function UndeadConciousnessServerArchetype.new(): types.ServerArchetype
                       table.remove(immuneContestants, table.find(immuneContestants, possibleEnemyContestant));
   
                     end);
-  
+
                     possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 20, {
                       contestantID = contestant.id;
                       archetypeID = UndeadConciousnessServerArchetype.id;
@@ -186,8 +174,8 @@ function UndeadConciousnessServerArchetype.new(): types.ServerArchetype
     end;
 
     local isDowned = false;
-    breakdownEventList.healthUpdateEvent = contestant.onHealthUpdated:Connect(function()
-    
+    local function checkHealth()
+
       if isDowned and contestant.currentHealth > 0 then
         
         isDowned = false;
@@ -212,7 +200,10 @@ function UndeadConciousnessServerArchetype.new(): types.ServerArchetype
 
       end;
 
-    end);
+    end;
+
+    breakdownEventList.healthUpdateEvent = contestant.onHealthUpdated:Connect(checkHealth);
+    checkHealth();
 
     -- Give the player a random item. 
     local randomItem = ServerItem.random(); -- TODO: Uncomment before merging PR
