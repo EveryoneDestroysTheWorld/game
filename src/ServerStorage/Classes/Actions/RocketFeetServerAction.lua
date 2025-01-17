@@ -24,7 +24,7 @@ function RocketFeetServerAction.new(): types.ServerAction
   local rightFootExplosivePart: Part;
   local executeActionRemoteFunction: RemoteFunction? = nil;
 
-  local function activate()
+  local function activate(self: types.ServerAction)
 
     -- Verify that actions aren't locked.
     assertContestantIsNotActionLocked(contestant);
@@ -95,7 +95,9 @@ function RocketFeetServerAction.new(): types.ServerAction
         end;
 
         -- Reduce the player's stamina.
-        contestant:updateStamina(math.max(0, contestant.currentStamina - 10));
+        contestant:updateStamina(math.max(0, contestant.currentStamina - 10), {
+          actionID = self.id
+        });
 
       end;
   
