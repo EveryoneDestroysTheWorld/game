@@ -20,12 +20,30 @@ function DetonateDetachedLimbsServerAction.new(): types.ServerAction
 
   local contestant: types.ServerContestant = nil;
   local round: types.ServerRound = nil;
-  local function activate()
+  local function activate(self: types.ServerAction)
 
     -- Verify that actions aren't locked.
     assertContestantIsNotActionLocked(contestant);
 
-    for limbName, instance in pairs(ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.id}_GetDetachedLimbs`):Invoke(contestant)) do
+    -- Make sure the player has enough stamina.
+    assert(contestant.currentStamina >= 20, "Contestant doesn't have enough stamina.");
+
+    local detachedLimbs = ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.id}_GetDetachedLimbs`):Invoke(contestant);
+
+    local didReduceStamina = false;
+
+    for limbName, instance in detachedLimbs do
+
+      -- Reduce stamina once.
+      if not didReduceStamina then
+
+        didReduceStamina = true;
+        
+        contestant:updateStamina(math.max(contestant.currentStamina - 20, 0), {
+          actionID = self.id;
+        });
+
+      end;
 
       -- Use task.spawn so that they all explode at the same time.
       task.spawn(function()
@@ -39,7 +57,6 @@ function DetonateDetachedLimbsServerAction.new(): types.ServerAction
         local hitContestants = {};
         explosion.Hit:Connect(function(basePart)
   
-          -- Damage any parts or contestants that get hit.
           -- Damage any parts or contestants that get hit.
           for _, possibleEnemyContestant in ipairs(round.contestants) do
 
@@ -61,7 +78,7 @@ function DetonateDetachedLimbsServerAction.new(): types.ServerAction
           end;
 
           local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
-          if basePartCurrentDurability and basePartCurrentDurability > 0 then
+          if basePartCurrentDurability and typeof(basePartCurrentDurability) == "number" and basePartCurrentDurability > 0 then
   
             ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 25, contestant);
   
