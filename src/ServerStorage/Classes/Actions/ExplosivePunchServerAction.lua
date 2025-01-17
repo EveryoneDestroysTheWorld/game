@@ -4,14 +4,11 @@
 -- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
-type ServerAction = ServerAction.ServerAction;
 local ExplosivePunchClientAction = require(ReplicatedStorage.Client.Classes.Actions.ExplosivePunchClientAction);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
 local ServerStorage = game:GetService("ServerStorage");
+local assertContestantIsNotActionLocked = require(ServerStorage.Modules.assertContestantIsNotActionLocked);
+local types = require(ServerStorage.Classes.types);
 
 local ExplosivePunchServerAction = {
   id = ExplosivePunchClientAction.id;
@@ -19,10 +16,10 @@ local ExplosivePunchServerAction = {
   description = ExplosivePunchClientAction.description;
 };
 
-function ExplosivePunchServerAction.new(): ServerAction
+function ExplosivePunchServerAction.new(): types.ServerAction
   
-  local contestant: ServerContestant = nil;
-  local round: ServerRound = nil;
+  local contestant: types.ServerContestant = nil;
+  local round: types.ServerRound = nil;
 
   -- Set up the explosive parts.
   local explosiveParts = {};
@@ -30,7 +27,10 @@ function ExplosivePunchServerAction.new(): ServerAction
 
   local latestActivationTimes = {0, 0};
   local currentAnimationTrack = nil;
-  local function activate(self: ServerAction)
+  local function activate(self: types.ServerAction)
+
+    -- Verify that actions aren't locked.
+    assertContestantIsNotActionLocked(contestant);
 
     -- Run the animation.
     local animator = humanoid:FindFirstChild("Animator");
@@ -123,7 +123,7 @@ function ExplosivePunchServerAction.new(): ServerAction
     
   end;
 
-  local function initialize(self: ServerAction, newContestant: ServerContestant, newRound: ServerRound)
+  local function initialize(self: types.ServerAction, newContestant: types.ServerContestant, newRound: types.ServerRound)
 
     contestant = newContestant;
     round = newRound;
