@@ -44,6 +44,44 @@ export type HoldingHeavyItemServerEffectMethods = {
   deactivate: (self: HoldingHeavyItemServerEffect, contestant: ServerContestant) -> ();
 }
 
+export type UndeadServerEffect = ServerEffect<UndeadServerEffectProperties & UndeadServerEffectMethods>;
+
+export type UndeadServerEffectProperties = {
+  name: string;
+  id: string;
+  _events: {
+    [unknown]: RBXScriptConnection
+  };
+  _contestant: ServerContestant;
+}
+
+export type UndeadServerEffectConstructorProperties = {
+  contestant: ServerContestant;
+}
+
+export type UndeadServerEffectMethods = {
+  activate: (self: UndeadServerEffect, contestant: ServerContestant) -> ();
+  deactivate: (self: UndeadServerEffect, contestant: ServerContestant) -> ();
+}
+
+export type ParalysisServerEffect = ServerEffect<ParalysisServerEffectProperties & ParalysisServerEffectMethods>;
+
+export type ParalysisServerEffectConstructorProperties = {
+  contestant: ServerContestant;
+}
+
+export type ParalysisServerEffectProperties = {
+  name: string;
+  id: string;
+  _weight: WalkSpeedWeight;
+  _contestant: ServerContestant;
+}
+
+export type ParalysisServerEffectMethods = {
+  activate: (self: ParalysisServerEffect) -> ();
+  deactivate: (self: ParalysisServerEffect) -> ();
+}
+
 export type InvincibilityServerEffect = ServerEffect<InvincibilityServerEffectProperties & InvincibilityServerEffectMethods>;
 
 export type InvincibilityServerEffectProperties = {
@@ -53,7 +91,7 @@ export type InvincibilityServerEffectProperties = {
 
 export type InvincibilityServerEffectMethods = {
   updateContestantStamina: (self: InvincibilityServerEffect, newStamina: number, oldStamina: number) -> number;
-  updateContestantHealth: (effect: InvincibilityServerEffect, newHealth: number, oldHealth: number) -> number;
+  updateContestantHealth: (self: InvincibilityServerEffect, newHealth: number, oldHealth: number) -> number;
 }
 
 export type InvinicbilityServerEffectConstructorProperties = {
@@ -107,6 +145,29 @@ export type ServerArchetypeMethods = {
 
 }
 
+export type WalkSpeedWeight = {
+  walkSpeed: number;
+  weight: number;
+};
+
+export type ServerContestantConstructorProperties = {
+  character: Model?;
+  baseStamina: number?;
+  baseHealth: number?;
+  currentStamina: number?;
+  currentHealth: number?;
+  effects: {ServerEffect}?;
+  walkSpeedWeights: {WalkSpeedWeight}?;
+  id: number;
+  round: ServerRound;
+  name: string;
+  player: Player?;
+  profile: Profile.Profile?;
+  teamID: number?;
+  items: {ServerItem}?;
+  statistics: TurfWarContestantStatistics.TurfWarContestantStatistics?;
+}
+
 export type ServerContestantProperties = {
   
   -- This could be nil if the server hasn't assigned an archetype to the contestant yet.
@@ -118,7 +179,11 @@ export type ServerContestantProperties = {
 
   currentStamina: number;
 
-  effects: {ServerEffect<unknown>};
+  walkSpeedWeights: {WalkSpeedWeight};
+
+  effects: {ServerEffect};
+
+  round: ServerRound;
 
   -- The ID of the contestant. 
   -- If the contestant is a bot, this is a unique temporary ID assigned by the server. It will be an irrational number.
@@ -128,9 +193,6 @@ export type ServerContestantProperties = {
   -- The name of the contestant. This is here to easily reference bot names. 
   -- If the contestant is a player, this is the same value as player.DisplayName. To get the username, use player.Name.
   name: string;
-
-  -- Is this contestant created by the server?
-  isBot: boolean;
 
   -- Is this contestant still a part of the game?
   isDisqualified: boolean;
@@ -144,7 +206,7 @@ export type ServerContestantProperties = {
   -- The team ID of the contestant. This will be nil if the game rules call for a free-for-all.
   teamID: number?;
 
-  inventory: {ServerItem};
+  items: {ServerItem};
 
   currentHealth: number;
 
@@ -157,8 +219,11 @@ export type ServerContestantProperties = {
 }
 
 export type ServerContestantMethods = {
-  addItemToInventory: (self: ServerContestant, item: ServerItem) -> ();
-  removeItemFromInventory: (self: ServerContestant, item: ServerItem) -> ();
+  addWalkSpeedWeight: (self: ServerContestant, weight: WalkSpeedWeight) -> ();
+  addItem: (self: ServerContestant, item: ServerItem) -> ();
+  removeWalkSpeedWeight: (self: ServerContestant, weight: WalkSpeedWeight) -> ();
+  removeItem: (self: ServerContestant, item: ServerItem) -> ();
+  refreshWalkSpeed: (self: ServerContestant) -> ();
   addEffect: (self: ServerContestant, effect: ServerEffect) -> ();
   removeEffect: (self: ServerContestant, effect: ServerEffect) -> ();
   convertToClient: (self: ServerContestant) -> {any};
@@ -240,6 +305,8 @@ export type ServerEffectFactory = {
     ((effectID: "Invincibility") -> ServerEffectClass<InvinicbilityServerEffectConstructorProperties, InvincibilityServerEffect>)
     & ((effectID: "StaminaRecoverySuppression") -> ServerEffectClass)
     & ((effectID: "HoldingHeavyItem") -> ServerEffectClass<HoldingHeavyItemServerEffectConstructorProperties, HoldingHeavyItemServerEffect>)
+    & ((effectID: "Paralysis") -> ServerEffectClass<ParalysisServerEffectConstructorProperties, ParalysisServerEffect>)
+    & ((effectID: "Undead") -> ServerEffectClass<UndeadServerEffectConstructorProperties, UndeadServerEffect>)
   );
   random: () -> ServerEffectClass;
 }
@@ -265,6 +332,8 @@ export type ServerRoundConstructorProperties = {
   timeEnded: number?;
 
   contestantIDs: {number};
+  
+  stage: Stage.Stage?
 
 }
 
