@@ -41,7 +41,7 @@ local function rerenderRoots()
   itemButtonContainerRoot:render(React.createElement(HUDButtonContainer, {type = "Item"}, React.createElement(React.Fragment, {}, itemButtons)));
 
   actionButtonContainer.Parent = player.PlayerGui;
-  actionButtonContainerRoot:render(React.createElement(HUDButtonContainer, {type = "Action"}, actionButtons));
+  actionButtonContainerRoot:render(React.createElement(HUDButtonContainer, {type = "Action"}, React.createElement(React.Fragment, {}, actionButtons)));
 
 end;
 

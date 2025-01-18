@@ -7,7 +7,6 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 local ClientAction = require(script.Parent.Parent.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
 print("Thanks toney for being so patient with me i realize this is a work as much as u want project but also i want to contribute and do the things i said i would")
 
 local targetingGUI
@@ -195,7 +194,6 @@ function LockOnClientAction.new(): ClientAction
 	local function breakdown(self: ClientAction)
 
 		ContextActionService:UnbindAction("ActivateMelee");
-		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
 
 	end;
 	local connection

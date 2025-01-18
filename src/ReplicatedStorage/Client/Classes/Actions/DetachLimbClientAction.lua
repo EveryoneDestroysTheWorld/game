@@ -40,6 +40,8 @@ function DetachLimbAction.new(): ClientAction
 
     end;
 
+		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+    
   end;
 
   local function activate(self: ClientAction, limbName: string)

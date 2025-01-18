@@ -80,6 +80,7 @@ function DiveBombAction.new(): ClientAction
 	local function breakdown(self: ClientAction)
 
 		ContextActionService:UnbindAction("ActivateDiveBomb");
+		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
 
 	end;
 
@@ -94,6 +95,7 @@ function DiveBombAction.new(): ClientAction
 
 		ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
 			type = "Action";
+      key = self.id;
 			onActivate = function()
 
 				self:activate("Input");

@@ -38,6 +38,8 @@ function DetachLimbAction.new(): ClientAction
       remoteEventConnection:Disconnect();
 
     end;
+    
+		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
 
   end;
 
