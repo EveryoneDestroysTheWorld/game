@@ -76,6 +76,19 @@ end;
 
 ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function(archetypeID: string)
 
+  -- Disable the current archetype.
+  if initializedArchetype then
+
+    initializedArchetype:breakdown();
+
+  end;
+
+  for _, action in initializedActions do
+
+    action:breakdown();
+
+  end;
+
   -- Set up the archetype and actions.
   initializedArchetype = ClientArchetype.get(archetypeID);
   initializedArchetype:initialize();
