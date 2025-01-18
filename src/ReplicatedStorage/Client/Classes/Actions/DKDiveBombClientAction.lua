@@ -10,6 +10,7 @@ local ContextActionService = game:GetService("ContextActionService");
 local ClientAction = require(script.Parent.Parent.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
+local targetingFramework = require(script.Parent.Framework.EasyTargetingFramework);
 type ClientAction = ClientAction.ClientAction;
 
 local DiveBombAction = {
@@ -47,12 +48,21 @@ local function displayTarget(state: "Start" | "Release"): ()
 		playerDisplay["obj"].Root.Position = Players.LocalPlayer:GetMouse().Hit.Position + Vector3.new(0,0.5,0)
 		playerDisplay["obj"].Parent = workspace.Terrain
 		playerDisplay["obj"]:FindFirstChild("Beam", true).Attachment1 = Players.LocalPlayer.Character.HumanoidRootPart.RootAttachment
-		playerDisplay["con"] = RunService.Stepped:Connect(function()
+		local target = Players.LocalPlayer.Character:FindFirstChild("Target")
+		if target and target.Value ~= nil then
+			playerDisplay["con"] = RunService.Stepped:Connect(function()
 
-			playerDisplay["obj"].Root.Position = Players.LocalPlayer:GetMouse().Hit.Position + Vector3.new(0,0.5,0)
+				playerDisplay["obj"].Root.Position = target.Value.PrimaryPart.Position + Vector3.new(0,-0.5,0)
+	
+			end)
+		else
 
-		end)
-		
+			playerDisplay["con"] = RunService.Stepped:Connect(function()
+
+				playerDisplay["obj"].Root.Position = Players.LocalPlayer:GetMouse().Hit.Position + Vector3.new(0,0.5,0)
+
+			end)
+		end
 	else
 
 		playerDisplay["obj"]:Destroy()
@@ -74,8 +84,8 @@ function DiveBombAction.new(): ClientAction
 	end;
 
 	local function activate(self: ClientAction)
-
-		waitForServerResponse(player:GetMouse().Hit.Position)
+    
+		targetingFramework.waitForServerResponse("DiveBomb")
 		ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
 
 	end;
@@ -100,18 +110,18 @@ function DiveBombAction.new(): ClientAction
 
 			if inputState == Enum.UserInputState.Begin then
 				
-				displayTarget("Start")
+				targetingFramework.displayTarget("Start")
 
 			elseif inputState == Enum.UserInputState.End then
 
-				displayTarget("Release")
+				targetingFramework.displayTarget("Release")
 				self:activate();
 
 			end
 
 		end;
 
-		ContextActionService:BindActionAtPriority("ActivateDiveBomb", checkJump, false, 2, Enum.KeyCode.One);
+		ContextActionService:BindActionAtPriority("ActivateDiveBomb", checkJump, false, 2, Enum.KeyCode.Q);
 
 	end;
 

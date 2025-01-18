@@ -234,7 +234,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
               instance:SetNetworkOwner();
     
             end;
-    
+
           end;
     
           character.DescendantAdded:Connect(resetNetworkOwnership);
@@ -260,7 +260,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
       round:start();
 
     end;
-
+              
     completionEvent = ReplicatedStorage.Shared.Events.MatchupPreviewCompleted.OnServerEvent:Connect(function(player)
       
       table.remove(viewingPlayers, table.find(viewingPlayers, player));

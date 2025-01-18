@@ -24,9 +24,6 @@ local FireBeamServerAction = {
 
 function FireBeamServerAction.new(): ServerAction
 
-	local _contestant;
-	local _round;
-
 	local function activate(self: ServerAction)
 		
 	end;
@@ -44,18 +41,19 @@ function FireBeamServerAction.new(): ServerAction
 	end;
 
 	local function initialize(self: ServerAction, newContestant: ServerContestant, newRound: ServerRound)
-		
-		_contestant = newContestant;
-		_round = newRound;
+    
+		contestant = newContestant;
+		round = newRound;
 
-		assert(_contestant.character);
-		if _contestant.player then
+		assert(contestant.character);
+		local humanoid = contestant.character:FindFirstChild("Humanoid") :: Humanoid;
+		if contestant.player then
 
 			local remoteFunction = Instance.new("RemoteFunction");
-			remoteFunction.Name = `{_contestant.player.UserId}_{self.id}`;
+			remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
 			remoteFunction.OnServerInvoke = function(player)
 
-				if player == _contestant.player then
+				if player == contestant.player then
 
 					self:activate();
 
@@ -72,6 +70,9 @@ function FireBeamServerAction.new(): ServerAction
 
 		end
 
+		_humanoid = humanoid;
+		contestant = contestant;
+    
 	end;
 
 	return ServerAction.new({

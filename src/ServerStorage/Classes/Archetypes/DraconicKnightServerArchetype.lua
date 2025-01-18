@@ -18,8 +18,8 @@ local DraconicKnightServerArchetype = {
 
 function DraconicKnightServerArchetype.new(): types.ServerArchetype
 
-  local contestant: types.ServerContestant = nil;
-  local round: types.ServerRound = nil;
+  local contestant: ServerContestant = nil;
+  local round: ServerRound = nil;
   local wingProp: Model?;
   local events: {RBXScriptConnection} = {};
   local ragdollClone;
@@ -64,7 +64,7 @@ function DraconicKnightServerArchetype.new(): types.ServerArchetype
 
     contestant = newContestant;
     round = newRound;
-    contestant.character.Humanoid.WalkSpeed = 13
+    contestant.character.Humanoid.WalkSpeed = 18
     local function setUpPropsDragonKnight(model)
       local wingsProp = InsertService:LoadAsset(76933185156855)
       
@@ -80,6 +80,7 @@ function DraconicKnightServerArchetype.new(): types.ServerArchetype
 
         local diveBombIndicator = InsertService:LoadAsset(124109899420589)
         diveBombIndicator.AoeDisplay.Name = "DiveBombIndicator"
+        diveBombIndicator.DiveBombIndicator.PrimaryPart.Position = Vector3.new(0,9999,0)
         diveBombIndicator.DiveBombIndicator.Parent = classFolder
         diveBombIndicator:Destroy()
 
@@ -108,7 +109,9 @@ function DraconicKnightServerArchetype.new(): types.ServerArchetype
         local tarBomb = InsertService:LoadAsset(134163908471327)
         tarBomb.TarBomb.Parent = classFolder
         chargedAttackEffect:Destroy()
-        
+        local animData = InsertService:LoadAsset(113409826866728)
+        animData.DKAnimData.Parent = classFolder.Parent
+        animData:Destroy()
         
         
       end

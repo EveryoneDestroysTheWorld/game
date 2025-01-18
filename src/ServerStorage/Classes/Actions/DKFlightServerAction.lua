@@ -44,13 +44,11 @@ local function animateFlight(humanoid: Humanoid, animations, animData, isEndingF
 		animations["LeftIdle"]:Play(0.5,1,1.2)
 		task.wait(0.3)
 		local connection
-		connection = humanoid:GetPropertyChangedSignal("FloorMaterial"):Connect(function(change)
-			if humanoid.FloorMaterial ~= Enum.Material.Air then
+		connection = humanoid.Parent.PrimaryPart:FindFirstChild("FlightConstraint").Destroying:Connect(function(change)
 				connection:Disconnect()
-				animations["RightIdle"]:Stop(0.5)
-				animations["LeftIdle"]:Stop(0.5)
-				animations["Idle"]:Stop(0.5)
-			end
+				animations["RightIdle"]:Stop(0.3)
+				animations["LeftIdle"]:Stop(0.3)
+				animations["Idle"]:Stop(0.3)
 		end)
 
 	end
@@ -63,25 +61,22 @@ local function flightStart(contestant: ServerContestant, primaryPart: BasePart)
 
 	--perhaps some of this could be clientside
 	local linearVelocity = Instance.new("LinearVelocity");
-  linearVelocity.Name = "FlightConstraint"
-	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
-	linearVelocity.LineDirection = Vector3.new(0, 1, 0);
-	linearVelocity.LineVelocity = -5
-	linearVelocity.MaxForce = math.huge;
+	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Vector;
+ 	 linearVelocity.Name = "FlightConstraint"
+  	linearVelocity.VectorVelocity = Vector3.new(0,-5,0)
+	linearVelocity.ForceLimitMode = Enum.ForceLimitMode.PerAxis
+	linearVelocity.MaxAxesForce = Vector3.new(0,math.huge,0);
 	linearVelocity.Parent = primaryPart;
 	linearVelocity.Attachment0 = primaryPart:FindFirstChild("RootAttachment") :: Attachment;
 	linearVelocity:SetAttribute("PlayerControls", false);
 
 	task.wait(0.3)
 
-	linearVelocity.LineVelocity = 50;
+	linearVelocity.VectorVelocity = Vector3.new(0,50,0)
 
-	local tween = TweenService:Create(linearVelocity, TweenInfo.new(1.0, Enum.EasingStyle.Sine), {LineVelocity = 0});
+	local tween = TweenService:Create(linearVelocity, TweenInfo.new(1.0, Enum.EasingStyle.Sine), {VectorVelocity = Vector3.new(0,5,0)});
 	tween:Play()
 	task.wait(0.6)
-
-	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Vector;
-	linearVelocity.VectorVelocity = Vector3.new(0,0,0)
 	linearVelocity:SetAttribute("PlayerControls", true)
 	local humanoid = (primaryPart.Parent :: Instance):FindFirstChild("Humanoid") :: Humanoid;
 	local connection
@@ -101,14 +96,12 @@ local function flightStart(contestant: ServerContestant, primaryPart: BasePart)
 		task.wait(0.25)
 		contestant:updateStamina(math.max(0, contestant.currentStamina - 2));
 
-	until not linearVelocity:GetAttribute("PlayerControls") or contestant.currentStamina <= 0
+	until not linearVelocity:GetAttribute("PlayerControls") or contestant.currentStamina <= 0 or not primaryPart:FindFirstChild("FlightConstraint")
 
 	if contestant.currentStamina <= 0 then
 
 		linearVelocity:SetAttribute("PlayerControls", false)
-		linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
-		linearVelocity.LineDirection = Vector3.new(0, -1, 0);
-		linearVelocity.LineVelocity = 8
+		linearVelocity.LineDirection = Vector3.new(0, -8, 0);
 
 	end
 	
@@ -119,16 +112,13 @@ local function flightEnd(primaryPart: BasePart)
 	local linearVelocity = primaryPart:FindFirstChild("FlightConstraint") :: LinearVelocity;
 	linearVelocity:SetAttribute("PlayerControls", false);
 
-	linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line;
-	linearVelocity.LineDirection = Vector3.new(0, 1, 0);
-	linearVelocity.LineVelocity = 15
-	linearVelocity.MaxForce = math.huge;
+	linearVelocity.VectorVelocity = Vector3.new(0,15,0)
+	linearVelocity.MaxAxesForce = Vector3.new(math.huge,math.huge,math.huge);
 	linearVelocity.Parent = primaryPart;
 	linearVelocity.Attachment0 = primaryPart:FindFirstChild("RootAttachment") :: Attachment;
 
 	task.wait(0.15)
-	linearVelocity.LineDirection = primaryPart.CFrame.LookVector
-	linearVelocity.LineVelocity = 30;
+	linearVelocity.VectorVelocity = primaryPart.CFrame.LookVector * 30
 	task.delay(0.1, function()
 
 		linearVelocity:Destroy();
@@ -199,7 +189,7 @@ function TakeFlightServerAction.new(): ServerAction
 
 	local function activate()
 
-		if contestant.character then
+		if contestant.character and contestant.currentHealth > 0 then
 
 			local humanoid = contestant.character:FindFirstChild("Humanoid");
 			assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.character}'s Humanoid`);

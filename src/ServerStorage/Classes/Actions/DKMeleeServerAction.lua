@@ -24,7 +24,7 @@ local MeleeServerAction = {
 
 
 local function damageEvent(primaryPart, round, contestant)
-	print("creating Explosion")
+  
 	local explosion = Instance.new("Explosion", primaryPart);
 	explosion.BlastPressure = 0;
 	explosion.BlastRadius = 5;
@@ -155,14 +155,14 @@ local function setOnFire(model, round, contestant)
 			repeat
 				task.wait(1)
 				fireDebuffProp:SetAttribute("Duration", fireDebuffProp:GetAttribute("Duration") - 1)
-				print(round.contestants)
-				print(model.Name)
+				--print(round.contestants)
+				--print(model.Name)
 				for i, contestant in ipairs(round.contestants) do
 					if contestant["name"] == model.Name then
-						print(contestant)
+						--print(contestant)
 						contestant:updateHealth(contestant.currentHealth - 4, {
-							contestantID = contestant.id;
-							actionID = MeleeServerAction.id;
+							contestant = contestant;
+							actionID = MeleeServerAction.ID;
 						});
 					end
 				end
@@ -170,7 +170,7 @@ local function setOnFire(model, round, contestant)
 			fireDebuffProp:Destroy()
 		end)
 	else
-		print("Object is not a humanoid")
+	--	print("Object is not a humanoid")
 	end
 end
 
@@ -301,7 +301,8 @@ local function flyingAttackFire(primaryPart, anims, combo, round, contestant)
 	task.delay(1, function()
 		primaryPart.ChargeMeter:Destroy()
 	end)
-	print("FireBreathEnded")
+  
+	--print("FireBreathEnded")
 
 end
 
@@ -380,7 +381,7 @@ function MeleeServerAction.new(): ServerAction
 			buttonDown = Instance.new("BoolValue", contestant.character)
 			buttonDown.Name = "ButtonDown"
 		end
-		if contestant and contestant.character then
+		if contestant and contestant.character and contestant.currentHealth > 0 then
 			if not buttonDown.Value then
 				buttonDown.Value = true
 			else
@@ -390,9 +391,9 @@ function MeleeServerAction.new(): ServerAction
 			local primaryPart = contestant.character.PrimaryPart :: BasePart;
 			if not primaryPart:FindFirstChild("FlightConstraint") then
 				if buttonDown.Value then
-					melee.KeyDown(meleeData, meleeAttackEffect, round)
+					melee.KeyDown(meleeData, meleeAttackEffect, round, "DK")
 				else
-					melee.KeyDown(meleeData, meleeAttackEffect, round)
+					melee.KeyDown(meleeData, meleeAttackEffect, round, "DK")
 				end
 			else
 				if buttonDown.Value then

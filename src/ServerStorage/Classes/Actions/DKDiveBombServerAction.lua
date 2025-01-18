@@ -13,6 +13,7 @@ local DiveBombClientAction = require(ReplicatedStorage.Client.Classes.Actions.DK
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
 local ServerStorage = game:GetService("ServerStorage");
+local damageFramework = require(script.Parent.Framework.DamageFramework);
 
 local DiveBombServerAction = {
 	id = DiveBombClientAction.id;
@@ -56,47 +57,6 @@ local function animateFlight(humanoid, animations, animData,state)
 	return animations
 end
 
-local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant: ServerContestant, player)
-	local explosion = Instance.new("Explosion", primaryPart);
-	local size = 5
-	explosion.BlastPressure = 0;
-	explosion.BlastRadius = 1 + size;
-	explosion.DestroyJointRadiusPercent = 0;
-	explosion.Position = primaryPart.Position;
-	local validTargets = {};
-	explosion.Hit:Connect(function(basePart)
-		-- Damage any parts or contestants that get hit.
-		local model = basePart:FindFirstAncestorOfClass("Model")
-		if model and model:FindFirstChild("Humanoid") then
-			table.insert(validTargets, model.Name)
-		end;
-		
-		local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability") :: number?;
-		if basePartCurrentDurability and basePartCurrentDurability > 0 then
-
-		ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, contestant);
-
-		end;
-
-	end);
-	task.delay(0.1, function()
-	if #validTargets > 0 then
-			
-		for i, contestant in ipairs(round.contestants) do
-			if contestant["name"] == validTargets[table.find(validTargets, contestant["name"])] then
-				if contestant["name"] == player then
-					size = size/3
-				end
-				contestant:updateHealth(contestant.currentHealth - size*3, {
-					contestantID = contestant.id;
-					actionID = DiveBombServerAction.id;
-				});
-			end
-		end
-	end
-end)
-end
-
 local function startAttack(primaryPart: BasePart, animations, coords: Vector3, round: ServerRound, contestant: ServerContestant)
 
 	local flightConstraint = primaryPart:FindFirstChild("FlightConstraint");
@@ -106,7 +66,8 @@ local function startAttack(primaryPart: BasePart, animations, coords: Vector3, r
 		flightConstraint:SetAttribute("PlayerControls", false);
 
 	end
-
+  
+	flightConstraint:Destroy()
 	primaryPart.CFrame = CFrame.lookAt((primaryPart.CFrame.Position), (coords * Vector3.new(1,0,1) + Vector3.new(0,primaryPart.CFrame.Position.Y, 0)));
 
 	--perhaps some of this could be clientside
@@ -145,12 +106,78 @@ local function startAttack(primaryPart: BasePart, animations, coords: Vector3, r
 	
 	local travelDistance = ((coords + Vector3.new(0,5,0)) - primaryPart.CFrame.Position).Magnitude
 	local travelTime = 8/15
-	local tween = TweenService:Create(part, TweenInfo.new(travelTime, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
-		Position = coords + Vector3.new(0, 4, 0);
+	local tween = TweenService:Create(part, TweenInfo.new(travelTime, Enum.EasingStyle.Linear), {
+		Position = coords + Vector3.new(0, 0, 0);
 	});
 	tween:Play();
-	task.wait(travelTime);
-	damageEvent(primaryPart, round, contestant, contestant)
+	task.wait(travelTime*0.8);
+	local data = {}
+	damageFramework.explosionEvent(coords, data, round, contestant)
+	task.wait(travelTime*0.2);
+	
+	animations["Right"]:AdjustSpeed(1);
+	animations["Left"]:AdjustSpeed(1);
+	animations["Player"]:AdjustSpeed(1);
+	task.wait(0.2)
+	part:Destroy();
+
+end
+
+local function groundedDash(primaryPart: BasePart, animations, coords: Vector3, round: ServerRound, contestant: ServerContestant, useTarget)
+	if useTarget then 
+		coords = contestant.character.Target.Value.PrimaryPart.Position 
+	end
+	local targetCoords
+	local originalCoords = coords
+	primaryPart.CFrame = CFrame.lookAt((primaryPart.CFrame.Position), (coords * Vector3.new(1,0,1) + Vector3.new(0,primaryPart.CFrame.Position.Y, 0)));
+	if (coords - primaryPart.Position).Magnitude > 50 then
+		
+		coords = (primaryPart.CFrame * CFrame.new(Vector3.new(0,0,-1 * (50)))).Position
+		targetCoords = coords
+		originalCoords = targetCoords
+	else
+		targetCoords = coords
+		coords = CFrame.lookAt(coords, primaryPart.Position) * CFrame.new(Vector3.new(0,0,10)).Position
+	end
+
+	--perhaps some of this could be clientside
+	local animData = Vector3.new(0.2,1,3)
+	animations["Right"]:Play(animData.X,animData.Y,animData.Z);
+	animations["Left"]:Play(animData.X,animData.Y,animData.Z);
+	animations["Player"]:Play(animData.X,animData.Y,animData.Z);
+
+	local initialDistance = ((coords+Vector3.new(0,5,0)) - primaryPart.CFrame.Position).Magnitude
+	
+	local part = Instance.new("Part");
+	part.Parent = workspace.Terrain;
+	part.Anchored = true
+	part.CanCollide = false
+	part.Transparency = 1;
+	task.wait(0.1)
+	local rigidConstraint = Instance.new("RigidConstraint");
+	rigidConstraint.Parent = part;
+	rigidConstraint.Attachment0 = Instance.new("Attachment", part);
+
+	part.CFrame = primaryPart.CFrame
+	rigidConstraint.Attachment1 = primaryPart:FindFirstChild("RootAttachment") :: Attachment;
+
+	local expectedPos;
+
+	
+	animations["Right"]:AdjustSpeed(2);
+	animations["Left"]:AdjustSpeed(2);
+	animations["Player"]:AdjustSpeed(2);
+	
+	local travelDistance = ((coords + Vector3.new(0,5,0)) - primaryPart.CFrame.Position).Magnitude
+	local travelTime = 8/15
+	local tween = TweenService:Create(part, TweenInfo.new(travelTime, Enum.EasingStyle.Linear), {
+		Position = coords + Vector3.new(0, 1, 0);
+	});
+	tween:Play();
+	task.wait(travelTime*0.6);
+	local data = {}
+	damageFramework.explosionEvent(originalCoords, data, round, contestant)
+	task.wait(travelTime*0.4);
 
 	
 	animations["Right"]:AdjustSpeed(1);
@@ -200,11 +227,11 @@ local function getDataFromClient(player: Player): Vector3
 
 	local event = Instance.new("RemoteEvent")
 	local connect
-	connect = event.OnServerEvent:Connect(function(_: Player, data: Vector3)
-
+	connect = event.OnServerEvent:Connect(function(_: Player, data: Vector3, useTarget, charge)
 		connect:Disconnect();
 		event:SetAttribute("Coords", data);
-
+		event:SetAttribute("UseTarget", useTarget)
+		event:SetAttribute("Charge", charge)
 	end)
 
 	event.Name = "GetData"
@@ -214,7 +241,7 @@ local function getDataFromClient(player: Player): Vector3
 	event.AttributeChanged:Wait()
 
 	--coords recieved by player
-	return event:GetAttribute("Coords") :: Vector3;
+	return event:GetAttribute("Coords") :: Vector3, event:GetAttribute("UseTarget"), event:GetAttribute("Charge")
 
 end
 
@@ -227,15 +254,19 @@ function DiveBombServerAction.new(): ServerAction
 
 	local function activate(self: ServerAction)
 
-		if _contestant and _round and _contestant.player and _contestant.character then
+		if _contestant and _round and _contestant.player and _contestant.character and _contestant.currentHealth > 0 then
 
-			local coords = getDataFromClient(_contestant.player);
+			local coords, useTarget = getDataFromClient(_contestant.player);
 			if _contestant.currentStamina >= 20 then
 
 				-- Reduce the player's stamina.
 				_contestant:updateStamina(math.max(0, _contestant.currentStamina - 10));
-				startAttack(_contestant.character.PrimaryPart :: BasePart, anims, coords, _round, _contestant);
-
+				local flightConstraint = _contestant.character.PrimaryPart:FindFirstChild("FlightConstraint");
+				if not flightConstraint then
+					groundedDash(_contestant.character.PrimaryPart :: BasePart, anims, coords, _round, _contestant, useTarget);
+				else
+					startAttack(_contestant.character.PrimaryPart :: BasePart, anims, coords, _round, _contestant, useTarget);
+				end
 			end
 
 		end;
