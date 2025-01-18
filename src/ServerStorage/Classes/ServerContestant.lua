@@ -18,6 +18,10 @@ local types = require(script.Parent.types);
 local ServerContestant = {
   __index = {
     walkSpeedWeights = {};
+    baseModifiers = {
+      health = {};
+      stamina = {};
+    };
     baseHealth = 100;
     currentHealth = 100;
     effects = {};
@@ -46,6 +50,40 @@ function ServerContestant.new(properties: types.ServerContestantConstructorPrope
   return contestant;
   
 end
+
+function ServerContestant.__index:getModifiedBaseValue(modifierType: types.BaseModifierType): number
+
+  local modifiedBaseValue = if modifierType == "Health" then self.baseHealth else self.baseStamina;
+  local modifiers: {types.BaseModifier} = if modifierType == "Health" then self.baseModifiers.health else self.baseModifiers.stamina;
+
+  for _, modifier in modifiers do
+
+    modifiedBaseValue += modifier.delta;
+
+  end;
+
+  return modifiedBaseValue;
+
+end;
+
+function ServerContestant.__index:addBaseModifier(modifierType: types.BaseModifierType, modifier: types.BaseModifier): ()
+
+  local modifiers = if modifierType == "Health" then self.baseModifiers.health else self.baseModifiers.stamina;
+  table.insert(modifiers, modifier);
+
+end;
+
+function ServerContestant.__index:removeBaseModifier(modifierType: types.BaseModifierType, modifier: types.BaseModifier): ()
+
+  local modifiers = if modifierType == "Health" then self.baseModifiers.health else self.baseModifiers.stamina;
+  local index = table.find(modifiers, modifier);
+  if index then
+
+    table.remove(modifiers, index);
+
+  end;
+
+end;
 
 function ServerContestant.__index:getInventoryItemIDs(): {string}
 
@@ -98,13 +136,18 @@ end;
 
 function ServerContestant.__index:removeWalkSpeedWeight(weight: types.WalkSpeedWeight): ()
 
-  table.remove(self.walkSpeedWeights, table.find(self.walkSpeedWeights, weight));
+  local index = table.find(self.walkSpeedWeights, weight);
+  if index then
 
-  self:refreshWalkSpeed();
+    table.remove(self.walkSpeedWeights, index);
+
+    self:refreshWalkSpeed();
+
+  end;
 
 end;
 
-function ServerContestant.__index:addEffect(effect: types.ServerEffect<unknown>): ()
+function ServerContestant.__index:addEffect(effect: types.ServerEffect): ()
 
   table.insert(self.effects, effect);
 
@@ -200,9 +243,9 @@ function ServerContestant.__index:convertToClient(): {any}
     characterName = if self.character then self.character.Name else nil;
     teamID = self.teamID;
     currentHealth = self.currentHealth;
-    baseHealth = self.baseHealth;
+    baseHealth = self:getModifiedBaseValue("Health");
     currentStamina = self.currentStamina;
-    baseStamina = self.baseStamina;
+    baseStamina = self:getModifiedBaseValue("Stamina");
     statistics = self.statistics;
   };
 

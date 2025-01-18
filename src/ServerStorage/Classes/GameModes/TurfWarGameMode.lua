@@ -183,10 +183,10 @@ function TurfWarGameMode.new(round: types.ServerRound): types.GameMode
 
             isRecoveringStamina = true;
 
-            while contestant.currentHealth > 0 and contestant.currentStamina < contestant.baseStamina and task.wait(1) do
+            while contestant.currentHealth > 0 and contestant.currentStamina < contestant:getModifiedBaseValue("Stamina") and task.wait(1) do
               
               -- Recover the contestant's stamina if we can.
-              contestant:updateStamina(math.min(contestant.currentStamina + 5, contestant.baseStamina));
+              contestant:updateStamina(math.min(contestant.currentStamina + 5, contestant:getModifiedBaseValue("Stamina")));
 
             end;
 

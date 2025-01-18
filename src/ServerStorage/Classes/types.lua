@@ -75,6 +75,7 @@ export type RoughArmorServerEffectProperties = {
     [unknown]: RBXScriptConnection
   };
   contestant: ServerContestant;
+  baseHealthModifier: BaseModifier;
 }
 
 export type RoughArmorServerEffectConstructorProperties = {
@@ -194,6 +195,12 @@ export type ServerContestantConstructorProperties = {
   statistics: TurfWarContestantStatistics.TurfWarContestantStatistics?;
 }
 
+export type BaseModifierType = "Health" | "Stamina";
+
+export type BaseModifier = {
+  delta: number;
+};
+
 export type ServerContestantProperties = {
   
   -- This could be nil if the server hasn't assigned an archetype to the contestant yet.
@@ -234,6 +241,11 @@ export type ServerContestantProperties = {
 
   items: {ServerItem};
 
+  baseModifiers: {
+    health: {BaseModifier};
+    stamina: {BaseModifier};
+  };
+
   currentHealth: number;
 
   baseHealth: number;
@@ -246,7 +258,9 @@ export type ServerContestantProperties = {
 
 export type ServerContestantMethods = {
   addWalkSpeedWeight: (self: ServerContestant, weight: WalkSpeedWeight) -> ();
+  addBaseModifier: (self: ServerContestant, modifierType: BaseModifierType, modifier: BaseModifier) -> ();
   addItem: (self: ServerContestant, item: ServerItem) -> ();
+  removeBaseModifier: (self: ServerContestant, modifierType: BaseModifierType, modifier: BaseModifier) -> ();
   removeWalkSpeedWeight: (self: ServerContestant, weight: WalkSpeedWeight) -> ();
   removeItem: (self: ServerContestant, item: ServerItem) -> ();
   refreshWalkSpeed: (self: ServerContestant) -> ();
@@ -254,6 +268,7 @@ export type ServerContestantMethods = {
   removeEffect: (self: ServerContestant, effect: ServerEffect) -> ();
   convertToClient: (self: ServerContestant) -> {any};
   disqualify: (self: ServerContestant) -> ();
+  getModifiedBaseValue: (self: ServerContestant, modifierType: BaseModifierType) -> number;
   getInventoryItemIDs: (self: ServerContestant) -> {string};
   updateArchetypeID: (self: ServerContestant, newArchetypeID: string) -> ();
   updateCharacter: (self: ServerContestant, newCharacter: Model?) -> ();

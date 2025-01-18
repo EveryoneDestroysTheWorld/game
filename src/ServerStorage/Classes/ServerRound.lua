@@ -89,38 +89,42 @@ function ServerRound.__index:start(): ()
 
       local isSuccess, errorMessage = pcall(function()
 
-        if oldArchetype then
+        if not oldArchetype or oldArchetype.id ~= contestant.archetypeID then
 
-          oldArchetype:breakdown();
+          if oldArchetype then
 
-        end;
-
-        for _, action in oldActions do
-
-          action:breakdown();
-
-        end;
-
-        if contestant.archetypeID then
-
-          local archetype = ServerArchetype.get(contestant.archetypeID);
-          archetype:initialize(contestant, self);
-          table.insert(self.archetypes :: {types.ServerArchetype}, archetype);
-          oldArchetype = archetype;
-
-          for _, actionID in ipairs(archetype.actionIDs) do
-
-            local action = ServerAction.get(actionID);
-            action:initialize(contestant, self);
-            table.insert(self.actions :: {types.ServerAction}, action);
-            table.insert(oldActions, action);
+            oldArchetype:breakdown();
 
           end;
-          
-          if contestant.id < 1 then
-              
-            archetype:runAutoPilot(oldActions);
-          
+
+          for _, action in oldActions do
+
+            action:breakdown();
+
+          end;
+
+          if contestant.archetypeID then
+
+            local archetype = ServerArchetype.get(contestant.archetypeID);
+            archetype:initialize(contestant, self);
+            table.insert(self.archetypes :: {types.ServerArchetype}, archetype);
+            oldArchetype = archetype;
+
+            for _, actionID in ipairs(archetype.actionIDs) do
+
+              local action = ServerAction.get(actionID);
+              action:initialize(contestant, self);
+              table.insert(self.actions :: {types.ServerAction}, action);
+              table.insert(oldActions, action);
+
+            end;
+            
+            if contestant.id < 1 then
+                
+              archetype:runAutoPilot(oldActions);
+            
+            end;
+
           end;
 
         end;
