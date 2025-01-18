@@ -1,66 +1,24 @@
+--!strict
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-
-local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
-type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
-
-export type ClientContestantProperties = {
-  
-  id: number;
-
-  archetypeID: string?;
-  
-  isDisqualified: boolean;
-
-  player: Player?;
-
-  character: Model?;
-
-  name: string;
-
-  isBot: boolean;
-
-  teamID: number?;
-
-  currentHealth: number?;
-
-  baseHealth: number?;
-
-  currentStamina: number?;
-
-  baseStamina: number?;
-
-  statistics: TurfWarContestantStatistics?;
-  
-}
-
-export type Cause = {
-  archetypeID: string;
-  contestantID: number;
-  actionID: string?;
-}
-
-export type ClientContestantMethods = {
-}
-
-export type ClientContestantEvents = {
-  onDisqualified: RBXScriptSignal;
-  onHealthUpdated: RBXScriptSignal;
-  onStaminaUpdated: RBXScriptSignal;
-  onArchetypeUpdated: RBXScriptSignal;
-  onCharacterUpdated: RBXScriptSignal;
-  onStatisticsUpdated: RBXScriptSignal;
-}
+local types = require(ReplicatedStorage.Client.Classes.types);
 
 local ClientContestant = {
   __index = {};
 };
 
-export type ClientContestant = typeof(setmetatable({}, ClientContestant)) & ClientContestantProperties & ClientContestantEvents & ClientContestantMethods;
-
 local events: {[any]: {[string]: BindableEvent}} = {};
-function ClientContestant.new(properties: ClientContestantProperties): ClientContestant
+function ClientContestant.new(properties: types.ClientContestantConstructorProperties): types.ClientContestant
 
-  local contestant = setmetatable(properties, ClientContestant) :: ClientContestant;
+  if properties.characterName then
+
+    properties.character = workspace:FindFirstChild(properties.characterName);
+    properties.characterName = nil;
+
+  end;
+
+
+  local contestant = (setmetatable(properties, ClientContestant) :: unknown) :: types.ClientContestant;
 
   -- Set up events.
   local eventNames = {"onDisqualified", "onHealthUpdated", "onStaminaUpdated", "onArchetypeUpdated", "onCharacterUpdated", "onStatisticsUpdated"};
@@ -74,7 +32,7 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
 
   ReplicatedStorage.Shared.Events.CharacterUpdated.OnClientEvent:Connect(function(contestantID: number, characterName: string?)
 
-    if contestantID == contestant.id then
+    if contestantID == contestant.id and characterName then
 
       local character = workspace:FindFirstChild(characterName);
       contestant.character = character;
@@ -84,7 +42,7 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
 
   end);
 
-  ReplicatedStorage.Shared.Events.ContestantArchetypeUpdated.OnClientEvent:Connect(function(contestantID: number, archetypeID: number)
+  ReplicatedStorage.Shared.Events.ContestantArchetypeUpdated.OnClientEvent:Connect(function(contestantID: number, archetypeID: string)
   
     if contestantID == contestant.id then
 
@@ -95,7 +53,7 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
     
   end);
 
-  ReplicatedStorage.Shared.Events.HealthUpdated.OnClientEvent:Connect(function(contestantID: number, newHealth: number, cause: Cause?)
+  ReplicatedStorage.Shared.Events.HealthUpdated.OnClientEvent:Connect(function(contestantID: number, newHealth: number, cause: types.Cause?)
   
     if contestantID == contestant.id then
 
@@ -106,7 +64,7 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
 
   end);
 
-  ReplicatedStorage.Shared.Events.StaminaUpdated.OnClientEvent:Connect(function(contestantID: number, newStamina: number, cause: Cause?)
+  ReplicatedStorage.Shared.Events.StaminaUpdated.OnClientEvent:Connect(function(contestantID: number, newStamina: number, cause: types.Cause?)
   
     if contestantID == contestant.id then
 
@@ -117,7 +75,7 @@ function ClientContestant.new(properties: ClientContestantProperties): ClientCon
 
   end);
 
-  ReplicatedStorage.Shared.Events.ContestantStatisticsUpdated.OnClientEvent:Connect(function(contestantID: number, newStats: TurfWarContestantStatistics, oldStats: TurfWarContestantStatistics?, cause: Cause?)
+  ReplicatedStorage.Shared.Events.ContestantStatisticsUpdated.OnClientEvent:Connect(function(contestantID: number, newStats: types.TurfWarContestantStatistics, oldStats: types.TurfWarContestantStatistics?, cause: types.Cause?)
   
     if contestantID == contestant.id then
 

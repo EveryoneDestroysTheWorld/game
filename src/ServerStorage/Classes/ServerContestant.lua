@@ -199,7 +199,7 @@ function ServerContestant.__index:convertToClient(): {any}
     isDisqualified = self.isDisqualified;
     player = self.player;
     name = self.name;
-    character = self.character;
+    characterName = if self.character then self.character.Name else nil;
     teamID = self.teamID;
     currentHealth = self.currentHealth;
     baseHealth = self.baseHealth;

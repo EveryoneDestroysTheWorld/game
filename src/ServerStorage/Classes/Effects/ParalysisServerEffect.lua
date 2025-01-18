@@ -1,7 +1,11 @@
 --!strict
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
+local HttpService = game:GetService("HttpService");
 
 local types = require(ServerStorage.Classes.types);
+local getAnimator = require(ReplicatedStorage.Shared.Modules.getAnimator);
 
 local ParalysisServerEffect = {
   name = "Paralysis";
@@ -14,26 +18,72 @@ function ParalysisServerEffect.new(properties: types.ParalysisServerEffectConstr
   local effect: types.ParalysisServerEffectProperties = {
     name = ParalysisServerEffect.name;
     id = ParalysisServerEffect.id;
-    _contestant = properties.contestant;
-    _weight = {
+    uniqueID = HttpService:GenerateGUID(false);
+    contestant = properties.contestant;
+    weight = {
       walkSpeed = 0;
       weight = math.huge;
-    }
+    };
+    frozenAnimations = {};
   };
 
   return (setmetatable(effect, ParalysisServerEffect) :: unknown) :: types.ParalysisServerEffect
 
 end;
 
-function ParalysisServerEffect.__index:activate(contestant: types.ServerContestant)
+function ParalysisServerEffect.__index:activate()
 
-  contestant:addWalkSpeedWeight(self._weight);
+  self.contestant:addWalkSpeedWeight(self.weight);
+
+  if self.contestant.player then
+
+    -- Handle the animations on the client.
+    ReplicatedStorage.Shared.Functions.ToggleEffect:InvokeClient(self.contestant.player, self.id, self.uniqueID, true);
+
+  else
+    
+    -- Handle the animations on the server.
+    local animator = getAnimator(self.contestant.character);
+
+    if animator then
+
+      for _, track in animator:GetPlayingAnimationTracks() do
+
+        self.frozenAnimations[track] = track.Speed;
+        track:AdjustSpeed(0);
+
+      end;
+
+    end;
+
+  end;
 
 end;
 
 function ParalysisServerEffect.__index:deactivate(contestant: types.ServerContestant)
 
-  contestant:removeWalkSpeedWeight(self._weight);
+  contestant:removeWalkSpeedWeight(self.weight);
+
+  if self.contestant.player then
+
+    ReplicatedStorage.Shared.Functions.ToggleEffect:InvokeClient(self.contestant.player, self.id, self.uniqueID, false);
+
+  else
+
+    local animator = getAnimator(self.contestant.character);
+    if animator then
+
+      for track, normalSpeed in self.frozenAnimations do
+
+        track:AdjustSpeed(normalSpeed);
+
+      end;
+
+      self.frozenAnimations = {};
+
+    end;
+
+  end;
 
 end;
 

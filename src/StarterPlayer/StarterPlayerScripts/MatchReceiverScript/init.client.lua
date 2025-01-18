@@ -12,6 +12,7 @@ type ClientArchetype = ClientArchetype.ClientArchetype;
 type ClientAction = ClientAction.ClientAction;
 type ClientItem = ClientItem.ClientItem;
 local RoundResultsWindow = require(script.ReactComponents.RoundResultsWindow);
+local types = require(ReplicatedStorage.Client.Classes.types);
 
 local initializedArchetype: ClientArchetype = nil;
 local initializedActions: {ClientAction} = {};

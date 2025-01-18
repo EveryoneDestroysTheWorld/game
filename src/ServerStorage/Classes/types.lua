@@ -34,7 +34,7 @@ export type GameModeClass = GameModeProperties & {new: (...any) -> GameMode};
 export type HoldingHeavyItemServerEffect = ServerEffect<HoldingHeavyItemServerEffectProperties & HoldingHeavyItemServerEffectMethods>;
 
 export type HoldingHeavyItemServerEffectProperties = {
-  _lock: unknown;
+  lock: unknown;
   name: string;
   id: string;
 }
@@ -49,10 +49,10 @@ export type UndeadServerEffect = ServerEffect<UndeadServerEffectProperties & Und
 export type UndeadServerEffectProperties = {
   name: string;
   id: string;
-  _events: {
+  events: {
     [unknown]: RBXScriptConnection
   };
-  _contestant: ServerContestant;
+  contestant: ServerContestant;
 }
 
 export type UndeadServerEffectConstructorProperties = {
@@ -73,8 +73,12 @@ export type ParalysisServerEffectConstructorProperties = {
 export type ParalysisServerEffectProperties = {
   name: string;
   id: string;
-  _weight: WalkSpeedWeight;
-  _contestant: ServerContestant;
+  weight: WalkSpeedWeight;
+  contestant: ServerContestant;
+  uniqueID: string;
+  frozenAnimations: {
+    [AnimationTrack]: number;
+  }
 }
 
 export type ParalysisServerEffectMethods = {
