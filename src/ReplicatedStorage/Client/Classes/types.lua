@@ -60,16 +60,16 @@ export type ClientContestantEvents = {
   onStatisticsUpdated: RBXScriptSignal;
 }
 
-export type ClientEffect<Class = {}> = ClientEffectProperties & ClientEffectMethods<Class & ClientEffectProperties>;
+export type ClientEffect<Properties = ClientEffectProperties, Methods = ClientEffectMethods> = Properties & Methods;
 
-export type ClientEffectClass<T = unknown, ExtendedClientEffect = {}> = ClientEffectProperties & {
-  new: (...T) -> ExtendedClientEffect & ClientEffect
+export type ClientEffectClass<ClientEffectConstructorProperties = any, ExtendedClientEffect = any> = ClientEffectProperties & {
+  new: (...ClientEffectConstructorProperties) -> ExtendedClientEffect & ClientEffect
 }
 
 export type ClientEffectFactory = {
   get: (
     ((effectID: "Paralysis") -> ClientEffectClass<ParalysisClientEffectConstructorProperties, ParalysisClientEffect>)
-    & ((effectID: string) -> ClientEffectClass?)
+    & ((effectID: string) -> ClientEffectClass)
   );
   random: () -> ClientEffectClass;
 }
@@ -80,9 +80,9 @@ export type ClientEffectProperties = {
   description: string?;
 }
 
-export type ClientEffectMethods<T> = {
-  activate: ((self: T, ...any) -> ())?;
-  deactivate: ((self: T, ...any) -> ())?;
+export type ClientEffectMethods = {
+  activate: ((self: any, ...any) -> ())?;
+  deactivate: ((self: any, ...any) -> ())?;
 }
 
 export type ParalysisClientEffect = ClientEffect<ParalysisClientEffectProperties & ParalysisClientEffectMethods>;
@@ -91,6 +91,8 @@ export type ParalysisClientEffectProperties = {
   name: string;
   id: string;
   contestant: ClientContestant;
+  uniqueID: string;
+  events: {RBXScriptConnection};
   frozenAnimations: {
     [AnimationTrack]: number;
   }
@@ -102,7 +104,9 @@ export type ParalysisClientEffectMethods = {
 }
 
 export type ParalysisClientEffectConstructorProperties = {
-  contestant: ClientContestant
+  contestant: ClientContestant;
+  uniqueID: string;
+  events: {RBXScriptConnection};
 }
 
 return {};

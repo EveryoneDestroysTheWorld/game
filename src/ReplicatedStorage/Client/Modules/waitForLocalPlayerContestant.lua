@@ -9,37 +9,34 @@ local types = require(ReplicatedStorage.Client.Classes.types);
 local function waitForLocalPlayerContestant(): types.ClientContestant
 
   local round = ClientRound.fromServerRound();
+  local localPlayerContestant;
   local onLocalPlayerContestantPresent = Instance.new("BindableEvent");
 
-  local function checkContestant(contestant)
+  local function checkContestants()
 
-    if contestant.player and contestant.player == Players.LocalPlayer then
-  
-      onLocalPlayerContestantPresent:Fire(contestant);
+    for _, contestant in round.contestants do
+
+      if contestant.player and contestant.player == Players.LocalPlayer then
+    
+        localPlayerContestant = contestant;
+        onLocalPlayerContestantPresent:Fire();
+        break;
+
+      end;
 
     end;
 
   end;
 
-  task.spawn(function()
-  
-    for _, contestant in round.contestants do
+  task.spawn(checkContestants)
 
-      checkContestant(contestant);
-  
-    end;
+  local onContestantAdded = round.onContestantAdded:Connect(checkContestants);
 
-  end)
-
-  local onContestantAdded = round.onContestantAdded:Connect(checkContestant);
-
-  local playerContestant = onLocalPlayerContestantPresent.Event:Wait();
-
-  print(playerContestant);
+  onLocalPlayerContestantPresent.Event:Wait();
 
   onContestantAdded:Disconnect();
 
-  return playerContestant;
+  return localPlayerContestant;
 
 end;
 

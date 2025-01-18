@@ -9,31 +9,20 @@ local contestant = waitForLocalPlayerContestant();
 
 local initializedEffects = {};
 
-ReplicatedStorage.Shared.Functions.ToggleEffect.OnClientInvoke = function(effectID: string, uniqueID: string, shouldEnable: boolean): ()
+ReplicatedStorage.Shared.Functions.InitializeEffect.OnClientInvoke = function(effectID: string, uniqueID: string, shouldEnable: boolean): ()
 
   if shouldEnable then
-
-    print(contestant.character);
     
     local effectClass = ClientEffect.get(effectID);
     assert(effectClass);
 
     local effect = effectClass.new({
       contestant = contestant;
+      uniqueID = uniqueID;
     });
 
     initializedEffects[effectID] = initializedEffects[effectID] or {};
     initializedEffects[effectID][uniqueID] = effect;
-
-    task.spawn(function()
-      
-      if effect.activate then
-
-        effect.activate(effect);
-
-      end;
-
-    end);
 
   else
 

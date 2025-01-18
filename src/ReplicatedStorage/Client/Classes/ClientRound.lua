@@ -34,8 +34,8 @@ local ClientRound = {
 };
 
 export type RoundEvents = {
-  onContestantAdded: RBXScriptSignal;
-  onContestantRemoved: RBXScriptSignal;
+  onContestantAdded: RBXScriptSignal<number>;
+  onContestantRemoved: RBXScriptSignal<number>;
   onEnded: RBXScriptSignal;
   onStopped: RBXScriptSignal;
   onStatusChanged: RBXScriptSignal;
@@ -60,11 +60,11 @@ function ClientRound.new(properties: RoundProperties): ClientRound
 
   end
 
-  ReplicatedStorage.Shared.Events.ContestantAdded.OnClientEvent:Connect(function(roundID: string, contestantProperties: types.ClientContestantProperties)
+  ReplicatedStorage.Shared.Events.ContestantAdded.OnClientEvent:Connect(function(roundID: string, contestantProperties: types.ClientContestantConstructorProperties)
   
     local contestant = ClientContestant.new(contestantProperties);
     table.insert(round.contestants, contestant);
-    events.onContestantAdded:Fire(contestant);
+    events.onContestantAdded:Fire(contestant.id);
 
   end);
 
@@ -75,7 +75,7 @@ function ClientRound.new(properties: RoundProperties): ClientRound
       if contestant.id == contestantID then
 
         table.remove(round.contestants, index);
-        events.onContestantRemoved:Fire(contestant);
+        events.onContestantRemoved:Fire(contestant.id);
         break;
 
       end;

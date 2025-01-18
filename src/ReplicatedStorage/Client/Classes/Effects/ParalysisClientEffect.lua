@@ -13,24 +13,37 @@ local ParalysisClientEffect = {
 
 function ParalysisClientEffect.new(properties: types.ParalysisClientEffectConstructorProperties): types.ParalysisClientEffect
 
-  local effect: types.ParalysisClientEffectProperties = {
+  local overwrittenProperties: types.ParalysisClientEffectProperties = {
     name = ParalysisClientEffect.name;
     id = ParalysisClientEffect.id;
+    uniqueID = properties.uniqueID;
     contestant = properties.contestant;
+    events = {};
     frozenAnimations = {};
   };
+  
+  local effect = (setmetatable(overwrittenProperties, ParalysisClientEffect) :: unknown) :: types.ParalysisClientEffect;
 
-  return (setmetatable(effect, ParalysisClientEffect) :: unknown) :: types.ParalysisClientEffect
+  local remoteFunction = ReplicatedStorage.Shared.Functions.EffectFunctions:FindFirstChild(overwrittenProperties.uniqueID);
+  if remoteFunction and remoteFunction:IsA("RemoteFunction") then
+
+    remoteFunction.OnClientInvoke = function()
+
+      effect:activate();
+
+    end;
+
+  end;
+
+  return effect;
 
 end;
 
 local function toggleAnimateScript(character: Model, isEnabled: boolean): ()
 
-  print(5);
   local animateScript = character:FindFirstChild("Animate");
   if animateScript and animateScript:IsA("LocalScript") then
 
-    print(6);
     animateScript.Enabled = isEnabled;
 
   end;
@@ -39,21 +52,23 @@ end;
 
 function ParalysisClientEffect.__index:activate()
 
-  print(1);
-  print(self.contestant)
   if self.contestant.character then
 
-    print(2);
     toggleAnimateScript(self.contestant.character, false);
+    
+    local humanoid = self.contestant.character:FindFirstChild("Humanoid") :: Humanoid?;
+    if humanoid then
+
+      humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll);
+
+    end;
 
     local animator = getAnimator(self.contestant.character);
 
     if animator then
 
-      print(3);
       for _, track in animator:GetPlayingAnimationTracks() do
 
-        print(4);
         self.frozenAnimations[track] = track.Speed;
         track:AdjustSpeed(0);
 
@@ -65,7 +80,7 @@ function ParalysisClientEffect.__index:activate()
 
 end;
 
-function ParalysisClientEffect.__index:deactivate(contestant: types.ClientContestant)
+function ParalysisClientEffect.__index:deactivate()
 
   if self.contestant.character then
 

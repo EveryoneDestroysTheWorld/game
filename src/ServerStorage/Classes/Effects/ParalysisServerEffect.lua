@@ -31,6 +31,21 @@ function ParalysisServerEffect.new(properties: types.ParalysisServerEffectConstr
 
 end;
 
+local function togglePlatformStand(character: Model?, shouldEnable: boolean)
+
+  if character then
+
+    local humanoid = character:FindFirstChild("Humanoid");
+    if humanoid and humanoid:IsA("Humanoid") then
+
+      humanoid.PlatformStand = shouldEnable;
+
+    end;
+
+  end;
+
+end;
+
 function ParalysisServerEffect.__index:activate()
 
   self.contestant:addWalkSpeedWeight(self.weight);
@@ -38,7 +53,11 @@ function ParalysisServerEffect.__index:activate()
   if self.contestant.player then
 
     -- Handle the animations on the client.
-    ReplicatedStorage.Shared.Functions.ToggleEffect:InvokeClient(self.contestant.player, self.id, self.uniqueID, true);
+    local remoteFunction = Instance.new("RemoteFunction");
+    remoteFunction.Name = self.uniqueID;
+    remoteFunction.Parent = ReplicatedStorage.Shared.Functions.EffectFunctions;
+    ReplicatedStorage.Shared.Functions.InitializeEffect:InvokeClient(self.contestant.player, self.id, self.uniqueID, true);
+    remoteFunction:InvokeClient(self.contestant.player);
 
   else
     
@@ -58,6 +77,9 @@ function ParalysisServerEffect.__index:activate()
 
   end;
 
+  -- Tip the player.
+  togglePlatformStand(self.contestant.character, true);
+
 end;
 
 function ParalysisServerEffect.__index:deactivate(contestant: types.ServerContestant)
@@ -66,7 +88,7 @@ function ParalysisServerEffect.__index:deactivate(contestant: types.ServerContes
 
   if self.contestant.player then
 
-    ReplicatedStorage.Shared.Functions.ToggleEffect:InvokeClient(self.contestant.player, self.id, self.uniqueID, false);
+    ReplicatedStorage.Shared.Functions.InitializeEffect:InvokeClient(self.contestant.player, self.id, self.uniqueID, false);
 
   else
 
@@ -84,6 +106,8 @@ function ParalysisServerEffect.__index:deactivate(contestant: types.ServerContes
     end;
 
   end;
+
+  togglePlatformStand(self.contestant.character, false);
 
 end;
 
