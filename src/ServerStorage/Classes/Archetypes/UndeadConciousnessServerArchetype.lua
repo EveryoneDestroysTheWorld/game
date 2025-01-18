@@ -24,6 +24,8 @@ function UndeadConciousnessServerArchetype.new(): types.ServerArchetype
   local healthCheckEvent;
 
   local ragdollClone;
+  local undeadEffect: types.ServerEffect;
+
   local function breakdown(self: types.ServerArchetype)
 
     if ragdollClone then
@@ -37,6 +39,8 @@ function UndeadConciousnessServerArchetype.new(): types.ServerArchetype
       healthCheckEvent:Disconnect();
 
     end;
+
+    contestant:removeEffect(undeadEffect);
 
   end;
 
@@ -60,6 +64,10 @@ function UndeadConciousnessServerArchetype.new(): types.ServerArchetype
     round = newRound;
 
     local isDowned = false;
+
+    undeadEffect = ServerEffect.get("Undead").new({
+      contestant = contestant;
+    });
     
     local function checkHealth()
 
@@ -71,6 +79,8 @@ function UndeadConciousnessServerArchetype.new(): types.ServerArchetype
           ragdollClone:Destroy();
 
         end;
+
+        contestant:removeEffect(undeadEffect);
 
       elseif not isDowned and contestant.currentHealth <= 0 then
 
@@ -84,10 +94,9 @@ function UndeadConciousnessServerArchetype.new(): types.ServerArchetype
 
         downContestant(contestant);
 
-        local effect = ServerEffect.get("Undead").new({
-          contestant = contestant;
-        });
-        contestant:addEffect(effect);
+        
+
+        contestant:addEffect(undeadEffect);
 
       end;
 

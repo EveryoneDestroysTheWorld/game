@@ -7,6 +7,7 @@ local DraconicKnightClientArchetype = require(ReplicatedStorage.Client.Classes.A
 local downContestant = require(ServerStorage.Modules.downContestant);
 local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
 local types = require(ServerStorage.Classes.types)
+local ServerEffect = require(ServerStorage.Classes.ServerEffect);
 
 local DraconicKnightServerArchetype = {
   id = DraconicKnightClientArchetype.id;
@@ -23,6 +24,7 @@ function DraconicKnightServerArchetype.new(): types.ServerArchetype
   local wingProp: Model?;
   local events: {RBXScriptConnection} = {};
   local ragdollClone;
+  local roughArmorEffect: types.ServerEffect;
 
   local function breakdown(self: types.ServerArchetype)
 
@@ -43,6 +45,8 @@ function DraconicKnightServerArchetype.new(): types.ServerArchetype
       ragdollClone:Destroy();
 
     end;
+
+    contestant:removeEffect(roughArmorEffect);
 
   end;
 
@@ -127,6 +131,12 @@ function DraconicKnightServerArchetype.new(): types.ServerArchetype
 
     end;
 
+    roughArmorEffect = ServerEffect.get("RoughArmor").new({
+      contestant = contestant;
+    });
+
+    contestant:addEffect(roughArmorEffect);
+
     local isDowned = false;
     table.insert(events, contestant.onHealthUpdated:Connect(function()
     
@@ -139,6 +149,8 @@ function DraconicKnightServerArchetype.new(): types.ServerArchetype
 
         end;
 
+        contestant:addEffect(roughArmorEffect);
+
       elseif not isDowned and contestant.currentHealth <= 0 then
 
         isDowned = true;
@@ -148,6 +160,8 @@ function DraconicKnightServerArchetype.new(): types.ServerArchetype
           ragdollClone = createRagdollClone(contestant.character);
 
         end;
+
+        contestant:removeEffect(roughArmorEffect)
 
         downContestant(contestant);
 

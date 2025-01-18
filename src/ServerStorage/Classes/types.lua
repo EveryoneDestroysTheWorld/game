@@ -1,4 +1,5 @@
 --!strict
+
 local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
@@ -52,6 +53,7 @@ export type UndeadServerEffectProperties = {
   events: {
     [unknown]: RBXScriptConnection
   };
+  walkSpeedWeight: WalkSpeedWeight;
   contestant: ServerContestant;
 }
 
@@ -62,6 +64,26 @@ export type UndeadServerEffectConstructorProperties = {
 export type UndeadServerEffectMethods = {
   activate: (self: UndeadServerEffect, contestant: ServerContestant) -> ();
   deactivate: (self: UndeadServerEffect, contestant: ServerContestant) -> ();
+}
+
+export type RoughArmorServerEffect = ServerEffect<RoughArmorServerEffectProperties & RoughArmorServerEffectMethods>;
+
+export type RoughArmorServerEffectProperties = {
+  name: string;
+  id: string;
+  events: {
+    [unknown]: RBXScriptConnection
+  };
+  contestant: ServerContestant;
+}
+
+export type RoughArmorServerEffectConstructorProperties = {
+  contestant: ServerContestant;
+}
+
+export type RoughArmorServerEffectMethods = {
+  activate: (self: RoughArmorServerEffect, contestant: ServerContestant) -> ();
+  deactivate: (self: RoughArmorServerEffect, contestant: ServerContestant) -> ();
 }
 
 export type ParalysisServerEffect = ServerEffect<ParalysisServerEffectProperties & ParalysisServerEffectMethods>;
@@ -284,7 +306,7 @@ export type ServerItemEvents = {
 
 }
 
-export type ServerEffect<Class = unknown> = ServerEffectProperties & ServerEffectMethods<Class & ServerEffectProperties>;
+export type ServerEffect<Properties = ServerEffectProperties, Methods = ServerEffectMethods> = Properties & Methods;
 
 export type ServerEffectProperties = {
   name: string;
@@ -293,15 +315,15 @@ export type ServerEffectProperties = {
   expirationTimeMilliseconds: number?;
 }
 
-export type ServerEffectMethods<T> = {
-  activate: ((self: T, ...any) -> ())?;
-  deactivate: ((self: T, ...any) -> ())?;
-  updateContestantHealth: ((self: T, newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
-  updateContestantStamina: ((self: T, newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
+export type ServerEffectMethods = {
+  activate: ((self: any, ...any) -> ())?;
+  deactivate: ((self: any, ...any) -> ())?;
+  updateContestantHealth: ((self: any, newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
+  updateContestantStamina: ((self: any, newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
 }
 
-export type ServerEffectClass<T = unknown, ExtendedServerEffect = unknown> = ServerEffectProperties & {
-  new: (...T) -> ExtendedServerEffect & ServerEffect
+export type ServerEffectClass<ServerEffectConstructorProperties = any, ExtendedServerEffect = any> = ServerEffectProperties & {
+  new: (...ServerEffectConstructorProperties) -> ExtendedServerEffect & ServerEffect
 }
 
 export type ServerEffectFactory = {
@@ -311,6 +333,8 @@ export type ServerEffectFactory = {
     & ((effectID: "HoldingHeavyItem") -> ServerEffectClass<HoldingHeavyItemServerEffectConstructorProperties, HoldingHeavyItemServerEffect>)
     & ((effectID: "Paralysis") -> ServerEffectClass<ParalysisServerEffectConstructorProperties, ParalysisServerEffect>)
     & ((effectID: "Undead") -> ServerEffectClass<UndeadServerEffectConstructorProperties, UndeadServerEffect>)
+    & ((effectID: "RoughArmor") -> ServerEffectClass<RoughArmorServerEffectConstructorProperties, RoughArmorServerEffect>)
+    & ((effectID: string) -> ServerEffectClass)
   );
   random: () -> ServerEffectClass;
 }
