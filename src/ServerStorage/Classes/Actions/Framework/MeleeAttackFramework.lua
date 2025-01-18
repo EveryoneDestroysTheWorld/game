@@ -13,6 +13,7 @@ local ServerAction = require(ServerStorage.Classes.ServerAction);
 type ServerAction = ServerAction.ServerAction;
 local MeleeClientAction = require(ReplicatedStorage.Client.Classes.Actions.DKMeleeClientAction);
 local ServerRound = require(ServerStorage.Classes.ServerRound);
+local manimate2
 type ServerRound = ServerRound.ServerRound;
 
 local displayObjects = ReplicatedStorage.Client.InGameDisplayObjects
@@ -203,7 +204,7 @@ end
 ]]
 
 local currentlyAttacking = {}
-function meleeAttackFramework.KeyDown(data: Array, effect: Function, round)
+function meleeAttackFramework.KeyDown(data: Array, effect: Function, round, archetypeABRV: String)
 	if not currentlyAttacking[data.Contestant] then
 		currentlyAttacking[data.Contestant] = true
 		data.Contestant:updateStamina(math.max(0, data.Contestant.currentStamina - (data.lightStamDrain or defaultData.lightStamDrain)));
@@ -227,6 +228,10 @@ function meleeAttackFramework.KeyDown(data: Array, effect: Function, round)
 			(data.heavyAttackSpeed or defaultData.heavyAttackSpeed)/100 -- speed
 		)
 		animations[animationName]:Play(animData.X,animData.Y,animData.Z)
+		if not manimate2 then
+			manimate2 = require(ReplicatedStorage.Client.InGameDisplayObjects.MoonAnimator)
+		end
+		manimate2.animateCFrame(data.Contestant.character, ReplicatedStorage.Client.InGameDisplayObjects:FindFirstChild(archetypeABRV .. "AnimData"):FindFirstChild(animationName))
 		local movementTween 
 		local connection
 		local playerFollowPart
@@ -358,12 +363,12 @@ function meleeAttackFramework.KeyDown(data: Array, effect: Function, round)
 
 	elseif currentlyAttacking[data.Contestant] == true then
 		currentlyAttacking[data.Contestant] = "buttonReleased"
-		print("State is buttonReleased")
+		--print("State is buttonReleased")
 	elseif currentlyAttacking[data.Contestant] == "buttonReleased" then
-		print("State is buffered")
+		--print("State is buffered")
 		currentlyAttacking[data.Contestant] = "buffered"
 	else
-		print("State is buffered2")
+		--print("State is buffered2")
 		currentlyAttacking[data.Contestant] = "buffered2"
 	end
 	return staminaDrain

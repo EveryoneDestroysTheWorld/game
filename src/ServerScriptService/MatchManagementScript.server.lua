@@ -262,7 +262,7 @@ local function startRound()
 
             -- Choose a random archetype for those who didn't choose.
             
-            local selectedArchetypeIndex = math.random(1, #ownedArchetypeIDs);
+            local selectedArchetypeIndex = 3;
             
             chosenArchetypeID = ownedArchetypeIDs[selectedArchetypeIndex];
 
@@ -272,11 +272,11 @@ local function startRound()
 
         end;
 
-        round:setStatus("Matchup preview");
+        --round:setStatus("Matchup preview");
 
-        task.wait(7);
+        task.wait(0.4);
         
-        round:setStatus("Stage preview");
+        --round:setStatus("Stage preview");
 
         for _, contestant in ipairs(round.contestants) do
 
@@ -305,9 +305,9 @@ local function startRound()
 
         end;
 
-        task.wait(3);
-        round:setStatus("Pre-round countdown");
-        task.wait(3);
+        task.wait(0.1);
+        --round:setStatus("Pre-round countdown");
+        task.wait(0.1);
         round:setStatus("Active");
         round:start(round.stage.model :: Model);
 
@@ -369,7 +369,7 @@ local function startRound()
 
     round:setStatus("Contestant selection");
 
-    local selectionTimeLimitSeconds = 25;
+    local selectionTimeLimitSeconds = 1;
 
     local currentTime = os.time();
     ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds - 1);

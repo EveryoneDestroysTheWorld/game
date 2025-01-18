@@ -10,6 +10,7 @@ local ContextActionService = game:GetService("ContextActionService");
 local ClientAction = require(script.Parent.Parent.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
+local targetingFramework = require(script.Parent.Framework.EasyTargetingFramework);
 type ClientAction = ClientAction.ClientAction;
 
 local TarBombAction = {
@@ -76,9 +77,9 @@ function TarBombAction.new(): ClientAction
 	end;
 
 	local function activate(self: ClientAction)
-
-		waitForServerResponse(player:GetMouse().Hit.Position)
+		targetingFramework.waitForServerResponse("TarBomb")
 		ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
+		
 
 	end;
 
@@ -102,18 +103,18 @@ function TarBombAction.new(): ClientAction
 
 			if inputState == Enum.UserInputState.Begin then
 				
-				displayTarget("Start")
+				targetingFramework.displayTarget("Start")
 
 			elseif inputState == Enum.UserInputState.End then
 
-				displayTarget("Release")
+				targetingFramework.displayTarget("Release")
 				self:activate();
 
 			end
 
 		end;
 
-		ContextActionService:BindActionAtPriority("ActivateTarBomb", checkJump, false, 2, Enum.KeyCode.Q);
+		ContextActionService:BindActionAtPriority("ActivateTarBomb", checkJump, false, 2, Enum.KeyCode.One);
 
 
 		workspace.Terrain.ChildAdded:Connect(function(child)

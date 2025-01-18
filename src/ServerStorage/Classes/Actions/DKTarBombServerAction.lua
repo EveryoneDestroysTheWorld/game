@@ -10,6 +10,7 @@ type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
 type ServerAction = ServerAction.ServerAction;
 local TarBombClientAction = require(ReplicatedStorage.Client.Classes.Actions.DKTarBombClientAction);
+local damageFramework = require(script.Parent.Framework.DamageFramework);
 local ServerRound = require(script.Parent.Parent.ServerRound);
 type ServerRound = ServerRound.ServerRound;
 local ServerStorage = game:GetService("ServerStorage");
@@ -121,7 +122,11 @@ local function startAttack(primaryPart: BasePart, animations, coords: Vector3, r
 	bomb:Destroy()
 end
 ]]
-local function startAttack(sourcePart: BasePart, animations, coords: Vector3, round: ServerRound, contestant: ServerContestant, split, size)
+local function startAttack(sourcePart: BasePart, animations, coords: Vector3, round: ServerRound, contestant: ServerContestant, split, size, useTarget, delay)
+	print(size)
+	if not delay then
+		delay = 0.25
+	end
 	--[[ for testing to make sure projectile goes where it should
 	local part = Instance.new("Part")
 	part.Position = coords
@@ -129,6 +134,9 @@ local function startAttack(sourcePart: BasePart, animations, coords: Vector3, ro
 	part.CanCollide = false
 	part.Parent = workspace.Terrain
 	]]
+	if useTarget then 
+		coords = contestant.character.Target.Value.PrimaryPart.Position 
+	end
 	local bomb = ReplicatedStorage.Client.InGameDisplayObjects.DraconicKnight.TarBomb:Clone()
 	bomb.Parent = workspace.Terrain
 	bomb.Position = sourcePart.Position
@@ -138,9 +146,10 @@ local function startAttack(sourcePart: BasePart, animations, coords: Vector3, ro
 	Instance.new("NoCollisionConstraint", bomb)
 	bomb.NoCollisionConstraint.Part0 = bomb
 	bomb.NoCollisionConstraint.Part1 = sourcePart
+	bomb.BillboardGui.Size = UDim2.new(size, 0, size, 0)
 	if not split then
 		bomb.ParticleEmitter:Destroy()
-		bomb.BillboardGui.Size = UDim2.new(size, 0, size, 0)
+		
 	end
 	local animateSprite = require(ReplicatedStorage.Client.InGameDisplayObjects.SpriteAnimator)
 	local data = {
@@ -185,13 +194,23 @@ local function startAttack(sourcePart: BasePart, animations, coords: Vector3, ro
 		else
 			bomb.Anchored = true
 		end
-		task.wait(1.5)
-		damageEvent(bomb, round, contestant, size, contestant)
+		task.wait(delay)
+		local data = {
+			["Size"] = size,
+			["Knockback"] = size * 20,
+			["PlayerDamage"] = size * 4	,
+			["ObjectDamage"] = size * 3,
+			["DamageFalloff"] = true,
+			["KnockbackOwner?"] = false,
+			["DamageOwner?"] = true,
+			["KnockUpAmount"] = 0.5,
+		}
+		damageFramework.explosionEvent(bomb.Position, data, round, contestant)
 		if split then
 			local roll = math.random(2,10)
 			for i=1, roll do
 				local randomCoor = coords + Vector3.new(math.random(-100,100)/10,0,math.random(-100,100)/10)
-				coroutine.wrap(startAttack)(bomb, animations, randomCoor, round, contestant, false, 8/roll)
+				coroutine.wrap(startAttack)(bomb, animations, randomCoor, round, contestant, false, 8/roll, false, math.random(1,15/10))
 			end
 		end
 		bomb.BillboardGui:Destroy()
@@ -243,11 +262,11 @@ local function getDataFromClient(player: Player): Vector3
 
 	local event = Instance.new("RemoteEvent")
 	local connect
-	connect = event.OnServerEvent:Connect(function(_: Player, data: Vector3)
-
+	connect = event.OnServerEvent:Connect(function(_: Player, data: Vector3, useTarget, charge)
 		connect:Disconnect();
 		event:SetAttribute("Coords", data);
-
+		event:SetAttribute("UseTarget", useTarget)
+		event:SetAttribute("Charge", charge)
 	end)
 
 	event.Name = "GetData"
@@ -255,10 +274,12 @@ local function getDataFromClient(player: Player): Vector3
 
 	--coords request sent to player
 	event.AttributeChanged:Wait()
+	event.AttributeChanged:Wait()
+	event.AttributeChanged:Wait()
 
 	--coords recieved by player
-	return event:GetAttribute("Coords") :: Vector3;
-
+	return event:GetAttribute("Coords") :: Vector3, event:GetAttribute("UseTarget"), event:GetAttribute("Charge")
+	
 end
 
 
@@ -270,14 +291,16 @@ function TarBombServerAction.new(): ServerAction
 
 	local function activate(self: ServerAction)
 
-		if _contestant and _round and _contestant.player and _contestant.character then
+		if _contestant and _round and _contestant.player and _contestant.character and _contestant.currentHealth > 0 then
 
-			local coords = getDataFromClient(_contestant.player);
+			local coords, useTarget, charge = getDataFromClient(_contestant.player);
 			if _contestant.currentStamina >= 20 then
 
 				-- Reduce the player's stamina.
-				_contestant:updateStamina(math.max(0, _contestant.currentStamina - 10));
-				startAttack(_contestant.character.Head :: BasePart, anims, coords, _round, _contestant, true, 5);
+				_contestant:updateStamina(math.max(0, _contestant.currentStamina - 10 - charge));
+				local size = 2 + charge/10
+--
+				startAttack(_contestant.character.Head :: BasePart, anims, coords, _round, _contestant, true, size, useTarget);
 
 			end
 
