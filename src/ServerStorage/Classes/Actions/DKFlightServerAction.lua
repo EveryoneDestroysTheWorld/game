@@ -1,7 +1,7 @@
 --!strict
 -- Programmer: Hati (hati_bati)
 -- Designer: Christian Toney (Christian_Toney)
--- © 2024 Beastslash LLC
+-- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService")
@@ -15,7 +15,7 @@ type ServerRound = ServerRound.ServerRound;
 
 
 local TakeFlightServerAction = {
-	ID = TakeFlightClientAction.ID;
+	id = TakeFlightClientAction.id;
 	name = TakeFlightClientAction.name;
 	description = TakeFlightClientAction.description;
 };
@@ -77,9 +77,6 @@ local function flightStart(contestant: ServerContestant, primaryPart: BasePart)
 	local tween = TweenService:Create(linearVelocity, TweenInfo.new(1.0, Enum.EasingStyle.Sine), {VectorVelocity = Vector3.new(0,5,0)});
 	tween:Play()
 	task.wait(0.6)
-
-	
-	
 	linearVelocity:SetAttribute("PlayerControls", true)
 	local humanoid = (primaryPart.Parent :: Instance):FindFirstChild("Humanoid") :: Humanoid;
 	local connection
@@ -256,7 +253,7 @@ function TakeFlightServerAction.new(): ServerAction
 		if contestant.player then
 
 			local remoteFunction = Instance.new("RemoteFunction");
-			remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+			remoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
 			remoteFunction.OnServerInvoke = function(player)
 	
 				if player == contestant.player then
@@ -280,7 +277,7 @@ function TakeFlightServerAction.new(): ServerAction
 
 	return ServerAction.new({
 		name = TakeFlightServerAction.name;
-		ID = TakeFlightServerAction.ID;
+		id = TakeFlightServerAction.id;
 		description = TakeFlightServerAction.description;
 		breakdown = breakdown;
 		activate = activate;

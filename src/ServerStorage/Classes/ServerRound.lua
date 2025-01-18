@@ -1,89 +1,26 @@
 --!strict
 -- Writer: Christian Toney (Sudobeast)
 -- This module represents a ServerRound.
+
 local HttpService = game:GetService("HttpService");
-local GameMode = require(script.Parent.GameMode);
-type GameMode = GameMode.GameMode;
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local DataStoreService = game:GetService("DataStoreService");
-local ServerContestant = require(script.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
+local GameMode = require(script.Parent.GameMode);
 local ServerArchetype = require(script.Parent.ServerArchetype);
-type ServerArchetype = ServerArchetype.ServerArchetype;
 local ServerAction = require(script.Parent.ServerAction);
-type ServerAction = ServerAction.ServerAction;
-local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
-type ClientRound = ClientRound.ClientRound;
-type RoundStatus = ClientRound.RoundStatus;
-local Stage = require(script.Parent.Stage);
-type Stage = Stage.Stage;
-
-export type ServerRoundConstructorProperties = {
-
-  -- This round's unique ID.
-  ID: string;
-
-  gameModeID: number;
-  
-  -- This stage's ID.
-  stageID: string;
-
-  status: RoundStatus;
-
-  timeStarted: number?;
-
-  duration: number?;
-
-  timeEnded: number?;
-
-  contestantIDs: {number};
-
-}
-
-export type ServerRoundProperties = ServerRoundConstructorProperties & {  
-
-  stage: Stage;
-
-  archetypes: {ServerArchetype};
-
-  actions: {ServerAction};
-
-  contestants: {ServerContestant};
-
-  gameMode: GameMode?;
-
-};
-
-export type ServerRoundEvents = {
-  onStopped: RBXScriptSignal;
-  onEnded: RBXScriptSignal;
-  onStatusChanged: RBXScriptSignal;
-  onContestantAdded: RBXScriptSignal;
-  onContestantRemoved: RBXScriptSignal;
-  onTimeStartedChanged: RBXScriptSignal;
-}
-
-export type ServerRoundMethods = {
-  addContestant: (self: ServerRound, contestant: ServerContestant) -> ();
-  getClientConstructorProperties: (self: ServerRound) -> any;
-  setStatus: (self: ServerRound, newStatus: RoundStatus) -> ();
-  start: (self: ServerRound, stageModel: Model) -> ();
-  stop: (self: ServerRound, forced: boolean?) -> ();
-  setGameMode: (self: ServerRound, gameMode: GameMode) -> ();
-  toString: (self: ServerRound) -> string;
-}
-
-local ServerRound = {
-  __index = {} :: ServerRoundMethods;
-};
-
-export type ServerRound = typeof(setmetatable({}, ServerRound)) & ServerRoundProperties & ServerRoundEvents & ServerRoundMethods;
+local ServerStorage = game:GetService("ServerStorage");
+local Stage = require(ServerStorage.Packages.Stage);
+local types = require(script.Parent.types);
 
 local events: {[any]: {[string]: BindableEvent}} = {};
 
-function ServerRound.new(properties: ServerRoundConstructorProperties & {stage: Stage?}): ServerRound
+local ServerRound = {
+  __index = {} :: types.ServerRound;
+};
 
-  local round = setmetatable(properties, ServerRound) :: ServerRound;
+function ServerRound.new(properties: types.ServerRoundConstructorProperties & {stage: Stage.Stage?}): types.ServerRound
+
+  local round = setmetatable(properties, ServerRound) :: types.ServerRound;
   round.contestants = {};
   round.actions = {};
   round.archetypes = {};
@@ -101,16 +38,16 @@ function ServerRound.new(properties: ServerRoundConstructorProperties & {stage: 
   
 end;
 
-function ServerRound.fromPrivateServerID(privateServerID: number): ServerRound
+function ServerRound.fromPrivateServerID(privateServerID: number): types.ServerRound
 
   -- Verify metadata integrity.
   local roundMetadataEncoded = DataStoreService:GetDataStore("PrivateServerRoundMetadata"):GetAsync(privateServerID);
   assert(typeof(roundMetadataEncoded) == "string", "Couldn't find a round metadata.");
   local roundMetadata = HttpService:JSONDecode(roundMetadataEncoded);
   assert(typeof(roundMetadata) == "table", "Round metadata isn't a table.");
-  assert(typeof(roundMetadata.ID) == "string", "Round ID isn't a string.");
+  assert(typeof(roundMetadata.id) == "string", "Round ID isn't a string.");
   assert(typeof(roundMetadata.stageID) == "string", "Stage ID isn't a string.");
-  assert(typeof(roundMetadata.gameModeID) == "number", "Game mode ID isn't a number.");
+  assert(typeof(roundMetadata.gameModeID) == "string", "Game mode ID isn't a string.");
   assert(typeof(roundMetadata.contestantIDs) == "table", "Round contestant IDs isn't a table.");
 
   for index, possibleContestantID in pairs(roundMetadata.contestantIDs) do
@@ -122,11 +59,11 @@ function ServerRound.fromPrivateServerID(privateServerID: number): ServerRound
 
   -- Return the new round.
   return ServerRound.new({
-    ID = roundMetadata.ID;
+    id = roundMetadata.id;
     stageID = roundMetadata.stageID;
     gameModeID = roundMetadata.gameModeID;
     contestantIDs = roundMetadata.contestantIDs;
-    status = "Waiting for players" :: RoundStatus;
+    status = "Waiting for players" :: types.RoundStatus;
   });
 
 end;
@@ -137,43 +74,47 @@ function ServerRound.__index:start(): ()
 
   -- Run the game mode.
   self.gameMode = GameMode.get(self.gameModeID).new(self);
-  (self.gameMode :: GameMode):start();
+  (self.gameMode :: types.GameMode):start();
 
   -- Ready the archetypes and actions.
   self.archetypes = {};
   self.actions = {};
   for _, contestant in ipairs(self.contestants) do
 
-    task.spawn(function()
+    local oldArchetype: types.ServerArchetype?;
+
+    local function updateArchetype()
 
       local isSuccess, errorMessage = pcall(function()
+
+        if oldArchetype then
+
+          oldArchetype:breakdown();
+
+        end;
 
         if contestant.archetypeID then
 
           local archetype = ServerArchetype.get(contestant.archetypeID);
           archetype:initialize(contestant, self);
-          table.insert(self.archetypes :: {ServerArchetype}, archetype);
+          table.insert(self.archetypes :: {types.ServerArchetype}, archetype);
+          oldArchetype = archetype;
 
           local actions = {};
           for _, actionID in ipairs(archetype.actionIDs) do
 
             local action = ServerAction.get(actionID);
             action:initialize(contestant, self);
-            table.insert(self.actions :: {ServerAction}, action);
-            actions[actionID] = action;
+            table.insert(self.actions :: {types.ServerAction}, action);
+            table.insert(actions, action);
 
           end;
           
-          if contestant.ID < 1 then
+          if contestant.id < 1 then
               
             archetype:runAutoPilot(actions);
           
           end;
-
-        else
-
-          contestant:disqualify();
-          warn(`Disqualified {contestant.name} ({contestant.ID}) because they don't have an archetype.`);
 
         end;
 
@@ -186,38 +127,48 @@ function ServerRound.__index:start(): ()
 
       end;
 
-    end);
+    end;
+
+    contestant.onArchetypeUpdated:Connect(updateArchetype);
+    task.spawn(updateArchetype);
 
   end;
 
   self.timeStarted = DateTime.now().UnixTimestampMillis;
   events[self].onTimeStartedChanged:Fire();
 
-  -- Start a timer.
-  local timer = task.delay(self.duration, function()
-  
-    self:stop();
+  if self.duration then
 
-  end);
+    -- Start a timer.
+    local timer = task.delay(self.duration, function()
+    
+      self:stop();
 
-  local onEndedEvent;
-  onEndedEvent = self.onEnded:Connect(function()
-  
-    onEndedEvent:Disconnect();
-    task.cancel(timer);
+    end);
 
-  end);
+    local onEndedEvent;
+    onEndedEvent = self.onEnded:Connect(function()
+    
+      onEndedEvent:Disconnect();
+      if coroutine.status(timer) == "running" then
 
-  ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(self.ID, self.timeStarted);
+        task.cancel(timer);
+
+      end;
+
+    end);
+
+  end;
+
+  ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(self.id, self.timeStarted);
 
 end;
 
--- Add a contestant to the round.
-function ServerRound.__index:addContestant(contestant: ServerContestant): ()
+function ServerRound.__index:addContestant(contestant: types.ServerContestant): ()
 
   table.insert(self.contestants, contestant);
   events[self].onContestantAdded:Fire(contestant);
-  ReplicatedStorage.Shared.Events.ContestantAdded:FireAllClients(self.ID, contestant:convertToClient());
+  ReplicatedStorage.Shared.Events.ContestantAdded:FireAllClients(self.id, contestant:convertToClient());
 
 end;
 
@@ -232,7 +183,7 @@ function ServerRound.__index:getClientConstructorProperties(): any
   end;
 
   return {
-    ID = self.ID;
+    id = self.id;
     contestants = contestants;
     status = self.status;
     duration = self.duration;
@@ -242,16 +193,16 @@ function ServerRound.__index:getClientConstructorProperties(): any
 
 end;
 
-function ServerRound.__index:setStatus(newStatus: RoundStatus): ()
+function ServerRound.__index:setStatus(newStatus: types.RoundStatus): ()
 
   local oldStatus = self.status;
   self.status = newStatus;
   events[self].onStatusChanged:Fire(newStatus, oldStatus);
-  ReplicatedStorage.Shared.Events.RoundStatusChanged:FireAllClients(self.ID, newStatus, oldStatus);
+  ReplicatedStorage.Shared.Events.RoundStatusChanged:FireAllClients(self.id, newStatus, oldStatus);
 
 end;
 
-function ServerRound.__index:setGameMode(gameMode: GameMode): ()
+function ServerRound.__index:setGameMode(gameMode: types.GameMode): ()
 
   self.gameMode = gameMode;
 
@@ -285,7 +236,7 @@ function ServerRound.__index:stop(forced: boolean?): ()
 
   if self.actions then
 
-    for _, action in ipairs(self.actions :: {ServerAction}) do
+    for _, action in ipairs(self.actions :: {types.ServerAction}) do
 
       task.spawn(function() 
         
@@ -303,17 +254,17 @@ function ServerRound.__index:stop(forced: boolean?): ()
   local contestantIDs = {};
   for _, contestant in ipairs(self.contestants) do
 
-    if contestant.ID > 0 then
+    if contestant.id > 0 then
 
-      table.insert(contestantIDs, contestant.ID);
+      table.insert(contestantIDs, contestant.id);
 
     end;
 
   end;
 
-  -- DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.ID, self:toString(), contestantIDs);
+  -- DataStoreService:GetDataStore("RoundMetadata"):SetAsync(self.id, self:toString(), contestantIDs);
   events[self][if forced then "onStopped" else "onEnded"]:Fire();
-  ReplicatedStorage.Shared.Events[if forced then "RoundStopped" else "RoundEnded"]:FireAllClients(self.ID);
+  ReplicatedStorage.Shared.Events[if forced then "RoundStopped" else "RoundEnded"]:FireAllClients(self.id);
 
 end;
 
@@ -327,7 +278,7 @@ function ServerRound.__index:toString()
   end;
 
   return HttpService:JSONEncode({
-    ID = self.ID;
+    id = self.id;
     stageID = self.stageID;
     timeStarted = self.timeStarted;
     timeEnded = self.timeEnded;

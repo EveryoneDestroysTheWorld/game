@@ -1,7 +1,7 @@
 --!strict
 -- Programmers: Hati ---- Heavily modified edit of RocketFeet
 -- Designers: Christian Toney (Sudobeast)
--- © 2024 Beastslash LLC
+-- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService")
@@ -16,12 +16,10 @@ type ServerRound = ServerRound.ServerRound;
 local ServerStorage = game:GetService("ServerStorage");
 
 local TarBombServerAction = {
-	ID = TarBombClientAction.ID;
+	id = TarBombClientAction.id;
 	name = TarBombClientAction.name;
 	description = TarBombClientAction.description;
 };
-
-
 
 local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant: ServerContestant, size, player)
 
@@ -148,6 +146,7 @@ local function startAttack(sourcePart: BasePart, animations, coords: Vector3, ro
 	bomb.NoCollisionConstraint.Part1 = sourcePart
 	bomb.BillboardGui.Size = UDim2.new(size, 0, size, 0)
 	if not split then
+    
 		bomb.ParticleEmitter:Destroy()
 		
 	end
@@ -194,6 +193,7 @@ local function startAttack(sourcePart: BasePart, animations, coords: Vector3, ro
 		else
 			bomb.Anchored = true
 		end
+      
 		task.wait(delay)
 		local data = {
 			["Size"] = size,
@@ -262,6 +262,7 @@ local function getDataFromClient(player: Player): Vector3
 
 	local event = Instance.new("RemoteEvent")
 	local connect
+  
 	connect = event.OnServerEvent:Connect(function(_: Player, data: Vector3, useTarget, charge)
 		connect:Disconnect();
 		event:SetAttribute("Coords", data);
@@ -301,7 +302,7 @@ function TarBombServerAction.new(): ServerAction
 				local size = 2 + charge/10
 --
 				startAttack(_contestant.character.Head :: BasePart, anims, coords, _round, _contestant, true, size, useTarget);
-
+        
 			end
 
 		end;
@@ -334,7 +335,7 @@ function TarBombServerAction.new(): ServerAction
 		if contestant.player then
 
 			local remoteFunction = Instance.new("RemoteFunction");
-			remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+			remoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
 			remoteFunction.OnServerInvoke = function(player)
 	
 				if player == contestant.player then
@@ -358,7 +359,7 @@ function TarBombServerAction.new(): ServerAction
 
 	return ServerAction.new({
 		name = TarBombServerAction.name;
-		ID = TarBombServerAction.ID;
+		id = TarBombServerAction.id;
 		description = TarBombServerAction.description;
 		breakdown = breakdown;
 		activate = activate;
@@ -366,8 +367,5 @@ function TarBombServerAction.new(): ServerAction
 	});
 
 end;
-
-
-
 
 return TarBombServerAction;

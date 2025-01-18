@@ -14,11 +14,11 @@ type ClientContestant = ClientContestant.ClientContestant;
 type ClientArchetype = ClientArchetype.ClientArchetype;
 
 local ExtendedClientArchetype = {
-  ID = 0; -- Replace this. Very important.
+  id = script.Name:sub(1, script.Name:gsub("ClientArchetype", ""):len());
   name = "Extended";
   description = "This is an example archetype.";
   iconImage = "rbxassetid://18584519829";
-  actionIDs = {6}; -- Replace with action IDs.
+  actionIDs = {}; -- Replace with action IDs.
   type = "Defender" :: "Defender"; -- Replace both with "Destroyer", "Fighter", "Defender", or "Supporter".
 };
 
@@ -33,7 +33,7 @@ function ExtendedClientArchetype.new(): ClientArchetype
   end;
 
   return ClientArchetype.new({
-    ID = ExtendedClientArchetype.ID;
+    id = ExtendedClientArchetype.id;
     iconImage = ExtendedClientArchetype.iconImage;
     name = ExtendedClientArchetype.name;
     description = ExtendedClientArchetype.description;

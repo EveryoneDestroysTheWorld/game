@@ -1,5 +1,6 @@
 {
-  "name": "DemoDemons (Staging): Game",
+  "name": "Everyone Destroys the World (Staging): Turf War",
+  "globIgnorePaths": ["**/*.production.lua", "**/*.staging.lua", "**/*.development.lua"],
   "servePlaceIds": [17711502472],
   "tree": {
     "$className": "DataModel",
@@ -29,7 +30,13 @@
       "$path": "src/ServerScriptService"
     },
     "ServerStorage": {
-      "$path": "src/ServerStorage"
+      "$path": "src/ServerStorage",
+      "Packages": {
+        "$path": "ServerPackages"
+      },
+      "PlaceMap": {
+        "$path": "src/ServerStorage/PlaceMap.staging.lua"
+      }
     },
     "StarterPlayer": {
       "StarterPlayerScripts": {

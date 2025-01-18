@@ -41,7 +41,8 @@ local function CheckeredBackgroundImageLabel(props: {LayoutOrder: number})
 
     end);
     
-    local goalHeightOffset = 25;
+    -- local goalHeightOffset = 25;
+    local goalHeightOffset = 14;
     local tween = TweenService:Create(numberValue, TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Value = goalHeightOffset});
     tween:Play();
 
@@ -81,7 +82,8 @@ local function MatchStoppagePopup()
 
     end);
     
-    local goalContentFrameSizeOffset = 150;
+    -- local goalContentFrameSizeOffset = 150;
+    local goalContentFrameSizeOffset = 60;
     local tween = TweenService:Create(numberValue, TweenInfo.new(1, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut), {Value = goalContentFrameSizeOffset});
     tween.Completed:Connect(function()
     
@@ -144,7 +146,8 @@ local function MatchStoppagePopup()
       TitleLabel = React.createElement("TextLabel", {
         AnchorPoint = Vector2.new(0.5, 0.5);
         Text = "MATCH STOPPED";
-        TextSize = 71;
+        -- TextSize = 71;
+        TextSize = 30;
         Position = UDim2.new(0.5, 0, 0.5, 0);
         TextColor3 = Colors.DemoDemonsRed;
         BackgroundTransparency = 1;
@@ -153,8 +156,9 @@ local function MatchStoppagePopup()
         FontFace = Font.fromId(11702779517, Enum.FontWeight.Heavy);
       });
       MessageLabel = React.createElement("TextLabel", {
-        Text = `Nice job, you broke the game. No points for it though.\nOn the bright side, this match has been marked as "no contest" so it isn't a loss.`;
-        TextSize = 17;
+        Text = `When I said "break everything", I didn't mean break the game... Kidding. Something so bad happened on our side that we had to stop the show.\nLet's try that again.`;
+        -- TextSize = 17;
+        TextSize = 14;
         LineHeight = 1.25;
         TextWrapped = true;
         TextColor3 = Colors.ParagraphText;
@@ -174,7 +178,9 @@ local function MatchStoppagePopup()
         BackgroundTransparency = transparency;
         TextTransparency = transparency;
         Visible = contentFrameSizeScale == 1;
-        onClick = function()
+        onActivated = function()
+
+          -- Teleport back to the arena.
 
         end;
       });

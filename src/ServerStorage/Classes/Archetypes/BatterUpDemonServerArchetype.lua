@@ -2,33 +2,27 @@
 local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local BatterUpDemonClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.BatterUpDemonClientArchetype);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-local ServerAction = require(script.Parent.Parent.ServerAction);
-type ServerRound = ServerRound.ServerRound;
-type ServerContestant = ServerContestant.ServerContestant;
-type ServerArchetype = ServerArchetype.ServerArchetype;
-type ServerAction = ServerAction.ServerAction;
 local downContestant = require(ServerStorage.Modules.downContestant);
 local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
+local types = require(ServerStorage.Classes.types);
 
 local BatterUpDemonServerArchetype = {
-  ID = BatterUpDemonClientArchetype.ID;
+  id = BatterUpDemonClientArchetype.id;
   name = BatterUpDemonClientArchetype.name;
   description = BatterUpDemonClientArchetype.description;
   actionIDs = BatterUpDemonClientArchetype.actionIDs;
   type = BatterUpDemonClientArchetype.type;
 };
 
-function BatterUpDemonServerArchetype.new(): ServerArchetype
+function BatterUpDemonServerArchetype.new(): types.ServerArchetype
 
-  local contestant: ServerContestant;
-  local round: ServerRound;
+  local contestant: types.ServerContestant;
+  local round: types.ServerRound;
   local events: {RBXScriptConnection} = {};
 
   local ragdollClone;
-  local function breakdown(self: ServerArchetype)
+  local function breakdown(self: types.ServerArchetype)
 
     for _, event in events do
 
@@ -44,7 +38,7 @@ function BatterUpDemonServerArchetype.new(): ServerArchetype
 
   end;
 
-  local function runAutoPilot(self: ServerArchetype, actions: {ServerAction})
+  local function runAutoPilot(self: types.ServerArchetype, actions: {types.ServerAction})
 
     -- Make sure the contestant has a character.
     local character = contestant.character
@@ -58,14 +52,14 @@ function BatterUpDemonServerArchetype.new(): ServerArchetype
 
   end;
 
-  local function initialize(self: ServerArchetype, newContestant: ServerContestant, newRound: ServerRound)
+  local function initialize(self: types.ServerArchetype, newContestant: types.ServerContestant, newRound: types.ServerRound)
 
     contestant = newContestant;
     round = newRound;
 
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.id);
 
     end;
 
@@ -100,7 +94,7 @@ function BatterUpDemonServerArchetype.new(): ServerArchetype
   end;
 
   return ServerArchetype.new({
-    ID = BatterUpDemonServerArchetype.ID;
+    id = BatterUpDemonServerArchetype.id;
     name = BatterUpDemonServerArchetype.name;
     description = BatterUpDemonServerArchetype.description;
     actionIDs = BatterUpDemonServerArchetype.actionIDs;

@@ -1,59 +1,58 @@
---!strict
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local Colors = require(ReplicatedStorage.Client.Colors);
-local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
+local Line = require(script.Parent.Line);
+local Square = require(script.Parent.Square);
 
-type ButtonProps = {
-  text: string; 
-  type: "Primary" | "Secondary" | "Danger";
-  onClick: () -> (); 
-  isDisabled: boolean?; 
+export type ButtonProperties = {
+  Text: string;
   LayoutOrder: number;
-  TextTransparency: number?;
-  BackgroundTransparency: number?;
-  AnchorPoint: Vector2?;
-  Visible: boolean?;
-  Position: UDim2?;
-  textSize: number?
-};
+  isDisabled: boolean?;
+  onActivated: () -> ()
+}
 
-local function Button(props: ButtonProps)
-
-  local shouldUseFullPadding = useResponsiveDesign({minimumWidth = 700});
+local function Button(properties: ButtonProperties)
 
   return React.createElement("TextButton", {
-    Text = props.text:upper();
-    BackgroundColor3 = if props.isDisabled then Colors.DisabledButton else Colors.DemoDemonsOrange;
-    TextColor3 = Colors.ButtonText;
-    AutoButtonColor = not props.isDisabled;
-    BackgroundTransparency = props.BackgroundTransparency;
-    TextTransparency = props.TextTransparency;
-    LayoutOrder = props.LayoutOrder;
-    Active = not props.isDisabled;
-    AutomaticSize = Enum.AutomaticSize.XY;
-    FontFace = Font.fromId(11702779517, Enum.FontWeight.SemiBold);
-    Position = props.Position;
-    AnchorPoint = props.AnchorPoint;
-    Visible = props.Visible;
-    TextSize = props.textSize or 14;
-    [React.Event.Activated] = if props.isDisabled then nil else function()
+    LayoutOrder = properties.LayoutOrder;
+    Size = UDim2.new(1, 0, 0, 30);
+    BackgroundTransparency = 0.6;
+    BorderSizePixel = 0;
+    BackgroundColor3 = Color3.new();
+    Text = "";
+    [React.Event.Activated] = function()
 
-      props.onClick();
+      if properties.isDisabled then
+
+        properties.onActivated();
+
+      end;
 
     end;
   }, {
-    UIPadding = React.createElement("UIPadding", {
-      PaddingLeft = UDim.new(0, if shouldUseFullPadding then 15 else 7);
-      PaddingRight = UDim.new(0, if shouldUseFullPadding then 15 else 7);
-      PaddingTop = UDim.new(0, if shouldUseFullPadding then 7 else 5);
-      PaddingBottom = UDim.new(0, if shouldUseFullPadding then 7 else 5);
+    DecorationContainer = React.createElement("Frame", {
+      Size = UDim2.new(1, 0, 1, 0);
+      BackgroundTransparency = 1;
+    }, {
+      TopLine = React.createElement(Line, {isTop = true});
+      BottomLine = React.createElement(Line, {isTop = false});
+      TopLeftSquare = React.createElement(Square, {anchorPoint = Vector2.new()});
+      TopRightSquare = React.createElement(Square, {anchorPoint = Vector2.new(1, 0)});
+      BottomLeftSquare = React.createElement(Square, {anchorPoint = Vector2.new(0, 1)});
+      BottomRightSquare = React.createElement(Square, {anchorPoint = Vector2.new(1, 1)});
     });
-    UICorner = React.createElement("UICorner", {
-      CornerRadius = UDim.new(1, 0);
+    TextLabel = React.createElement("TextLabel", {
+      AnchorPoint = Vector2.new(0.5, 0.5);
+      Position = UDim2.new(0.5, 0, 0.5, 0);
+      BackgroundTransparency = 1;
+      AutomaticSize = Enum.AutomaticSize.XY;
+      FontFace = Font.fromId(11702779517, Enum.FontWeight.Light);
+      TextColor3 = Color3.new(1, 1, 1);
+      TextSize = 14;
+      Text = properties.Text;
     });
   });
 
-end
+end;
 
 return Button;

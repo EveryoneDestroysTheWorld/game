@@ -228,6 +228,7 @@ function meleeAttackFramework.KeyDown(data: Array, effect: Function, round, arch
 			(data.heavyAttackSpeed or defaultData.heavyAttackSpeed)/100 -- speed
 		)
 		animations[animationName]:Play(animData.X,animData.Y,animData.Z)
+      
 		if not manimate2 then
 			manimate2 = require(ReplicatedStorage.Client.InGameDisplayObjects.MoonAnimator)
 		end

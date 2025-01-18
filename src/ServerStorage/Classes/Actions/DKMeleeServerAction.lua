@@ -1,7 +1,7 @@
 --!strict
 -- Programmer: Hati (hati_bati)
 -- Designer: Christian Toney (Christian_Toney)
--- © 2024 Beastslash LLC
+-- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService")
@@ -16,7 +16,7 @@ local ServerStorage = game:GetService("ServerStorage");
 local displayObjects = ReplicatedStorage.Client.InGameDisplayObjects
 
 local MeleeServerAction = {
-	ID = MeleeClientAction.ID;
+	id = MeleeClientAction.id;
 	name = MeleeClientAction.name;
 	description = MeleeClientAction.description;
 };
@@ -24,7 +24,7 @@ local MeleeServerAction = {
 
 
 local function damageEvent(primaryPart, round, contestant)
-	--print("creating Explosion")
+  
 	local explosion = Instance.new("Explosion", primaryPart);
 	explosion.BlastPressure = 0;
 	explosion.BlastRadius = 5;
@@ -51,7 +51,7 @@ local function damageEvent(primaryPart, round, contestant)
 							local newHealth = currentHealth - 15;
 							possibleEnemyContestant:updateHealth(newHealth, {
 								contestant = contestant;
-								actionID = MeleeServerAction.ID;
+								actionID = MeleeServerAction.id;
 							});
 
 						end
@@ -301,6 +301,7 @@ local function flyingAttackFire(primaryPart, anims, combo, round, contestant)
 	task.delay(1, function()
 		primaryPart.ChargeMeter:Destroy()
 	end)
+  
 	--print("FireBreathEnded")
 
 end
@@ -431,7 +432,7 @@ function MeleeServerAction.new(): ServerAction
 		if contestant.player then
 
 			local remoteFunction = Instance.new("RemoteFunction");
-			remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+			remoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
 			remoteFunction.OnServerInvoke = function(player)
 
 				if player == contestant.player then
@@ -458,7 +459,7 @@ function MeleeServerAction.new(): ServerAction
 
 	return ServerAction.new({
 		name = MeleeServerAction.name;
-		ID = MeleeServerAction.ID;
+		id = MeleeServerAction.id;
 		description = MeleeServerAction.description;
 		breakdown = breakdown;
 		activate = activate;

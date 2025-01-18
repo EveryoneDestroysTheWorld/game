@@ -1,31 +1,33 @@
 --!strict
--- Writer: Christian Toney (Sudobeast)
--- Designer: Christian Toney (Sudobeast)
+-- Programmer: Christian Toney (Christian_Toney)
+-- Designer: Christian Toney (Christian_Toney)
+-- © 2024 – 2025 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
-type ServerAction = ServerAction.ServerAction;
 local RocketFeetClientAction = require(ReplicatedStorage.Client.Classes.Actions.RocketFeetClientAction);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
 local ServerStorage = game:GetService("ServerStorage");
+local assertContestantIsNotActionLocked = require(ServerStorage.Modules.assertContestantIsNotActionLocked);
+local types = require(ServerStorage.Classes.types);
 
 local RocketFeetServerAction = {
-  ID = RocketFeetClientAction.ID;
+  id = RocketFeetClientAction.id;
   name = RocketFeetClientAction.name;
   description = RocketFeetClientAction.description;
 };
 
-function RocketFeetServerAction.new(): ServerAction
+function RocketFeetServerAction.new(): types.ServerAction
 
-  local contestant: ServerContestant = nil;
-  local round: ServerRound = nil;
+  local contestant: types.ServerContestant = nil;
+  local round: types.ServerRound = nil;
   local leftFootExplosivePart: Part;
   local rightFootExplosivePart: Part;
   local executeActionRemoteFunction: RemoteFunction? = nil;
 
-  local function activate()
+  local function activate(self: types.ServerAction)
+
+    -- Verify that actions aren't locked.
+    assertContestantIsNotActionLocked(contestant);
 
     if contestant.character then
 
@@ -54,8 +56,8 @@ function RocketFeetServerAction.new(): ServerAction
 
                   table.insert(hitContestants, possibleEnemyContestant);
                   possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 15, {
-                    contestant = contestant;
-                    actionID = RocketFeetServerAction.ID;
+                    contestantID = contestant.id;
+                    actionID = RocketFeetServerAction.id;
                   });
 
                 end;
@@ -93,7 +95,9 @@ function RocketFeetServerAction.new(): ServerAction
         end;
 
         -- Reduce the player's stamina.
-        contestant:updateStamina(math.max(0, contestant.currentStamina - 10));
+        contestant:updateStamina(math.max(0, contestant.currentStamina - 10), {
+          actionID = self.id
+        });
 
       end;
   
@@ -114,7 +118,7 @@ function RocketFeetServerAction.new(): ServerAction
 
   end;
   
-  local function initialize(self: ServerAction, newContestant: ServerContestant, newRound: ServerRound)
+  local function initialize(self: types.ServerAction, newContestant: types.ServerContestant, newRound: types.ServerRound)
 
     contestant = newContestant;
     round = newRound;
@@ -163,7 +167,7 @@ function RocketFeetServerAction.new(): ServerAction
     if contestant.player then
 
       local remoteFunction = Instance.new("RemoteFunction");
-      remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+      remoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
       remoteFunction.OnServerInvoke = function(player)
   
         if player == contestant.player then
@@ -187,7 +191,7 @@ function RocketFeetServerAction.new(): ServerAction
 
   return ServerAction.new({
     name = RocketFeetServerAction.name;
-    ID = RocketFeetServerAction.ID;
+    id = RocketFeetServerAction.id;
     description = RocketFeetServerAction.description;
     breakdown = breakdown;
     activate = activate;

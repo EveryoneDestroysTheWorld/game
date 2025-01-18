@@ -5,28 +5,27 @@
 -- © 2024 Beastslash
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
+local ServerStorage = game:GetService("ServerStorage");
 local ServerItem = require(script.Parent.Parent.ServerItem);
-type ServerItem = ServerItem.ServerItem;
 local PotionOfRegenerationClientItem = require(ReplicatedStorage.Client.Classes.Items.PotionOfRegenerationClientItem);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
+local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
+local HttpService = game:GetService("HttpService");
+local types = require(ServerStorage.Classes.types);
 
 local PotionOfRegenerationServerItem = {
-  ID = PotionOfRegenerationClientItem.ID;
+  id = PotionOfRegenerationClientItem.id;
   name = PotionOfRegenerationClientItem.name;
   description = PotionOfRegenerationClientItem.description;
 };
 
-function PotionOfRegenerationServerItem.new(): ServerItem
+function PotionOfRegenerationServerItem.new(): types.ServerItem
 
-  local contestant: ServerContestant;
+  local _specificItemID: string?;
+  local contestant: types.ServerContestant;
   local shouldHeal = true;
   local remoteFunction: RemoteFunction?;
-  local itemNumber: number = 1;
 
-  local function activate(self: ServerItem)
+  local function activate(self: types.ServerItem)
 
     for currentSecond = 1, 3 do
 
@@ -44,13 +43,13 @@ function PotionOfRegenerationServerItem.new(): ServerItem
     
   end;
   
-  local function breakdown(self: ServerItem)
+  local function breakdown(self: types.ServerItem)
 
     shouldHeal = false;
 
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.ID, itemNumber);
+      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.id, _specificItemID);
 
     end;
 
@@ -62,45 +61,28 @@ function PotionOfRegenerationServerItem.new(): ServerItem
     
   end;
 
-  local function initialize(self: ServerItem, newContestant: ServerContestant)
+  local function initialize(self: types.ServerItem, newContestant: types.ServerContestant)
 
     contestant = newContestant;
 
     if contestant.player then
 
-      local itemName = `{contestant.player.UserId}_{self.ID}`;
-      while ReplicatedStorage.Shared.Functions.ItemFunctions:FindFirstChild(`{itemName}_{itemNumber}`) do
+      local specificItemID = HttpService:GenerateGUID(false);
+      _specificItemID = specificItemID;
+      remoteFunction = createInventoryRemoteFunction(contestant.player, specificItemID, function()
+      
+        self:activate();
 
-        itemNumber += 1;
+      end);
 
-      end;
-
-      local newRemoteFunction = Instance.new("RemoteFunction");
-      newRemoteFunction.Name = `{itemName}_{itemNumber}`;
-      newRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ItemFunctions;
-      newRemoteFunction.OnServerInvoke = function(player)
-  
-        if player == contestant.player then
-  
-          self:activate();
-  
-        else
-  
-          error(`{player.Name} ({player.UserId}) may not use another player's item.`, 0);
-  
-        end
-  
-      end;
-      remoteFunction = newRemoteFunction;
-
-      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID, itemNumber);
+      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.id, specificItemID);
 
     end;
 
   end;
 
   local item = ServerItem.new({
-    ID = PotionOfRegenerationServerItem.ID;
+    id = PotionOfRegenerationServerItem.id;
     name = PotionOfRegenerationServerItem.name;
     description = PotionOfRegenerationServerItem.description;
     activate = activate;

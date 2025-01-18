@@ -1,26 +1,25 @@
 --!strict
--- Writer: Christian Toney (Sudobeast)
--- Designer: Christian Toney (Sudobeast)
+-- Programmer: Christian Toney (Christian_Toney)
+-- Designer: Christian Toney (Christian_Toney)
+-- © 2024 – 2025 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
-type ServerAction = ServerAction.ServerAction;
 local ExplosivePunchClientAction = require(ReplicatedStorage.Client.Classes.Actions.ExplosivePunchClientAction);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
 local ServerStorage = game:GetService("ServerStorage");
+local assertContestantIsNotActionLocked = require(ServerStorage.Modules.assertContestantIsNotActionLocked);
+local types = require(ServerStorage.Classes.types);
 
 local ExplosivePunchServerAction = {
-  ID = ExplosivePunchClientAction.ID;
+  id = ExplosivePunchClientAction.id;
   name = ExplosivePunchClientAction.name;
   description = ExplosivePunchClientAction.description;
 };
 
-function ExplosivePunchServerAction.new(): ServerAction
+function ExplosivePunchServerAction.new(): types.ServerAction
   
-  local contestant: ServerContestant = nil;
-  local round: ServerRound = nil;
+  local contestant: types.ServerContestant = nil;
+  local round: types.ServerRound = nil;
 
   -- Set up the explosive parts.
   local explosiveParts = {};
@@ -28,7 +27,17 @@ function ExplosivePunchServerAction.new(): ServerAction
 
   local latestActivationTimes = {0, 0};
   local currentAnimationTrack = nil;
-  local function activate(self: ServerAction)
+  local minimumRequiredStamina = 5;
+  local function activate(self: types.ServerAction)
+
+    -- Verify that actions aren't locked.
+    assertContestantIsNotActionLocked(contestant);
+
+    -- Ensure the contestant has enough stamina.
+    assert(contestant.currentStamina >= minimumRequiredStamina, "Contestant doesn't have enough stamina.");
+    contestant:updateStamina(math.max(contestant.currentStamina - minimumRequiredStamina, 0), {
+      actionID = self.id;
+    });
 
     -- Run the animation.
     local animator = humanoid:FindFirstChild("Animator");
@@ -62,8 +71,8 @@ function ExplosivePunchServerAction.new(): ServerAction
 
               table.insert(hitContestants, possibleEnemyContestant);
               possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 15, {
-                contestant = contestant;
-                actionID = ExplosivePunchServerAction.ID;
+                contestantID = contestant.id;
+                actionID = ExplosivePunchServerAction.id;
               });
 
             end;
@@ -121,7 +130,7 @@ function ExplosivePunchServerAction.new(): ServerAction
     
   end;
 
-  local function initialize(self: ServerAction, newContestant: ServerContestant, newRound: ServerRound)
+  local function initialize(self: types.ServerAction, newContestant: types.ServerContestant, newRound: types.ServerRound)
 
     contestant = newContestant;
     round = newRound;
@@ -160,7 +169,7 @@ function ExplosivePunchServerAction.new(): ServerAction
     if contestant.player then
     
       actionRemoteFunction = Instance.new("RemoteFunction");
-      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
       actionRemoteFunction.OnServerInvoke = function(player, chargeMode: "charging" | "release")
   
         assert(not chargeMode or (typeof(chargeMode) == "string" and (chargeMode == "charging" or chargeMode == "release")), "Charge mode must be nil, \"charging\", or \"release\"");  
@@ -184,7 +193,7 @@ function ExplosivePunchServerAction.new(): ServerAction
   end;
 
   return ServerAction.new({
-    ID = ExplosivePunchServerAction.ID;
+    id = ExplosivePunchServerAction.id;
     name = ExplosivePunchServerAction.name;
     description = ExplosivePunchServerAction.description;
     activate = activate;

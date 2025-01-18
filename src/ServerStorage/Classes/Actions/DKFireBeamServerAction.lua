@@ -1,7 +1,7 @@
 --!strict
 -- Programmer: Hati (hati_bati)
 -- Designer: Christian Toney (Christian_Toney)
--- © 2024 Beastslash LLC
+-- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService")
@@ -16,7 +16,7 @@ local ServerStorage = game:GetService("ServerStorage");
 local displayObjects = ReplicatedStorage.Client.InGameDisplayObjects
 
 local FireBeamServerAction = {
-	ID = FireBeamClientAction.ID;
+	id = FireBeamClientAction.id;
 	name = FireBeamClientAction.name;
 	description = FireBeamClientAction.description;
 };
@@ -41,6 +41,7 @@ function FireBeamServerAction.new(): ServerAction
 	end;
 
 	local function initialize(self: ServerAction, newContestant: ServerContestant, newRound: ServerRound)
+    
 		contestant = newContestant;
 		round = newRound;
 
@@ -71,12 +72,12 @@ function FireBeamServerAction.new(): ServerAction
 
 		_humanoid = humanoid;
 		contestant = contestant;
-
+    
 	end;
 
 	return ServerAction.new({
 		name = FireBeamServerAction.name;
-		ID = FireBeamServerAction.ID;
+		id = FireBeamServerAction.id;
 		description = FireBeamServerAction.description;
 		breakdown = breakdown;
 		activate = activate;

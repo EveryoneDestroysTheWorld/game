@@ -2,30 +2,24 @@
 local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local UndeadConciousnessClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.UndeadConciousnessClientArchetype);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-local ServerAction = require(script.Parent.Parent.ServerAction);
 local ServerItem = require(script.Parent.Parent.ServerItem);
-type ServerRound = ServerRound.ServerRound;
-type ServerContestant = ServerContestant.ServerContestant;
-type ServerArchetype = ServerArchetype.ServerArchetype;
-type ServerAction = ServerAction.ServerAction;
 local downContestant = require(ServerStorage.Modules.downContestant);
 local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
+local types = require(ServerStorage.Classes.types);
 
 local UndeadConciousnessServerArchetype = {
-  ID = UndeadConciousnessClientArchetype.ID;
+  id = UndeadConciousnessClientArchetype.id;
   name = UndeadConciousnessClientArchetype.name;
   description = UndeadConciousnessClientArchetype.description;
   actionIDs = UndeadConciousnessClientArchetype.actionIDs;
   type = UndeadConciousnessClientArchetype.type;
 };
 
-function UndeadConciousnessServerArchetype.new(): ServerArchetype
+function UndeadConciousnessServerArchetype.new(): types.ServerArchetype
 
-  local contestant: ServerContestant;
-  local round: ServerRound;
+  local contestant: types.ServerContestant;
+  local round: types.ServerRound;
   local isContestantStunned = false;
   local breakdownEventList: {
     [BasePart]: RBXScriptConnection;
@@ -34,7 +28,7 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
   } = {};
 
   local ragdollClone;
-  local function breakdown(self: ServerArchetype)
+  local function breakdown(self: types.ServerArchetype)
 
     for _, event in pairs(breakdownEventList) do
 
@@ -50,7 +44,7 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
 
   end;
 
-  local function runAutoPilot(self: ServerArchetype, actions: {ServerAction})
+  local function runAutoPilot(self: types.ServerArchetype, actions: {types.ServerAction})
 
     -- Make sure the contestant has a character.
     local character = contestant.character
@@ -64,7 +58,7 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
 
   end;
 
-  local function initialize(self: ServerArchetype, newContestant: ServerContestant, newRound: ServerRound)
+  local function initialize(self: types.ServerArchetype, newContestant: types.ServerContestant, newRound: types.ServerRound)
 
     contestant = newContestant;
     round = newRound;
@@ -83,25 +77,13 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
 
       -- Verify that we have the required instances.
       local character = contestant.character;
-      assert(character, `Couldn't find {contestant.ID}'s character.`);
+      assert(character, `Couldn't find {contestant.id}'s character.`);
       
       local humanoid = character:FindFirstChild("Humanoid") :: Humanoid?;
-      assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.ID}'s humanoid.`);
+      assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.id}'s humanoid.`);
   
       -- Slow down the player.
       humanoid.WalkSpeed = 12;
-  
-      -- Allow the player to revive disqualified allies and give them this archetype.
-      for _, possibleAllyContestant in ipairs(round.contestants) do
-  
-        -- To be implemented when teams are implemented.
-        possibleAllyContestant.onDisqualified:Connect(function()
-        
-          
-  
-        end);
-  
-      end;
   
       -- If the player gets dealt 30 damage, stun them for 3 seconds.
       if breakdownEventList.healthUpdateEvent then
@@ -169,10 +151,10 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
                       table.remove(immuneContestants, table.find(immuneContestants, possibleEnemyContestant));
   
                     end);
-  
+
                     possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 20, {
-                      contestant = contestant;
-                      archetypeID = UndeadConciousnessServerArchetype.ID;
+                      contestantID = contestant.id;
+                      archetypeID = UndeadConciousnessServerArchetype.id;
                     });
   
                   end;
@@ -192,8 +174,8 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
     end;
 
     local isDowned = false;
-    breakdownEventList.healthUpdateEvent = contestant.onHealthUpdated:Connect(function()
-    
+    local function checkHealth()
+
       if isDowned and contestant.currentHealth > 0 then
         
         isDowned = false;
@@ -218,22 +200,26 @@ function UndeadConciousnessServerArchetype.new(): ServerArchetype
 
       end;
 
-    end);
+    end;
+
+    breakdownEventList.healthUpdateEvent = contestant.onHealthUpdated:Connect(checkHealth);
+    checkHealth();
 
     -- Give the player a random item. 
-    local randomItem = ServerItem.random();
+    local randomItem = ServerItem.random(); -- TODO: Uncomment before merging PR
+    randomItem:initialize(contestant, round);
     contestant:addItemToInventory(randomItem);
 
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.id);
 
     end;
 
   end;
 
   return ServerArchetype.new({
-    ID = UndeadConciousnessServerArchetype.ID;
+    id = UndeadConciousnessServerArchetype.id;
     name = UndeadConciousnessServerArchetype.name;
     description = UndeadConciousnessServerArchetype.description;
     actionIDs = UndeadConciousnessServerArchetype.actionIDs;

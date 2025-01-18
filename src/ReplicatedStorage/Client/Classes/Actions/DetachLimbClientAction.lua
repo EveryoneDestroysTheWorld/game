@@ -14,7 +14,7 @@ local LimbSelectionWindow = require(script.Parent.Parent.Parent.ReactComponents.
 type ClientAction = ClientAction.ClientAction;
 
 local DetachLimbAction = {
-  ID = 2;
+  id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
   name = "Detach Limb";
   iconImage = "rbxassetid://17551046771";
   description = "Detach a limb of your choice. It only hurts a little bit.";
@@ -44,7 +44,7 @@ function DetachLimbAction.new(): ClientAction
 
   local function activate(self: ClientAction, limbName: string)
 
-    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(`{player.UserId}_{DetachLimbAction.ID}`):InvokeServer(limbName);
+    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(`{player.UserId}_{DetachLimbAction.id}`):InvokeServer(limbName);
 
   end;
 
@@ -77,7 +77,7 @@ function DetachLimbAction.new(): ClientAction
   
     ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
       type = "Action";
-      key = self.ID;
+      key = self.id;
       onActivate = function() activateGUI() end;
       shortcutCharacter = "L";
       iconImage = "rbxassetid://17551046771";
@@ -103,7 +103,7 @@ function DetachLimbAction.new(): ClientAction
   end;
 
   local action = ClientAction.new({
-    ID = DetachLimbAction.ID;
+    id = DetachLimbAction.id;
     name = DetachLimbAction.name;
     iconImage = DetachLimbAction.iconImage;
     description = DetachLimbAction.description;

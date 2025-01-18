@@ -1,33 +1,30 @@
---!strict
--- Profile.lua
--- Writers: Christian "Sudobeast" Toney and Hati :))))
--- This script controls the round and lobby management stuff.
+-- --!strict
+-- Programmers: Christian Toney (Christian_Toney) and Hati (hati_bati) :))))
+-- This script controls the round management stuff.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local Players = game:GetService("Players");
 local HttpService = game:GetService("HttpService");
-local Stage = require(ServerStorage.Classes.Stage);
+local Stage = require(ServerStorage.Packages.Stage);
 local ServerRound = require(ServerStorage.Classes.ServerRound);
 local ServerContestant = require(ServerStorage.Classes.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
-local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
-type ServerArchetype = ServerArchetype.ServerArchetype;
-local Profile = require(ServerStorage.Classes.Profile);
+local Profile = require(ServerStorage.Packages.Profile);
+local StarterPlayerScripts = game:GetService("StarterPlayer").StarterPlayerScripts;
+local types = require(ServerStorage.Classes.types);
 
 -- Initialize the round.
 local round;
 local didSuccessfullyInitializeRound, message = pcall(function()
 
-  local shouldCreateRound = true;
-  if shouldCreateRound then
+  if script:HasTag("DebugAllPlayersAreContestants") then
 
     round = ServerRound.new({
-      ID = HttpService:GenerateGUID();
-      stageID = Stage.random().ID :: string;
-      gameModeID = 1;
+      id = HttpService:GenerateGUID();
+      stageID = Stage.random().id :: string;
+      gameModeID = "TurfWar";
       contestantIDs = {};
-      duration = 180;
+      duration = script:GetAttribute("DebugRoundDuration");
       status = "Waiting for players" :: "Waiting for players";
     });
 
@@ -39,6 +36,310 @@ local didSuccessfullyInitializeRound, message = pcall(function()
   end;
   
   round.stage:download().Parent = workspace;
+
+  ReplicatedStorage.Shared.Functions.GetRound.OnServerInvoke = function()
+
+    assert(round, "The server hasn't initialized the round yet.");
+  
+    -- Convert the ServerRound to a ClientRound.
+    return round:getClientConstructorProperties();
+  
+  end;
+  
+  local function getContestantFromPlayer(player: Player): types.ServerContestant?
+  
+    for _, contestant in ipairs(round.contestants) do
+  
+      if contestant.player == player then
+  
+        return contestant;
+  
+      end;
+  
+    end;
+  
+    return nil;
+  
+  end;
+  
+  ReplicatedStorage.Shared.Functions.GetArchetypeIDs.OnServerInvoke = function(player: Player): {string}
+  
+    local contestant = getContestantFromPlayer(player);
+    assert(contestant, `{player.Name} ({player.UserId}) isn't a contestant in this round, so it is unnecessary to get the archetype list.`);
+    assert(contestant.profile, "Couldn't find the player's profile.");
+  
+    -- Verify that the player has the default archetypes.
+    local archetypeIDs = contestant.profile:getArchetypeIDs();
+    local _newArchetypeIDs: {string}? = nil;
+    for _, archetypeID in {"ExplosiveMimic", "BatterUpDemon", "DraconicKnight", "UndeadConciousness"} do
+  
+      if not table.find(archetypeIDs, archetypeID) then
+  
+        local newArchetypeIDs = _newArchetypeIDs or table.clone(archetypeIDs);
+        table.insert(newArchetypeIDs, archetypeID);
+        _newArchetypeIDs = newArchetypeIDs;
+  
+      end;
+  
+    end;
+    
+    -- Return the archetype IDs.
+    if _newArchetypeIDs then
+  
+      contestant.profile:updateArchetypeIDs(_newArchetypeIDs);
+  
+    end;
+
+    return _newArchetypeIDs or archetypeIDs;
+  
+  end;
+  
+  ReplicatedStorage.Shared.Functions.UpdateContestantArchetype.OnServerInvoke = function(player: Player, archetypeID: unknown): ()
+  
+    -- Verify that the player is a contestant.
+    local contestant = getContestantFromPlayer(player);
+    local playerIdentifier = `{player.Name} ({player.UserId})`;
+    assert(contestant, `{playerIdentifier} isn't a contestant in this round, so it is unnecessary for them to choose an archetype.`);
+
+    local archetypeLocks = ServerStorage.Functions.GetArchetypeLocks:Invoke(contestant.id);
+    assert(not archetypeLocks, "Archetypes are currently locked.");
+    assert(contestant.profile, `Couldn't find the {playerIdentifier}'s profile.`);
+  
+    -- Verify that the contestant has that archetype.
+    assert(table.find(contestant.profile:getArchetypeIDs(), archetypeID), `{playerIdentifier} doesn't own archetype {archetypeID}, so it can't be used in this round.`);
+  
+    -- Update the archetype.
+    contestant:updateArchetypeID(archetypeID);
+  
+  end;
+  
+  -- Get the match info.
+  local expectedPlayerIDs = {};
+  
+  local function startRound()
+  
+    -- Create required bot contestants.
+    local team1BotCount = 4;
+    local team2BotCount = 4;
+    for _, contestant in ipairs(round.contestants) do
+  
+      if contestant.teamID == 1 then
+  
+        team1BotCount -= 1;
+  
+      elseif contestant.teamID == 2 then
+  
+        team2BotCount -= 1;
+  
+      else 
+  
+        warn(`Contestant {contestant.name} ({contestant.id}) doesn't have a team.`)
+  
+      end;
+  
+    end;
+  
+    for i = 1, team1BotCount + team2BotCount do
+  
+      -- Create the NPC's character.
+      local character: Model = ServerStorage:FindFirstChild("NPCRigs"):FindFirstChild("Rig"):Clone();
+      character.Name = "NPC" .. i;
+  
+      -- Add the NPC to the contestant list.
+      local botContestant = ServerContestant.new({
+        id = i * 0.01;
+        character = character;
+        effects = {};
+        name = `NPC {i * 0.01}`;
+        inventory = {};
+        isBot = true;
+        isDisqualified = false;
+        teamID = if i > team1BotCount then 2 else 1;
+        baseHealth = 100;
+        currentHealth = 100;
+        baseStamina = 100;
+        currentStamina = 100;
+      });
+  
+      round:addContestant(botContestant);
+  
+    end;
+  
+    -- Show each contestant their rivals.
+    local viewingPlayers = {};
+    for _, contestant in round.contestants do
+
+      if contestant.player then
+
+        table.insert(viewingPlayers, contestant.player);
+
+      end;
+
+    end;
+
+    round:setStatus("Matchup preview");
+
+    -- Force continuation after a specific time.
+    local completionEvent;
+    local forceCompletionTask;
+    local goalTime = DateTime.now().UnixTimestamp + 7;
+
+    local function continueProcess()
+
+      if #viewingPlayers > 0 then
+
+        return;
+
+      end;
+
+      if forceCompletionTask and coroutine.status(forceCompletionTask) == "suspended" then
+
+        task.cancel(forceCompletionTask);
+
+      end;
+
+      if goalTime > DateTime.now().UnixTimestamp and not StarterPlayerScripts.PreRoundLoadoutScreenScript:HasTag("DebugSkipCutscene") then
+
+        task.wait(goalTime - DateTime.now().UnixTimestamp);
+
+      end;
+
+      completionEvent:Disconnect();
+
+      round:setStatus("Initializing character models");
+  
+      for _, contestant in ipairs(round.contestants) do
+    
+        if contestant.player then
+    
+          contestant.player:LoadCharacter();
+          contestant:updateCharacter(contestant.player.Character);
+    
+        else
+    
+          local character = ServerStorage.NPCRigs.Rig:Clone();
+          character.Name = contestant.name;
+          character.Parent = workspace;
+    
+          local function resetNetworkOwnership(instance: Instance)
+    
+            if instance:IsA("BasePart") then
+    
+              while not instance:CanSetNetworkOwnership() do 
+                
+                task.wait();
+    
+              end;
+              
+              instance:SetNetworkOwner();
+    
+            end;
+
+          end;
+    
+          character.DescendantAdded:Connect(resetNetworkOwnership);
+    
+          for _, part in ipairs(character:GetDescendants()) do
+    
+            if part:IsA("BasePart") then
+    
+              part:SetNetworkOwner();
+    
+            end;
+    
+          end;
+    
+          contestant:updateCharacter(character);
+    
+        end;
+    
+      end;
+    
+      -- All clear!
+      round:setStatus("Active");
+      round:start();
+
+    end;
+              
+    completionEvent = ReplicatedStorage.Shared.Events.MatchupPreviewCompleted.OnServerEvent:Connect(function(player)
+      
+      table.remove(viewingPlayers, table.find(viewingPlayers, player));
+      continueProcess();
+
+    end);
+  
+    forceCompletionTask = task.delay(10, function()
+      
+      viewingPlayers = {};
+      continueProcess();
+
+    end);
+
+  end;
+  
+  local function checkPlayerList(player: Player)
+  
+    for index, playerID in ipairs(expectedPlayerIDs) do
+  
+      if playerID == player.UserId then
+  
+        -- Verify that the player has at least one archetype.
+        local profile = Profile.fromID(playerID, true);    --- edit
+        round:addContestant(ServerContestant.new({
+          id = player.UserId;
+          player = player;
+          character = player.Character;
+          name = player.Name;
+          effects = {};
+          inventory = {};
+          profile = profile;
+          isBot = false;
+          isDisqualified = false;
+          teamID = 1; -- TODO: Fix this
+          baseHealth = 100;
+          currentHealth = 100;
+          baseStamina = 100;
+          currentStamina = 100;
+        }));
+  
+      else
+  
+        warn("PlayerID doesn't exist, something went wrong");
+        break;
+  
+      end;
+  
+    end;
+  
+    -- Verify that all expected players joined the server.
+    for _, playerID in ipairs(expectedPlayerIDs) do
+  
+      if not Players:GetPlayerByUserId(playerID) then
+  
+        return;
+  
+      end;
+  
+    end;
+  
+    -- We have all expected players, so start the round.
+    startRound();
+  
+  end;
+  
+  Players.PlayerAdded:Connect(function(player)
+  
+    table.insert(expectedPlayerIDs, player.UserId)
+    checkPlayerList(player);
+    
+  end);
+  
+  for _, player in ipairs(Players:GetPlayers()) do
+  
+    table.insert(expectedPlayerIDs, player.UserId)
+    checkPlayerList(player);
+  
+  end;
 
 end);
 
@@ -53,409 +354,5 @@ if not didSuccessfullyInitializeRound then
   end);
   
   error(message);
-
-end;
-
-ReplicatedStorage.Shared.Functions.GetRound.OnServerInvoke = function()
-
-  assert(round, "The server hasn't initialized the round yet.");
-
-  -- Convert the ServerRound to a ClientRound.
-  return round:getClientConstructorProperties();
-
-end;
-
--- Get the match info.
-local expectedPlayerIDs = {};
-
-local function startRound()
-
-  local isSuccess, message = pcall(function()
-
-    -- Create required bot contestants.
-    local team1BotCount = 4;
-    local team2BotCount = 4;
-    for _, contestant in ipairs(round.contestants) do
-
-      if contestant.teamID == 1 then
-
-        team1BotCount -= 1;
-
-      elseif contestant.teamID == 2 then
-
-        team2BotCount -= 1;
-
-      else 
-
-        warn(`Contestant {contestant.name} ({contestant.ID}) doesn't have a team.`)
-
-      end;
-
-    end;
-
-    for i = 1, team1BotCount + team2BotCount do
-
-      -- Create the NPC's character.
-      local character: Model = ServerStorage:FindFirstChild("NPCRigs"):FindFirstChild("Rig"):Clone();
-      character.Name = "NPC" .. i;
-
-      -- Add the NPC to the contestant list.
-      local botContestant = ServerContestant.new({
-        ID = i * 0.01;
-        character = character;
-        name = `NPC {i * 0.01}`;
-        inventory = {};
-        isBot = true;
-        isDisqualified = false;
-        teamID = if i > team1BotCount then 2 else 1;
-        baseHealth = 100;
-        currentHealth = 100;
-        baseStamina = 100;
-        currentStamina = 100;
-      });
-
-      round:addContestant(botContestant);
-
-    end;
-
-    -- Let the players choose an archetype that they own.
-    local function getContestantFromPlayer(player: Player): ServerContestant?
-
-      for _, contestant in ipairs(round.contestants) do
-
-        if contestant.player == player then
-
-          return contestant;
-
-        end;
-
-      end;
-
-      return nil;
-
-    end;
-
-    ReplicatedStorage.Shared.Functions.GetArchetypeIDs.OnServerInvoke = function(player): {number}
-
-      local contestant = getContestantFromPlayer(player);
-      assert(contestant, `{player.Name} ({player.UserId}) isn't a contestant in this round, so it is unnecessary to get the archetype list.`);
-      assert(contestant.profile, "Couldn't find the player's profile.");
-
-      -- Verify that the player has the default archetypes.
-      local archetypeIDs = contestant.profile:getArchetypeIDs();
-      local newArchetypeIDs: {number}? = nil;
-      for i = 1, 4 do
-
-        if not table.find(archetypeIDs, i) then
-
-          newArchetypeIDs = newArchetypeIDs or table.clone(archetypeIDs);
-          table.insert(newArchetypeIDs :: {number}, i);
-
-        end;
-
-      end;
-
-      -- Return the archetype IDs.
-      if newArchetypeIDs then
-
-        contestant.profile:updateArchetypeIDs(newArchetypeIDs);
-        return newArchetypeIDs;
-
-      end;
-
-      return archetypeIDs;
-
-    end;
-
-    local delayTask = nil;
-    local chosenArchetypeIDs = {};
-    local isPreviewing = false;
-    local function previewMatchup()
-
-      local isSuccess, message = pcall(function()
-
-        assert(not isPreviewing);
-        isPreviewing = true;
-
-        if coroutine.status(delayTask) ~= "running" then
-
-          task.cancel(delayTask);
-
-        end;
-
-        -- Block selections.
-        ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = nil;
-        ReplicatedStorage.Shared.Functions.GetArchetypeIDs.OnServerInvoke = nil;
-        ReplicatedStorage.Shared.Functions.ChooseArchetype.OnServerInvoke = nil;
-        ReplicatedStorage.Shared.Events.ArchetypeSelectionsFinalized:FireAllClients();
-      
-        -- Verify that each contestant has an archetype.
-        for _, contestant in ipairs(round.contestants) do
-
-          local chosenArchetypeID = chosenArchetypeIDs[contestant];
-          if not chosenArchetypeID then
-
-            local ownedArchetypeIDs = {};
-            if contestant.isBot then
-
-              for _, archetype in ipairs(ServerArchetype.getAll()) do
-
-                table.insert(ownedArchetypeIDs, archetype.ID);
-
-              end;
-
-            elseif contestant.profile then
-
-              ownedArchetypeIDs = contestant.profile:getArchetypeIDs();
-
-            end;
-
-            if contestant.teamID then
-
-              -- Choose an archetype of a class that the team doesn't have.
-              local neededTypes = {"Destroyer", "Defender", "Fighter", "Supporter"};
-              for _, possibleTeammate in ipairs(round.contestants) do
-
-                if #neededTypes == 0 then
-
-                  break;
-
-                end;
-
-                if possibleTeammate.archetypeID and possibleTeammate.teamID == contestant.teamID then
-
-                  local archetype = ServerArchetype.get(possibleTeammate.archetypeID);
-                  local typeIndex = table.find(neededTypes, archetype.type);
-                  if typeIndex then
-
-                    table.remove(neededTypes, typeIndex);
-
-                  end;
-
-                end;
-
-              end;
-
-              if #neededTypes > 0 then
-
-                local eligbleArchetypeIDs = {};
-                for _, archetypeID in ipairs(ownedArchetypeIDs) do
-
-                  local archetype = ServerArchetype.get(archetypeID);
-                  if table.find(neededTypes, archetype.type) then
-
-                    table.insert(eligbleArchetypeIDs, archetypeID);
-
-                  end;
-
-                end;
-
-                if #eligbleArchetypeIDs > 0 then
-                  
-                  ownedArchetypeIDs = eligbleArchetypeIDs;
-
-                end;
-
-              end;
-
-            end;
-
-            -- Choose a random archetype for those who didn't choose.
-            
-            local selectedArchetypeIndex = 3;
-            
-            chosenArchetypeID = ownedArchetypeIDs[selectedArchetypeIndex];
-
-          end
-
-          contestant:updateArchetypeID(chosenArchetypeID);
-
-        end;
-
-        --round:setStatus("Matchup preview");
-
-        task.wait(0.4);
-        
-        --round:setStatus("Stage preview");
-
-        for _, contestant in ipairs(round.contestants) do
-
-          if contestant.player then
-
-            contestant.player:LoadCharacter();
-            contestant:updateCharacter(contestant.player.Character);
-
-          else
-
-            local character = ServerStorage.NPCRigs.Rig:Clone();
-            character.Name = contestant.name;
-            character.Parent = workspace;
-            for _, part in ipairs(character:GetDescendants()) do
-
-              if part:IsA("BasePart") then
-
-                part:SetNetworkOwner(nil);
-
-              end;
-
-            end;
-            contestant:updateCharacter(character);
-
-          end;
-
-        end;
-
-        task.wait(0.1);
-        --round:setStatus("Pre-round countdown");
-        task.wait(0.1);
-        round:setStatus("Active");
-        round:start(round.stage.model :: Model);
-
-      end);
-
-      if not isSuccess then
-
-        round:stop(true);
-        error(message);
-
-      end;
-
-    end;
-
-    ReplicatedStorage.Shared.Functions.ChooseArchetype.OnServerInvoke = function(player, archetypeID)
-
-      -- Verify that the player is a contestant.
-      local contestant = getContestantFromPlayer(player);
-      local playerIdentifier = `{player.Name} ({player.UserId})`;
-      assert(contestant, `{playerIdentifier} isn't a contestant in this round, so it is unnecessary for them to choose an archetype.`);
-      assert(contestant.profile, `Couldn't find the {playerIdentifier}'s profile.`);
-
-      -- Verify that the archetype ID is valid.
-      assert(table.find(contestant.profile:getArchetypeIDs(), archetypeID), `{playerIdentifier} doesn't own archetype {archetypeID}, so it can't be used in this round.`);
-
-      -- Update the archetype.
-      chosenArchetypeIDs[contestant] = archetypeID;
-
-      local shouldContinue = true;
-      for _, possibleTeammate in ipairs(round.contestants) do
-
-        if possibleTeammate.player then
-
-          -- Privately let every player teammate know about the change.
-          if possibleTeammate.teamID == contestant.teamID then
-
-            ReplicatedStorage.Shared.Events.ArchetypePrivatelyChosen:FireClient(possibleTeammate.player, contestant.ID, archetypeID);
-
-          end;
-
-          -- Check if every player made their selection
-          if not chosenArchetypeIDs[possibleTeammate] then
-
-            shouldContinue = false;
-
-          end;
-
-        end;
-
-      end;
-
-      if shouldContinue and not isPreviewing then
-
-        previewMatchup();
-
-      end;
-
-    end;
-
-    round:setStatus("Contestant selection");
-
-    local selectionTimeLimitSeconds = 1;
-
-    local currentTime = os.time();
-    ReplicatedStorage.Shared.Events.ArchetypeSelectionsEnabled:FireAllClients(selectionTimeLimitSeconds - 1);
-    ReplicatedStorage.Shared.Functions.GetPreRoundTimeLimit.OnServerInvoke = function()
-
-      return os.time() - currentTime + selectionTimeLimitSeconds - 1;
-
-    end;
-
-    delayTask = task.delay(selectionTimeLimitSeconds, previewMatchup);
-
-  end);
-
-  if not isSuccess then
-
-    round:stop(true);
-    error(message);
-
-  end;
-
-end;
-
-local function checkPlayerList(player: Player)
-
-  for index, playerID in ipairs(expectedPlayerIDs) do
-
-    if playerID == player.UserId then
-
-      -- Verify that the player has at least one archetype.
-      local profile = Profile.fromID(playerID, true);    --- edit
-      round:addContestant(ServerContestant.new({
-        ID = player.UserId;
-        player = player;
-        character = player.Character;
-        name = player.Name;
-        inventory = {};
-        profile = profile;
-        isBot = false;
-        isDisqualified = false;
-        teamID = 1; -- TODO: Fix this
-        baseHealth = 100;
-        currentHealth = 100;
-        baseStamina = 100;
-        currentStamina = 100;
-      }));
-
-    else
-
-      warn("PlayerID doesn't exist, something went wrong");
-      break;
-
-    end;
-
-  end;
-
-  -- Verify that all expected players joined the server.
-  for _, playerID in ipairs(expectedPlayerIDs) do
-
-    if not Players:GetPlayerByUserId(playerID) then
-
-      return;
-
-    end;
-
-  end;
-
-  -- We have all expected players, so start the round.
-  startRound();
-
-end;
-
-local shouldUseStudioPlayers = true;
-if shouldUseStudioPlayers then
-
-  Players.PlayerAdded:Connect(function(player)
-
-    table.insert(expectedPlayerIDs, player.UserId)
-    checkPlayerList(player);
-    
-  end);
-
-  for _, player in ipairs(Players:GetPlayers()) do
-
-    table.insert(expectedPlayerIDs, player.UserId)
-    checkPlayerList(player);
-
-  end;
 
 end;

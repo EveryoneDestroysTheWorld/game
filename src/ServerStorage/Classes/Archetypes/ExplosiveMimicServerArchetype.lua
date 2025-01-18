@@ -4,37 +4,31 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local PathfindingService = game:GetService("PathfindingService");
 local ServerArchetype = require(script.Parent.Parent.ServerArchetype);
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local ExplosiveMimicClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.ExplosiveMimicClientArchetype);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-local ServerAction = require(script.Parent.Parent.ServerAction);
-type ServerRound = ServerRound.ServerRound;
-type ServerContestant = ServerContestant.ServerContestant;
-type ServerArchetype = ServerArchetype.ServerArchetype;
-type ServerAction = ServerAction.ServerAction;
 local downContestant = require(ServerStorage.Modules.downContestant);
+local types = require(ServerStorage.Classes.types);
 
 local ExplosiveMimicServerArchetype = {
-  ID = ExplosiveMimicClientArchetype.ID;
+  id = ExplosiveMimicClientArchetype.id;
   name = ExplosiveMimicClientArchetype.name;
   description = ExplosiveMimicClientArchetype.description;
   actionIDs = ExplosiveMimicClientArchetype.actionIDs;
   type = ExplosiveMimicClientArchetype.type;
 };
 
-function ExplosiveMimicServerArchetype.new(): ServerArchetype
+function ExplosiveMimicServerArchetype.new(): types.ServerArchetype
 
-  local contestant: ServerContestant = nil;
-  local round: ServerRound = nil;
+  local contestant: types.ServerContestant = nil;
+  local round: types.ServerRound = nil;
   local disqualificationEvent: RBXScriptConnection;
 
-  local function breakdown(self: ServerArchetype)
+  local function breakdown(self: types.ServerArchetype)
 
     disqualificationEvent:Disconnect();
 
   end;
 
-  local function runAutoPilot(self: ServerArchetype, actions: {ServerAction})
+  local function runAutoPilot(self: types.ServerArchetype, actions: {types.ServerAction})
 
     -- Make sure the contestant has a character.
     local character = contestant.character
@@ -44,7 +38,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
       -- If the bot gets attacked while destroying a part, determine the damage taken per hit and the amount of time to the bot's disqualification.
       -- If the bot can break the part at least 3 seconds before it gets disqualified, continue breaking the part and escape the enemy's trajectory;
       -- otherwise, escape immediately.
-    local contestantToAttack: ServerContestant?;
+    local contestantToAttack: types.ServerContestant?;
     local timeEnemyAttacked: number = 0;
     local targetPart: BasePart?;
     local forgivenessTask;
@@ -53,8 +47,27 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
       local primaryPart = character.PrimaryPart;
       local targetPartDurability = targetPart and targetPart:GetAttribute("CurrentDurability") :: number?;
       local isTargetPartAlmostDestroyed = not contestantToAttack and not targetPart or targetPartDurability and targetPartDurability <= 35;
-      local enemyCharacter = cause and cause.contestant and cause.contestant.character;
-      if isTargetPartAlmostDestroyed and primaryPart and newHealth < oldHealth and cause and cause.contestant and enemyCharacter and cause.actionID and cause.actionID ~= 2 then
+      
+      -- Find the enemy character if there is one.
+      local enemyContestant;
+      if cause then
+
+        for _, possibleEnemyContestant in round.contestants do
+
+          if contestant.id == cause.contestantID then
+
+            enemyContestant = possibleEnemyContestant;
+            break;
+
+          end;
+
+        end;
+
+      end;
+
+      local enemyCharacter = if enemyContestant then enemyContestant.character else nil;
+
+      if isTargetPartAlmostDestroyed and primaryPart and newHealth < oldHealth and enemyCharacter and cause and cause.actionID and cause.actionID ~= "DetachLimb" then
 
         -- Determine if it is possible to get to the player before they kill the NPC.
         local enemyPrimaryPart = enemyCharacter.PrimaryPart;
@@ -74,7 +87,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
             cleanupTask();
 
-            local isEnemyInCriticalCondition = cause.contestant.currentHealth < 25;
+            local isEnemyInCriticalCondition = enemyContestant.currentHealth < 25;
             local hasEnemyAttackedPlayerAgain = DateTime.now().UnixTimestampMillis <= timeEnemyAttacked + 3000;
             local shouldForgiveEnemy = not isEnemyInCriticalCondition and not hasEnemyAttackedPlayerAgain;
             if shouldForgiveEnemy then
@@ -89,7 +102,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
           cleanupTask();
 
-          contestantToAttack = cause.contestant;
+          contestantToAttack = enemyContestant;
           timeEnemyAttacked = DateTime.now().UnixTimestampMillis;
 
           -- Forgive the enemy after 3 seconds of peace or when they get disqualified.
@@ -185,7 +198,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
       -- STRATEGIC LIMB DETONATION
         -- If the bot sees an enemy nearby its detached limb, detonate it.
-      local detachLimbFunction = ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.ID}_GetDetachedLimbs`) :: BindableFunction?;
+      local detachLimbFunction = ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.id}_GetDetachedLimbs`) :: BindableFunction?;
       if detachLimbFunction then
 
         local detachedLimbs = detachLimbFunction:Invoke();
@@ -391,7 +404,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
   end;
 
-  local function initialize(self: ServerArchetype, newContestant: ServerContestant, newRound: ServerRound)
+  local function initialize(self: types.ServerArchetype, newContestant: types.ServerContestant, newRound: types.ServerRound)
 
     -- Set up the self-destruct.
     contestant = newContestant;
@@ -459,8 +472,8 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
   
                   table.insert(hitContestants, possibleEnemyContestant);
                   possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 50, {
-                    contestant = contestant;
-                    archetypeID = ExplosiveMimicServerArchetype.ID;
+                    contestantID = contestant.id;
+                    archetypeID = ExplosiveMimicServerArchetype.id;
                   });
   
                 end;
@@ -492,7 +505,7 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
   
               if part:IsA("BasePart") then
   
-                part:SetNetworkOwner(nil);
+                part:SetNetworkOwner();
   
               end;
   
@@ -516,14 +529,14 @@ function ExplosiveMimicServerArchetype.new(): ServerArchetype
 
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(contestant.player, self.id);
 
     end;
 
   end;
 
   return ServerArchetype.new({
-    ID = ExplosiveMimicServerArchetype.ID;
+    id = ExplosiveMimicServerArchetype.id;
     name = ExplosiveMimicServerArchetype.name;
     description = ExplosiveMimicServerArchetype.description;
     actionIDs = ExplosiveMimicServerArchetype.actionIDs;

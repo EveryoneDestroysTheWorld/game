@@ -1,9 +1,8 @@
 --!strict
 local ServerStorage = game:GetService("ServerStorage");
-local ServerContestant = require(ServerStorage.Classes.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
+local types = require(ServerStorage.Classes.types);
 
-return function(contestant: ServerContestant): ()
+return function(contestant: types.ServerContestant): ()
 
   -- Remove all items from their inventory.
   contestant:updateInventory({});

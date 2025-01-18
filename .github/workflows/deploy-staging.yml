@@ -3,13 +3,23 @@ name: Publish to staging environment
 on:
   push: 
     branches: [staging]
+    paths-ignore:
+      - "README.md"
+      - "CONTRIBUTORS.md"
+      - "SECURITY.md"
+      - ".github/**"
+      - ".vscode/**"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
   build:
     name: Build
     environment: Staging
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
@@ -34,7 +44,7 @@ jobs:
   deploy:
     name: Deploy
     environment: Staging
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build
     steps:
       - name: Download project
@@ -49,6 +59,7 @@ jobs:
           ROBLOX_PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
         run: | 
           curl \
+          --fail-with-body \
           -H "x-api-key: $ROBLOX_API_KEY" \
           -H "Content-Type: application/xml" \
           --data-binary @build.rbxl \

@@ -8,11 +8,15 @@ See [ClientAction.lua](../ClientAction.lua) for more information on what ClientA
 -- Designers: [Name of designer] ([Roblox username of designer])
 -- © [current year] Beastslash LLC
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local Players = game:GetService("Players");
 local ClientAction = require(script.Parent.Parent.ClientAction);
+local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton);
+local React = require(ReplicatedStorage.Shared.Packages.react);
 type ClientAction = ClientAction.ClientAction;
 
 local ExtendedClientAction = {
-  ID = 0; -- Replace this. Very important.
+  id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
   name = "Extended";
   description = "This is an example of an action.";
   iconImage = "rbxassetid://18464513809";
@@ -24,7 +28,7 @@ function ExtendedClientAction.new(): ClientAction
 
   local function breakdown(self: ClientAction)
 
-    ReplicatedStorage.Client.Functions.RemoveHUDButton:Invoke("Action", self.ID);
+    ReplicatedStorage.Client.Functions.RemoveHUDButton:Invoke("Action", self.id);
 
   end;
 
@@ -36,12 +40,13 @@ function ExtendedClientAction.new(): ClientAction
 
   local function initialize(self: ClientAction)
 
-    remoteName = `{player.UserId}_{self.ID}`;
+    local player = Players.LocalPlayer;
+    remoteName = `{player.UserId}_{self.id}`;
 
     -- This adds a HUD button. Add as many as you like.
     ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
       type = "Action";
-      key = self.ID;
+      key = self.id;
       onActivate = function()
   
         self:activate();
@@ -54,7 +59,7 @@ function ExtendedClientAction.new(): ClientAction
   end;
 
   local action = ClientAction.new({
-    ID = ExtendedClientAction.ID;
+    id = ExtendedClientAction.id;
     name = ExtendedClientAction.name;
     iconImage = ExtendedClientAction.iconImage;
     description = ExtendedClientAction.description;

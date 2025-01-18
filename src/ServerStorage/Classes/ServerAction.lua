@@ -1,26 +1,11 @@
 --!strict
 -- Written by Christian Toney (Sudobeast)
 -- This module represents a Action.
-local ServerContestant = require(script.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
-
-export type ActionProperties = {
-  ID: number;
-  name: string;
-  description: string;
-  activate: (self: ServerAction, ...any) -> ();
-  breakdown: (self: ServerAction) -> ();
-  initialize: (self: ServerAction, ...any) -> ();
-};
-
-export type ActionEvents = {
-  onActivate: RBXScriptSignal<"Press" | "Hold">;
-}
+local types = require(script.Parent.types);
 
 local ServerAction = {};
-export type ServerAction = ActionProperties & ActionEvents;
 
-function ServerAction.new(properties: ActionProperties): ServerAction
+function ServerAction.new(properties: types.ServerActionProperties): types.ServerAction
 
   local action = properties;
 
@@ -34,18 +19,18 @@ function ServerAction.new(properties: ActionProperties): ServerAction
 
   end
 
-  return action :: ServerAction;
+  return action :: types.ServerAction;
   
 end
 
-function ServerAction.get(actionID: number): ServerAction
+function ServerAction.get(actionID: string): types.ServerAction
 
   for _, instance in ipairs(script.Parent.Actions:GetChildren()) do
   
     if instance:IsA("ModuleScript") then
   
       local action = require(instance) :: any;
-      if action.ID == actionID then
+      if action.id == actionID then
   
         return action.new();
   

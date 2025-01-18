@@ -1,46 +1,29 @@
 --!strict
--- Writer: Christian Toney (Christian_Toney)
+-- Programmer: Christian Toney (Christian_Toney)
 -- Designer: Christian Toney (Christian_Toney)
+-- © 2024 – 2025 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local GameMode = require(script.Parent.Parent.GameMode);
-type GameMode = GameMode.GameMode;
 local HttpService = game:GetService("HttpService");
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
+local types = require(ServerStorage.Classes.types);
 
 -- This is the class.
 local TurfWarGameMode = {
-  ID = 1;
+  id = script.Name:sub(1, script.Name:gsub("GameMode", ""):len());
   name = "Turf War";
   description = "";
-}; 
-
-export type TurfWarPlayerStats = {
-  partsClaimed: number; -- The parts that the player currently has.
-  partsDestroyed: number;
-  partsRestored: number;
-  timesDowned: number;
-  playersDowned: number;
 };
 
-export type TurfWarStats = {
-  totalStageParts: number;
-  contestants: {
-    [string]: TurfWarPlayerStats;
-  }
-};
+function TurfWarGameMode.new(round: types.ServerRound): types.GameMode
 
-function TurfWarGameMode.new(round: ServerRound): GameMode
-
-  local stats: TurfWarStats = {
-    totalStageParts = 0;
-    contestants = {};
-  };
   local events = {};
 
+  local totalStageParts = 0;
+
   local gameMode = GameMode.new({
-    ID = TurfWarGameMode.ID;
+    id = TurfWarGameMode.id;
     name = TurfWarGameMode.name;
     description = TurfWarGameMode.description;
     start = function(self)
@@ -53,22 +36,6 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
       local restorablePartsModel = Instance.new("Model");
       restorablePartsModel.Name = "RestorablePartsModel";
       restorablePartsModel.Parent = workspace;
-
-      ServerStorage.Functions.ModifyPartCurrentDurability.OnInvoke = function(basePart, newDurability, contestant)
-
-        local currentDurability = basePart:GetAttribute("CurrentDurability");
-        if currentDurability > 0 then
-
-          if newDurability <= 0 then
-
-            basePart:SetAttribute("DestroyerID", contestant.ID);
-
-          end;
-          basePart:SetAttribute("CurrentDurability", newDurability);
-
-        end;
-
-      end;
 
       local function checkChild(child: Instance)
 
@@ -87,9 +54,21 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
               local destroyerID = child:GetAttribute("DestroyerID") :: number?;
               if destroyerID then
 
-                stats.contestants[tostring(destroyerID)].partsDestroyed += 1;
-                stats.contestants[tostring(destroyerID)].partsClaimed += 1;
-                ReplicatedStorage.Shared.Events.GameModeStatsUpdated:FireAllClients();
+                for _, contestant in round.contestants do
+
+                  if contestant.id == destroyerID and contestant.statistics then
+
+                    contestant:mergeStatistics({
+                      partsDestroyed = contestant.statistics.partsDestroyed + 1;
+                      partsClaimed = contestant.statistics.partsClaimed + 1;
+                    }, {
+                      contestantID = contestant.id
+                    });
+                    break;
+
+                  end;
+
+                end;
 
               end;
 
@@ -102,7 +81,7 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
                 for _, contestant in ipairs(round.contestants) do
 
-                  if contestant.ID == destroyerID then
+                  if contestant.id == destroyerID then
 
                     destroyerName = contestant.name;
                     break;
@@ -132,23 +111,30 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
               proximityPrompt.Triggered:Connect(function(restorer)
               
                 -- Verify that the restorer is a participant.
-                if stats.contestants[tostring(restorer.UserId)] then
+                for _, contestant in round.contestants do
 
-                  -- Delete old parts.
-                  child:Destroy();
-                  proximityPrompt:Destroy();
-                  restorablePart:Destroy();
+                  if contestant.player == restorer then
 
-                  -- Restore the part.
-                  local restoredPart = partReference:Clone();
-                  restoredPart.Parent = round.stage.model;
+                    -- Delete old parts.
+                    child:Destroy();
+                    proximityPrompt:Destroy();
+                    restorablePart:Destroy();
 
-                  if destroyerID then
+                    -- Restore the part.
+                    local restoredPart = partReference:Clone();
+                    restoredPart.Parent = round.stage.model;
 
-                    -- Update scores.
-                    stats.contestants[tostring(destroyerID)].partsClaimed -= 1;
-                    stats.contestants[tostring(restorer.UserId)].partsRestored += 1;
-                    ReplicatedStorage.Shared.Events.GameModeStatsUpdated:FireAllClients();
+                    if contestant.statistics then
+
+                      contestant:mergeStatistics({
+                        partsRestored = contestant.statistics.partsRestored + 1
+                      });
+
+                    end
+
+                  elseif destroyerID and destroyerID == contestant.id and contestant.statistics then
+
+                    contestant.statistics.partsClaimed -= 1
 
                   end;
 
@@ -160,7 +146,7 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
           end));
 
-          stats.totalStageParts += 1;
+          totalStageParts += 1;
 
         end;
 
@@ -179,21 +165,16 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
       end));
 
       -- Keep track of downed players.
-      table.insert(events, ServerStorage.Events.ParticipantDowned.Event:Connect(function(victim: Player, downer: Player?)
-      
-        -- Add it to their score.
-        stats.contestants[tostring(victim.UserId)].playersDowned += 1;
-        stats.contestants[tostring(victim.UserId)].timesDowned += 1;
-
-      end));
-
-      ReplicatedStorage.Shared.Functions.GetGameModeStats.OnServerInvoke = function()
-
-        return stats;
-
-      end;
-
       for _, contestant in round.contestants do
+
+        contestant:mergeStatistics({
+          partsClaimed = 0;
+          partsDestroyed = 0;
+          partsRestored = 0;
+          recoveryCount = 0;
+          eliminationCount = 0;
+          deathCount = 0;
+        });
 
         local isRecoveringStamina = false;
         local function recoverStamina()
@@ -202,9 +183,9 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
             isRecoveringStamina = true;
 
-            while contestant.currentHealth > 0 and contestant.currentStamina < contestant.baseStamina do
-
-              task.wait(1);
+            while contestant.currentHealth > 0 and contestant.currentStamina < contestant.baseStamina and task.wait(1) do
+              
+              -- Recover the contestant's stamina if we can.
               contestant:updateStamina(math.min(contestant.currentStamina + 5, contestant.baseStamina));
 
             end;
@@ -216,6 +197,36 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
         end;
 
         table.insert(events, contestant.onStaminaUpdated:Connect(recoverStamina));
+
+        local function trackEliminations(newHealth: number, oldHealth: number, cause: types.Cause?)
+
+          if newHealth <= 0 and oldHealth > 0 and contestant.statistics then
+
+            contestant:mergeStatistics({
+              deathCount = contestant.statistics.deathCount + 1;
+            }, cause);
+
+            if cause and cause.contestantID then
+
+              for _, possibleMurderer in round.contestants do
+
+                if possibleMurderer.id == cause.contestantID and possibleMurderer.statistics then
+
+                  possibleMurderer:mergeStatistics({
+                    eliminationCount = possibleMurderer.statistics.eliminationCount + 1;
+                  });
+
+                end;
+
+              end;
+
+            end;
+
+          end;
+
+        end;
+
+        table.insert(events, contestant.onHealthUpdated:Connect(trackEliminations));
 
       end;
 
@@ -232,6 +243,28 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
         end;
 
       end));
+      
+      ServerStorage.Functions.ModifyPartCurrentDurability.OnInvoke = function(basePart, newDurability, contestant)
+
+        local currentDurability = basePart:GetAttribute("CurrentDurability");
+        if currentDurability > 0 then
+
+          if newDurability <= 0 then
+
+            basePart:SetAttribute("DestroyerID", contestant.id);
+
+          end;
+          basePart:SetAttribute("CurrentDurability", newDurability);
+
+        end;
+
+      end;
+
+      ReplicatedStorage.Shared.Functions.GetTotalStagePartCount.OnServerInvoke = function()
+
+        return totalStageParts;
+    
+      end;
 
     end;
     breakdown = function(self)
@@ -258,32 +291,18 @@ function TurfWarGameMode.new(round: ServerRound): GameMode
 
       end;
 
-      ReplicatedStorage.Shared.Functions.GetGameModeStats.OnServerInvoke = nil;
       ServerStorage.Functions.ModifyPartCurrentDurability.OnInvoke = nil;
 
     end;
     toString = function(self)
 
       return HttpService:JSONDecode({
-        ID = self.ID;
-        stats = stats;
-        totalStageParts = stats.totalStageParts;
+        id = self.id;
+        totalStageParts = totalStageParts;
       })
 
     end;
   });
-
-  for _, contestant in ipairs(round.contestants) do
-
-    stats.contestants[tostring(contestant.ID)] = {
-      partsClaimed = 0;
-      partsDestroyed = 0;
-      partsRestored = 0;
-      playersDowned = 0;
-      timesDowned = 0;
-    };
-
-  end;
 
   return gameMode;
 

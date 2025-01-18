@@ -1,29 +1,49 @@
 --!strict
--- Writer: Christian Toney (Sudobeast)
--- Designer: Christian Toney (Sudobeast)
+-- Programmer: Christian Toney (Christian_Toney)
+-- Designer: Christian Toney (Christian_Toney)
+-- © 2024 – 2025 Beastslash LLC
+
 local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
-type ServerAction = ServerAction.ServerAction;
 local DetonateDetachedLimbsClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetonateDetachedLimbsClientAction);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
+local types = require(ServerStorage.Classes.types);
+local assertContestantIsNotActionLocked = require(ServerStorage.Modules.assertContestantIsNotActionLocked);
 
 local DetonateDetachedLimbsServerAction = {
-  ID = DetonateDetachedLimbsClientAction.ID;
+  id = DetonateDetachedLimbsClientAction.id;
   name = DetonateDetachedLimbsClientAction.name;
   description = DetonateDetachedLimbsClientAction.description;
 };
 
-function DetonateDetachedLimbsServerAction.new(): ServerAction
+function DetonateDetachedLimbsServerAction.new(): types.ServerAction
 
-  local contestant: ServerContestant = nil;
-  local round: ServerRound = nil;
-  local function activate()
+  local contestant: types.ServerContestant = nil;
+  local round: types.ServerRound = nil;
+  local function activate(self: types.ServerAction)
 
-    for limbName, instance in pairs(ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.ID}_GetDetachedLimbs`):Invoke(contestant)) do
+    -- Verify that actions aren't locked.
+    assertContestantIsNotActionLocked(contestant);
+
+    -- Make sure the player has enough stamina.
+    assert(contestant.currentStamina >= 20, "Contestant doesn't have enough stamina.");
+
+    local detachedLimbs = ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.id}_GetDetachedLimbs`):Invoke(contestant);
+
+    local didReduceStamina = false;
+
+    for limbName, instance in detachedLimbs do
+
+      -- Reduce stamina once.
+      if not didReduceStamina then
+
+        didReduceStamina = true;
+        
+        contestant:updateStamina(math.max(contestant.currentStamina - 20, 0), {
+          actionID = self.id;
+        });
+
+      end;
 
       -- Use task.spawn so that they all explode at the same time.
       task.spawn(function()
@@ -38,7 +58,6 @@ function DetonateDetachedLimbsServerAction.new(): ServerAction
         explosion.Hit:Connect(function(basePart)
   
           -- Damage any parts or contestants that get hit.
-          -- Damage any parts or contestants that get hit.
           for _, possibleEnemyContestant in ipairs(round.contestants) do
 
             task.spawn(function()
@@ -48,8 +67,8 @@ function DetonateDetachedLimbsServerAction.new(): ServerAction
 
                 table.insert(hitContestants, possibleEnemyContestant);
                 possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 15, {
-                  contestant = contestant;
-                  actionID = DetonateDetachedLimbsServerAction.ID;
+                  contestantID = contestant.id;
+                  actionID = DetonateDetachedLimbsServerAction.id;
                 });
 
               end;
@@ -59,7 +78,7 @@ function DetonateDetachedLimbsServerAction.new(): ServerAction
           end;
 
           local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
-          if basePartCurrentDurability and basePartCurrentDurability > 0 then
+          if basePartCurrentDurability and typeof(basePartCurrentDurability) == "number" and basePartCurrentDurability > 0 then
   
             ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 25, contestant);
   
@@ -97,7 +116,7 @@ function DetonateDetachedLimbsServerAction.new(): ServerAction
 
   end;
 
-  local function initialize(self: ServerAction, newContestant: ServerContestant, newRound: ServerRound)
+  local function initialize(self: types.ServerAction, newContestant: types.ServerContestant, newRound: types.ServerRound)
 
     contestant = newContestant;
     round = newRound;
@@ -105,7 +124,7 @@ function DetonateDetachedLimbsServerAction.new(): ServerAction
     if contestant.player then
     
       local actionRemoteFunction = Instance.new("RemoteFunction");
-      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
       actionRemoteFunction.OnServerInvoke = function(player)
   
         if player == contestant.player then
@@ -129,7 +148,7 @@ function DetonateDetachedLimbsServerAction.new(): ServerAction
 
   return ServerAction.new({
     name = DetonateDetachedLimbsServerAction.name;
-    ID = DetonateDetachedLimbsServerAction.ID;
+    id = DetonateDetachedLimbsServerAction.id;
     description = DetonateDetachedLimbsServerAction.description;
     breakdown = breakdown;
     activate = activate;

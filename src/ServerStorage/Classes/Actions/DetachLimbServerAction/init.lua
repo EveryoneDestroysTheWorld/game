@@ -1,32 +1,33 @@
 --!strict
--- Writer: Christian Toney (Sudobeast)
--- Designer: Christian Toney (Sudobeast)
+-- Writer: Christian Toney (Christian_Toney)
+-- Designer: Christian Toney (Christian_Toney)
+-- © 2024 – 2025 Beastslash LLC
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
 local ServerStorage = game:GetService("ServerStorage");
-type ServerContestant = ServerContestant.ServerContestant;
 local ServerAction = require(script.Parent.Parent.ServerAction);
-type ServerAction = ServerAction.ServerAction;
 local DetachLimbClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetachLimbClientAction);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
+local types = require(ServerStorage.Classes.types);
+local assertContestantIsNotActionLocked = require(ServerStorage.Modules.assertContestantIsNotActionLocked);
 
 local DetachLimbServerAction = {
-  ID = DetachLimbClientAction.ID;
+  id = DetachLimbClientAction.id;
   name = DetachLimbClientAction.name;
   description = DetachLimbClientAction.description;
 };
 
-function DetachLimbServerAction.new(): ServerAction
+function DetachLimbServerAction.new(): types.ServerAction
   
-  local contestant: ServerContestant = nil;
-  local round: ServerRound = nil;
+  local contestant: types.ServerContestant = nil;
 
   local validLimbNames = {"Head", "Torso", "LeftArm", "RightArm", "LeftLeg", "RightLeg"};
   local detachedLimbs: {[string]: BasePart | Model} = {};
   local bindableFunction = Instance.new("BindableFunction");
 
-  local function activate(self: ServerAction, limbName: string?)
+  local function activate(self: types.ServerAction, limbName: string?)
+
+    -- Verify that actions aren't locked.
+    assertContestantIsNotActionLocked(contestant);
 
     -- Verify variable types to maintain server security.
     assert(typeof(limbName) == "string", "Limb name must be a string.");
@@ -34,10 +35,10 @@ function DetachLimbServerAction.new(): ServerAction
     
     -- Make the cloned limb look like the player's limb.
     local character = contestant.character;
-    assert(character, `Contestant {contestant.ID} doesn't have a character.`);
+    assert(character, `Contestant {contestant.id} doesn't have a character.`);
 
     local humanoid = character:FindFirstChild("Humanoid") :: Humanoid?;
-    assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.ID}'s humanoid.`);
+    assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.id}'s humanoid.`);
 
     local function toggleLimbHighlight(limb: BasePart, isEnabled: boolean)
 
@@ -70,7 +71,7 @@ function DetachLimbServerAction.new(): ServerAction
     if humanoid.RigType == Enum.HumanoidRigType.R15 and limbName ~= "Head" then
       
       local cloneLimbContainer = Instance.new("Model");
-      cloneLimbContainer.Name = `{contestant.ID}_ExplosiveLimb_{limbName}`;
+      cloneLimbContainer.Name = `{contestant.id}_ExplosiveLimb_{limbName}`;
 
       local realLimbs = {};
       if limbName == "Torso" then
@@ -165,7 +166,7 @@ function DetachLimbServerAction.new(): ServerAction
       assert(realLimb and realLimb:IsA("BasePart"), `Couldn't find {limbName}.`);
   
       local limbClone = realLimb:Clone() :: BasePart;
-      limbClone.Name = `{contestant.ID}_ExplosiveLimb_{limbClone.Name}`;
+      limbClone.Name = `{contestant.id}_ExplosiveLimb_{limbClone.Name}`;
       limbClone.CanCollide = true;
       limbClone.Parent = workspace;
 
@@ -290,11 +291,10 @@ function DetachLimbServerAction.new(): ServerAction
 
   end;
 
-  local function initialize(self: ServerAction, newContestant: ServerContestant, newRound: ServerRound)
+  local function initialize(self: types.ServerAction, newContestant: types.ServerContestant, newRound: types.ServerRound)
 
     contestant = newContestant;
-    round = newRound;
-    bindableFunction.Name = `{contestant.ID}_GetDetachedLimbs`;
+    bindableFunction.Name = `{contestant.id}_GetDetachedLimbs`;
     bindableFunction.OnInvoke = function()
   
       return detachedLimbs;
@@ -306,7 +306,7 @@ function DetachLimbServerAction.new(): ServerAction
     if contestant.player then
       
       local actionRemoteFunction = Instance.new("RemoteFunction");
-      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
       actionRemoteFunction.OnServerInvoke = function(player, limbName: string)
 
         assert(typeof(limbName) == "string", "Limb name must be a string");  
@@ -331,7 +331,7 @@ function DetachLimbServerAction.new(): ServerAction
   end;
 
   return ServerAction.new({
-    ID = DetachLimbServerAction.ID;
+    id = DetachLimbServerAction.id;
     name = DetachLimbServerAction.name;
     description = DetachLimbServerAction.description;
     activate = activate;

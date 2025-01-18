@@ -1,7 +1,7 @@
 --!strict
 -- Programmer: Hati (hati_bati)
 -- Designer: Christian Toney (Christian_Toney)
--- © 2024 Beastslash LLC
+-- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
@@ -13,7 +13,7 @@ local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
 type ClientAction = ClientAction.ClientAction;
 
 local FireBeamAction = {
-	ID = 10;
+	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 	iconImage = "rbxassetid://17771917538";
 	name = "Fire Beam";
 	description = "Charge by holding down while flying, and release to fire a beam that lights the ground on fire.";
@@ -49,7 +49,7 @@ function FireBeamAction.new(): ClientAction
 	local function breakdown(self: ClientAction)
 
 		ContextActionService:UnbindAction("ActivateFireBeam");
-		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.ID);
+		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
 
 	end;
 	local connection
@@ -71,7 +71,7 @@ function FireBeamAction.new(): ClientAction
 			iconImage = "rbxassetid://17771917538";
 		}));
 
-		remoteName = `{player.UserId}_{self.ID}`;
+		remoteName = `{player.UserId}_{self.id}`;
 		local debounce = false
 		local function checkJump(_, inputState: Enum.UserInputState)
 			if inputState == Enum.UserInputState.Begin then
@@ -84,7 +84,7 @@ function FireBeamAction.new(): ClientAction
 	end;
 
 	return ClientAction.new({
-		ID = FireBeamAction.ID;
+		id = FireBeamAction.id;
 		iconImage = FireBeamAction.iconImage;
 		name = FireBeamAction.name;
 		description = FireBeamAction.description;

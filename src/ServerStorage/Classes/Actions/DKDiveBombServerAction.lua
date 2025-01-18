@@ -1,7 +1,7 @@
 --!strict
 -- Programmers: Hati ---- Heavily modified edit of RocketFeet
--- Designers: Christian Toney (Sudobeast)
--- © 2024 Beastslash LLC
+-- Designers: Christian Toney (Christian_Toney)
+-- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService")
@@ -16,7 +16,7 @@ local ServerStorage = game:GetService("ServerStorage");
 local damageFramework = require(script.Parent.Framework.DamageFramework);
 
 local DiveBombServerAction = {
-	ID = DiveBombClientAction.ID;
+	id = DiveBombClientAction.id;
 	name = DiveBombClientAction.name;
 	description = DiveBombClientAction.description;
 };
@@ -57,8 +57,6 @@ local function animateFlight(humanoid, animations, animData,state)
 	return animations
 end
 
-
-
 local function startAttack(primaryPart: BasePart, animations, coords: Vector3, round: ServerRound, contestant: ServerContestant)
 
 	local flightConstraint = primaryPart:FindFirstChild("FlightConstraint");
@@ -68,6 +66,7 @@ local function startAttack(primaryPart: BasePart, animations, coords: Vector3, r
 		flightConstraint:SetAttribute("PlayerControls", false);
 
 	end
+  
 	flightConstraint:Destroy()
 	primaryPart.CFrame = CFrame.lookAt((primaryPart.CFrame.Position), (coords * Vector3.new(1,0,1) + Vector3.new(0,primaryPart.CFrame.Position.Y, 0)));
 
@@ -179,7 +178,6 @@ local function groundedDash(primaryPart: BasePart, animations, coords: Vector3, 
 	local data = {}
 	damageFramework.explosionEvent(originalCoords, data, round, contestant)
 	task.wait(travelTime*0.4);
-	
 
 	
 	animations["Right"]:AdjustSpeed(1);
@@ -301,7 +299,7 @@ function DiveBombServerAction.new(): ServerAction
 		if contestant.player then
 
 			local remoteFunction = Instance.new("RemoteFunction");
-			remoteFunction.Name = `{contestant.player.UserId}_{self.ID}`;
+			remoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
 			remoteFunction.OnServerInvoke = function(player)
 	
 				if player == contestant.player then
@@ -325,7 +323,7 @@ function DiveBombServerAction.new(): ServerAction
 
 	return ServerAction.new({
 		name = DiveBombServerAction.name;
-		ID = DiveBombServerAction.ID;
+		id = DiveBombServerAction.id;
 		description = DiveBombServerAction.description;
 		breakdown = breakdown;
 		activate = activate;

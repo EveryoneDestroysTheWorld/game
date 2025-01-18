@@ -5,51 +5,69 @@
 -- © 2024 Beastslash
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
 local ServerItem = require(script.Parent.Parent.ServerItem);
-type ServerItem = ServerItem.ServerItem;
 local RocketLauncherClientItem = require(ReplicatedStorage.Client.Classes.Items.RocketLauncherClientItem);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
+local HttpService = game:GetService("HttpService");
+local ServerStorage = game:GetService("ServerStorage");
+local ServerEffect = require(ServerStorage.Classes.ServerEffect);
+local types = require(ServerStorage.Classes.types);
 
 local RocketLauncherServerItem = {
-  ID = RocketLauncherClientItem.ID;
+  id = RocketLauncherClientItem.id;
   name = RocketLauncherClientItem.name;
   description = RocketLauncherClientItem.description;
 };
 
-function RocketLauncherServerItem.new(contestant: ServerContestant, round: ServerRound): ServerItem
+function RocketLauncherServerItem.new(contestant: types.ServerContestant, round: types.ServerRound): types.ServerItem
 
-  local function activate(self: ServerItem)
+  local _specificItemID;
+  local isEquipped = false;
+  local effect = ServerEffect.get("HoldingHeavyItem").new({
+    contestant = contestant;
+  });
+
+  local function activate(self: types.ServerItem)
     
+    if not isEquipped then
+
+      -- Lock archetypes and actions.
+      isEquipped = true;
+
+      contestant:addEffect(effect);
+
+    end;
     
   end;
   
-  local function breakdown(self: ServerItem)
+  local function breakdown(self: types.ServerItem)
     
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.id, _specificItemID);
 
     end;
 
+    contestant:removeEffect(effect);
+
   end;
 
-  local function initialize(self: ServerItem, newContestant: ServerContestant)
+  local function initialize(self: types.ServerItem, newContestant: types.ServerContestant)
 
     contestant = newContestant;
 
+    local specificItemID = HttpService:GenerateGUID(false);
+    _specificItemID = specificItemID;
+
     if contestant.player then
 
-      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.ID);
+      ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.id, specificItemID);
 
     end;
 
   end;
 
   local item = ServerItem.new({
-    ID = RocketLauncherServerItem.ID;
+    id = RocketLauncherServerItem.id;
     name = RocketLauncherServerItem.name;
     description = RocketLauncherServerItem.description;
     activate = activate;

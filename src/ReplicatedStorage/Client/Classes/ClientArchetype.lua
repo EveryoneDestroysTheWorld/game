@@ -4,7 +4,7 @@
 
 export type ClientArchetypeProperties = {
   
-  ID: number;
+  id: string;
   
   name: string;
 
@@ -14,7 +14,7 @@ export type ClientArchetypeProperties = {
 
   iconImage: string;
 
-  actionIDs: {number};
+  actionIDs: {string};
 
   breakdown: (self: ClientArchetype) -> ();
   
@@ -32,14 +32,14 @@ function ClientArchetype.new(properties: ClientArchetypeProperties): ClientArche
   
 end
 
-function ClientArchetype.get(archetypeID: number): ClientArchetype
+function ClientArchetype.get(archetypeID: string): ClientArchetype
 
   for _, instance in ipairs(script.Parent.Archetypes:GetChildren()) do
   
     if instance:IsA("ModuleScript") then
   
       local archetype = require(instance) :: any;
-      if archetype.ID == archetypeID then
+      if archetype.id == archetypeID then
   
         return archetype.new();
   

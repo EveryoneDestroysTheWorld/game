@@ -15,7 +15,7 @@ local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
 type ClientAction = ClientAction.ClientAction;
 
 local TakeFlightAction = {
-	ID = 6;
+	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 	iconImage = "rbxassetid://17771917538";
 	name = "Take Flight";
 	description = "You are great at flying! I'm suprised those wings can carry you.";
@@ -110,7 +110,7 @@ function TakeFlightAction.new(): ClientAction
 			iconImage = "rbxassetid://17771917538";
 		}));
 	
-		remoteName = `{player.UserId}_{self.ID}`;
+		remoteName = `{player.UserId}_{self.id}`;
 		local debounce = false;
 	
 		local function checkJump(_, inputState: Enum.UserInputState)
@@ -149,7 +149,7 @@ function TakeFlightAction.new(): ClientAction
 	end;
 
 	return ClientAction.new({
-		ID = TakeFlightAction.ID;
+		id = TakeFlightAction.id;
 		iconImage = TakeFlightAction.iconImage;
 		name = TakeFlightAction.name;
 		description = TakeFlightAction.description;

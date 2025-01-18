@@ -14,7 +14,7 @@ local targetingFramework = require(script.Parent.Framework.EasyTargetingFramewor
 type ClientAction = ClientAction.ClientAction;
 
 local TarBombAction = {
-	ID = 9;
+	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 	iconImage = "rbxassetid://17771917538";
 	name = "Tar Bomb";
 	description = "Launch a projectile at the target location which explodes after a small amount of time, spreading tar onto nearby targets. Tar covered targets are slowed and take flat additional damage from all sources.";
@@ -77,9 +77,9 @@ function TarBombAction.new(): ClientAction
 	end;
 
 	local function activate(self: ClientAction)
+    
 		targetingFramework.waitForServerResponse("TarBomb")
 		ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
-		
 
 	end;
 
@@ -97,7 +97,7 @@ function TarBombAction.new(): ClientAction
 		}));
 
 		player = Players.LocalPlayer;
-		remoteName = `{player.UserId}_{self.ID}`;
+		remoteName = `{player.UserId}_{self.id}`;
 
 		local function checkJump(_, inputState: Enum.UserInputState)
 
@@ -116,7 +116,6 @@ function TarBombAction.new(): ClientAction
 
 		ContextActionService:BindActionAtPriority("ActivateTarBomb", checkJump, false, 2, Enum.KeyCode.One);
 
-
 		workspace.Terrain.ChildAdded:Connect(function(child)
 			if child.Name == "TarBomb" then
 				local connection
@@ -133,7 +132,7 @@ function TarBombAction.new(): ClientAction
 	end;
 
 	return ClientAction.new({
-		ID = TarBombAction.ID;
+		id = TarBombAction.id;
 		iconImage = TarBombAction.iconImage;
 		name = TarBombAction.name;
 		description = TarBombAction.description;
