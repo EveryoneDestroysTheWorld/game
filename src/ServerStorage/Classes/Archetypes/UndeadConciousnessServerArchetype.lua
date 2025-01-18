@@ -60,16 +60,7 @@ function UndeadConciousnessServerArchetype.new(): types.ServerArchetype
     round = newRound;
 
     local isDowned = false;
-    newContestant:updateHealth(0);
-    task.spawn(function()
     
-      while task.wait(0.05) do
-
-        newContestant:updateHealth(newContestant.currentHealth - 1);
-
-      end;
-
-    end);
     local function checkHealth()
 
       if isDowned and contestant.currentHealth > 0 then
