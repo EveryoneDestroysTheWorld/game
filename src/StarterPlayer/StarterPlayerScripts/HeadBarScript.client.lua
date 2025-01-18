@@ -57,9 +57,17 @@ local function initializeContestant(contestant: ClientContestant): ()
 
 end;
 
-round.onContestantAdded:Connect(function(contestant)
+round.onContestantAdded:Connect(function(contestantID)
 
-  initializeContestant(contestant)
+  for _, contestant in round.contestants do
+
+    if contestant.id == contestantID then
+
+      initializeContestant(contestant);
+
+    end;
+
+  end;
 
 end);
 

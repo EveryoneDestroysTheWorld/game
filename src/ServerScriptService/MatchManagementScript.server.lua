@@ -143,22 +143,15 @@ local didSuccessfullyInitializeRound, message = pcall(function()
   
       -- Create the NPC's character.
       local character: Model = ServerStorage:FindFirstChild("NPCRigs"):FindFirstChild("Rig"):Clone();
-      character.Name = "NPC" .. i;
+      character.Name = `BOT {i}`;
   
       -- Add the NPC to the contestant list.
       local botContestant = ServerContestant.new({
         id = i * 0.01;
         character = character;
-        effects = {};
-        name = `NPC {i * 0.01}`;
-        inventory = {};
-        isBot = true;
-        isDisqualified = false;
+        name = character.Name;
         teamID = if i > team1BotCount then 2 else 1;
-        baseHealth = 100;
-        currentHealth = 100;
-        baseStamina = 100;
-        currentStamina = 100;
+        round = round;
       });
   
       round:addContestant(botContestant);
@@ -285,22 +278,17 @@ local didSuccessfullyInitializeRound, message = pcall(function()
   
         -- Verify that the player has at least one archetype.
         local profile = Profile.fromID(playerID, true);    --- edit
-        round:addContestant(ServerContestant.new({
+        local contestant = ServerContestant.new({
           id = player.UserId;
           player = player;
           character = player.Character;
           name = player.Name;
-          effects = {};
-          inventory = {};
           profile = profile;
-          isBot = false;
-          isDisqualified = false;
           teamID = 1; -- TODO: Fix this
-          baseHealth = 100;
-          currentHealth = 100;
-          baseStamina = 100;
-          currentStamina = 100;
-        }));
+          round = round;
+        });
+        
+        round:addContestant(contestant);
   
       else
   
