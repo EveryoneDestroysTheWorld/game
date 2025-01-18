@@ -82,9 +82,9 @@ function ParalysisServerEffect.__index:activate()
 
 end;
 
-function ParalysisServerEffect.__index:deactivate(contestant: types.ServerContestant)
+function ParalysisServerEffect.__index:deactivate()
 
-  contestant:removeWalkSpeedWeight(self.weight);
+  self.contestant:removeWalkSpeedWeight(self.weight);
 
   if self.contestant.player then
 

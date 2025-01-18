@@ -16,6 +16,10 @@ function UndeadServerEffect.new(properties: types.UndeadServerEffectConstructorP
     name = UndeadServerEffect.name;
     id = UndeadServerEffect.id;
     contestant = properties.contestant;
+    walkSpeedWeight = {
+      walkSpeed = 12;
+      weight = 1;
+    };
     events = {};
   };
 
@@ -33,12 +37,7 @@ function UndeadServerEffect.__index:activate()
   assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {self.contestant.id}'s humanoid.`);
 
   -- Slow down the player.
-  local walkSpeedWeight: types.WalkSpeedWeight = {
-    walkSpeed = 12;
-    weight = 1;
-  }
-  
-  self.contestant:addWalkSpeedWeight(walkSpeedWeight);
+  self.contestant:addWalkSpeedWeight(self.walkSpeedWeight);
 
   -- Make touching enemy contestants take 20 damage with 1 second of immunity.
   local immuneContestants = {};
@@ -82,6 +81,18 @@ function UndeadServerEffect.__index:activate()
       end);
 
     end;
+
+  end;
+
+end;
+
+function UndeadServerEffect.__index:deactivate()
+
+  self.contestant:removeWalkSpeedWeight(self.walkSpeedWeight);
+
+  for _, event in self.events do
+
+    event:Disconnect();
 
   end;
 
