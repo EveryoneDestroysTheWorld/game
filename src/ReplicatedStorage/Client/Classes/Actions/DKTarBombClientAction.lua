@@ -73,6 +73,7 @@ function TarBombAction.new(): ClientAction
 	local function breakdown(self: ClientAction)
 
 		ContextActionService:UnbindAction("ActivateTarBomb");
+		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
 
 	end;
 
@@ -87,6 +88,7 @@ function TarBombAction.new(): ClientAction
 
 		ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
 			type = "Action";
+      key = self.id;
 			onActivate = function()
 
 				self:activate("Input");

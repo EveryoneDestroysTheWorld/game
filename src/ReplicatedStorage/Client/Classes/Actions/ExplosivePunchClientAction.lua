@@ -25,6 +25,7 @@ function ExplosivePunchAction.new(): ClientAction
   local function breakdown(self: ClientAction)
 
     ContextActionService:UnbindAction("ActivateExplosivePunch");
+		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
 
   end;
 

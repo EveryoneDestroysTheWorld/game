@@ -75,6 +75,7 @@ function TakeFlightAction.new(): ClientAction
 	local function breakdown(self: ClientAction)
 
 		ContextActionService:UnbindAction("ActivateTakeFlight");
+		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
 
 	end;
 
@@ -97,6 +98,7 @@ function TakeFlightAction.new(): ClientAction
 		local allowedToToggle = true
 		ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
 			type = "Action";
+      key = self.id;
 			onActivate = function()
 
 				self:activate();

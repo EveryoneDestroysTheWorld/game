@@ -83,6 +83,7 @@ function ServerRound.__index:start(): ()
   for _, contestant in ipairs(self.contestants) do
 
     local oldArchetype: types.ServerArchetype?;
+    local oldActions: {types.ServerAction} = {};
 
     local function updateArchetype()
 
@@ -94,6 +95,12 @@ function ServerRound.__index:start(): ()
 
         end;
 
+        for _, action in oldActions do
+
+          action:breakdown();
+
+        end;
+
         if contestant.archetypeID then
 
           local archetype = ServerArchetype.get(contestant.archetypeID);
@@ -101,19 +108,18 @@ function ServerRound.__index:start(): ()
           table.insert(self.archetypes :: {types.ServerArchetype}, archetype);
           oldArchetype = archetype;
 
-          local actions = {};
           for _, actionID in ipairs(archetype.actionIDs) do
 
             local action = ServerAction.get(actionID);
             action:initialize(contestant, self);
             table.insert(self.actions :: {types.ServerAction}, action);
-            table.insert(actions, action);
+            table.insert(oldActions, action);
 
           end;
           
           if contestant.id < 1 then
               
-            archetype:runAutoPilot(actions);
+            archetype:runAutoPilot(oldActions);
           
           end;
 

@@ -41,7 +41,7 @@ local function rerenderRoots()
   itemButtonContainerRoot:render(React.createElement(HUDButtonContainer, {type = "Item"}, React.createElement(React.Fragment, {}, itemButtons)));
 
   actionButtonContainer.Parent = player.PlayerGui;
-  actionButtonContainerRoot:render(React.createElement(HUDButtonContainer, {type = "Action"}, actionButtons));
+  actionButtonContainerRoot:render(React.createElement(HUDButtonContainer, {type = "Action"}, React.createElement(React.Fragment, {}, actionButtons)));
 
 end;
 
@@ -75,6 +75,19 @@ ReplicatedStorage.Client.Functions.DestroyHUDButton.OnInvoke = function(buttonTy
 end;
 
 ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function(archetypeID: string)
+
+  -- Disable the current archetype.
+  if initializedArchetype then
+
+    initializedArchetype:breakdown();
+
+  end;
+
+  for _, action in initializedActions do
+
+    action:breakdown();
+
+  end;
 
   -- Set up the archetype and actions.
   initializedArchetype = ClientArchetype.get(archetypeID);

@@ -66,6 +66,7 @@ function MeleeAction.new(): ClientAction
 		local allowedToToggle = true
 		ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
 			type = "Action";
+      key = self.id;
 			onActivate = function()
 
 				self:activate("Input");

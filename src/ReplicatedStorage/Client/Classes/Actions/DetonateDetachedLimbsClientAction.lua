@@ -23,8 +23,8 @@ function DetonateDetachedLimbsClientAction.new(): ClientAction
   local player = Players.LocalPlayer;
 
   local function breakdown(self: ClientAction)
-
     
+		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
 
   end;
 
