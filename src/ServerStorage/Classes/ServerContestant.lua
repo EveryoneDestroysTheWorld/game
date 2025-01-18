@@ -6,6 +6,7 @@
 
 local HttpService = game:GetService("HttpService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local StarterPlayer = game:GetService("StarterPlayer");
 local ServerStorage = game:GetService("ServerStorage");
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
@@ -17,13 +18,22 @@ type PatchableTurfWarContestantStatistics = TurfWarContestantStatistics.Patchabl
 local types = require(script.Parent.types);
 
 local ServerContestant = {
-  __index = {} :: types.ServerContestantMethods;
+  __index = {
+    walkSpeedWeights = {};
+    baseHealth = 100;
+    currentHealth = 100;
+    effects = {};
+    baseStamina = 100;
+    currentStamina = 100;
+    items = {};
+    isDisqualified = false;
+  } :: types.ServerContestant;
 };
 
 local events: {[any]: {[string]: BindableEvent}} = {};
-function ServerContestant.new(properties: types.ServerContestantProperties): types.ServerContestant
+function ServerContestant.new(properties: types.ServerContestantConstructorProperties): types.ServerContestant
 
-  local contestant = setmetatable(properties, ServerContestant);
+  local contestant = (setmetatable(properties, ServerContestant) :: unknown) :: types.ServerContestant;
 
   -- Set up events.
   local eventNames = {"onDisqualified", "onHealthUpdated", "onStaminaUpdated", "onArchetypeUpdated", "onCharacterUpdated", "onInventoryUpdated", "onEffectsUpdated"};
@@ -35,7 +45,7 @@ function ServerContestant.new(properties: types.ServerContestantProperties): typ
 
   end
 
-  return contestant :: any;
+  return contestant;
   
 end
 
@@ -43,13 +53,56 @@ function ServerContestant.__index:getInventoryItemIDs(): {string}
 
   local itemIDs = {};
 
-  for _, item in self.inventory do
+  for _, item in self.items do
 
     table.insert(itemIDs, item.id);
 
   end;
 
   return itemIDs;
+
+end;
+
+function ServerContestant.__index:refreshWalkSpeed(): ()
+
+  local humanoid = if self.character then self.character:FindFirstChild("Humanoid") else nil;
+  if humanoid and humanoid:IsA("Humanoid") then
+
+    local totalWalkSpeed = StarterPlayer.CharacterWalkSpeed;
+    local totalWeight = 1;
+
+    if self.walkSpeedWeights[1] then
+
+      totalWalkSpeed = 0;
+
+      for _, properties in self.walkSpeedWeights do
+
+        totalWalkSpeed += properties.walkSpeed * properties.weight;
+        totalWeight += properties.weight;
+
+      end;
+
+    end;
+
+    humanoid.WalkSpeed = totalWalkSpeed / totalWeight;
+
+  end;
+
+end;
+
+function ServerContestant.__index:addWalkSpeedWeight(weight: types.WalkSpeedWeight): ()
+
+  table.insert(self.walkSpeedWeights, weight);
+
+  self:refreshWalkSpeed();
+
+end;
+
+function ServerContestant.__index:removeWalkSpeedWeight(weight: types.WalkSpeedWeight): ()
+
+  table.remove(self.walkSpeedWeights, table.find(self.walkSpeedWeights, weight));
+
+  self:refreshWalkSpeed();
 
 end;
 
@@ -71,22 +124,22 @@ function ServerContestant.__index:addEffect(effect: types.ServerEffect<unknown>)
 
 end;
 
-function ServerContestant.__index:addItemToInventory(item: types.ServerItem): ()
+function ServerContestant.__index:addItem(item: types.ServerItem): ()
 
-  table.insert(self.inventory, item);
+  table.insert(self.items, item);
   events[self].onInventoryUpdated:Fire(self:getInventoryItemIDs());
 
 end;
 
-function ServerContestant.__index:removeItemFromInventory(item: types.ServerItem): ()
+function ServerContestant.__index:removeItem(item: types.ServerItem): ()
 
   -- Iterating backwards because the indexes can change after running table.remove().
-  for index = #self.inventory, 1, -1 do
+  for index = #self.items, 1, -1 do
 
-    local possibleItem = self.inventory[index]
+    local possibleItem = self.items[index]
     if possibleItem == item then
 
-      table.remove(self.inventory, index);
+      table.remove(self.items, index);
       task.spawn(function()
 
         possibleItem:breakdown();
@@ -131,7 +184,7 @@ end;
 
 function ServerContestant.__index:updateInventory(newInventory: {types.ServerItem}): ()
 
-  self.inventory = newInventory;
+  self.items = newInventory;
 
   -- Only share the IDs to the client. Sharing a server class is unnecessary.
   events[self].onInventoryUpdated:Fire(self:getInventoryItemIDs());
@@ -146,7 +199,6 @@ function ServerContestant.__index:convertToClient(): {any}
     isDisqualified = self.isDisqualified;
     player = self.player;
     name = self.name;
-    isBot = self.isBot;
     character = self.character;
     teamID = self.teamID;
     currentHealth = self.currentHealth;
