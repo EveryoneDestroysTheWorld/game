@@ -53,7 +53,8 @@ function SuperHammerServerItem.new(): types.ServerItem
 
     if not style then
 
-      style = if _contestant.currentStamina >= _contestant.baseStamina then "Hyper" elseif _contestant.currentStamina / _contestant.baseStamina >= 0.5 then "Combo" else "Normal";
+      local baseStamina = _contestant:getModifiedBaseValue("Stamina");
+      style = if _contestant.currentStamina >= baseStamina then "Hyper" elseif _contestant.currentStamina / baseStamina >= 0.5 then "Combo" else "Normal";
 
     end;
 

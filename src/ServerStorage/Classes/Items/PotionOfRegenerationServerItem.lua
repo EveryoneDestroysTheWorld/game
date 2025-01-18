@@ -33,7 +33,7 @@ function PotionOfRegenerationServerItem.new(): types.ServerItem
 
       if shouldHeal then
 
-        contestant:updateHealth(math.min(contestant.baseHealth, contestant.currentHealth + 10));
+        contestant:updateHealth(math.min(contestant:getModifiedBaseValue("Health"), contestant.currentHealth + 10));
 
       end;
 

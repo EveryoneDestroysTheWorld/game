@@ -1,10 +1,10 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
+local types = require(ReplicatedStorage.Client.Classes.types);
 
 type HealthHeadBar = {
-  contestant: ClientContestant.ClientContestant;
+  contestant: types.ClientContestant;
 }
 
 local function HealthHeadBar(props: HealthHeadBar)

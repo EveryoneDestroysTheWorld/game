@@ -18,6 +18,9 @@ function RoughArmorServerEffect.new(properties: types.RoughArmorServerEffectCons
     id = RoughArmorServerEffect.id;
     uniqueID = HttpService:GenerateGUID(false);
     contestant = properties.contestant;
+    baseHealthModifier = {
+      delta = 20;
+    };
     events = {};
   };
 
@@ -27,6 +30,17 @@ end;
 
 function RoughArmorServerEffect.__index:activate()
   
+  -- Increase the contestant's health.
+  self.contestant:addBaseModifier("Health", self.baseHealthModifier);
+
+  if self.contestant.currentHealth >= self.contestant.baseHealth then
+
+    self.contestant:updateHealth(math.max(self.contestant.currentHealth, self.contestant.baseHealth + self.baseHealthModifier.delta), {
+      effectID = self.id
+    });
+
+  end;
+
   if self.contestant.character then
 
     local immuneContestants = {};
@@ -78,6 +92,17 @@ function RoughArmorServerEffect.__index:activate()
 end;
 
 function RoughArmorServerEffect.__index:deactivate()
+
+  -- Reset the contestant's health.
+  self.contestant:removeBaseModifier("Health", self.baseHealthModifier);
+
+  if self.contestant.currentHealth >= self.contestant:getModifiedBaseValue("Health") then
+
+    self.contestant:updateHealth(math.min(self.contestant.currentHealth, self.contestant:getModifiedBaseValue("Health")), {
+      effectID = self.id
+    });
+
+  end;
 
   for _, event in self.events do
 
