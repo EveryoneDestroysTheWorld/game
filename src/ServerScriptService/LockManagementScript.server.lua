@@ -2,6 +2,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
+local types = require(ServerStorage.Classes.types);
+
 export type Lock = unknown;
 
 export type LockListContainer = {
@@ -16,12 +18,14 @@ local function toggleLock(contestantID: number, lockList: LockListContainer, loc
 
   if shouldLock then
 
+    print("locking")
     lockList[contestantID] = lockList[contestantID] or {};
 
     table.insert(lockList[contestantID], lock);
 
   else
 
+    print("unlocking")
     if lockList[contestantID] then
       
       table.remove(lockList[contestantID], table.find(lockList[contestantID], lock));

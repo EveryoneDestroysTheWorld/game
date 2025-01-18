@@ -18,8 +18,8 @@ local DraconicKnightServerArchetype = {
 
 function DraconicKnightServerArchetype.new(): types.ServerArchetype
 
-  local contestant: types.ServerContestant = nil;
-  local round: types.ServerRound = nil;
+  local contestant: ServerContestant = nil;
+  local round: ServerRound = nil;
   local wingProp: Model?;
   local events: {RBXScriptConnection} = {};
   local ragdollClone;

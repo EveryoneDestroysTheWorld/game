@@ -39,7 +39,7 @@ function PotionOfRegenerationServerItem.new(): types.ServerItem
 
     end;
     
-    contestant:removeItem(self);
+    contestant:removeItemFromInventory(self);
     
   end;
   

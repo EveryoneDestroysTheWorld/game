@@ -15,16 +15,15 @@ local types = require(script.Parent.types);
 local events: {[any]: {[string]: BindableEvent}} = {};
 
 local ServerRound = {
-  __index = {
-    contestants = {};
-    actions = {};
-    archetypes = {};
-  } :: types.ServerRound;
+  __index = {} :: types.ServerRound;
 };
 
-function ServerRound.new(properties: types.ServerRoundConstructorProperties): types.ServerRound
+function ServerRound.new(properties: types.ServerRoundConstructorProperties & {stage: Stage.Stage?}): types.ServerRound
 
-  local round = setmetatable(properties :: types.ServerRoundProperties, ServerRound) :: types.ServerRound;
+  local round = setmetatable(properties, ServerRound) :: types.ServerRound;
+  round.contestants = {};
+  round.actions = {};
+  round.archetypes = {};
   round.stage = properties.stage or Stage.fromID(properties.stageID);
 
   events[round] = {};
@@ -168,7 +167,7 @@ end;
 function ServerRound.__index:addContestant(contestant: types.ServerContestant): ()
 
   table.insert(self.contestants, contestant);
-  events[self].onContestantAdded:Fire(contestant.id);
+  events[self].onContestantAdded:Fire(contestant);
   ReplicatedStorage.Shared.Events.ContestantAdded:FireAllClients(self.id, contestant:convertToClient());
 
 end;
