@@ -1,21 +1,22 @@
 --!strict
 -- Programmer: Hati (hati_bati)
--- © 2024 Beastslash LLC
+-- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local ServerStorage = game:GetService("ServerStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
-local ClientAction = require(ReplicatedStorage.Client.Classes.Actions.LockOnClientAction);
+local LockOnClientAction = require(ReplicatedStorage.Client.Classes.Actions.LockOnClientAction);
 local InsertService = game:GetService("InsertService");
 local ServerAction = require(script.Parent.Parent.ServerAction);
-type ServerAction = ServerAction.ServerAction;
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
+local types = require(ServerStorage.Classes.types);
 
-local LockOnAction = {
-	ID = ClientAction.ID;
-	name = ClientAction.name;
-	description = ClientAction.description;
+local LockOnServerAction = {
+	id = LockOnClientAction.id;
+	name = LockOnClientAction.name;
+	description = LockOnClientAction.description;
 };
 
 local function getDataFromClient(player: Player): Vector3
@@ -44,14 +45,14 @@ local function getDataFromClient(player: Player): Vector3
 	event.AttributeChanged:Wait()
 
 	--coords recieved by player
-	return
+	return 
 
 end
 
 
-function LockOnAction.new(): ServerAction
+function LockOnServerAction.new(): types.ServerAction
 
-	local function activate(self: ServerAction)
+	local function activate(self: types.ServerAction)
 
 	end;
 
@@ -67,7 +68,8 @@ function LockOnAction.new(): ServerAction
 
 	end;
 
-	local function initialize(self: ServerAction, newContestant: ServerContestant, newRound: ServerRound)
+	local function initialize(self: types.ServerAction, newContestant: types.ServerContestant, newRound: types.ServerRound)
+		
 		contestant = newContestant;
 		round = newRound;
 
@@ -106,9 +108,9 @@ function LockOnAction.new(): ServerAction
 		loadedAsset:Destroy()
 
 	return ServerAction.new({
-		name = LockOnAction.name;
-		ID = LockOnAction.ID;
-		description = LockOnAction.description;
+		name = LockOnServerAction.name;
+		id = LockOnServerAction.id;
+		description = LockOnServerAction.description;
 		breakdown = breakdown;
 		activate = activate;
 		initialize = initialize;
@@ -117,4 +119,4 @@ function LockOnAction.new(): ServerAction
 end;
 
 
-return LockOnAction;
+return LockOnServerAction;

@@ -20,7 +20,7 @@ local function lockONToggle(_, inputState: Enum.UserInputState)
 	
 end;
 
-local LockOnAction = {
+local LockOnClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 	iconImage = "rbxassetid://17771917538";
 	name = "Lock On";
@@ -187,7 +187,7 @@ local function waitForServerResponse(target)
 
 end
 
-function LockOnAction.new(): ClientAction
+function LockOnClientAction.new(): ClientAction
 	local target = nil
 	local player = Players.LocalPlayer;
 	local remoteName: string;
@@ -241,10 +241,10 @@ function LockOnAction.new(): ClientAction
 	end;
 
 	return ClientAction.new({
-		id = LockOnAction.id;
-		iconImage = LockOnAction.iconImage;
-		name = LockOnAction.name;
-		description = LockOnAction.description;
+		id = LockOnClientAction.id;
+		iconImage = LockOnClientAction.iconImage;
+		name = LockOnClientAction.name;
+		description = LockOnClientAction.description;
 		activate = activate;
 		breakdown = breakdown;
 		initialize = initialize;
@@ -252,4 +252,4 @@ function LockOnAction.new(): ClientAction
 
 end
 
-return LockOnAction;
+return LockOnClientAction;
