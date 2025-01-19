@@ -423,4 +423,15 @@ export type ServerRoundMethods = {
 
 export type ServerRound = ServerRoundProperties & ServerRoundEvents & ServerRoundMethods;
 
+export type AggressiveBotPersonality = AggressiveBotPersonalityProperties & AggressiveBotPersonalityMethods;
+
+export type AggressiveBotPersonalityProperties = {
+  safeSpaceTime: number?;
+  contestant: ServerContestant;
+}
+
+export type AggressiveBotPersonalityMethods = {
+  run: (self: AggressiveBotPersonality) -> ();
+}
+
 return {};
