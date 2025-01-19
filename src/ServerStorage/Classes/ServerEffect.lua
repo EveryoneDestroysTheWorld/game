@@ -15,7 +15,7 @@ function ServerEffect.get(effectID: string): types.ServerEffectClass
 
   end
 
-  error(`Couldn't find item from ID {effectID}.`);
+  error(`Couldn't find effect from ID {effectID}.`);
 
 end;
 

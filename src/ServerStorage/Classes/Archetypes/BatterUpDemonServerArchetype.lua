@@ -38,20 +38,6 @@ function BatterUpDemonServerArchetype.new(): types.ServerArchetype
 
   end;
 
-  local function runAutoPilot(self: types.ServerArchetype, actions: {types.ServerAction})
-
-    -- Make sure the contestant has a character.
-    local character = contestant.character
-    assert(character, "Character not found");
-
-    repeat
-
-      
-
-    until task.wait() and round.timeEnded;
-
-  end;
-
   local function initialize(self: types.ServerArchetype, newContestant: types.ServerContestant, newRound: types.ServerRound)
 
     contestant = newContestant;
@@ -100,7 +86,6 @@ function BatterUpDemonServerArchetype.new(): types.ServerArchetype
     actionIDs = BatterUpDemonServerArchetype.actionIDs;
     type = BatterUpDemonServerArchetype.type;
     breakdown = breakdown;
-    runAutoPilot = runAutoPilot;
     initialize = initialize;
   });
 

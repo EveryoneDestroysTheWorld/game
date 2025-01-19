@@ -20,7 +20,7 @@ function TurfWarGameMode.new(round: types.ServerRound): types.GameMode
 
   local events = {};
 
-  local totalStageParts = 0;
+  local vulnerableParts = {};
 
   local gameMode = GameMode.new({
     id = TurfWarGameMode.id;
@@ -146,7 +146,7 @@ function TurfWarGameMode.new(round: types.ServerRound): types.GameMode
 
           end));
 
-          totalStageParts += 1;
+          table.insert(vulnerableParts, child);
 
         end;
 
@@ -163,6 +163,12 @@ function TurfWarGameMode.new(round: types.ServerRound): types.GameMode
         checkChild(child);
 
       end));
+
+      ServerStorage.Functions.GetVulnerableParts.OnInvoke = function()
+
+        return vulnerableParts;
+
+      end;
 
       -- Keep track of downed players.
       for _, contestant in round.contestants do
@@ -262,7 +268,7 @@ function TurfWarGameMode.new(round: types.ServerRound): types.GameMode
 
       ReplicatedStorage.Shared.Functions.GetTotalStagePartCount.OnServerInvoke = function()
 
-        return totalStageParts;
+        return #vulnerableParts;
     
       end;
 
@@ -292,13 +298,14 @@ function TurfWarGameMode.new(round: types.ServerRound): types.GameMode
       end;
 
       ServerStorage.Functions.ModifyPartCurrentDurability.OnInvoke = nil;
+      ServerStorage.Functions.GetVulnerableParts.OnInvoke = nil;
 
     end;
     toString = function(self)
 
       return HttpService:JSONDecode({
         id = self.id;
-        totalStageParts = totalStageParts;
+        totalStageParts = #vulnerableParts;
       })
 
     end;

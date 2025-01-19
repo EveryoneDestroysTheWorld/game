@@ -9,6 +9,46 @@ local Stage = require(ServerStorage.Packages.Stage);
 local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 
+export type AggressiveAutopilot = AggressiveAutopilotProperties & AggressiveAutopilotMethods;
+
+export type AggressiveAutopilotProperties = {
+  safeSpaceTime: number?;
+  contestant: ServerContestant;
+  name: string;
+  id: string;
+}
+
+export type AggressiveAutopilotConstructorProperties = {
+  contestant: ServerContestant;
+}
+
+export type AggressiveAutopilotMethods = {
+  run: (self: AggressiveAutopilot) -> ();
+}
+
+export type Autopilot<Properties = AutopilotProperties, Methods = AutopilotMethods> = Properties & Methods;
+
+export type AutopilotClass<AutopilotConstructorProperties = any, ExtendedAutopilot = any> = AutopilotProperties & {
+  new: (...AutopilotConstructorProperties) -> ExtendedAutopilot & Autopilot
+}
+
+export type AutopilotFactory = {
+  get: (
+    ((effectID: "Aggressive") -> AutopilotClass<AggressiveAutopilotConstructorProperties, AggressiveAutopilot>)
+    & ((effectID: string) -> AutopilotClass)
+  );
+  random: () -> AutopilotClass;
+}
+
+export type AutopilotProperties = {
+  id: string;
+  name: string;
+}
+
+export type AutopilotMethods = {
+  run: (self: any) -> ();
+}
+
 export type RoundStatus = ClientRound.RoundStatus;
 
 export type Cause = {
@@ -45,7 +85,30 @@ export type HoldingHeavyItemServerEffectMethods = {
   deactivate: (self: HoldingHeavyItemServerEffect, contestant: ServerContestant) -> ();
 }
 
-export type UndeadServerEffect = ServerEffect<UndeadServerEffectProperties & UndeadServerEffectMethods>;
+export type RegenerationServerEffect = ServerEffect<RegenerationServerEffectProperties, RegenerationServerEffectMethods>;
+
+export type RegenerationServerEffectProperties = {
+  name: string;
+  id: string;
+  uniqueID: string;
+  contestant: ServerContestant;
+  rateSeconds: number;
+  maxRegenerations: number;
+  shouldRegenerate: boolean;
+}
+
+export type RegenerationServerEffectConstructorProperties = {
+  contestant: ServerContestant;
+  rateSeconds: number?;
+  maxRegenerations: number?;
+}
+
+export type RegenerationServerEffectMethods = {
+  activate: (self: RegenerationServerEffect, contestant: ServerContestant) -> ();
+  deactivate: (self: RegenerationServerEffect, contestant: ServerContestant) -> ();
+}
+
+export type UndeadServerEffect = ServerEffect<UndeadServerEffectProperties, UndeadServerEffectMethods>;
 
 export type UndeadServerEffectProperties = {
   name: string;
@@ -167,8 +230,6 @@ export type ServerArchetypeProperties = {
 export type ServerArchetypeMethods = {
 
   breakdown: (self: ServerArchetype) -> ();
-
-  runAutoPilot: (self: ServerArchetype, actions: {ServerAction}) -> ();
 
 }
 
@@ -391,6 +452,8 @@ export type ServerRoundProperties = ServerRoundConstructorProperties & {
   contestants: {ServerContestant};
 
   gameMode: GameMode?;
+
+  autopilotTasks: {thread};
 
 };
 

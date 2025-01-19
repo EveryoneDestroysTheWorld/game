@@ -1,8 +1,9 @@
 --!strict
 -- This module represents a Potion of Regeneration on the server side. 
+-- 
 -- Programmer: Christian Toney (Christian_Toney)
 -- Designer: InkyTheBlue (InkyTheBlue)
--- © 2024 Beastslash
+-- © 2024 – 2025 Beastslash
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
@@ -10,6 +11,7 @@ local ServerItem = require(script.Parent.Parent.ServerItem);
 local PotionOfRegenerationClientItem = require(ReplicatedStorage.Client.Classes.Items.PotionOfRegenerationClientItem);
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
 local HttpService = game:GetService("HttpService");
+local ServerEffect = require(ServerStorage.Classes.ServerEffect);
 local types = require(ServerStorage.Classes.types);
 
 local PotionOfRegenerationServerItem = {
@@ -22,40 +24,32 @@ function PotionOfRegenerationServerItem.new(): types.ServerItem
 
   local _specificItemID: string?;
   local contestant: types.ServerContestant;
-  local shouldHeal = true;
   local remoteFunction: RemoteFunction?;
 
   local function activate(self: types.ServerItem)
 
-    for currentSecond = 1, 3 do
-
-      task.wait(1);
-
-      if shouldHeal then
-
-        contestant:updateHealth(math.min(contestant:getModifiedBaseValue("Health"), contestant.currentHealth + 10));
-
-      end;
-
-    end;
-    
     contestant:removeItem(self);
+
+    local regenerationEffect = ServerEffect.get("Regeneration").new({
+      contestant = contestant;
+      rateSeconds = 1;
+      maxRegenerations = 3;
+    });
+    contestant:addEffect(regenerationEffect);
     
   end;
   
   local function breakdown(self: types.ServerItem)
 
-    shouldHeal = false;
+    if remoteFunction then
+
+      remoteFunction:Destroy();
+
+    end;
 
     if contestant.player then
 
       ReplicatedStorage.Shared.Functions.BreakdownItem:InvokeClient(contestant.player, self.id, _specificItemID);
-
-    end;
-
-    if remoteFunction then
-
-      remoteFunction:Destroy();
 
     end;
     

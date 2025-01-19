@@ -111,11 +111,11 @@ ReplicatedStorage.Shared.Functions.InitializeItem.OnClientInvoke = function(item
   assert(specificItemID, `Item {itemID} didn't give an specific ID.`);
 
   local item = ClientItem.get(itemID);
+  print(`Initializing item: {item.name}`);
   item:initialize(specificItemID, ...);
   initializedItems[itemID] = initializedItems[itemID] or {};
 
   initializedItems[itemID][specificItemID :: string] = item;
-  print(`Item active: {item.name}`);
 
 end;
 
@@ -124,7 +124,9 @@ ReplicatedStorage.Shared.Functions.BreakdownItem.OnClientInvoke = function(itemI
   assert(itemID);
   assert(specificItemID, `Item {itemID} didn't give an specific ID.`);
 
-  initializedItems[itemID][specificItemID]:breakdown();
+  local item = initializedItems[itemID][specificItemID];
+  print(`Breaking down item: {item.name}`);
+  item:breakdown();
   initializedItems[itemID][specificItemID] = nil;
   rerenderRoots();
 
