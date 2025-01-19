@@ -107,10 +107,7 @@ function AggressiveAutopilot.__index:run(): ()
 
           if not targetContestantDistance or possibleTargetContestantDistance < targetContestantDistance then
 
-            if self.contestant.name == "BOT 6" then
-              print(`{self.contestant.name} goes for {possibleTargetContestant.name} {possibleTargetContestantDistance}`)
-            end
-              targetContestant = possibleTargetContestant;
+            targetContestant = possibleTargetContestant;
             targetContestantDistance = possibleTargetContestantDistance;
 
           end;
@@ -121,10 +118,7 @@ function AggressiveAutopilot.__index:run(): ()
 
     end;
 
-    if targetContestant and self.contestant.name == "BOT 6" then
-
-      -- TODO: Handle with items, archetypes, and actions.
-      warn(`{self.contestant.name} should go for {targetContestant.name}`);
+    if targetContestant then
 
     elseif self.contestant.currentHealth < self.contestant:getModifiedBaseValue("Health") then
 
