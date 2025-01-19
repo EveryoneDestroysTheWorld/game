@@ -85,7 +85,30 @@ export type HoldingHeavyItemServerEffectMethods = {
   deactivate: (self: HoldingHeavyItemServerEffect, contestant: ServerContestant) -> ();
 }
 
-export type UndeadServerEffect = ServerEffect<UndeadServerEffectProperties & UndeadServerEffectMethods>;
+export type RegenerationServerEffect = ServerEffect<RegenerationServerEffectProperties, RegenerationServerEffectMethods>;
+
+export type RegenerationServerEffectProperties = {
+  name: string;
+  id: string;
+  uniqueID: string;
+  contestant: ServerContestant;
+  rateSeconds: number;
+  maxRegenerations: number;
+  shouldRegenerate: boolean;
+}
+
+export type RegenerationServerEffectConstructorProperties = {
+  contestant: ServerContestant;
+  rateSeconds: number?;
+  maxRegenerations: number?;
+}
+
+export type RegenerationServerEffectMethods = {
+  activate: (self: RegenerationServerEffect, contestant: ServerContestant) -> ();
+  deactivate: (self: RegenerationServerEffect, contestant: ServerContestant) -> ();
+}
+
+export type UndeadServerEffect = ServerEffect<UndeadServerEffectProperties, UndeadServerEffectMethods>;
 
 export type UndeadServerEffectProperties = {
   name: string;
