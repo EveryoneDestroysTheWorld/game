@@ -10,6 +10,8 @@ local ServerArchetype = require(script.Parent.ServerArchetype);
 local ServerAction = require(script.Parent.ServerAction);
 local ServerStorage = game:GetService("ServerStorage");
 local Stage = require(ServerStorage.Packages.Stage);
+local Autopilot = require(ServerStorage.Classes.Autopilot);
+
 local types = require(script.Parent.types);
 
 local events: {[any]: {[string]: BindableEvent}} = {};
@@ -19,6 +21,7 @@ local ServerRound = {
     contestants = {};
     actions = {};
     archetypes = {};
+    autopilotTasks = {};
   } :: types.ServerRound;
 };
 
@@ -118,12 +121,6 @@ function ServerRound.__index:start(): ()
               table.insert(oldActions, action);
 
             end;
-            
-            if contestant.id < 1 then
-                
-              archetype:runAutoPilot(oldActions);
-            
-            end;
 
           end;
 
@@ -142,6 +139,26 @@ function ServerRound.__index:start(): ()
 
     contestant.onArchetypeUpdated:Connect(updateArchetype);
     task.spawn(updateArchetype);
+
+    if not contestant.player then
+
+      local function runAutopilot()
+
+        local autopilot = Autopilot.random().new({
+          contestant = contestant;
+        });
+
+        while task.wait() do
+
+          autopilot:run();
+
+        end;
+
+      end;
+
+      table.insert(self.autopilotTasks, task.spawn(runAutopilot));
+      
+    end;
 
   end;
 
