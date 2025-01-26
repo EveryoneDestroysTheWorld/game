@@ -1,7 +1,7 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local SelectionListContainer = require(script.SelectionListContainer);
+local SelectionList = require(script.SelectionList);
 local ControlGuide = require(script.ControlGuide);
 local types = require(script.types);
 local React = require(ReplicatedStorage.Shared.Packages.react);
@@ -32,7 +32,7 @@ local function QuickSelectionMenu(properties: types.QuickSelectionMenuProperties
         Text = selectedOption.labelText;
       })
     else nil;
-    SelectionListContainer = React.createElement(SelectionListContainer, {
+    SelectionListContainer = React.createElement(SelectionList, {
       selectedOption = selectedOption;
       options = properties.options;
       onSelectionChanged = setSelectedOption;
