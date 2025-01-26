@@ -46,6 +46,7 @@ local function QuickSelectionMenu(properties: QuickSelectionMenuProperties)
     else nil;
     SelectionListContainer = React.createElement(SelectionListContainer, {
       selectedOption = selectedOption;
+      options = properties.options;
       onSelectionChanged = setSelectedOption;
       onSelectionConfirmed = properties.onSelectionConfirmed;
     });
