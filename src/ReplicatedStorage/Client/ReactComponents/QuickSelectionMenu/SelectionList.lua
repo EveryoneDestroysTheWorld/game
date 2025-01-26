@@ -31,6 +31,12 @@ local function SelectionList(properties: types.SelectionListProperties)
         properties.onSelectionConfirmed(option);
 
       end;
+    }, {
+      ImageLabel = React.createElement("ImageLabel", {
+        Image = option.iconImage;
+        Size = UDim2.new(1, 0, 1, 0);
+        BackgroundTransparency = 1;
+      });
     }))
 
   end;
@@ -61,12 +67,14 @@ local function SelectionList(properties: types.SelectionListProperties)
       CanvasSize = UDim2.new(1, ySizeOffset * (#properties.options - 1) + xPadding * (#properties.options - 1), 0, 0);
       CanvasPosition = Vector2.new(ySizeOffset * (selectionIndex - 1) + xPadding * (selectionIndex - 1), 0);
       ScrollingDirection = Enum.ScrollingDirection.X;
-      ScrollbarThickness = 0; -- ControlGuide should make up for accessibility. The scrollbar doesn't look right on the UI.
+      ScrollBarThickness = 0; -- ControlGuide should make up for accessibility. The scrollbar doesn't look right on the UI.
     }, {
       UIListLayout = React.createElement("UIListLayout", {
         Padding = UDim.new(0, xPadding);
         FillDirection = Enum.FillDirection.Horizontal;
         SortOrder = Enum.SortOrder.LayoutOrder;
+        HorizontalAlignment = Enum.HorizontalAlignment.Center;
+        VerticalAlignment = Enum.VerticalAlignment.Center;
       });
       ButtonComponents = React.createElement(React.Fragment, {}, buttonComponents);
     })

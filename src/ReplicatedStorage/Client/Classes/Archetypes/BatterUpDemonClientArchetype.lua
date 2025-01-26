@@ -4,8 +4,6 @@
 -- © 2024 Beastslash LLC
 
 local ClientArchetype = require(script.Parent.Parent.ClientArchetype);
-local ClientContestant = require(script.Parent.Parent.ClientContestant);
-type ClientContestant = ClientContestant.ClientContestant;
 type ClientArchetype = ClientArchetype.ClientArchetype;
 
 local BatterUpDemonClientArchetype = {
@@ -13,7 +11,7 @@ local BatterUpDemonClientArchetype = {
   name = "Batter-Up Demon";
   description = "You'll never strike out with this one.";
   iconImage = "rbxassetid://18584519829";
-  actionIDs = {};
+  actionIDs = {"ChangeBallType"};
   type = "Fighter" :: "Fighter";
 };
 

@@ -12,7 +12,7 @@ local Fonts = require(ReplicatedStorage.Client.Fonts);
 
 local function QuickSelectionMenu(properties: types.QuickSelectionMenuProperties)
 
-  local selectedOption: types.QuickSelectMenuOption?, setSelectedOption = React.useState(nil :: types.QuickSelectMenuOption?);
+  local selectedOption: types.QuickSelectMenuOption?, setSelectedOption = React.useState(properties.options[1]);
 
   return React.createElement("Frame", {
     AnchorPoint = Vector2.new(0.5, 0.5);
@@ -24,10 +24,12 @@ local function QuickSelectionMenu(properties: types.QuickSelectionMenuProperties
     UIListLayout = React.createElement("UIListLayout", {
       Padding = UDim.new(0, 10);
       SortOrder = Enum.SortOrder.LayoutOrder;
+      HorizontalAlignment = Enum.HorizontalAlignment.Center;
     });
     SelectionNameTextLabel = if selectedOption then
       React.createElement("TextLabel", {
         LayoutOrder = 1;
+        AutomaticSize = Enum.AutomaticSize.XY;
         FontFace = Fonts.Bold;
         TextColor3 = Color3.new(1, 1, 1);
         BackgroundTransparency = 1;

@@ -18,12 +18,17 @@ local function SelectionIndicator(properties: types.ControlGuideProperties)
       Size = UDim2.new(0, if isSelectedOption then 6 else 5, 0, if isSelectedOption then 6 else 5);
       BackgroundColor3 = if isSelectedOption then Color3.new(1, 1, 1) else Color3.new(0, 0, 0);
       BackgroundTransparency = if isSelectedOption then 0 else 0.6;
+      BorderSizePixel = 0;
       LayoutOrder = index;
       [React.Event.Activated] = function()
 
         properties.onSelectionChanged(option);
 
       end;
+    }, {
+      UICorner = React.createElement("UICorner", {
+        CornerRadius = UDim.new(1, 0);
+      });
     }));
 
   end;
