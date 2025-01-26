@@ -1,11 +1,13 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local Lighting = game:GetService("Lighting");
 
 local SelectionList = require(script.SelectionList);
 local ControlGuide = require(script.ControlGuide);
 local SelectionIndicator = require(script.SelectionIndicator);
 local types = require(script.types);
 local React = require(ReplicatedStorage.Shared.Packages.react);
+local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 local Fonts = require(ReplicatedStorage.Client.Fonts);
 
 local function QuickSelectionMenu(properties: types.QuickSelectionMenuProperties)
@@ -50,6 +52,11 @@ local function QuickSelectionMenu(properties: types.QuickSelectionMenuProperties
       onSelectionChanged = setSelectedOption;
       onSelectionConfirmed = properties.onSelectionConfirmed;
     });
+    BlurEffect = ReactRoblox.createPortal({
+      React.createElement("BlurEffect", {
+        Size = 12;
+      });
+    }, Lighting);
   });
 
 end;
