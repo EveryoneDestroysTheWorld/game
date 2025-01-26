@@ -3,25 +3,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 local SelectionListContainer = require(script.SelectionListContainer);
 local ControlGuide = require(script.ControlGuide);
+local types = require(script.types);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local Fonts = require(ReplicatedStorage.Client.Fonts);
 
-export type QuickSelectMenuOption = {
-  key: unknown;
-  labelText: string;
-  iconImage: string;
-  onConfirmed: () -> ();
-}
+local function QuickSelectionMenu(properties: types.QuickSelectionMenuProperties)
 
-export type QuickSelectionMenuProperties = {
-  options: {QuickSelectMenuOption};
-  selectionKey: unknown?;
-  onSelectionConfirmed: (selection: QuickSelectMenuOption) -> ();
-}
-
-local function QuickSelectionMenu(properties: QuickSelectionMenuProperties)
-
-  local selectedOption: QuickSelectMenuOption?, setSelectedOption = React.useState(nil :: QuickSelectMenuOption?);
+  local selectedOption: types.QuickSelectMenuOption?, setSelectedOption = React.useState(nil :: types.QuickSelectMenuOption?);
 
   return React.createElement("Frame", {
     AnchorPoint = Vector2.new(0.5, 0.5);
