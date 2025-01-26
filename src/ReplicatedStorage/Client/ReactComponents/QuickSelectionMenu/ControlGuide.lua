@@ -8,6 +8,7 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local function KeyboardButton(properties: {
   Image: string;
   LayoutOrder: number;
+  onActivated: () -> ();
 })
 
   return React.createElement("TextButton", {
@@ -17,6 +18,11 @@ local function KeyboardButton(properties: {
     BorderSizePixel = 0;
     LayoutOrder = properties.LayoutOrder;
     Text = "";
+    [React.Event.Activated] = function()
+
+      properties.onActivated();
+
+    end;
   }, {
     ImageLabel = React.createElement("ImageLabel", {
       Image = properties.Image;
@@ -32,42 +38,52 @@ end;
 
 local function QuickSelectionMenu(properties: types.ControlGuideProperties)
 
+  local function moveSelection(direction: "Left" | "Right")
+
+    if properties.selectedOption then
+
+      -- Get the current index.
+      local currentOptionIndex: number?;
+      for index, option in properties.options do
+
+        if option.key == properties.selectedOption.key then
+
+          currentOptionIndex = index;
+
+        end;
+
+      end;
+
+      assert(currentOptionIndex);
+
+      if direction == "Left" and currentOptionIndex - 1 > 0 then
+
+        properties.onSelectionChanged(properties.options[currentOptionIndex - 1])
+
+      elseif direction == "Right" and currentOptionIndex + 1 <= #properties.options then
+
+        properties.onSelectionChanged(properties.options[currentOptionIndex + 1])
+        
+      end;
+
+    end;
+
+  end;
+
   React.useEffect(function()
 
-    local function moveSelection(actionName: string, inputState: Enum.UserInputState): ()
+    local function checkSelection(actionName: string, inputState: Enum.UserInputState): ()
 
-      if properties.selectedOption and inputState == Enum.UserInputState.Begin then
+      if inputState == Enum.UserInputState.Begin then
 
-        -- Get the current index.
-        local currentOptionIndex: number?;
-        for index, option in properties.options do
-
-          if option.key == properties.selectedOption.key then
-
-            currentOptionIndex = index;
-
-          end;
-
-        end;
-
-        assert(currentOptionIndex);
-
-        if actionName == "MoveSelectionLeft" and currentOptionIndex - 1 > 0 then
-
-          properties.onSelectionChanged(properties.options[currentOptionIndex - 1])
-
-        elseif actionName == "MoveSelectionRight" and currentOptionIndex + 1 <= #properties.options then
-
-          properties.onSelectionChanged(properties.options[currentOptionIndex - 1])
-          
-        end;
+        moveSelection(if actionName == "MoveSelectionLeft" then "Left" else "Right");
 
       end;
 
     end;
   
-    ContextActionService:BindAction("MoveSelectionLeft", moveSelection, false, Enum.KeyCode.Left);
-    ContextActionService:BindAction("MoveSelectionRight", moveSelection, false, Enum.KeyCode.Right);
+    ContextActionService:BindAction("MoveSelectionLeft", checkSelection, false, Enum.KeyCode.Left);
+    ContextActionService:BindAction("MoveSelectionRight", checkSelection, false, Enum.KeyCode.Right);
 
     return function()
 
@@ -83,17 +99,30 @@ local function QuickSelectionMenu(properties: types.ControlGuideProperties)
     BackgroundTransparency = 1;
     LayoutOrder = 4;
   }, {
-    -- TODO: Implement specific control guides for mobile devices and game controllers 
-    React.createElement(React.Fragment, {}, {
-      LeftButton = React.createElement(KeyboardButton, {
-        Image = "rbxassetid://88442502338263";
-        LayoutOrder = 1;
-      });
-      RightButton = React.createElement(KeyboardButton, {
-        Image = "rbxassetid://88442502338263";
-        LayoutOrder = 2;
-      });
-    })
+    -- TODO: Implement specific control guides for mobile devices and game controllers
+    UIListLayout = React.createElement("UIListLayout", {
+      SortOrder = Enum.SortOrder.LayoutOrder;
+      FillDirection = Enum.FillDirection.Horizontal;
+      Padding = UDim.new(0, 5);
+    });
+    LeftButton = React.createElement(KeyboardButton, {
+      Image = "rbxassetid://102551290838815";
+      LayoutOrder = 1;
+      onActivated = function()
+
+        moveSelection("Left");
+        
+      end;
+    });
+    RightButton = React.createElement(KeyboardButton, {
+      Image = "rbxassetid://88442502338263";
+      LayoutOrder = 2;
+      onActivated = function()
+
+        moveSelection("Right")
+
+      end;
+    });
   });
 
 end;

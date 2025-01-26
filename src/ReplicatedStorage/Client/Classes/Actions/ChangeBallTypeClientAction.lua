@@ -47,11 +47,6 @@ function ChangeBallTypeClientAction.new(): ClientAction
           labelText = "Regular Ball";
           iconImage = "rbxassetid://139648735745838"
         };
-        {
-          key = "Regular2";
-          labelText = "Regular Ball";
-          iconImage = "rbxassetid://139648735745838"
-        };
       };
       onSelectionConfirmed = function(selection)
 
