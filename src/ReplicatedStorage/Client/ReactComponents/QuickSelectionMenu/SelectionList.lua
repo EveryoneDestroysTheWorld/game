@@ -11,7 +11,7 @@ local function SelectionList(properties: types.SelectionListProperties)
 
   for index, option in properties.options do
 
-    if option.key == properties.selectionKey then
+    if properties.selectedOption and option.key == properties.selectedOption.key then
 
       selectionIndex = index;
 

@@ -14,8 +14,14 @@ export type QuickSelectionMenuProperties = {
 
 export type SelectionListProperties = {
   options: {QuickSelectMenuOption};
-  selectionKey: unknown;
+  selectedOption: QuickSelectMenuOption?;
   onSelectionConfirmed: (selection: QuickSelectMenuOption) -> ();
+}
+
+export type ControlGuideProperties = {
+  options: {QuickSelectMenuOption};
+  selectedOption: QuickSelectMenuOption?;
+  onSelectionChanged: (selection: QuickSelectMenuOption) -> ();
 }
 
 return {};

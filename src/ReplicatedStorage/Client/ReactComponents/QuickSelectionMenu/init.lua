@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 local SelectionList = require(script.SelectionList);
 local ControlGuide = require(script.ControlGuide);
+local SelectionIndicator = require(script.SelectionIndicator);
 local types = require(script.types);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local Fonts = require(ReplicatedStorage.Client.Fonts);
@@ -32,6 +33,11 @@ local function QuickSelectionMenu(properties: types.QuickSelectionMenuProperties
         Text = selectedOption.labelText;
       })
     else nil;
+    SelectionIndicator = React.createElement(SelectionIndicator, {
+      selectedOption = selectedOption;
+      options = properties.options;
+      onSelectionChanged = setSelectedOption;
+    });
     SelectionListContainer = React.createElement(SelectionList, {
       selectedOption = selectedOption;
       options = properties.options;
@@ -40,7 +46,7 @@ local function QuickSelectionMenu(properties: types.QuickSelectionMenuProperties
     });
     ControlGuide = React.createElement(ControlGuide, {
       options = properties.options;
-      selectionKey = properties.selectionKey;
+      selectedOption = selectedOption;
       onSelectionChanged = setSelectedOption;
       onSelectionConfirmed = properties.onSelectionConfirmed;
     });
