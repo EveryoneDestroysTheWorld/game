@@ -1,3 +1,11 @@
 {
-  "luau-lsp.sourcemap.rojoProjectFile": "development.project.json"
+  "luau-lsp.sourcemap.rojoProjectFile": "development.project.json",
+  "cSpell.words": [
+    "Beastslash",
+    "gsub",
+    "ipairs",
+    "Keypoint",
+    "rbxassetid",
+    "Toney"
+  ]
 }
