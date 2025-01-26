@@ -45,7 +45,7 @@ function DetonateDetachedLimbsClientAction.new(): ClientAction
       
       end;
       shortcutCharacter = "L";
-      iconImage = "rbxassetid://17771918066";
+      iconImage = "rbxassetid://136558858062155";
     }));
 
   end;
