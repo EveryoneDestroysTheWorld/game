@@ -30,6 +30,10 @@ local function QuickSelectionMenu(properties: QuickSelectionMenuProperties)
     Position = UDim2.new(0.5, 0, 0.5, 0);
     Size = UDim2.new(0.5, 0, 0, 0);
   }, {
+    UIListLayout = React.createElement("UIListLayout", {
+      Padding = UDim.new(0, 10);
+      SortOrder = Enum.SortOrder.LayoutOrder;
+    });
     SelectionNameTextLabel = if selectedOption then
       React.createElement("TextLabel", {
         LayoutOrder = 1;
