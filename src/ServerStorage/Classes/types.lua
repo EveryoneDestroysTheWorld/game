@@ -84,6 +84,24 @@ export type DraconicKnightServerArchetypeMethods = ServerArchetypeMethods<{
   
 }>;
 
+export type ExplosiveMimicServerArchetype = ExplosiveMimicServerArchetypeProperties & ExplosiveMimicServerArchetypeMethods;
+
+export type ExplosiveMimicServerArchetypeProperties = ServerArchetypeProperties<{
+  contestant: ServerContestant;
+  ragdollClone: Model?;
+  round: ServerRound;
+  events: {RBXScriptConnection};
+}>;
+
+export type ExplosiveMimicServerArchetypeConstructorProperties = {
+  contestant: ServerContestant;
+  round: ServerRound;
+}
+
+export type ExplosiveMimicServerArchetypeMethods = ServerArchetypeMethods<{
+  
+}>;
+
 export type RoundStatus = ClientRound.RoundStatus;
 
 export type Cause = {
