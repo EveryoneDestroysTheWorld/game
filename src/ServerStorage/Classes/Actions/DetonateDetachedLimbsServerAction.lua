@@ -5,10 +5,14 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
 local ServerAction = require(script.Parent.Parent.ServerAction);
 local DetonateDetachedLimbsClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetonateDetachedLimbsClientAction);
+
 local types = require(ServerStorage.Classes.types);
+
 local assertContestantIsNotActionLocked = require(ServerStorage.Modules.assertContestantIsNotActionLocked);
+local removeDetachLimbBaseModifiers = require(ServerStorage.Modules.removeDetachLimbBaseModifiers);
 
 local DetonateDetachedLimbsServerAction = {
   id = DetonateDetachedLimbsClientAction.id;
@@ -94,8 +98,8 @@ function DetonateDetachedLimbsServerAction.new(): types.ServerAction
           -- Add the limb and HP back to the player.
           local humanoid = contestant.character:FindFirstChild("Humanoid");
           assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.character.Name}'s humanoid`);
-
-          humanoid.MaxHealth += 19;
+          
+          removeDetachLimbBaseModifiers(contestant);
 
         end;
 

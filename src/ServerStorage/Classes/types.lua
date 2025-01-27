@@ -66,6 +66,21 @@ export type BatterUpDemonServerArchetypeMethods = ServerArchetypeMethods<{
   
 }>
 
+export type DetachLimbServerAction = ServerAction<{
+  contestant: ServerContestant;
+  detachedLimbs: {
+    [string]: BasePart | Model
+  };
+  bindableFunction: BindableFunction;
+  remoteFunction: RemoteFunction?;
+}>;
+
+export type ChangeBallTypeServerAction = ServerAction<{
+  contestant: ServerContestant;
+  bindableFunction: BindableFunction;
+  remoteFunction: RemoteFunction?;
+}>;
+
 export type DraconicKnightServerArchetype = DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods;
 
 export type DraconicKnightServerArchetypeProperties = ServerArchetypeProperties<{
@@ -260,20 +275,23 @@ export type HoldingHeavyItemServerEffectConstructorProperties = {
 
 }
 
-export type ServerAction = ServerActionProperties & ServerActionEvents;
+export type ServerActionConstructorProperties = {
+  contestant: ServerContestant;
+  round: ServerRound;
+}
 
-export type ServerActionProperties = {
+export type ServerAction<ExtendedProperties = unknown> = {
   id: string;
   name: string;
   description: string;
-  activate: (self: ServerAction, ...any) -> ();
-  breakdown: (self: ServerAction) -> ();
-  initialize: (self: ServerAction, ...any) -> ();
-};
+  activate: (self: any, ...any) -> ();
+  breakdown: (self: any, ...any) -> ();
+} & ExtendedProperties;
 
-export type ServerActionEvents = {
-  onActivate: RBXScriptSignal<"Press" | "Hold">;
+export type ServerActionClass<ConstructorProperties = any, Action = any> = {
+  new: (...ConstructorProperties) -> Action
 }
+
 export type ServerArchetype = ServerArchetypeProperties & ServerArchetypeMethods;
 
 export type ServerArchetypeClass = ServerArchetypeProperties & {new: (...any) -> ServerArchetype};
@@ -325,6 +343,7 @@ export type BaseModifierType = "Health" | "Stamina";
 
 export type BaseModifier = {
   delta: number;
+  cause: Cause;
 };
 
 export type ServerContestantProperties = {
