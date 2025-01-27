@@ -31,13 +31,11 @@ function ChangeBallTypeServerAction.new(properties: types.ServerActionConstructo
 
   if action.contestant.player then
   
-    local remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function()
+    action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function()
     
       action:activate();
 
     end);
-
-    action.remoteFunction = remoteFunction;
 
   end;
 

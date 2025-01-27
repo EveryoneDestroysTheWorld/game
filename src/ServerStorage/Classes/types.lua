@@ -81,6 +81,12 @@ export type ChangeBallTypeServerAction = ServerAction<{
   remoteFunction: RemoteFunction?;
 }>;
 
+export type DetonateDetachedLimbsServerAction = ServerAction<{
+  contestant: ServerContestant;
+  bindableFunction: BindableFunction;
+  remoteFunction: RemoteFunction?;
+}>;
+
 export type DraconicKnightServerArchetype = DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods;
 
 export type DraconicKnightServerArchetypeProperties = ServerArchetypeProperties<{

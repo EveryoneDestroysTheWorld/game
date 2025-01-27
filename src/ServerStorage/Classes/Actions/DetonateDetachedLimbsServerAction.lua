@@ -6,158 +6,137 @@
 local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local ServerAction = require(script.Parent.Parent.ServerAction);
 local DetonateDetachedLimbsClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetonateDetachedLimbsClientAction);
-
 local types = require(ServerStorage.Classes.types);
 
 local assertContestantIsNotActionLocked = require(ServerStorage.Modules.assertContestantIsNotActionLocked);
+local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
 local removeDetachLimbBaseModifiers = require(ServerStorage.Modules.removeDetachLimbBaseModifiers);
 
 local DetonateDetachedLimbsServerAction = {
   id = DetonateDetachedLimbsClientAction.id;
   name = DetonateDetachedLimbsClientAction.name;
   description = DetonateDetachedLimbsClientAction.description;
+  __index = {} :: types.DetonateDetachedLimbsServerAction;
 };
 
-function DetonateDetachedLimbsServerAction.new(): types.ServerAction
+function DetonateDetachedLimbsServerAction.new(properties: types.ServerActionConstructorProperties): types.DetonateDetachedLimbsServerAction
 
-  local contestant: types.ServerContestant = nil;
-  local round: types.ServerRound = nil;
-  local function activate(self: types.ServerAction)
+  local overwrittenProperties = {
+    name = DetonateDetachedLimbsServerAction.name;
+    id = DetonateDetachedLimbsServerAction.id;
+    description = DetonateDetachedLimbsServerAction.description;
+    contestant = properties.contestant;
+    round = properties.round;
+  }
 
-    -- Verify that actions aren't locked.
-    assertContestantIsNotActionLocked(contestant);
+  local action = (setmetatable(overwrittenProperties, DetonateDetachedLimbsServerAction) :: any) :: types.DetonateDetachedLimbsServerAction;
 
-    -- Make sure the player has enough stamina.
-    assert(contestant.currentStamina >= 20, "Contestant doesn't have enough stamina.");
+  if action.contestant.player then
 
-    local detachedLimbs = ServerStorage.Functions.ActionFunctions:FindFirstChild(`{contestant.id}_GetDetachedLimbs`):Invoke(contestant);
+    action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function()
+    
+      action:activate();
 
-    local didReduceStamina = false;
+    end);
 
-    for limbName, instance in detachedLimbs do
-
-      -- Reduce stamina once.
-      if not didReduceStamina then
-
-        didReduceStamina = true;
-        
-        contestant:updateStamina(math.max(contestant.currentStamina - 20, 0), {
-          actionID = self.id;
-        });
-
-      end;
-
-      -- Use task.spawn so that they all explode at the same time.
-      task.spawn(function()
-        
-        -- Create an explosion at the limb's location.
-        local explosion = Instance.new("Explosion");
-        explosion.BlastPressure = 5000000;
-        explosion.BlastRadius = 20;
-        explosion.DestroyJointRadiusPercent = 0;
-        explosion.Position = (if instance:IsA("Model") then instance.PrimaryPart else instance).CFrame.Position;
-        local hitContestants = {};
-        explosion.Hit:Connect(function(basePart)
+  end;
   
-          -- Damage any parts or contestants that get hit.
-          for _, possibleEnemyContestant in ipairs(round.contestants) do
+  return action;
 
-            task.spawn(function()
+end;
 
-              local possibleEnemyCharacter = possibleEnemyContestant.character;
-              if possibleEnemyContestant ~= contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
+function DetonateDetachedLimbsServerAction.__index:activate()
 
-                table.insert(hitContestants, possibleEnemyContestant);
-                possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 15, {
-                  contestantID = contestant.id;
-                  actionID = DetonateDetachedLimbsServerAction.id;
-                });
+  -- Verify that actions aren't locked.
+  assertContestantIsNotActionLocked(self.contestant);
 
-              end;
+  -- Make sure the player has enough stamina.
+  assert(self.contestant.currentStamina >= 20, "Contestant doesn't have enough stamina.");
 
-            end);
+  local detachedLimbs = ServerStorage.Functions.ActionFunctions:FindFirstChild(`{self.contestant.id}_GetDetachedLimbs`):Invoke();
+  local didReduceStamina = false;
 
-          end;
+  for limbName, instance in detachedLimbs do
 
-          local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
-          if basePartCurrentDurability and typeof(basePartCurrentDurability) == "number" and basePartCurrentDurability > 0 then
-  
-            ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 25, contestant);
-  
-          end;
-  
-        end);
-        explosion.Parent = workspace;
-        instance:Destroy();
+    -- Reduce stamina once.
+    if not didReduceStamina then
 
-        if contestant.character then
+      didReduceStamina = true;
+      
+      self.contestant:updateStamina(math.max(self.contestant.currentStamina - 20, 0), {
+        actionID = self.id;
+      });
 
-          
-          -- Add the limb and HP back to the player.
-          local humanoid = contestant.character:FindFirstChild("Humanoid");
-          assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.character.Name}'s humanoid`);
-          
-          removeDetachLimbBaseModifiers(contestant);
+    end;
+
+    -- Use task.spawn so that they all explode at the same time.
+    task.spawn(function()
+      
+      -- Create an explosion at the limb's location.
+      local explosion = Instance.new("Explosion");
+      explosion.BlastPressure = 5000000;
+      explosion.BlastRadius = 20;
+      explosion.DestroyJointRadiusPercent = 0;
+      explosion.Position = (if instance:IsA("Model") then instance.PrimaryPart else instance).CFrame.Position;
+      local hitContestants = {};
+      explosion.Hit:Connect(function(basePart)
+
+        -- Damage any parts or contestants that get hit.
+        for _, possibleEnemyContestant in ipairs(self.round.contestants) do
+
+          task.spawn(function()
+
+            local possibleEnemyCharacter = possibleEnemyContestant.character;
+            if possibleEnemyContestant ~= self.contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
+
+              table.insert(hitContestants, possibleEnemyContestant);
+              possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 15, {
+                contestantID = self.contestant.id;
+                actionID = DetonateDetachedLimbsServerAction.id;
+              });
+
+            end;
+
+          end);
+
+        end;
+
+        local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
+        if basePartCurrentDurability and typeof(basePartCurrentDurability) == "number" and basePartCurrentDurability > 0 then
+
+          ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 25, self.contestant);
 
         end;
 
       end);
+      explosion.Parent = workspace;
+      instance:Destroy();
 
-    end;
+      if self.contestant.character then
 
-  end;
+        
+        -- Add the limb and HP back to the player.
+        local humanoid = self.contestant.character:FindFirstChild("Humanoid");
+        assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {self.contestant.name}'s humanoid`);
+        
+        removeDetachLimbBaseModifiers(self.contestant);
 
-  local remoteFunction: RemoteFunction?;
-  local function breakdown()
-
-    if remoteFunction then
-
-      remoteFunction:Destroy();
-
-    end;
-
-  end;
-
-  local function initialize(self: types.ServerAction, newContestant: types.ServerContestant, newRound: types.ServerRound)
-
-    contestant = newContestant;
-    round = newRound;
-
-    if contestant.player then
-    
-      local actionRemoteFunction = Instance.new("RemoteFunction");
-      actionRemoteFunction.Name = `{contestant.player.UserId}_{self.id}`;
-      actionRemoteFunction.OnServerInvoke = function(player)
-  
-        if player == contestant.player then
-  
-          self:activate();
-  
-        else
-  
-          -- That's weird.
-          error("Unauthorized.");
-  
-        end
-  
       end;
-      actionRemoteFunction.Parent = ReplicatedStorage.Shared.Functions.ActionFunctions;
-      remoteFunction = actionRemoteFunction;
-  
-    end;
+
+    end);
 
   end;
 
-  return ServerAction.new({
-    name = DetonateDetachedLimbsServerAction.name;
-    id = DetonateDetachedLimbsServerAction.id;
-    description = DetonateDetachedLimbsServerAction.description;
-    breakdown = breakdown;
-    activate = activate;
-    initialize = initialize;
-  });
+end;
+
+function DetonateDetachedLimbsServerAction.__index:breakdown()
+
+  if self.remoteFunction then
+
+    self.remoteFunction:Destroy();
+
+  end;
 
 end;
 
