@@ -67,6 +67,7 @@ function ExplosivePunchServerAction.new(properties: types.ServerActionConstructo
 
     action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function(chargeMode: "charging" | "release")
     
+      assert(typeof(chargeMode) == "string" and (chargeMode == "charging" or chargeMode == "release"));
       action:activate(chargeMode);
 
     end);

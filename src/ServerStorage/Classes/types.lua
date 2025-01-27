@@ -64,7 +64,13 @@ export type BatterUpDemonServerArchetypeConstructorProperties = {
 
 export type BatterUpDemonServerArchetypeMethods = ServerArchetypeMethods<{
   
-}>
+}>;
+
+export type ChangeBallTypeServerAction = ServerAction<{
+  contestant: ServerContestant;
+  bindableFunction: BindableFunction;
+  remoteFunction: RemoteFunction?;
+}>;
 
 export type DetachLimbServerAction = ServerAction<{
   contestant: ServerContestant;
@@ -81,12 +87,6 @@ export type DiveBombServerAction = ServerAction<{
   anims: {
     [string]: AnimationTrack
   };
-  remoteFunction: RemoteFunction?;
-}>
-
-export type ChangeBallTypeServerAction = ServerAction<{
-  contestant: ServerContestant;
-  bindableFunction: BindableFunction;
   remoteFunction: RemoteFunction?;
 }>;
 
@@ -108,6 +108,13 @@ export type ExplosivePunchServerAction = ServerAction<{
   currentAnimationTrack: AnimationTrack?;
   explosiveParts: {BasePart};
   activate: (self: ExplosivePunchServerAction) -> ();
+}>;
+
+export type FireBeamServerAction = ServerAction<{
+  contestant: ServerContestant;
+  round: ServerRound;
+  bindableFunction: BindableFunction;
+  remoteFunction: RemoteFunction?;
 }>;
 
 export type DraconicKnightServerArchetype = DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods;
