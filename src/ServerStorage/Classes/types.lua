@@ -92,8 +92,22 @@ export type ChangeBallTypeServerAction = ServerAction<{
 
 export type DetonateDetachedLimbsServerAction = ServerAction<{
   contestant: ServerContestant;
+  round: ServerRound;
   bindableFunction: BindableFunction;
   remoteFunction: RemoteFunction?;
+  activate: (self: DetonateDetachedLimbsServerAction) -> ();
+}>;
+
+export type ExplosivePunchServerAction = ServerAction<{
+  contestant: ServerContestant;
+  round: ServerRound;
+  bindableFunction: BindableFunction;
+  remoteFunction: RemoteFunction?;
+  minimumRequiredStamina: number;
+  latestActivationTimes: {number};
+  currentAnimationTrack: AnimationTrack?;
+  explosiveParts: {BasePart};
+  activate: (self: ExplosivePunchServerAction) -> ();
 }>;
 
 export type DraconicKnightServerArchetype = DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods;
@@ -299,9 +313,10 @@ export type ServerAction<ExtendedProperties = unknown> = {
   id: string;
   name: string;
   description: string;
+} & ExtendedProperties & {
   activate: (self: any, ...any) -> ();
-  breakdown: (self: any, ...any) -> ();
-} & ExtendedProperties;
+  breakdown: (self: any, ...any) -> (); 
+};
 
 export type ServerActionClass<ConstructorProperties = any, Action = any> = {
   new: (...ConstructorProperties) -> Action

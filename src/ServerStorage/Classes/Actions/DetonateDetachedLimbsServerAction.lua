@@ -105,7 +105,9 @@ function DetonateDetachedLimbsServerAction.__index:activate()
         local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability");
         if basePartCurrentDurability and typeof(basePartCurrentDurability) == "number" and basePartCurrentDurability > 0 then
 
-          ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 25, self.contestant);
+          ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 25, {
+            contestantID = self.contestant.id;
+          });
 
         end;
 

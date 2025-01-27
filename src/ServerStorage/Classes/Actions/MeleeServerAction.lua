@@ -67,7 +67,9 @@ local function damageEvent(primaryPart, round, contestant)
 		local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability") :: number?;
 		if basePartCurrentDurability and basePartCurrentDurability > 0 then
 
-			ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, contestant);
+			ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, {
+				contestantID = contestant.id;
+			});
 
 		end;
 

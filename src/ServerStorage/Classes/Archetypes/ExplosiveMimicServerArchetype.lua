@@ -121,7 +121,9 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
           local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability") :: number?;
           if basePartCurrentDurability and basePartCurrentDurability > 0 then
   
-            ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 100, archetype.contestant);
+            ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 100, {
+              contestantID = archetype.contestant.id;
+            });
   
           end;
   

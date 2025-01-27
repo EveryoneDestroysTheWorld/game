@@ -250,14 +250,14 @@ function TurfWarGameMode.new(round: types.ServerRound): types.GameMode
 
       end));
       
-      ServerStorage.Functions.ModifyPartCurrentDurability.OnInvoke = function(basePart, newDurability, contestant)
+      ServerStorage.Functions.ModifyPartCurrentDurability.OnInvoke = function(basePart, newDurability, cause: types.Cause)
 
         local currentDurability = basePart:GetAttribute("CurrentDurability");
         if currentDurability > 0 then
 
           if newDurability <= 0 then
 
-            basePart:SetAttribute("DestroyerID", contestant.id);
+            basePart:SetAttribute("DestroyerID", cause.contestantID);
 
           end;
           basePart:SetAttribute("CurrentDurability", newDurability);

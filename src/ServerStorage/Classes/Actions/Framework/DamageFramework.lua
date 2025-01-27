@@ -80,7 +80,9 @@ function damageFramework.explosionEvent(coords: Vector3, data: OptionalExplosion
 		local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability") :: number?;
 		if basePartCurrentDurability and basePartCurrentDurability > 0 then
 
-		ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - (data["ObjectDamage"] or defaults["ObjectDamage"]), contestant);
+		ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - (data["ObjectDamage"] or defaults["ObjectDamage"]), {
+			contestantID = contestant.id;
+		});
 
 		end;
 
