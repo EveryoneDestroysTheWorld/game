@@ -49,44 +49,40 @@ export type AutopilotMethods = {
   run: (self: any) -> ();
 }
 
-export type BatterUpDemonServerArchetype = ServerArchetype<BatterUpDemonServerArchetypeProperties & BatterUpDemonServerArchetypeMethods>;
+export type BatterUpDemonServerArchetype = BatterUpDemonServerArchetypeProperties & BatterUpDemonServerArchetypeMethods;
 
-export type BatterUpDemonServerArchetypeProperties = {
+export type BatterUpDemonServerArchetypeProperties = ServerArchetypeProperties<{
   contestant: ServerContestant;
-  name: string;
-  id: string;
   ragdollClone: Model?;
   events: {RBXScriptConnection};
   isContestantDowned: boolean;
-}
+}>
 
 export type BatterUpDemonServerArchetypeConstructorProperties = {
   contestant: ServerContestant;
 }
 
-export type BatterUpDemonServerArchetypeMethods = {
+export type BatterUpDemonServerArchetypeMethods = ServerArchetypeMethods<{
   
-}
+}>
 
-export type DraconicKnightServerArchetype = ServerArchetype<DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods>;
+export type DraconicKnightServerArchetype = DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods;
 
-export type DraconicKnightServerArchetypeProperties = {
+export type DraconicKnightServerArchetypeProperties = ServerArchetypeProperties<{
   contestant: ServerContestant;
-  name: string;
-  id: string;
   ragdollClone: Model?;
   events: {RBXScriptConnection};
   roughArmorEffect: RoughArmorServerEffect;
   wingProp: Model?;
-}
+}>;
 
 export type DraconicKnightServerArchetypeConstructorProperties = {
   contestant: ServerContestant;
 }
 
-export type DraconicKnightServerArchetypeMethods = {
+export type DraconicKnightServerArchetypeMethods = ServerArchetypeMethods<{
   
-}
+}>;
 
 export type RoundStatus = ClientRound.RoundStatus;
 
@@ -245,11 +241,11 @@ export type ServerActionProperties = {
 export type ServerActionEvents = {
   onActivate: RBXScriptSignal<"Press" | "Hold">;
 }
-export type ServerArchetype<Properties = ServerArchetypeProperties, Methods = ServerArchetypeMethods> = Properties & Methods;
+export type ServerArchetype = ServerArchetypeProperties & ServerArchetypeMethods;
 
 export type ServerArchetypeClass = ServerArchetypeProperties & {new: (...any) -> ServerArchetype};
 
-export type ServerArchetypeProperties = {
+export type ServerArchetypeProperties<ExtendedProperties = {[any]: any}> = {
   
   id: string;
   
@@ -260,16 +256,14 @@ export type ServerArchetypeProperties = {
   type: "Fighter" | "Defender" | "Destroyer" | "Supporter";
 
   actionIDs: {string};
-
-  initialize: (self: any, ...any) -> ();
   
-}
+} & ExtendedProperties;
 
-export type ServerArchetypeMethods = {
+export type ServerArchetypeMethods<ExtendedMethods = {[any]: (...any) -> any}> = {
 
   breakdown: (self: any) -> ();
 
-}
+} & ExtendedMethods;
 
 export type WalkSpeedWeight = {
   walkSpeed: number;

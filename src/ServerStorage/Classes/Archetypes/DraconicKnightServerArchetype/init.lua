@@ -17,7 +17,7 @@ local DraconicKnightServerArchetype = {
   description = DraconicKnightClientArchetype.description;
   actionIDs = DraconicKnightClientArchetype.actionIDs;
   type = DraconicKnightClientArchetype.type;
-  __index = {};
+  __index = {} :: types.DraconicKnightServerArchetype;
 };
 
 function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServerArchetypeConstructorProperties): types.DraconicKnightServerArchetype
@@ -53,14 +53,18 @@ function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServe
 
   end;
 
-  local archetype = (setmetatable(overwrittenProperties, DraconicKnightServerArchetype) :: unknown) :: types.DraconicKnightServerArchetype
+  local archetype = (setmetatable(overwrittenProperties, DraconicKnightServerArchetype) :: any) :: types.DraconicKnightServerArchetype
   
-  local function setUpPropsDragonKnight(model)
+  if character then
     
-    wingsProp:FindFirstChild("WingProp").Parent = model
+    local wingsProp = script.WingsProp:Clone();
+    wingsProp:FindFirstChild("WingProp").Parent = character;
     wingsProp:Destroy();
-    local newWingProp = model.WingProp;
-    (newWingProp:FindFirstChild("Root") :: any).RigidConstraint.Attachment1 = model:FindFirstChild("BodyBackAttachment", true)
+
+    local newWingProp = character:FindFirstChild("WingProp");
+    assert(newWingProp and newWingProp:IsA("Model"));
+
+    (newWingProp:FindFirstChild("Root") :: any).RigidConstraint.Attachment1 = character:FindFirstChild("BodyBackAttachment", true)
 
     -- Creates effects and folder for draconicknight if it doesnt already exist
     if not ReplicatedStorage.Client.InGameDisplayObjects:FindFirstChild("DraconicKnight") then
@@ -68,38 +72,39 @@ function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServe
       local classFolder = Instance.new("Folder", ReplicatedStorage.Client.InGameDisplayObjects)
       classFolder.Name = "DraconicKnight"
 
-      local diveBombIndicator = InsertService:LoadAsset(124109899420589)
+      local diveBombIndicator = script.DiveBombIndicator:Clone();
       diveBombIndicator.AoeDisplay.Name = "DiveBombIndicator"
       diveBombIndicator.DiveBombIndicator.PrimaryPart.Position = Vector3.new(0,9999,0)
       diveBombIndicator.DiveBombIndicator.Parent = classFolder
       diveBombIndicator:Destroy()
 
-      local fireBeamProp = InsertService:LoadAsset(132308940043685)
+      local fireBeamProp = script.FireBeam:Clone();
       fireBeamProp.FireBeam.Name = "FireBeamProp"
       fireBeamProp.FireBeamProp.Parent = classFolder
       fireBeamProp:Destroy()
 
-      local fireDebuffProp = InsertService:LoadAsset(131535660581587)
+      local fireDebuffProp = script.FireDebuffProp:Clone();
       fireDebuffProp.FirePlayer.Name = "FireDebuffProp"
       fireDebuffProp.FireDebuffProp.Parent = classFolder
       fireDebuffProp:Destroy()
       
 
-      local fireBeamGUI = InsertService:LoadAsset(83599259067516)
+      local fireBeamGUI = script.FireBeamGUI:Clone();
       fireBeamGUI.Charge.Name = "ChargeMeter"
       fireBeamGUI.ChargeMeter.Parent = classFolder
       fireBeamGUI:Destroy()
 
-      local chargedAttackEffect = InsertService:LoadAsset(117856122514203)
+      local chargedAttackEffect = script.ChargedAttackEffect:Clone();
       chargedAttackEffect.ChargedAttack.Name = "ChargedAttackEffect"
       chargedAttackEffect.ChargedAttackEffect.Parent = classFolder
       chargedAttackEffect:Destroy()
 
 
-      local tarBomb = InsertService:LoadAsset(134163908471327)
+      local tarBomb = script.TarBomb:Clone();
       tarBomb.TarBomb.Parent = classFolder
       chargedAttackEffect:Destroy()
-      local animData = InsertService:LoadAsset(113409826866728)
+
+      local animData = script.AnimData:Clone();
       animData.DKAnimData.Parent = classFolder.Parent
       animData:Destroy();
       
@@ -107,8 +112,6 @@ function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServe
     archetype.wingProp = newWingProp;
 
   end
-    
-  setUpPropsDragonKnight(properties.contestant["character"]);
 
   properties.contestant:addEffect(archetype.roughArmorEffect);
 
@@ -156,9 +159,9 @@ function DraconicKnightServerArchetype.__index:breakdown()
 
   end;
   
-  if wingProp then
+  if self.wingProp then
 
-    wingProp:Destroy()
+    self.wingProp:Destroy()
     
   end
 

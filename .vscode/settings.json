@@ -9,5 +9,6 @@
     "rbxassetid",
     "setmetatable",
     "Toney"
-  ]
+  ],
+  "luau-lsp.fflags.enableNewSolver": false
 }
