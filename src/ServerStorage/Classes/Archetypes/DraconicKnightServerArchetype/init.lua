@@ -35,6 +35,8 @@ function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServe
     events = {};
   };
 
+  local archetype = (setmetatable(overwrittenProperties, DraconicKnightServerArchetype) :: any) :: types.DraconicKnightServerArchetype;
+
   if properties.contestant.player then
 
     ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(properties.contestant.player, overwrittenProperties.id);
@@ -52,8 +54,6 @@ function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServe
     end;
 
   end;
-
-  local archetype = (setmetatable(overwrittenProperties, DraconicKnightServerArchetype) :: any) :: types.DraconicKnightServerArchetype
   
   if character then
     
