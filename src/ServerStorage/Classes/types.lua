@@ -49,6 +49,78 @@ export type AutopilotMethods = {
   run: (self: any) -> ();
 }
 
+export type BatterUpDemonServerArchetype = BatterUpDemonServerArchetypeProperties & BatterUpDemonServerArchetypeMethods;
+
+export type BatterUpDemonServerArchetypeProperties = ServerArchetypeProperties<{
+  contestant: ServerContestant;
+  ragdollClone: Model?;
+  events: {RBXScriptConnection};
+  isContestantDowned: boolean;
+}>
+
+export type BatterUpDemonServerArchetypeConstructorProperties = {
+  contestant: ServerContestant;
+}
+
+export type BatterUpDemonServerArchetypeMethods = ServerArchetypeMethods<{
+  
+}>
+
+export type DraconicKnightServerArchetype = DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods;
+
+export type DraconicKnightServerArchetypeProperties = ServerArchetypeProperties<{
+  contestant: ServerContestant;
+  ragdollClone: Model?;
+  events: {RBXScriptConnection};
+  roughArmorEffect: RoughArmorServerEffect;
+  wingProp: Model?;
+}>;
+
+export type DraconicKnightServerArchetypeConstructorProperties = {
+  contestant: ServerContestant;
+}
+
+export type DraconicKnightServerArchetypeMethods = ServerArchetypeMethods<{
+  
+}>;
+
+export type ExplosiveMimicServerArchetype = ExplosiveMimicServerArchetypeProperties & ExplosiveMimicServerArchetypeMethods;
+
+export type ExplosiveMimicServerArchetypeProperties = ServerArchetypeProperties<{
+  contestant: ServerContestant;
+  ragdollClone: Model?;
+  round: ServerRound;
+  events: {RBXScriptConnection};
+}>;
+
+export type ExplosiveMimicServerArchetypeConstructorProperties = {
+  contestant: ServerContestant;
+  round: ServerRound;
+}
+
+export type ExplosiveMimicServerArchetypeMethods = ServerArchetypeMethods<{
+  
+}>;
+
+export type UndeadConsciousnessServerArchetype = UndeadConsciousnessServerArchetypeProperties & UndeadConsciousnessServerArchetypeMethods;
+
+export type UndeadConsciousnessServerArchetypeProperties = ServerArchetypeProperties<{
+  contestant: ServerContestant;
+  ragdollClone: Model?;
+  round: ServerRound;
+  events: {RBXScriptConnection};
+  undeadEffect: UndeadServerEffect;
+}>;
+
+export type UndeadConsciousnessServerArchetypeConstructorProperties = {
+  contestant: ServerContestant;
+  round: ServerRound;
+}
+
+export type UndeadConsciousnessServerArchetypeMethods = ServerArchetypeMethods<{
+  
+}>;
+
 export type RoundStatus = ClientRound.RoundStatus;
 
 export type Cause = {
@@ -72,7 +144,7 @@ export type GameMode = GameModeProperties;
 
 export type GameModeClass = GameModeProperties & {new: (...any) -> GameMode};
 
-export type HoldingHeavyItemServerEffect = ServerEffect<HoldingHeavyItemServerEffectProperties & HoldingHeavyItemServerEffectMethods>;
+export type HoldingHeavyItemServerEffect = HoldingHeavyItemServerEffectProperties & HoldingHeavyItemServerEffectMethods;
 
 export type HoldingHeavyItemServerEffectProperties = {
   lock: unknown;
@@ -85,7 +157,7 @@ export type HoldingHeavyItemServerEffectMethods = {
   deactivate: (self: HoldingHeavyItemServerEffect, contestant: ServerContestant) -> ();
 }
 
-export type RegenerationServerEffect = ServerEffect<RegenerationServerEffectProperties, RegenerationServerEffectMethods>;
+export type RegenerationServerEffect = RegenerationServerEffectProperties & RegenerationServerEffectMethods;
 
 export type RegenerationServerEffectProperties = {
   name: string;
@@ -108,49 +180,45 @@ export type RegenerationServerEffectMethods = {
   deactivate: (self: RegenerationServerEffect, contestant: ServerContestant) -> ();
 }
 
-export type UndeadServerEffect = ServerEffect<UndeadServerEffectProperties, UndeadServerEffectMethods>;
+export type UndeadServerEffect = UndeadServerEffectProperties & UndeadServerEffectMethods;
 
-export type UndeadServerEffectProperties = {
-  name: string;
-  id: string;
+export type UndeadServerEffectProperties = ServerEffectProperties<{
   events: {
     [unknown]: RBXScriptConnection
   };
   walkSpeedWeight: WalkSpeedWeight;
   contestant: ServerContestant;
-}
+}>
 
 export type UndeadServerEffectConstructorProperties = {
   contestant: ServerContestant;
 }
 
-export type UndeadServerEffectMethods = {
+export type UndeadServerEffectMethods = ServerEffectMethods<{
   activate: (self: UndeadServerEffect, contestant: ServerContestant) -> ();
   deactivate: (self: UndeadServerEffect, contestant: ServerContestant) -> ();
-}
+}>
 
-export type RoughArmorServerEffect = ServerEffect<RoughArmorServerEffectProperties & RoughArmorServerEffectMethods>;
+export type RoughArmorServerEffect = RoughArmorServerEffectProperties & RoughArmorServerEffectMethods;
 
-export type RoughArmorServerEffectProperties = {
-  name: string;
-  id: string;
+export type RoughArmorServerEffectProperties = ServerEffectProperties<{
   events: {
     [unknown]: RBXScriptConnection
   };
   contestant: ServerContestant;
   baseHealthModifier: BaseModifier;
-}
+}>;
 
 export type RoughArmorServerEffectConstructorProperties = {
   contestant: ServerContestant;
-}
+};
 
-export type RoughArmorServerEffectMethods = {
+export type RoughArmorServerEffectMethods = ServerEffectMethods<{
   activate: (self: RoughArmorServerEffect, contestant: ServerContestant) -> ();
   deactivate: (self: RoughArmorServerEffect, contestant: ServerContestant) -> ();
-}
+}>;
 
-export type ParalysisServerEffect = ServerEffect<ParalysisServerEffectProperties & ParalysisServerEffectMethods>;
+export type ParalysisServerEffect = ParalysisServerEffectProperties & ParalysisServerEffectMethods;
 
 export type ParalysisServerEffectConstructorProperties = {
   contestant: ServerContestant;
@@ -172,7 +240,7 @@ export type ParalysisServerEffectMethods = {
   deactivate: (self: ParalysisServerEffect) -> ();
 }
 
-export type InvincibilityServerEffect = ServerEffect<InvincibilityServerEffectProperties & InvincibilityServerEffectMethods>;
+export type InvincibilityServerEffect = InvincibilityServerEffectProperties & InvincibilityServerEffectMethods;
 
 export type InvincibilityServerEffectProperties = {
   expirationTimeMilliseconds: number;
@@ -206,12 +274,11 @@ export type ServerActionProperties = {
 export type ServerActionEvents = {
   onActivate: RBXScriptSignal<"Press" | "Hold">;
 }
-
 export type ServerArchetype = ServerArchetypeProperties & ServerArchetypeMethods;
 
 export type ServerArchetypeClass = ServerArchetypeProperties & {new: (...any) -> ServerArchetype};
 
-export type ServerArchetypeProperties = {
+export type ServerArchetypeProperties<ExtendedProperties = unknown> = {
   
   id: string;
   
@@ -222,16 +289,14 @@ export type ServerArchetypeProperties = {
   type: "Fighter" | "Defender" | "Destroyer" | "Supporter";
 
   actionIDs: {string};
-
-  initialize: (self: ServerArchetype, ...any) -> ();
   
-}
+} & ExtendedProperties;
 
-export type ServerArchetypeMethods = {
+export type ServerArchetypeMethods<ExtendedMethods = unknown> = {
 
-  breakdown: (self: ServerArchetype) -> ();
+  breakdown: (self: any) -> ();
 
-}
+} & ExtendedMethods;
 
 export type WalkSpeedWeight = {
   walkSpeed: number;
@@ -382,21 +447,21 @@ export type ServerItemEvents = {
 
 }
 
-export type ServerEffect<Properties = ServerEffectProperties, Methods = ServerEffectMethods> = Properties & Methods;
+export type ServerEffect = ServerEffectProperties & ServerEffectMethods;
 
-export type ServerEffectProperties = {
+export type ServerEffectProperties<ExtendedProperties = {[any]: any}> = {
   name: string;
   id: string;
   description: string?;
   expirationTimeMilliseconds: number?;
-}
+} & ExtendedProperties;
 
-export type ServerEffectMethods = {
+export type ServerEffectMethods<ExtendedMethods = {[any]: (...any) -> any}> = {
   activate: ((self: any, ...any) -> ())?;
   deactivate: ((self: any, ...any) -> ())?;
   updateContestantHealth: ((self: any, newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
   updateContestantStamina: ((self: any, newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
-}
+} & ExtendedMethods;
 
 export type ServerEffectClass<ServerEffectConstructorProperties = any, ExtendedServerEffect = any> = ServerEffectProperties & {
   new: (...ServerEffectConstructorProperties) -> ExtendedServerEffect & ServerEffect

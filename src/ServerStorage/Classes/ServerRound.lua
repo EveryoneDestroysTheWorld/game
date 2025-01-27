@@ -90,7 +90,7 @@ function ServerRound.__index:start(): ()
 
     local function updateArchetype()
 
-      local isSuccess, errorMessage = pcall(function()
+      local isSuccess, errorObject = xpcall(function()
 
         if not oldArchetype or oldArchetype.id ~= contestant.archetypeID then
 
@@ -108,16 +108,18 @@ function ServerRound.__index:start(): ()
 
           if contestant.archetypeID then
 
-            local archetype = ServerArchetype.get(contestant.archetypeID);
-            archetype:initialize(contestant, self);
-            table.insert(self.archetypes :: {types.ServerArchetype}, archetype);
+            local archetype = ServerArchetype.get(contestant.archetypeID).new({
+              contestant = contestant;
+              round = self;
+            });
+            table.insert(self.archetypes, archetype);
             oldArchetype = archetype;
 
             for _, actionID in ipairs(archetype.actionIDs) do
 
               local action = ServerAction.get(actionID);
               action:initialize(contestant, self);
-              table.insert(self.actions :: {types.ServerAction}, action);
+              table.insert(self.actions, action);
               table.insert(oldActions, action);
 
             end;
@@ -126,12 +128,16 @@ function ServerRound.__index:start(): ()
 
         end;
 
+      end, function(errorMessage)
+      
+        self:stop(true);
+        warn(`[Round] Round stopped due to an error: {errorMessage}\n{debug.traceback()}`);
+
       end);
 
       if not isSuccess then
 
-        self:stop(true);
-        error(errorMessage, 0);
+        
 
       end;
 

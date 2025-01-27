@@ -7,14 +7,14 @@ local ClientArchetype = require(script.Parent.Parent.ClientArchetype);
 local ClientContestant = require(script.Parent.Parent.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
 type ClientArchetype = ClientArchetype.ClientArchetype;
-local UndeadConciousnessClientArchetype = {
+local UndeadConsciousnessClientArchetype = {
   id = script.Name:sub(1, script.Name:gsub("ClientArchetype", ""):len());
-  name = "Undead Conciousness";
+  name = "Undead Consciousness";
   description = "You can be unfortunate enough that no one would save you while downed, but with undead yourself, you can hunt down your enemies for vengeance!";
   actionIDs = {};
   type = "Supporter" :: "Supporter";
 };
-function UndeadConciousnessClientArchetype.new(): ClientArchetype
+function UndeadConsciousnessClientArchetype.new(): ClientArchetype
 
   local function breakdown(self: ClientArchetype)
 
@@ -25,11 +25,11 @@ function UndeadConciousnessClientArchetype.new(): ClientArchetype
   end;
 
   return ClientArchetype.new({
-    id = UndeadConciousnessClientArchetype.id;
-    name = UndeadConciousnessClientArchetype.name;
-    description = UndeadConciousnessClientArchetype.description;
-    actionIDs = UndeadConciousnessClientArchetype.actionIDs;
-    type = UndeadConciousnessClientArchetype.type;
+    id = UndeadConsciousnessClientArchetype.id;
+    name = UndeadConsciousnessClientArchetype.name;
+    description = UndeadConsciousnessClientArchetype.description;
+    actionIDs = UndeadConsciousnessClientArchetype.actionIDs;
+    type = UndeadConsciousnessClientArchetype.type;
     iconImage = "rbxassetid://130983727429334";
     breakdown = breakdown;
     initialize = initialize;
@@ -37,4 +37,4 @@ function UndeadConciousnessClientArchetype.new(): ClientArchetype
 
 end;
 
-return UndeadConciousnessClientArchetype;
+return UndeadConsciousnessClientArchetype;
