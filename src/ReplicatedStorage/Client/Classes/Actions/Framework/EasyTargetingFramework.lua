@@ -1,43 +1,44 @@
 --!strict
--- Programmer: Hati (hati_bati)
+-- Programmers: Hati (hati_bati) and Christian Toney (Christian_Toney)
 -- Designer: Hati (hati_bati)
--- © 2024 Beastslash LLC
+-- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players");
 
-targetingFramework = {}
+local targetingFramework = {}
 
-local playerDisplay = {}
+local playerDisplay = {
+	isFree = false;
+	chargeTime = 0;
+}
+
 playerDisplay["charge"] = 0
-function targetingFramework.waitForServerResponse(actionName, charge): ()
+function targetingFramework:getData(): (Vector3, boolean, number)
 
-	local connection: RBXScriptConnection;
+	local coordinates;
+	local shouldUseTarget = false;
+	local chargeTime = playerDisplay.chargeTime;
 
-	connection = Players.LocalPlayer.ChildAdded:Connect(function(child: Instance)
+	--data request received from server
+	if playerDisplay.isFree or not Players.LocalPlayer.Character:FindFirstChild("TargetLocal") then
 
-		if child:IsA("RemoteEvent") and child.Name == "GetData" then
-			local charge  = playerDisplay["charge"]
-			--data request recieved from server
-			connection:Disconnect()
-			if playerDisplay["free"] == true or not Players.LocalPlayer.Character:FindFirstChild("TargetLocal") then
-				print(charge)
-				child:FireServer(Players.LocalPlayer:GetMouse().Hit.Position + Vector3.new(0,4,0), false, charge)
-			else
-				local useTarget = true
-				print(charge)
-				child:FireServer(Players.LocalPlayer.Character.TargetLocal.Value.PrimaryPart.Position, useTarget, charge)
-			end
-			playerDisplay["charge"] = 0
-			--sent data back to server
+		coordinates = Players.LocalPlayer:GetMouse().Hit.Position;
 
-		end
+	else
+		
+		coordinates = Players.LocalPlayer.Character.TargetLocal.Value.PrimaryPart.Position;
+		shouldUseTarget = true;
 
-	end)
+	end
+
+	--sent data back to server
+	playerDisplay.chargeTime = 0;
+	
+	return coordinates, shouldUseTarget, chargeTime;
 
 end
-
 
 function targetingFramework.displayTarget(state: "Start" | "Release"): ()
 
@@ -48,17 +49,17 @@ function targetingFramework.displayTarget(state: "Start" | "Release"): ()
 		playerDisplay["obj"]:FindFirstChild("Beam", true).Attachment1 = Players.LocalPlayer.Character.HumanoidRootPart.RootAttachment
 		local target = Players.LocalPlayer.Character:FindFirstChild("Target") or Players.LocalPlayer.Character:FindFirstChild("LocalTarget")
 		if target and target.Value ~= nil then
-			playerDisplay["free"] = false
+			playerDisplay.isFree = false
 		end
 
 		playerDisplay["mouseCon"] = Players.LocalPlayer:GetMouse().Move:Connect(function()
-			playerDisplay["free"] = true
+			playerDisplay.isFree = true
 			playerDisplay["mouseCon"]:Disconnect()
 		end)
 
 		playerDisplay["con"] = RunService.Stepped:Connect(function()
 			local target = Players.LocalPlayer.Character:FindFirstChild("Target") or Players.LocalPlayer.Character:FindFirstChild("LocalTarget")
-			if target and target.Value ~= nil and playerDisplay["free"] ~= true then
+			if target and not target.Value and not playerDisplay.isFree then
 				playerDisplay["obj"].Root.Position = target.Value.PrimaryPart.Position + Vector3.new(0,-0.5,0)
 			else
 				playerDisplay["obj"].Root.Position = Players.LocalPlayer:GetMouse().Hit.Position + Vector3.new(0,0.5,0)

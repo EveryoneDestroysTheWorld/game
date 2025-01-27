@@ -4,11 +4,10 @@ local ServerStorage = game:GetService("ServerStorage");
 
 local DraconicKnightClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.DraconicKnightClientArchetype);
 local ServerEffect = require(ServerStorage.Classes.ServerEffect);
+local types = require(ServerStorage.Classes.types);
 
 local downContestant = require(ServerStorage.Modules.downContestant);
 local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
-
-local types = require(ServerStorage.Classes.types)
 
 local DraconicKnightServerArchetype = {
   id = DraconicKnightClientArchetype.id;

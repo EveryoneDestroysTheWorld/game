@@ -4,13 +4,14 @@
 -- © 2024 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local RunService = game:GetService("RunService")
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
+
 local ClientAction = require(script.Parent.Parent.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
 local targetingFramework = require(script.Parent.Framework.EasyTargetingFramework);
+
 type ClientAction = ClientAction.ClientAction;
 
 local DiveBombAction = {
@@ -19,58 +20,6 @@ local DiveBombAction = {
 	name = "Dive Bomb";
 	description = "Rush to target location, stunning enemies in an area and dealing damage to EVERYONE nearby.";
 };
-
-local function waitForServerResponse(coordinateData: Vector3): ()
-
-	local connection: RBXScriptConnection;
-
-	connection = Players.LocalPlayer.ChildAdded:Connect(function(child: Instance)
-
-		if child:IsA("RemoteEvent") and child.Name == "GetData" then
-
-			--data request recieved from server
-			connection:Disconnect()
-			child:FireServer(coordinateData)
-			--sent data back to server
-
-		end
-
-	end)
-
-end
-
-local playerDisplay = {}
-local function displayTarget(state: "Start" | "Release"): ()
-
-	if state == "Start" then
-		
-		playerDisplay["obj"] = ReplicatedStorage.Client.InGameDisplayObjects.DraconicKnight.DiveBombIndicator:Clone()
-		playerDisplay["obj"].Root.Position = Players.LocalPlayer:GetMouse().Hit.Position + Vector3.new(0,0.5,0)
-		playerDisplay["obj"].Parent = workspace.Terrain
-		playerDisplay["obj"]:FindFirstChild("Beam", true).Attachment1 = Players.LocalPlayer.Character.HumanoidRootPart.RootAttachment
-		local target = Players.LocalPlayer.Character:FindFirstChild("Target")
-		if target and target.Value ~= nil then
-			playerDisplay["con"] = RunService.Stepped:Connect(function()
-
-				playerDisplay["obj"].Root.Position = target.Value.PrimaryPart.Position + Vector3.new(0,-0.5,0)
-	
-			end)
-		else
-
-			playerDisplay["con"] = RunService.Stepped:Connect(function()
-
-				playerDisplay["obj"].Root.Position = Players.LocalPlayer:GetMouse().Hit.Position + Vector3.new(0,0.5,0)
-
-			end)
-		end
-	else
-
-		playerDisplay["obj"]:Destroy()
-		playerDisplay["con"]:Disconnect()
-
-	end
-
-end
 
 function DiveBombAction.new(): ClientAction
 
@@ -86,8 +35,8 @@ function DiveBombAction.new(): ClientAction
 
 	local function activate(self: ClientAction)
     
-		targetingFramework.waitForServerResponse("DiveBomb")
-		ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
+		local coordinates, shouldUseTarget = targetingFramework:getData()
+		ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer(coordinates, shouldUseTarget);
 
 	end;
 
@@ -98,7 +47,7 @@ function DiveBombAction.new(): ClientAction
       key = self.id;
 			onActivate = function()
 
-				self:activate("Input");
+				self:activate();
 
 			end;
 			shortcutCharacter = "1";

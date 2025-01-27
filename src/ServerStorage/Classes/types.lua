@@ -75,6 +75,15 @@ export type DetachLimbServerAction = ServerAction<{
   remoteFunction: RemoteFunction?;
 }>;
 
+export type DiveBombServerAction = ServerAction<{
+  contestant: ServerContestant;
+  round: ServerRound;
+  anims: {
+    [string]: AnimationTrack
+  };
+  remoteFunction: RemoteFunction?;
+}>
+
 export type ChangeBallTypeServerAction = ServerAction<{
   contestant: ServerContestant;
   bindableFunction: BindableFunction;

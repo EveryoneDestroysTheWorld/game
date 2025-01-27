@@ -19,28 +19,6 @@ local FireBeamAction = {
 	description = "Charge by holding down while flying, and release to fire a beam that lights the ground on fire.";
 };
 
-local function waitForServerResponse()
-	local connection: RBXScriptConnection;
-
-	connection = Players.LocalPlayer.ChildAdded:Connect(function(child: Instance)
-
-		if child:IsA("RemoteEvent") and child.Name == "FireBreathCoords" then
-
-			--set up data requests recieved from server
-			connection:Disconnect()
-			connection = child.OnClientEvent:Connect(function()
-				child:FireServer(Players.LocalPlayer:GetMouse().Hit.Position)
-			end)
-			--sent data back to server
-
-		end
-
-	end)
-	
-	return connection
-
-end
-
 function FireBeamAction.new(): ClientAction
 
 	local player = Players.LocalPlayer;

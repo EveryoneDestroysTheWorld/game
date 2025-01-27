@@ -4,9 +4,9 @@
 -- © 2024 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local RunService = game:GetService("RunService")
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
+
 local ClientAction = require(script.Parent.Parent.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
@@ -19,51 +19,6 @@ local TarBombAction = {
 	name = "Tar Bomb";
 	description = "Launch a projectile at the target location which explodes after a small amount of time, spreading tar onto nearby targets. Tar covered targets are slowed and take flat additional damage from all sources.";
 };
-
-local function waitForServerResponse(coordinateData: Vector3): ()
-
-	local connection: RBXScriptConnection;
-
-	connection = Players.LocalPlayer.ChildAdded:Connect(function(child: Instance)
-
-		if child:IsA("RemoteEvent") and child.Name == "GetData" then
-
-			--data request recieved from server
-			connection:Disconnect()
-			child:FireServer(coordinateData)
-			--sent data back to server
-
-		end
-
-	end)
-
-end
-
-
-
-local playerDisplay = {}
-local function displayTarget(state: "Start" | "Release"): ()
-
-	if state == "Start" then
-		
-		playerDisplay["obj"] = ReplicatedStorage.Client.InGameDisplayObjects.DraconicKnight.DiveBombIndicator:Clone()
-		playerDisplay["obj"].Root.Position = Players.LocalPlayer:GetMouse().Hit.Position + Vector3.new(0,0.5,0)
-		playerDisplay["obj"].Parent = workspace.Terrain
-		playerDisplay["obj"]:FindFirstChild("Beam", true).Attachment1 = Players.LocalPlayer.Character.HumanoidRootPart.RootAttachment
-		playerDisplay["con"] = RunService.Stepped:Connect(function()
-
-			playerDisplay["obj"].Root.Position = Players.LocalPlayer:GetMouse().Hit.Position + Vector3.new(0,0.5,0)
-
-		end)
-		
-	else
-
-		playerDisplay["obj"]:Destroy()
-		playerDisplay["con"]:Disconnect()
-
-	end
-
-end
 
 function TarBombAction.new(): ClientAction
 
