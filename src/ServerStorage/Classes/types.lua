@@ -278,7 +278,7 @@ export type ServerArchetype = ServerArchetypeProperties & ServerArchetypeMethods
 
 export type ServerArchetypeClass = ServerArchetypeProperties & {new: (...any) -> ServerArchetype};
 
-export type ServerArchetypeProperties<ExtendedProperties = {[any]: any}> = {
+export type ServerArchetypeProperties<ExtendedProperties = unknown> = {
   
   id: string;
   
@@ -292,7 +292,7 @@ export type ServerArchetypeProperties<ExtendedProperties = {[any]: any}> = {
   
 } & ExtendedProperties;
 
-export type ServerArchetypeMethods<ExtendedMethods = {[any]: (...any) -> any}> = {
+export type ServerArchetypeMethods<ExtendedMethods = unknown> = {
 
   breakdown: (self: any) -> ();
 

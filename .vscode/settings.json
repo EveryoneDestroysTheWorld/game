@@ -5,6 +5,7 @@
     "gsub",
     "ipairs",
     "Keypoint",
+    "pcall",
     "ragdoll",
     "rbxassetid",
     "setmetatable",

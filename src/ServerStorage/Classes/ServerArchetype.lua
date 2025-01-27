@@ -8,7 +8,7 @@ local types = require(script.Parent.types);
 
 local ServerArchetype = {}
 
-function ServerArchetype.get(archetypeID: string): types.ServerArchetype
+function ServerArchetype.get(archetypeID: string): types.ServerArchetypeClass
 
   local instance = script.Parent.Archetypes:FindFirstChild(`{archetypeID}ServerArchetype`);
   if instance and instance:IsA("ModuleScript") then

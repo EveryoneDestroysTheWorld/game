@@ -161,7 +161,7 @@ function ServerContestant.__index:addEffect(effect: types.ServerEffect): ()
 
   end;
 
-  events[self].onEffectsUpdated:Fire(self.effects);
+  events[self].onEffectsUpdated:Fire();
 
 end;
 

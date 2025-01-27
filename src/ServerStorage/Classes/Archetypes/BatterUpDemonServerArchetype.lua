@@ -35,7 +35,11 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
 
   if properties.contestant.player then
 
-    ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(archetype.contestant, archetype.id);
+    task.spawn(function()
+      
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(archetype.contestant.player, archetype.id);
+    
+    end);
 
   end;
 

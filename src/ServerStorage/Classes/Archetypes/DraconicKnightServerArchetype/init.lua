@@ -56,12 +56,9 @@ function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServe
   
   if character then
     
-    local wingsProp = script.WingsProp:Clone();
-    wingsProp:FindFirstChild("WingProp").Parent = character;
-    wingsProp:Destroy();
-
-    local newWingProp = character:FindFirstChild("WingProp");
+    local newWingProp = script.WingProp:Clone();
     assert(newWingProp and newWingProp:IsA("Model"));
+    newWingProp.Parent = character;
 
     (newWingProp:FindFirstChild("Root") :: any).RigidConstraint.Attachment1 = character:FindFirstChild("BodyBackAttachment", true)
 
@@ -72,39 +69,26 @@ function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServe
       classFolder.Name = "DraconicKnight"
 
       local diveBombIndicator = script.DiveBombIndicator:Clone();
-      diveBombIndicator.AoeDisplay.Name = "DiveBombIndicator"
-      diveBombIndicator.DiveBombIndicator.PrimaryPart.Position = Vector3.new(0,9999,0)
-      diveBombIndicator.DiveBombIndicator.Parent = classFolder
-      diveBombIndicator:Destroy()
+      diveBombIndicator.PrimaryPart.Position = Vector3.new(0,9999,0)
+      diveBombIndicator.Parent = classFolder
 
       local fireBeamProp = script.FireBeam:Clone();
-      fireBeamProp.FireBeam.Name = "FireBeamProp"
-      fireBeamProp.FireBeamProp.Parent = classFolder
-      fireBeamProp:Destroy()
+      fireBeamProp.Parent = classFolder
 
       local fireDebuffProp = script.FireDebuffProp:Clone();
-      fireDebuffProp.FirePlayer.Name = "FireDebuffProp"
-      fireDebuffProp.FireDebuffProp.Parent = classFolder
-      fireDebuffProp:Destroy()
+      fireDebuffProp.Parent = classFolder
       
-      local fireBeamGUI = script.FireBeamGUI:Clone();
-      fireBeamGUI.Charge.Name = "ChargeMeter"
-      fireBeamGUI.ChargeMeter.Parent = classFolder
-      fireBeamGUI:Destroy()
+      local chargeMeterGUI = script.ChargeMeter:Clone();
+      chargeMeterGUI.Parent = classFolder
 
       local chargedAttackEffect = script.ChargedAttackEffect:Clone();
-      chargedAttackEffect.ChargedAttack.Name = "ChargedAttackEffect"
-      chargedAttackEffect.ChargedAttackEffect.Parent = classFolder
-      chargedAttackEffect:Destroy()
-
+      chargedAttackEffect.Parent = classFolder
 
       local tarBomb = script.TarBomb:Clone();
-      tarBomb.TarBomb.Parent = classFolder
-      chargedAttackEffect:Destroy()
+      tarBomb.Parent = classFolder
 
       local animData = script.AnimData:Clone();
-      animData.DKAnimData.Parent = classFolder.Parent
-      animData:Destroy();
+      animData.Parent = classFolder.Parent
       
     end
     archetype.wingProp = newWingProp;
