@@ -195,7 +195,7 @@ function ServerContestant.__index:removeItem(item: types.ServerItem): ()
 
 end;
 
-function ServerContestant.__index:removeEffect(effect: types.ServerEffect<unknown>): ()
+function ServerContestant.__index:removeEffect(effect: types.ServerEffect): ()
 
   -- Iterating backwards because the indexes can change after running table.remove().
   for index = #self.effects, 1, -1 do

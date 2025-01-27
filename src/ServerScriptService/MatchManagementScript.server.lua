@@ -71,7 +71,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
     -- Verify that the player has the default archetypes.
     local archetypeIDs = contestant.profile:getArchetypeIDs();
     local _newArchetypeIDs: {string}? = nil;
-    for _, archetypeID in {"ExplosiveMimic", "BatterUpDemon", "DraconicKnight", "UndeadConciousness"} do
+    for _, archetypeID in {"ExplosiveMimic", "BatterUpDemon", "DraconicKnight", "UndeadConsciousness"} do
   
       if not table.find(archetypeIDs, archetypeID) then
   

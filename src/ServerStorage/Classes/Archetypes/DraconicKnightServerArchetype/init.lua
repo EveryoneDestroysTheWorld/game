@@ -1,6 +1,5 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local InsertService = game:GetService("InsertService");
 local ServerStorage = game:GetService("ServerStorage");
 
 local DraconicKnightClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.DraconicKnightClientArchetype);
@@ -88,7 +87,6 @@ function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServe
       fireDebuffProp.FireDebuffProp.Parent = classFolder
       fireDebuffProp:Destroy()
       
-
       local fireBeamGUI = script.FireBeamGUI:Clone();
       fireBeamGUI.Charge.Name = "ChargeMeter"
       fireBeamGUI.ChargeMeter.Parent = classFolder
