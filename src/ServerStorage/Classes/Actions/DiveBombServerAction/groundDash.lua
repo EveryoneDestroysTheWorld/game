@@ -1,4 +1,7 @@
 --!strict
+-- Programmers: Hati (hati_bati) and Christian Toney (Christian_Toney)
+-- Designers: Christian Toney (Christian_Toney) and Hati (hati_bati)
+-- © 2024 – 2025 Beastslash LLC
 
 local ServerStorage = game:GetService("ServerStorage");
 local TweenService = game:GetService("TweenService");
