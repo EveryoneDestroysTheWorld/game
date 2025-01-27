@@ -8,28 +8,15 @@ local types = require(script.Parent.types);
 
 local ServerArchetype = {}
 
-function ServerArchetype.new(properties: types.ServerArchetypeProperties): types.ServerArchetype
-
-  return properties :: types.ServerArchetype;
-  
-end
-
 function ServerArchetype.get(archetypeID: string): types.ServerArchetype
 
-  for _, instance in ipairs(script.Parent.Archetypes:GetChildren()) do
-  
-    if instance:IsA("ModuleScript") then
-  
-      local archetype = require(instance) :: any;
-      if archetype.id == archetypeID then
-  
-        return archetype.new();
-  
-      end;
-  
-    end
-  
-  end;
+  local instance = script.Parent.Archetypes:FindFirstChild(`{archetypeID}ServerArchetype`);
+  if instance and instance:IsA("ModuleScript") then
+
+    local effect = require(instance) :: any;
+    return effect;
+
+  end
 
   error(`Couldn't find archetype from ID {archetypeID}.`);
 

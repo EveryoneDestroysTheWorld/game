@@ -49,6 +49,45 @@ export type AutopilotMethods = {
   run: (self: any) -> ();
 }
 
+export type BatterUpDemonServerArchetype = ServerArchetype<BatterUpDemonServerArchetypeProperties & BatterUpDemonServerArchetypeMethods>;
+
+export type BatterUpDemonServerArchetypeProperties = {
+  contestant: ServerContestant;
+  name: string;
+  id: string;
+  ragdollClone: Model?;
+  events: {RBXScriptConnection};
+  isContestantDowned: boolean;
+}
+
+export type BatterUpDemonServerArchetypeConstructorProperties = {
+  contestant: ServerContestant;
+}
+
+export type BatterUpDemonServerArchetypeMethods = {
+  
+}
+
+export type DraconicKnightServerArchetype = ServerArchetype<DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods>;
+
+export type DraconicKnightServerArchetypeProperties = {
+  contestant: ServerContestant;
+  name: string;
+  id: string;
+  ragdollClone: Model?;
+  events: {RBXScriptConnection};
+  roughArmorEffect: RoughArmorServerEffect;
+  wingProp: Model?;
+}
+
+export type DraconicKnightServerArchetypeConstructorProperties = {
+  contestant: ServerContestant;
+}
+
+export type DraconicKnightServerArchetypeMethods = {
+  
+}
+
 export type RoundStatus = ClientRound.RoundStatus;
 
 export type Cause = {
@@ -206,8 +245,7 @@ export type ServerActionProperties = {
 export type ServerActionEvents = {
   onActivate: RBXScriptSignal<"Press" | "Hold">;
 }
-
-export type ServerArchetype = ServerArchetypeProperties & ServerArchetypeMethods;
+export type ServerArchetype<Properties = ServerArchetypeProperties, Methods = ServerArchetypeMethods> = Properties & Methods;
 
 export type ServerArchetypeClass = ServerArchetypeProperties & {new: (...any) -> ServerArchetype};
 
@@ -223,13 +261,13 @@ export type ServerArchetypeProperties = {
 
   actionIDs: {string};
 
-  initialize: (self: ServerArchetype, ...any) -> ();
+  initialize: (self: any, ...any) -> ();
   
 }
 
 export type ServerArchetypeMethods = {
 
-  breakdown: (self: ServerArchetype) -> ();
+  breakdown: (self: any) -> ();
 
 }
 
@@ -389,14 +427,14 @@ export type ServerEffectProperties = {
   id: string;
   description: string?;
   expirationTimeMilliseconds: number?;
-}
+} & any;
 
 export type ServerEffectMethods = {
   activate: ((self: any, ...any) -> ())?;
   deactivate: ((self: any, ...any) -> ())?;
   updateContestantHealth: ((self: any, newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
   updateContestantStamina: ((self: any, newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
-}
+} & any;
 
 export type ServerEffectClass<ServerEffectConstructorProperties = any, ExtendedServerEffect = any> = ServerEffectProperties & {
   new: (...ServerEffectConstructorProperties) -> ExtendedServerEffect & ServerEffect

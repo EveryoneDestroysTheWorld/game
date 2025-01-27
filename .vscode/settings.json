@@ -5,7 +5,9 @@
     "gsub",
     "ipairs",
     "Keypoint",
+    "ragdoll",
     "rbxassetid",
+    "setmetatable",
     "Toney"
   ]
 }
