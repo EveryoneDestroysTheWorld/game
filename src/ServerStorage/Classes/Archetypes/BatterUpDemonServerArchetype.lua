@@ -21,8 +21,6 @@ local BatterUpDemonServerArchetype = {
 
 function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerArchetypeConstructorProperties): types.BatterUpDemonServerArchetype
 
-  local events: {RBXScriptConnection} = {};
-
   local overwrittenProperties = {
     id = BatterUpDemonServerArchetype.id;
     name = BatterUpDemonServerArchetype.name;
@@ -41,7 +39,7 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
 
   end;
 
-  table.insert(events, archetype.contestant.onHealthUpdated:Connect(function()
+  table.insert(overwrittenProperties.events, archetype.contestant.onHealthUpdated:Connect(function()
   
     if archetype.isContestantDowned and archetype.contestant.currentHealth > 0 then
       
