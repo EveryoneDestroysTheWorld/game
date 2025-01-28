@@ -5,6 +5,43 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
 export type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
 
+export type ClientAction<Extension = unknown> = ClientActionProperties & Extension & ClientActionMethods;
+
+export type ClientActionClass<ConstructorProperties = any, Action = any> = {
+  new: (...ConstructorProperties) -> Action
+}
+
+export type ClientActionMethods = {
+
+  -- The function to activate the item on the server side.
+  -- You can manually activate the item some other way too.
+  activate: (self: ClientActionProperties, ...any) -> ();
+
+  -- The function to "break down" the item. This usually runs after the round ends and sometimes after item use.
+  -- You can manually break down the item some other way too.
+  breakdown: (self: ClientActionProperties) -> ();
+
+  -- The function to initialize the item. This usually runs after the player receives an item. 
+  -- This function does not mean the player activated the item. Use :activate() instead.
+  initialize: (self: ClientActionProperties) -> ();
+
+}
+
+export type ClientActionProperties = {
+
+  -- The ID of the action. Keep this unique.
+  id: string;
+
+  -- The name of the action.
+  name: string;
+
+  -- The Roblox asset link to the action's icon image.
+  iconImage: string;
+
+  -- The description of the action.
+  description: string;
+  
+};
 
 export type ClientContestant = ClientContestantProperties & ClientContestantEvents & ClientContestantMethods;
 
