@@ -4,19 +4,16 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
-local Players = game:GetService("Players");
-local ContextActionService = game:GetService("ContextActionService");
+
 local LockOnClientAction = require(ReplicatedStorage.Client.Classes.Actions.LockOnClientAction);
-local InsertService = game:GetService("InsertService");
 local ServerAction = require(script.Parent.Parent.ServerAction);
-local React = require(ReplicatedStorage.Shared.Packages.react);
-local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
 local types = require(ServerStorage.Classes.types);
 
 local LockOnServerAction = {
 	id = LockOnClientAction.id;
 	name = LockOnClientAction.name;
 	description = LockOnClientAction.description;
+	__index = {} :: types.LockOnServerAction;
 };
 
 local function getDataFromClient(player: Player): Vector3
@@ -49,24 +46,7 @@ local function getDataFromClient(player: Player): Vector3
 
 end
 
-
-function LockOnServerAction.new(): types.ServerAction
-
-	local function activate(self: types.ServerAction)
-
-	end;
-
-	local executeActionRemoteFunction: RemoteFunction? = nil;
-
-	local function breakdown()
-
-		if executeActionRemoteFunction then
-
-			executeActionRemoteFunction:Destroy();
-
-		end
-
-	end;
+function LockOnServerAction.new(): types.LockOnServerAction
 
 	local function initialize(self: types.ServerAction, newContestant: types.ServerContestant, newRound: types.ServerRound)
 		
@@ -82,8 +62,8 @@ function LockOnServerAction.new(): types.ServerAction
 			remoteFunction.OnServerInvoke = function(player)
 
 				if player == contestant.player then
+					
 					local target = getDataFromClient(player)
-					self:activate();
 
 				else
 
@@ -103,10 +83,6 @@ function LockOnServerAction.new(): types.ServerAction
 
 	end;
 
-	local loadedAsset = InsertService:LoadAsset(121257423066226)
-		loadedAsset.TargetingFrame.Parent = ReplicatedStorage.Shared.InGameDisplayObjects
-		loadedAsset:Destroy()
-
 	return ServerAction.new({
 		name = LockOnServerAction.name;
 		id = LockOnServerAction.id;
@@ -118,5 +94,14 @@ function LockOnServerAction.new(): types.ServerAction
 
 end;
 
+function LockOnServerAction.__index:breakdown()
+
+	if executeActionRemoteFunction then
+
+		executeActionRemoteFunction:Destroy();
+
+	end
+
+end
 
 return LockOnServerAction;

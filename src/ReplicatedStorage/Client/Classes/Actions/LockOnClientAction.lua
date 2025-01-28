@@ -7,17 +7,11 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 local ClientAction = require(script.Parent.Parent.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
-print("Thanks toney for being so patient with me i realize this is a work as much as u want project but also i want to contribute and do the things i said i would")
 
 local targetingGUI
 
-
 local previousTargets = {}
 local held = false
-local function lockONToggle(_, inputState: Enum.UserInputState)
-
-	
-end;
 
 local LockOnClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
@@ -160,76 +154,54 @@ function lockOn()
 	return target
 end
 
-
-
-
 type ClientAction = ClientAction.ClientAction;
 
-
-local function waitForServerResponse(target)
-	local connection: RBXScriptConnection;
-
-	connection = Players.LocalPlayer.ChildAdded:Connect(function(child: Instance)
-		if child:IsA("RemoteEvent") and child.Name == "LockOnData" then
-			local target = Players.LocalPlayer.Character:FindFirstChild("TargetLocal")
-			if target then
-				target = target.Value 
-			end
-			child:FireServer(target)
-			--sent data back to server
-			connection:Disconnect()
-		end
-
-	end)
-	
-	return connection
-
-end
-
 function LockOnClientAction.new(): ClientAction
+
 	local target = nil
 	local player = Players.LocalPlayer;
-	local remoteName: string;
 
 	local function breakdown(self: ClientAction)
 
 		ContextActionService:UnbindAction("ActivateMelee");
 
 	end;
-	local connection
-	local function activate(self: ClientAction)
-		--print(target)
-		--print(target.Parent)
-		waitForServerResponse(target)
-		ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName):InvokeServer();
-		
-	end;
 
-	local inputcount = 0
+	local inputCount = 0
 	local function initialize(self: ClientAction)
 
 		remoteName = `{player.UserId}_{self.id}`;
-		local debounce = false
+		
 		local function checkJump(_, inputState: Enum.UserInputState)
+
 			if inputState == Enum.UserInputState.Begin then
-				local savedValue = inputcount
+
+				local savedValue = inputCount
 				target = lockOn()
 				task.delay(0.3, function()
-					if inputcount == savedValue then
-						--print("Untargeting")
+
+					if inputCount == savedValue then
+
 						held = true
 						targetCamera()
-						self:activate()
+
 					end
 				end)
 				targetCamera(target)
+
 			elseif inputState == Enum.UserInputState.End then
-				if held == true then
+
+				if held then
+
 					held = false
+
 				else
+
 					self:activate()
+
 				end
-				inputcount += 1
+
+				inputCount += 1
 				
 			end
 		end;
@@ -243,7 +215,6 @@ function LockOnClientAction.new(): ClientAction
 		iconImage = LockOnClientAction.iconImage;
 		name = LockOnClientAction.name;
 		description = LockOnClientAction.description;
-		activate = activate;
 		breakdown = breakdown;
 		initialize = initialize;
 	});

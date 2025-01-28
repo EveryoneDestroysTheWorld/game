@@ -76,7 +76,6 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 				});
 
 			end;
-
 			
 			local wingPropLeft = wingProp:FindFirstChild("WingsPropLeft");
 			local animatorL = if wingPropLeft then wingPropLeft:FindFirstChild("Animator") else nil;
@@ -131,7 +130,7 @@ function TakeFlightServerAction.__index:activate()
 			elseif self.contestant.currentStamina >= 10 then
 
 				self.contestant:updateStamina(math.max(0, self.contestant.currentStamina - 10));
-				
+
 				coroutine.wrap(startFlight)(self.contestant, primaryPart);
 
 				animateFlight(self, primaryPart, Vector3.new(0, 100, 1.8), false)
