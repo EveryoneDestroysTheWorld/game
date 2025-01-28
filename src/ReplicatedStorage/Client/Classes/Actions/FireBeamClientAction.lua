@@ -6,6 +6,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
+local UserInputService = game:GetService("UserInputService");
 
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
@@ -47,7 +48,11 @@ function FireBeamClientAction.new(): types.FireBeamClientAction
 
 				while task.wait() do
 
-					remoteEvent:FireServer(Players.LocalPlayer:GetMouse().Hit.Position); -- TODO: Fix for mobile and gamepad devices.
+					local mousePosition = UserInputService:GetMouseLocation();
+					local unitRay = workspace.CurrentCamera:ViewportPointToRay(mousePosition.X, mousePosition.Y)
+					local raycastResult = workspace:Raycast(unitRay.Origin, unitRay.Direction);
+					local position = if raycastResult then raycastResult.Position else unitRay.Direction * 1000;
+					remoteEvent:FireServer(position);
 
 				end;
 			
