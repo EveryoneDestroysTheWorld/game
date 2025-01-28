@@ -144,14 +144,18 @@ export type DetonateDetachedLimbsClientAction = ClientAction<{
 }>;
 
 export type DiveBombClientAction = ClientAction<{
-  gui: ScreenGui?;
   remoteFunction: RemoteFunction;
   activate: (self: DetonateDetachedLimbsClientAction) -> ();
   breakdown: (self: DetonateDetachedLimbsClientAction) -> ();
 }>;
 
 export type ExplosivePunchClientAction = ClientAction<{
-  gui: ScreenGui?;
+  remoteFunction: RemoteFunction;
+  activate: (self: DetonateDetachedLimbsClientAction) -> ();
+  breakdown: (self: DetonateDetachedLimbsClientAction) -> ();
+}>;
+
+export type FireBeamClientAction = ClientAction<{
   remoteFunction: RemoteFunction;
   activate: (self: DetonateDetachedLimbsClientAction) -> ();
   breakdown: (self: DetonateDetachedLimbsClientAction) -> ();

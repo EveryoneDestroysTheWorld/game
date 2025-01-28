@@ -6,101 +6,93 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
-local ClientAction = require(script.Parent.Parent.ClientAction);
+
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
+local types = require(ReplicatedStorage.Client.Modules.types);
 
-type ClientAction = ClientAction.ClientAction;
-
-local FireBeamAction = {
+local FireBeamClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 	iconImage = "rbxassetid://17771917538";
 	name = "Fire Beam";
 	description = "Charge by holding down while flying, and release to fire a beam that lights the ground on fire.";
+	__index = {} :: types.FireBeamClientAction;
 };
 
-function FireBeamAction.new(): ClientAction
+local player = Players.LocalPlayer;
 
-	local player = Players.LocalPlayer;
-	local remoteName: string;
-	local _remoteEvent: RemoteEvent;
+function FireBeamClientAction.new(): types.FireBeamClientAction
+
+	local remoteName = `{player.UserId}_{FireBeamClientAction.id}`;
+
+	local overwrittenProperties = {
+		id = FireBeamClientAction.id;
+		iconImage = FireBeamClientAction.iconImage;
+		name = FireBeamClientAction.name;
+		description = FireBeamClientAction.description;
+		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName);
+	};
+
+  local action = (setmetatable(overwrittenProperties, FireBeamClientAction) :: any) :: types.FireBeamClientAction;
 	local updateTask: thread?;
 
-	local function breakdown(self: ClientAction)
+	local remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
+	assert(remoteEvent:IsA("RemoteEvent"));
 
-		ContextActionService:UnbindAction("ActivateFireBeam");
-		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+	remoteEvent.OnClientEvent:Connect(function(shouldActivateUpdateTask)
 
-	end;
-	
-	local function activate(self: ClientAction)
+		if shouldActivateUpdateTask then
 
-		ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
+			updateTask = updateTask or task.spawn(function()
 
-	end;
+				while task.wait() do
 
-	local function initialize(self: ClientAction)
+					remoteEvent:FireServer(Players.LocalPlayer:GetMouse().Hit.Position); -- TODO: Fix for mobile and gamepad devices.
 
-		local remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
-		assert(remoteEvent:IsA("RemoteEvent"));
-
-		remoteEvent.OnClientEvent:Connect(function(shouldActivateUpdateTask)
-	
-			if shouldActivateUpdateTask then
-
-				updateTask = updateTask or task.spawn(function()
-
-					while task.wait() do
-
-						remoteEvent:FireServer(Players.LocalPlayer:GetMouse().Hit.Position); -- TODO: Fix for mobile and gamepad devices.
-
-					end;
-				
-				end);
-
-			else
-
-				if updateTask then
-
-					task.cancel(updateTask);
-					updateTask = nil;
-					
 				end;
+			
+			end);
 
+		else
+
+			if updateTask then
+
+				task.cancel(updateTask);
+				updateTask = nil;
+				
 			end;
 
-		end);
+		end;
 
-		_remoteEvent = remoteEvent;
+	end);
 
-		ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
-			type = "Action";
-      key = self.id;
-			onActivate = function()
+	ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+		type = "Action";
+		key = action.id;
+		onActivate = function()
 
-				self:activate("Input");
+			action:activate("Input");
 
-			end;
-			shortcutCharacter = "1";
-			iconImage = "rbxassetid://17771917538";
-		}));
+		end;
+		shortcutCharacter = "1";
+		iconImage = "rbxassetid://17771917538";
+	}));
 
-		remoteName = `{player.UserId}_{self.id}`;
-
-	--	ContextActionService:BindActionAtPriority("ActivateFireBeam", checkJump, false, 2, Enum.UserInputType.MouseButton1);
-
-	end;
-
-	return ClientAction.new({
-		id = FireBeamAction.id;
-		iconImage = FireBeamAction.iconImage;
-		name = FireBeamAction.name;
-		description = FireBeamAction.description;
-		activate = activate;
-		breakdown = breakdown;
-		initialize = initialize;
-	});
+	return action;
 
 end
 
-return FireBeamAction;
+function FireBeamClientAction.__index:activate()
+
+	self.remoteFunction:InvokeServer();
+
+end
+
+function FireBeamClientAction.__index:breakdown()
+
+	ContextActionService:UnbindAction("ActivateFireBeam");
+	ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+
+end
+
+return FireBeamClientAction;
