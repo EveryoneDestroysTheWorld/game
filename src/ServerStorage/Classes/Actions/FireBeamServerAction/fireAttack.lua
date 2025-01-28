@@ -27,8 +27,9 @@ local function fireAttack(action: types.FireBeamServerAction, primaryPart: BaseP
 
 	local goalTime = action.startChargeTimeMilliseconds + action.maxChargeTimeMilliseconds;
 	local queryTime = math.min(goalTime, DateTime.now().UnixTimestampMillis);
+	action.charge = math.max(1, queryTime / goalTime) * 100;
 
-	if queryTime - action.startChargeTimeMilliseconds >= 300 then
+	if action.charge >= 300 then
 
 		local character = primaryPart.Parent;
 		assert(character);
@@ -64,51 +65,51 @@ local function fireAttack(action: types.FireBeamServerAction, primaryPart: BaseP
 		local damageConnect = {}
 		local connectDebounce = {}
 
-		local function setOnFire(model)
+		local function setOnFire(model: Model)
 
-			local fireDebuffProp = model:FindFirstChild("FireDebuffProp")
-			if fireDebuffProp then 
+			local existingFireDebuffProp = model:FindFirstChild("FireDebuffProp");
+			if existingFireDebuffProp then 
 
-				fireDebuffProp:SetAttribute("Duration", 6)
+				existingFireDebuffProp:SetAttribute("Duration", 6)
 				
-			elseif model:FindFirstChild("HumanoidRootPart") then
+			else
+				
+				local humanoidRootPart = model:FindFirstChild("HumanoidRootPart");
+				if humanoidRootPart then
 
-				fireDebuffProp = displayObjects.DraconicKnight:FindFirstChild("FireDebuffProp"):Clone()
-				fireDebuffProp.Parent = model
-				fireDebuffProp.RigidConstraint.Attachment1 = model.HumanoidRootPart:FindFirstChild("RootAttachment") or nil
-				fireDebuffProp:SetAttribute("Duration", 6)
-				fireDebuffProp.Highlight.Adornee = model
-		
-				task.delay(1/30, function()
+					local newFireDebuffProp = displayObjects.FireDebuffProp:Clone();
+					newFireDebuffProp.Parent = model
+					newFireDebuffProp.RigidConstraint.Attachment1 = humanoidRootPart:FindFirstChild("RootAttachment")
+					newFireDebuffProp:SetAttribute("Duration", 6)
+					newFireDebuffProp.Highlight.Adornee = model
+			
+					task.delay(1/30, function()
 
-					repeat
+						while newFireDebuffProp:GetAttribute("Duration") ~= 0 and task.wait(1) do
+							
+							newFireDebuffProp:SetAttribute("Duration", newFireDebuffProp:GetAttribute("Duration") :: number - 1)
+							for _, contestant in action.round.contestants do
 
-						task.wait(1)
-						fireDebuffProp:SetAttribute("Duration", fireDebuffProp:GetAttribute("Duration") - 1)
-						for _, contestant in action.round.contestants do
+								if contestant.character and contestant.character == model then
 
-							if contestant["name"] == model.Name then
+									--print(contestant)
 
-								--print(contestant)
+									contestant:updateHealth(contestant.currentHealth - 4, {
+										contestantID = action.contestant.id;
+										actionID = action.id;
+									});
+									
+								end
 
-								contestant:updateHealth(contestant.currentHealth - 4, {
-									contestantID = action.contestant.id;
-									actionID = action.id;
-								});
-								
 							end
 
-						end
+						end 
 
-					until fireDebuffProp:GetAttribute("Duration") == 0
+						newFireDebuffProp:Destroy()
 
-					fireDebuffProp:Destroy()
+					end)
 
-				end)
-
-			else
-
-			--	print("Object is not a humanoid")
+				end;
 
 			end
 
@@ -190,12 +191,12 @@ local function fireAttack(action: types.FireBeamServerAction, primaryPart: BaseP
 			tween1:Play()
 
 			fireBeamProp.Particles.Fire.Speed = NumberRange.new(distance,distance)
-			coroutine.wrap(animateSprite)(data, fireBreathCharge:GetAttribute("Charge") / 100)
-			fireBreathCharge:SetAttribute("Charge", fireBreathCharge:GetAttribute("Charge") - rate)
+			coroutine.wrap(animateSprite)(data, action.charge / 100)
+			action.charge -= rate;
 
 			task.wait(0.2)
 
-		until fireBreathCharge:GetAttribute("Charge") <= 0
+		until action.charge <= 0
 
 		action.startChargeTimeMilliseconds = nil;
 		fireBeamProp.Particles:Destroy()

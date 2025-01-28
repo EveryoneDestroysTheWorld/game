@@ -24,7 +24,7 @@ local MeleeServerAction = {
 
 function meleeAttackEffect(character, combo)
 
-	local effect = displayObjects.DraconicKnight.ChargedAttackEffect:Clone()
+	local effect = displayObjects.ChargedAttackEffect:Clone()
 	effect.Parent = character
 	effect.Root.CFrame = character.HumanoidRootPart.CFrame
 	effect.Root.RigidConstraint.Attachment1 = character.HumanoidRootPart.RootAttachment

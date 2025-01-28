@@ -104,7 +104,7 @@ function LockOnServerAction.new(): types.ServerAction
 	end;
 
 	local loadedAsset = InsertService:LoadAsset(121257423066226)
-		loadedAsset.TargetingFrame.Parent = ReplicatedStorage.Client.InGameDisplayObjects
+		loadedAsset.TargetingFrame.Parent = ReplicatedStorage.Shared.InGameDisplayObjects
 		loadedAsset:Destroy()
 
 	return ServerAction.new({

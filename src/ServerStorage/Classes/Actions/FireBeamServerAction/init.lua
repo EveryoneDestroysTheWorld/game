@@ -28,6 +28,7 @@ function FireBeamServerAction.new(properties: types.ServerActionConstructorPrope
 		id = FireBeamServerAction.id;
 		description = FireBeamServerAction.description;
 		contestant = properties.contestant;
+		charge = 0;
 	};
 	
   local action = (setmetatable(overwrittenProperties, FireBeamServerAction) :: any) :: types.FireBeamServerAction;

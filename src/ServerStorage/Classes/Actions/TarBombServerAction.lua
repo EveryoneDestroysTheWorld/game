@@ -64,64 +64,7 @@ local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant
 end)
 
 end
---[[ OUTDATED
-local function startAttack(primaryPart: BasePart, animations, coords: Vector3, round: ServerRound, contestant: ServerContestant, split)
-	local bomb = ReplicatedStorage.Client.InGameDisplayObjects.DraconicKnight.TarBomb:Clone()
-	bomb.Parent = workspace.Terrain
-	bomb.Position = primaryPart.Position
-	bomb.Anchored = true
-	bomb.CanCollide = false
-	local size = 5
-	if not split then
-		bomb.ParticleEmitter:Destroy()
-		bomb.BillboardGui.Size = UDim2.new(3, 0, 3, 0)
-		size = 2.5
-	end
-	local animateSprite = require(ReplicatedStorage.Client.InGameDisplayObjects.SpriteAnimator)
-	local data = {
-		FrameRate = 30,
-		Sprite = bomb.BillboardGui.ImageLabel,
-		SpriteSheet = "4x4"
-	}
-	coroutine.wrap(animateSprite.animateSprite)(data, 1, true)
 
-	-- from youtube video ("How to make a bezier curve attack in roblox studio")
-	local function lerp(p0,p1,t)
-		return p0*(1-t)+p1*t
-	end
-	local function quad(p0,p1,p2,t)
-		local l1 = lerp(p0,p1,t)
-		local l2 = lerp(p1,p2,t)
-		local quad = lerp(l1,l2,t)
-		return quad
-	end
-	--
-	local distance = math.ceil((bomb.Position - coords).Magnitude)
-	
-	local s = primaryPart.Position
-	local f = coords
-	local m = (f - s) + Vector3.new(0,distance/4,0)
-	local numberOfRepeats = 3 + math.ceil(distance/80)
-	local delay = distance/400 + 0.1
-	for i = 1, numberOfRepeats do
-		local t = i/numberOfRepeats
-		local tween = TweenService:Create(bomb, TweenInfo.new(delay, Enum.EasingStyle.Linear), {Position = quad(s,m,f,t)})
-		tween:Play()
-		task.wait(delay)
-	end
-	task.wait(1.5)
-	damageEvent(bomb, round, contestant, size)
-	if split then
-		for i=1, math.random(4,6) do
-			local randomCoor = coords + Vector3.new(math.random(-10,10),0,math.random(-10,10))
-			coroutine.wrap(startAttack)(bomb, animations, randomCoor, round, contestant)
-		end
-	end
-	bomb.BillboardGui:Destroy()
-	task.wait(2)
-	bomb:Destroy()
-end
-]]
 local function startAttack(sourcePart: BasePart, animations, coords: Vector3, round: ServerRound, contestant: ServerContestant, split, size, useTarget, delay)
 	print(size)
 	if not delay then
@@ -137,7 +80,7 @@ local function startAttack(sourcePart: BasePart, animations, coords: Vector3, ro
 	if useTarget then 
 		coords = contestant.character.Target.Value.PrimaryPart.Position 
 	end
-	local bomb = ReplicatedStorage.Client.InGameDisplayObjects.DraconicKnight.TarBomb:Clone()
+	local bomb = ReplicatedStorage.Shared.InGameDisplayObjects.TarBomb:Clone()
 	bomb.Parent = workspace.Terrain
 	bomb.Position = sourcePart.Position
 	bomb.CanTouch = false
@@ -152,7 +95,7 @@ local function startAttack(sourcePart: BasePart, animations, coords: Vector3, ro
 		bomb.ParticleEmitter:Destroy()
 		
 	end
-	local animateSprite = require(ReplicatedStorage.Client.InGameDisplayObjects.SpriteAnimator)
+	local animateSprite = require(ReplicatedStorage.Shared.InGameDisplayObjects.SpriteAnimator)
 	local data = {
 		FrameRate = 30,
 		Sprite = bomb.BillboardGui.ImageLabel,

@@ -119,6 +119,7 @@ export type FireBeamServerAction = ServerAction<{
   bindableFunction: BindableFunction;
   remoteFunction: RemoteFunction?;
   remoteEvent: RemoteEvent?;
+  charge: number;
 }>;
 
 export type MeleeServerAction = ServerAction<{

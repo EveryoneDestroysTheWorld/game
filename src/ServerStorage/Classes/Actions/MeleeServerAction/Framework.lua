@@ -9,7 +9,7 @@ local TweenService = game:GetService("TweenService");
 
 local types = require(ServerStorage.Classes.types);
 
-local mAnimate2 = require(ReplicatedStorage.Shared.InGameDisplayObjects.MoonAnimator);
+local mAnimate2 = require(ReplicatedStorage.Shared.Modules.MoonAnimator);
 local meleeAttackFramework = {}
 
 local defaultData = {
@@ -115,7 +115,7 @@ function meleeAttackFramework.KeyDown(data: KeyDownData, effect: (...any) -> (an
 			local humanoid = character:FindFirstChild("Humanoid");
 			assert(humanoid and humanoid:IsA("Humanoid"));
 
-			mAnimate2.animateCFrame(character, ReplicatedStorage.Client.InGameDisplayObjects:FindFirstChild(`{archetypeABRV}AnimData`):FindFirstChild(animationName))
+			mAnimate2.animateCFrame(character, ReplicatedStorage.Shared.InGameDisplayObjects:FindFirstChild(`{archetypeABRV}AnimData`):FindFirstChild(animationName))
 			local movementTween 
 			local lookDirection = if humanoid.MoveDirection ~= Vector3.new(0,0,0) then humanoid.MoveDirection else primaryPart.CFrame.LookVector
 			local updateLookDirection

@@ -62,32 +62,32 @@ function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServe
     (newWingProp:FindFirstChild("Root") :: any).RigidConstraint.Attachment1 = character:FindFirstChild("BodyBackAttachment", true)
 
     -- Creates effects and folder for draconicknight if it doesnt already exist
-    if not ReplicatedStorage.Client.InGameDisplayObjects:FindFirstChild("DraconicKnight") then
+    if not ReplicatedStorage.Shared.InGameDisplayObjects:FindFirstChild("DraconicKnight") then
 
-      local classFolder = Instance.new("Folder", ReplicatedStorage.Client.InGameDisplayObjects)
-      classFolder.Name = "DraconicKnight"
+      -- local classFolder = Instance.new("Folder");
+      -- classFolder.Name = "DraconicKnight"
 
-      local diveBombIndicator = script.DiveBombIndicator:Clone();
-      diveBombIndicator.PrimaryPart.Position = Vector3.new(0,9999,0)
-      diveBombIndicator.Parent = classFolder
+      -- local diveBombIndicator = script.DiveBombIndicator:Clone();
+      -- diveBombIndicator.PrimaryPart.Position = Vector3.new(0,9999,0)
+      -- diveBombIndicator.Parent = classFolder
 
-      local fireBeamProp = script.FireBeam:Clone();
-      fireBeamProp.Parent = classFolder
+      -- local fireBeamProp = script.FireBeam:Clone();
+      -- fireBeamProp.Parent = classFolder
 
-      local fireDebuffProp = script.FireDebuffProp:Clone();
-      fireDebuffProp.Parent = classFolder
+      -- local fireDebuffProp = script.FireDebuffProp:Clone();
+      -- fireDebuffProp.Parent = classFolder
       
-      local chargeMeterGUI = script.ChargeMeter:Clone();
-      chargeMeterGUI.Parent = classFolder
+      -- local chargeMeterGUI = script.ChargeMeter:Clone();
+      -- chargeMeterGUI.Parent = classFolder
 
-      local chargedAttackEffect = script.ChargedAttackEffect:Clone();
-      chargedAttackEffect.Parent = classFolder
+      -- local chargedAttackEffect = script.ChargedAttackEffect:Clone();
+      -- chargedAttackEffect.Parent = classFolder
 
-      local tarBomb = script.TarBomb:Clone();
-      tarBomb.Parent = classFolder
+      -- local tarBomb = script.TarBomb:Clone();
+      -- tarBomb.Parent = classFolder
 
-      local animData = script.AnimData:Clone();
-      animData.Parent = classFolder.Parent
+      -- local animData = script.AnimData:Clone();
+      -- animData.Parent = classFolder.Parent
       
     end
     archetype.wingProp = newWingProp;
