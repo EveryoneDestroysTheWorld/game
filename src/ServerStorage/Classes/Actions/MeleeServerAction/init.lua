@@ -83,15 +83,16 @@ function MeleeServerAction.new(properties: types.ServerActionConstructorProperti
   local action = (setmetatable(overwrittenProperties, MeleeServerAction) :: any) :: types.MeleeServerAction;
 
 	local animations = {
-		Melee1 = "77919655263406";
-		Melee2 = "101769847900220";
-		Melee3 = "136026551879479";
+		Melee1 = 77919655263406;
+		Melee2 = 101769847900220;
+		Melee3 = 136026551879479;
 	};
 
 	local character = action.contestant.character;
 	assert(character);
 	local humanoid = character:FindFirstChild("Humanoid") :: Humanoid;
-	action.animationTracks = preloadAnimations(humanoid, animations);
+	local animator = humanoid:FindFirstChild("Animator") :: Animator;
+	action.animationTracks = preloadAnimations(humanoid, animator, animations);
 
 	if action.contestant.player then
 

@@ -3,9 +3,8 @@
 -- Designer: Christian Toney (Christian_Toney)
 -- © 2024 – 2025 Beastslash LLC
 
-local function preloadAnimations(humanoid: Humanoid, animations: {[string]: string})
+local function preloadAnimations(humanoid: Humanoid, animator: Animator, animations: {[string]: number})
 
-	local animator = humanoid:FindFirstChild("Animator") :: Animator;
 	local animationTracks: {[string]: AnimationTrack} = {}
 
 	for animationName, assetID in pairs(animations) do

@@ -133,6 +133,17 @@ export type MeleeServerAction = ServerAction<{
   activate: (self: MeleeServerAction) -> ();
 }>;
 
+export type TakeFlightServerAction = ServerAction<{
+  contestant: ServerContestant;
+  round: ServerRound;
+  remoteFunction: RemoteFunction?;
+  animationTracks: {
+    [string]: AnimationTrack;
+  };
+  activate: (self: MeleeServerAction) -> ();
+  breakdown: (self: MeleeServerAction) -> ();
+}>;
+
 export type DraconicKnightServerArchetype = DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods;
 
 export type DraconicKnightServerArchetypeProperties = ServerArchetypeProperties<{
