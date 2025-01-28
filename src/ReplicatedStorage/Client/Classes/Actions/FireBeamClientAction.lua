@@ -1,5 +1,5 @@
 --!strict
--- Programmer: Hati (hati_bati)
+-- Programmers: Hati (hati_bati) and Christian Toney (Christian_Toney)
 -- Designer: Christian Toney (Christian_Toney)
 -- © 2024 – 2025 Beastslash LLC
 

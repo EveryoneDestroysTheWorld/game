@@ -9,6 +9,8 @@ local LockOnClientAction = require(ReplicatedStorage.Client.Classes.Actions.Lock
 local ServerAction = require(script.Parent.Parent.ServerAction);
 local types = require(ServerStorage.Classes.types);
 
+local searchForLockOnTarget = require(ReplicatedStorage.Shared.Modules.searchForLockOnTarget);
+
 local LockOnServerAction = {
 	id = LockOnClientAction.id;
 	name = LockOnClientAction.name;

@@ -161,6 +161,13 @@ export type FireBeamClientAction = ClientAction<{
   breakdown: (self: DetonateDetachedLimbsClientAction) -> ();
 }>;
 
+export type LockOnClientAction = ClientAction<{
+  previousTargets: {Instance};
+  targetingGUI: BillboardGui;
+  activate: (self: LockOnClientAction) -> ();
+  breakdown: (self: LockOnClientAction) -> ();
+}>;
+
 export type TakeFlightClientAction = ClientAction<{
   remoteFunction: RemoteFunction;
   activate: (self: DetonateDetachedLimbsClientAction) -> ();
