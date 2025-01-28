@@ -6,75 +6,73 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
-local ClientAction = require(script.Parent.Parent.ClientAction);
+
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton);
-type ClientAction = ClientAction.ClientAction;
+local types = require(ReplicatedStorage.Client.Modules.types);
 
-local ExplosivePunchAction = {
+local ExplosivePunchClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
   iconImage = "rbxassetid://17771917538";
   name = "Explosive Punch";
   description = "Land explosive punches to your enemies.";
+  __index = {} :: types.ExplosivePunchClientAction;
 };
 
-function ExplosivePunchAction.new(): ClientAction
+local player = Players.LocalPlayer;
 
-  local player = Players.LocalPlayer;
+function ExplosivePunchClientAction.new(): types.ExplosivePunchClientAction
 
-  local function breakdown(self: ClientAction)
+  local remoteName = `{player.UserId}_{ExplosivePunchClientAction.id}`;
+  local overwrittenProperties = {
+    id = ExplosivePunchClientAction.id;
+    iconImage = ExplosivePunchClientAction.iconImage;
+    name = ExplosivePunchClientAction.name;
+    description = ExplosivePunchClientAction.description;
+    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName)
+  }
 
-    ContextActionService:UnbindAction("ActivateExplosivePunch");
-		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+  local action = (setmetatable(overwrittenProperties, ExplosivePunchClientAction) :: any) :: types.ExplosivePunchClientAction;
 
-  end;
+  ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+    type = "Action";
+    key = action.id;
+    onActivate = function()
 
-  local function activate(self: ClientAction)
+      action:activate();
 
-    ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(`{player.UserId}_{self.id}`):InvokeServer();
-
-  end;
-
-  local function initialize(self: ClientAction)
-
-    ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
-      type = "Action";
-      key = self.id;
-      onActivate = function()
-  
-        self:activate();
-  
-      end;
-      shortcutCharacter = "L";
-      iconImage = "rbxassetid://17771917538";
-    }));
-  
-    local function checkJump(_, inputState: Enum.UserInputState)
-  
-      if inputState == Enum.UserInputState.Begin then
-  
-        self:activate();
-      
-      end;
-  
     end;
-  
-    ContextActionService:BindActionAtPriority("ActivateExplosivePunch", checkJump, false, 2, Enum.UserInputType.MouseButton1);
+    shortcutCharacter = "L";
+    iconImage = "rbxassetid://17771917538";
+  }));
+
+  local function checkJump(_, inputState: Enum.UserInputState)
+
+    if inputState == Enum.UserInputState.Begin then
+
+      action:activate();
+    
+    end;
 
   end;
 
-  local action = ClientAction.new({
-    id = ExplosivePunchAction.id;
-    iconImage = ExplosivePunchAction.iconImage;
-    name = ExplosivePunchAction.name;
-    description = ExplosivePunchAction.description;
-    activate = activate;
-    breakdown = breakdown;
-    initialize = initialize;
-  });
+  ContextActionService:BindActionAtPriority("ActivateExplosivePunch", checkJump, false, 2, Enum.UserInputType.MouseButton1);
 
   return action;
 
 end
 
-return ExplosivePunchAction;
+function ExplosivePunchClientAction.__index:activate()
+
+  self.remoteFunction:InvokeServer();
+
+end
+  
+function ExplosivePunchClientAction.__index:breakdown()
+
+  ContextActionService:UnbindAction("ActivateExplosivePunch");
+  ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+
+end
+
+return ExplosivePunchClientAction;
