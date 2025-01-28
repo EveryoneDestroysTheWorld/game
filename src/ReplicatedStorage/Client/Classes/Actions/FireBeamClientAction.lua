@@ -19,32 +19,12 @@ local FireBeamAction = {
 	description = "Charge by holding down while flying, and release to fire a beam that lights the ground on fire.";
 };
 
-local function waitForServerResponse()
-	local connection: RBXScriptConnection;
-
-	connection = Players.LocalPlayer.ChildAdded:Connect(function(child: Instance)
-
-		if child:IsA("RemoteEvent") and child.Name == "FireBreathCoords" then
-
-			--set up data requests recieved from server
-			connection:Disconnect()
-			connection = child.OnClientEvent:Connect(function()
-				child:FireServer(Players.LocalPlayer:GetMouse().Hit.Position)
-			end)
-			--sent data back to server
-
-		end
-
-	end)
-	
-	return connection
-
-end
-
 function FireBeamAction.new(): ClientAction
 
 	local player = Players.LocalPlayer;
 	local remoteName: string;
+	local _remoteEvent: RemoteEvent;
+	local updateTask: thread?;
 
 	local function breakdown(self: ClientAction)
 
@@ -52,14 +32,47 @@ function FireBeamAction.new(): ClientAction
 		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
 
 	end;
-	local connection
+	
 	local function activate(self: ClientAction)
+
 		ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
+
 	end;
 
 	local function initialize(self: ClientAction)
 
-		local allowedToToggle = true
+		local remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
+		assert(remoteEvent:IsA("RemoteEvent"));
+
+		remoteEvent.OnClientEvent:Connect(function(shouldActivateUpdateTask)
+	
+			if shouldActivateUpdateTask then
+
+				updateTask = updateTask or task.spawn(function()
+
+					while task.wait() do
+
+						remoteEvent:FireServer(Players.LocalPlayer:GetMouse().Hit.Position); -- TODO: Fix for mobile and gamepad devices.
+
+					end;
+				
+				end);
+
+			else
+
+				if updateTask then
+
+					task.cancel(updateTask);
+					updateTask = nil;
+					
+				end;
+
+			end;
+
+		end);
+
+		_remoteEvent = remoteEvent;
+
 		ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
 			type = "Action";
       key = self.id;
@@ -73,12 +86,6 @@ function FireBeamAction.new(): ClientAction
 		}));
 
 		remoteName = `{player.UserId}_{self.id}`;
-		local debounce = false
-		local function checkJump(_, inputState: Enum.UserInputState)
-			if inputState == Enum.UserInputState.Begin then
-			elseif inputState == Enum.UserInputState.End then
-			end
-		end;
 
 	--	ContextActionService:BindActionAtPriority("ActivateFireBeam", checkJump, false, 2, Enum.UserInputType.MouseButton1);
 

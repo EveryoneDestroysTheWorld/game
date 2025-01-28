@@ -709,13 +709,13 @@ function SuperHammerServerItem.new(): types.ServerItem
 
       local specificItemID = HttpService:GenerateGUID(false);
       _specificItemID = specificItemID;
-      _remoteFunction = createInventoryRemoteFunction(contestant.player, specificItemID, function()
+      _remoteFunction = createInventoryRemoteFunction(contestant.player, "Item", specificItemID, function()
         
         self:activate();
 
       end);
 
-      _remoteEvent = createInventoryRemoteEvent(contestant.player, specificItemID);
+      _remoteEvent = createInventoryRemoteEvent(contestant.player, "Item", specificItemID);
 
       ReplicatedStorage.Shared.Functions.InitializeItem:InvokeClient(contestant.player, self.id, specificItemID);
 

@@ -113,8 +113,12 @@ export type ExplosivePunchServerAction = ServerAction<{
 export type FireBeamServerAction = ServerAction<{
   contestant: ServerContestant;
   round: ServerRound;
+  startChargeTimeMilliseconds: number?;
+  maxChargeTimeMilliseconds: number;
+  coordinates: Vector3?;
   bindableFunction: BindableFunction;
   remoteFunction: RemoteFunction?;
+  remoteEvent: RemoteEvent?;
 }>;
 
 export type MeleeServerAction = ServerAction<{
