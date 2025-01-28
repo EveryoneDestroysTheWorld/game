@@ -143,6 +143,13 @@ export type DetonateDetachedLimbsClientAction = ClientAction<{
   breakdown: (self: DetonateDetachedLimbsClientAction) -> ();
 }>;
 
+export type DiveBombClientAction = ClientAction<{
+  gui: ScreenGui?;
+  remoteFunction: RemoteFunction;
+  activate: (self: DetonateDetachedLimbsClientAction) -> ();
+  breakdown: (self: DetonateDetachedLimbsClientAction) -> ();
+}>;
+
 export type ParalysisClientEffect = ClientEffect<ParalysisClientEffectProperties & ParalysisClientEffectMethods>;
 
 export type ParalysisClientEffectProperties = {
