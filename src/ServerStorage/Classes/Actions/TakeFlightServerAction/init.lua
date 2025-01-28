@@ -6,7 +6,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
-local TakeFlightClientAction = require(ReplicatedStorage.Client.Classes.Actions.FlightClientAction);
+local TakeFlightClientAction = require(ReplicatedStorage.Client.Classes.Actions.TakeFlightClientAction);
 local types = require(ServerStorage.Classes.types);
 
 local animateFlight = require(script.animateFlight);
@@ -99,7 +99,7 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 
 		local remoteFunction = createInventoryRemoteFunction(player, "Action", `{player.UserId}_{action.id}`, function()
 
-			action:activate();
+			return action:activate();
 
 		end);
 
@@ -111,7 +111,7 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 
 end;
 
-function TakeFlightServerAction.__index:activate()
+function TakeFlightServerAction.__index:activate(): boolean
 
 	if self.contestant.character and self.contestant.currentHealth > 0 then
 
@@ -123,7 +123,7 @@ function TakeFlightServerAction.__index:activate()
 
 			if primaryPart:FindFirstChild("FlightConstraint") then
 
-				coroutine.wrap(endFlight)(primaryPart);
+				coroutine.wrap(endFlight)(self, primaryPart);
 
 				animateFlight(self, primaryPart, Vector3.new(0, 100, 2.5), true);
 
@@ -131,9 +131,11 @@ function TakeFlightServerAction.__index:activate()
 
 				self.contestant:updateStamina(math.max(0, self.contestant.currentStamina - 10));
 
-				coroutine.wrap(startFlight)(self.contestant, primaryPart);
+				coroutine.wrap(startFlight)(self, self.contestant, primaryPart);
 
 				animateFlight(self, primaryPart, Vector3.new(0, 100, 1.8), false)
+
+				return true;
 
 			end
 
@@ -141,9 +143,19 @@ function TakeFlightServerAction.__index:activate()
 
 	end;
 
+	return false;
+
 end
 
 function TakeFlightServerAction.__index:breakdown()
+
+	local linearVelocity = self.linearVelocity;
+	if linearVelocity then
+
+		self.linearVelocity = nil;
+		linearVelocity:Destroy();
+
+	end;
 
 	if self.remoteFunction then
 

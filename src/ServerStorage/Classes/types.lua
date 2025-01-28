@@ -140,8 +140,9 @@ export type TakeFlightServerAction = ServerAction<{
   animationTracks: {
     [string]: AnimationTrack;
   };
-  activate: (self: MeleeServerAction) -> ();
-  breakdown: (self: MeleeServerAction) -> ();
+  linearVelocity: LinearVelocity?;
+  activate: (self: TakeFlightServerAction) -> boolean;
+  breakdown: (self: TakeFlightServerAction) -> ();
 }>;
 
 export type DraconicKnightServerArchetype = DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods;

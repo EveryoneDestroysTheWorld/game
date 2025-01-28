@@ -161,6 +161,12 @@ export type FireBeamClientAction = ClientAction<{
   breakdown: (self: DetonateDetachedLimbsClientAction) -> ();
 }>;
 
+export type TakeFlightClientAction = ClientAction<{
+  remoteFunction: RemoteFunction;
+  activate: (self: DetonateDetachedLimbsClientAction) -> ();
+  breakdown: (self: DetonateDetachedLimbsClientAction) -> ();
+}>;
+
 export type ParalysisClientEffect = ClientEffect<ParalysisClientEffectProperties & ParalysisClientEffectMethods>;
 
 export type ParalysisClientEffectProperties = {
