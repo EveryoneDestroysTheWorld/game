@@ -1,7 +1,7 @@
 --!strict
 -- Programmer: Hati (hati_bati) and Christian Toney (Christian_Toney)
 -- Designer: Hati (hati_bati)
--- © 2024 – 2025 Beastslash LLC
+-- © 2024 – 2025 Everyone Destroys the World Group LLC
 
 local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
@@ -22,14 +22,13 @@ local defaultData = {
 	heavyAttackEffect = nil,
 	forwardMomentum = 6,
 	heavyAttackMomentumMultiplier = 2,
-	lightStamDrain = 10,
-	heavyStamDrain = 20,
-	actionID = 8
+	lightStaminaDrain = 10,
+	heavyStaminaDrain = 20,
 }
 
 export type KeyDownData = {
 	contestant: types.ServerContestant;
-	animations: {AnimationTrack};
+	animations: {[any]: AnimationTrack};
 	animName: string?;
 	maxCombo: number?;
 	timeToCharge: number?;
@@ -37,8 +36,9 @@ export type KeyDownData = {
 	heavyAttackSpeed: number?;
 	forwardMomentum: number?;
 	heavyAttackMomentumMultiplier: number?;
-	lightStamDrain: number?;
-	heavyStamDrain: number;
+	lightStaminaDrain: number?;
+	heavyStaminaDrain: number;
+	actionID: string;
 }
 
 -- 			data template
@@ -60,204 +60,251 @@ export type KeyDownData = {
 
 local storedCombos = {}
 
-local currentlyAttacking = {}
+export type AttackState = "Processing" | "Buffered" | "Buffered2" | "ButtonReleased";
+
+local currentlyAttacking: {
+	[types.ServerContestant]: AttackState
+} = {}
 function meleeAttackFramework.KeyDown(data: KeyDownData, effect: (...any) -> (any), round, archetypeABRV: string)
 
-	if not currentlyAttacking[data.contestant] then
+	local shouldRepeat = false;
+	repeat
 
-		currentlyAttacking[data.contestant] = true
-		data.contestant:updateStamina(math.max(0, data.contestant.currentStamina - (data.lightStamDrain or defaultData.lightStamDrain)));
-		local combo = storedCombos[data.contestant] or 1
-		local animations = data.animations
+		if not currentlyAttacking[data.contestant] then
 
-		if combo == 1 then 
+			currentlyAttacking[data.contestant] = "Processing"
+			data.contestant:updateStamina(math.max(0, data.contestant.currentStamina - (data.lightStaminaDrain or defaultData.lightStaminaDrain)));
+			local combo = storedCombos[data.contestant] or 1
+			local animations = data.animations
 
-			storedCombos[data.contestant] = 2
-			animations[(data.animName or defaultData.animName)..tostring(data.maxCombo or defaultData.maxCombo)]:Stop(0.3)
+			if combo == 1 then 
 
-		else
-
-			if (data.maxCombo or defaultData.maxCombo) == combo then
-
-				storedCombos[data.contestant] = nil
+				storedCombos[data.contestant] = 2
+				animations[`{data.animName or defaultData.animName}{data.maxCombo or defaultData.maxCombo}`]:Stop(0.3)
 
 			else
 
-				storedCombos[data.contestant] += 1
+				if (data.maxCombo or defaultData.maxCombo) == combo then
 
-			end
+					storedCombos[data.contestant] = nil
 
-			animations[`{data.animName or defaultData.animName}{combo - 1}`]:Stop(0.3)
+				else
 
-		end
-		
-		local animationName = `{data.animName or defaultData.animName}{combo}`;
-		local animData = Vector3.new(
-			0.1, -- Time To Enter Animation
-			1, -- weight
-			(data.heavyAttackSpeed or defaultData.heavyAttackSpeed)/100 -- speed
-		)
-		animations[animationName]:Play(animData.X,animData.Y,animData.Z)
-      
-		if not mAnimate2 then
+					storedCombos[data.contestant] += 1
 
-			mAnimate2 = require(ReplicatedStorage.Client.InGameDisplayObjects.MoonAnimator);
-
-		end
-
-		mAnimate2.animateCFrame(data.contestant.character, ReplicatedStorage.Client.InGameDisplayObjects:FindFirstChild(`{archetypeABRV}AnimData`):FindFirstChild(animationName))
-		local movementTween 
-		local lookDirection = if data.contestant.character.Humanoid.MoveDirection ~= Vector3.new(0,0,0) then data.contestant.character.Humanoid.MoveDirection else data.contestant.character.HumanoidRootPart.CFrame.LookVector
-		local updateLookDirection
-		local debounce = false
-
-		updateLookDirection = data.contestant.character.Humanoid:GetPropertyChangedSignal("MoveDirection"):Connect(function()
-		
-			if not debounce then
-				debounce = true
-				lookDirection = if data.contestant.character.Humanoid.MoveDirection ~= Vector3.new(0,0,0) then Vector3.new(data.contestant.character.Humanoid.MoveDirection.X,0,data.contestant.character.Humanoid.MoveDirection.Z) else lookDirection
-				task.wait(0.1)
-				debounce = false
-				lookDirection = if data.contestant.character.Humanoid.MoveDirection ~= Vector3.new(0,0,0) then Vector3.new(data.contestant.character.Humanoid.MoveDirection.X,0,data.contestant.character.Humanoid.MoveDirection.Z) else lookDirection
-			end
-		end)
-
-		
-		
-		
-		timeToCharge = (data.timeToCharge or defaultData.timeToCharge)
-		task.wait(timeToCharge/3)
-
-		i = 0
-		repeat
-			if currentlyAttacking[data.contestant] ~= true then
-				i = 4
-				animations[animationName]:AdjustSpeed(1.2,0.1)
-			else
-				i += 1
-				task.wait(timeToCharge/6)
-			end
-		until i == 4
-
-		local function hurt(damage)
-
-			local hurtBox = Instance.new("Part", data.contestant.character:FindFirstChild("HumanoidRootPart"))
-			hurtBox.Name = "HurtBox";
-			hurtBox.Transparency = 1;
-			hurtBox.Anchored = true;
-			hurtBox.CanCollide = false;
-			hurtBox.CFrame = data.contestant.character:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(Vector3.new(0, 0, -10));
-			hurtBox.Size = Vector3.new(7, 7, 7);
-
-			local foundParts = workspace:GetPartsInPart(hurtBox)
-			local validTargets = {}
-			for i, part in ipairs(foundParts) do
-				local model = part:FindFirstAncestorOfClass("Model")
-				if model and not table.find(validTargets, model.Name) and model:FindFirstChild("Humanoid") and model.Name ~= data.contestant.character.Name then
-					table.insert(validTargets, model.Name)
 				end
+
+				animations[`{data.animName or defaultData.animName}{combo - 1}`]:Stop(0.3)
+
+			end
+			
+			local animationName = `{data.animName or defaultData.animName}{combo}`;
+			local animData = Vector3.new(
+				0.1, -- Time To Enter Animation
+				1, -- weight
+				(data.heavyAttackSpeed or defaultData.heavyAttackSpeed)/100 -- speed
+			)
+			animations[animationName]:Play(animData.X,animData.Y,animData.Z)
+				
+			if not mAnimate2 then
+
+				mAnimate2 = require(ReplicatedStorage.Client.InGameDisplayObjects.MoonAnimator);
+
 			end
 
-			if #validTargets > 0 then
+			local character = data.contestant.character;
+			assert(character);
+
+			local primaryPart = character.PrimaryPart;
+			assert(primaryPart);
+
+			local humanoid = character:FindFirstChild("Humanoid");
+			assert(humanoid and humanoid:IsA("Humanoid"));
+
+			mAnimate2.animateCFrame(character, ReplicatedStorage.Client.InGameDisplayObjects:FindFirstChild(`{archetypeABRV}AnimData`):FindFirstChild(animationName))
+			local movementTween 
+			local lookDirection = if humanoid.MoveDirection ~= Vector3.new(0,0,0) then humanoid.MoveDirection else primaryPart.CFrame.LookVector
+			local updateLookDirection
+			local debounce = false
+
+			updateLookDirection = humanoid:GetPropertyChangedSignal("MoveDirection"):Connect(function()
+			
+				if not debounce then
+					debounce = true
+					lookDirection = if humanoid.MoveDirection ~= Vector3.new(0,0,0) then Vector3.new(humanoid.MoveDirection.X,0, humanoid.MoveDirection.Z) else lookDirection
+					task.wait(0.1)
+					debounce = false
+					lookDirection = if humanoid.MoveDirection ~= Vector3.new(0,0,0) then Vector3.new(humanoid.MoveDirection.X, 0, humanoid.MoveDirection.Z) else lookDirection
+				end
+
+			end)		
+			
+			local timeToCharge = data.timeToCharge or defaultData.timeToCharge;
+			task.wait(timeToCharge/3)
+
+			local i = 0
+			repeat
 				
-				for _, contestant in round.contestants do
+				if currentlyAttacking[data.contestant] then
+				
+					i += 1
+					task.wait(timeToCharge / 6)
+				
+				else
+				
+					animations[animationName]:AdjustSpeed(1.2);
+					break;
+				
+				end
+			
+			until i == 4
 
-					if contestant.name == validTargets[table.find(validTargets, contestant.name)] then
+			local humanoidRootPart = character:FindFirstChild("HumanoidRootPart");
+			assert(humanoidRootPart and humanoidRootPart:IsA("BasePart"));
 
-						contestant:updateHealth(contestant.currentHealth - damage, {
-							contestant = contestant;
-							actionID = actionID;
-						});
+			local function hurt(damage: number)
+
+				local hurtBox = Instance.new("Part");
+				hurtBox.Name = "HurtBox";
+				hurtBox.Transparency = 1;
+				hurtBox.Anchored = true;
+				hurtBox.CanCollide = false;
+				hurtBox.CFrame = humanoidRootPart.CFrame * CFrame.new(Vector3.new(0, 0, -10));
+				hurtBox.Size = Vector3.new(7, 7, 7);
+				hurtBox.Parent = humanoidRootPart;
+
+				local foundParts = workspace:GetPartsInPart(hurtBox)
+				local blockedModels = {}
+				for i, part in foundParts do
+
+					local model = part:FindFirstAncestorOfClass("Model");
+
+					if model and not table.find(blockedModels, model) and model:FindFirstChild("Humanoid") and model.Name ~= character.Name then
+
+						for _, contestant in round.contestants do
+
+							if contestant.character == model then
+
+								table.insert(blockedModels, model);
+
+								contestant:updateHealth(contestant.currentHealth - damage, {
+									contestant = contestant;
+									actionID = data.actionID;
+								});
+
+								break;
+
+							end;
+
+						end;
 
 					end
 
 				end
 
-			end
-
-			task.wait(0.1)
-			hurtBox:Destroy()
-
-		end
-
-		local LVelc
-		if currentlyAttacking[data.contestant] == true then
-			animations[animationName]:AdjustSpeed(1.2,0.1)
-			LVelc = Instance.new("LinearVelocity", data.contestant.character.HumanoidRootPart)
-			LVelc.VelocityConstraintMode = Enum.VelocityConstraintMode.Line
-			--LVelc.SecondaryTangentAxis = Vector3.new(0, 0, 1)
-	
-			LVelc.MaxForce = math.huge
-			task.wait()
-    		LVelc.Attachment0 = Instance.new("Attachment", data.contestant.character.HumanoidRootPart)
-			LVelc.LineDirection = lookDirection
-		
-			if effect then
-				coroutine.wrap(effect)(data.contestant.character, combo)
-			end
-			data.contestant:updateStamina(math.max(0, data.contestant.currentStamina - ((data.heavyStamDrain or defaultData.heavyStamDrain) - (data.lightStamDrain or defaultData.lightStamDrain)))); -- since you already paid the cost for a light attack, reduce the heavy attack cost by that much
-			connection = nil
-			animations[animationName]:AdjustSpeed(1)
-			task.delay(0.24,function()
-				hurt(30)
-			end)
-			i = 0
-			repeat
-				movementTween = TweenService:Create(LVelc, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {LineVelocity = (data.forwardMomentum or defaultData.forwardMomentum) * (4-i), LineDirection = lookDirection})
-				movementTween:Play()
 				task.wait(0.1)
-				i += 1
-			until i > timeToCharge * 4
-			task.wait(0.2)
-			if LVelc then
-				LVelc:Destroy()
+				hurtBox:Destroy()
+
 			end
+
+			local linearVelocity;
+
+			if currentlyAttacking[data.contestant] == "Processing" then
+
+				animations[animationName]:AdjustSpeed(1.2);
+				linearVelocity = Instance.new("LinearVelocity");
+				linearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Line
+		
+				linearVelocity.MaxForce = math.huge
+				linearVelocity.Parent = humanoidRootPart;
+				task.wait()
+
+				local attachment = Instance.new("Attachment");
+				attachment.Parent = humanoidRootPart;
+				linearVelocity.Attachment0 = attachment;
+				linearVelocity.LineDirection = lookDirection
 			
-		else
-			task.delay(0.2,function()
-				hurt(10)
-			end)
-			task.wait(0.3)
-		end
-	
-	
+				if effect then
+					coroutine.wrap(effect)(data.contestant.character, combo)
+				end
 
+				data.contestant:updateStamina(math.max(0, data.contestant.currentStamina - ((data.heavyStaminaDrain or defaultData.heavyStaminaDrain) - (data.lightStaminaDrain or defaultData.lightStaminaDrain)))); -- since you already paid the cost for a light attack, reduce the heavy attack cost by that much
+				animations[animationName]:AdjustSpeed(1)
 
-	
-		task.wait(0.3)
-		if currentlyAttacking[data.contestant] == "buffered" or currentlyAttacking[data.contestant] == "buffered2" then
-			if currentlyAttacking[data.contestant] == "buffered2" then
-				task.delay(0.3,function()
-					currentlyAttacking[data.contestant] = "buttonReleased"
+				task.delay(0.24,function()
+
+					hurt(30)
+
 				end)
+
+				i = 0
+				repeat
+					movementTween = TweenService:Create(linearVelocity, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {LineVelocity = (data.forwardMomentum or defaultData.forwardMomentum) * (4-i), LineDirection = lookDirection})
+					movementTween:Play()
+					task.wait(0.1)
+					i += 1
+				until i > timeToCharge * 4
+
+				task.wait(0.2)
+
+				if linearVelocity then
+
+					linearVelocity:Destroy()
+
+				end
+				
+			else
+
+				task.delay(0.2, function()
+
+					hurt(10)
+
+				end)
+
+				task.wait(0.3)
+
 			end
-			currentlyAttacking[data.contestant] = false
-			
-			meleeAttackFramework.KeyDown(data, effect, round)
+
+			task.wait(0.3)
+
+			if currentlyAttacking[data.contestant] == "Buffered" or currentlyAttacking[data.contestant] == "Buffered2" then
+
+				if currentlyAttacking[data.contestant] == "Buffered2" then
+
+					task.delay(0.3,function()
+
+						currentlyAttacking[data.contestant] = "ButtonReleased";
+
+					end)
+
+				end
+
+				currentlyAttacking[data.contestant] = nil;
+				shouldRepeat = true;
+
+			else
+
+				currentlyAttacking[data.contestant] = nil;
+
+			end
+
+			updateLookDirection:Disconnect()
+
+		elseif currentlyAttacking[data.contestant] == "Processing" then
+
+			currentlyAttacking[data.contestant] = "ButtonReleased"
+
+		elseif currentlyAttacking[data.contestant] == "ButtonReleased" then
+
+			currentlyAttacking[data.contestant] = "Buffered"
+
 		else
-			currentlyAttacking[data.contestant] = false
+
+			currentlyAttacking[data.contestant] = "Buffered2"
+
 		end
-		updateLookDirection:Disconnect()
 
-
-	elseif currentlyAttacking[data.contestant] == true then
-
-		currentlyAttacking[data.contestant] = "buttonReleased"
-		--print("State is buttonReleased")
-
-	elseif currentlyAttacking[data.contestant] == "buttonReleased" then
-
-		--print("State is buffered")
-		currentlyAttacking[data.contestant] = "buffered"
-
-	else
-
-		--print("State is buffered2")
-		currentlyAttacking[data.contestant] = "buffered2"
-
-	end
-
-	return staminaDrain
+	until not shouldRepeat;
 
 end
 
