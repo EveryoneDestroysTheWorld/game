@@ -9,7 +9,7 @@ local TweenService = game:GetService("TweenService");
 
 local types = require(ServerStorage.Classes.types);
 
-local mAnimate2
+local mAnimate2 = require(ReplicatedStorage.Shared.InGameDisplayObjects.MoonAnimator);
 local meleeAttackFramework = {}
 
 local defaultData = {
@@ -37,7 +37,7 @@ export type KeyDownData = {
 	forwardMomentum: number?;
 	heavyAttackMomentumMultiplier: number?;
 	lightStaminaDrain: number?;
-	heavyStaminaDrain: number;
+	heavyStaminaDrain: number?;
 	actionID: string;
 }
 
@@ -105,12 +105,6 @@ function meleeAttackFramework.KeyDown(data: KeyDownData, effect: (...any) -> (an
 				(data.heavyAttackSpeed or defaultData.heavyAttackSpeed)/100 -- speed
 			)
 			animations[animationName]:Play(animData.X,animData.Y,animData.Z)
-				
-			if not mAnimate2 then
-
-				mAnimate2 = require(ReplicatedStorage.Client.InGameDisplayObjects.MoonAnimator);
-
-			end
 
 			local character = data.contestant.character;
 			assert(character);

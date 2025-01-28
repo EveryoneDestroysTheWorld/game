@@ -85,7 +85,7 @@ export type DiveBombServerAction = ServerAction<{
   contestant: ServerContestant;
   round: ServerRound;
   anims: {
-    [string]: AnimationTrack
+    [string]: AnimationTrack;
   };
   remoteFunction: RemoteFunction?;
 }>;
@@ -115,6 +115,17 @@ export type FireBeamServerAction = ServerAction<{
   round: ServerRound;
   bindableFunction: BindableFunction;
   remoteFunction: RemoteFunction?;
+}>;
+
+export type MeleeServerAction = ServerAction<{
+  contestant: ServerContestant;
+  round: ServerRound;
+  bindableFunction: BindableFunction;
+  remoteFunction: RemoteFunction?;
+  animationTracks: {
+    [string]: AnimationTrack;
+  };
+  activate: (self: MeleeServerAction) -> ();
 }>;
 
 export type DraconicKnightServerArchetype = DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods;
