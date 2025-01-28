@@ -9,134 +9,122 @@ local ContextActionService = game:GetService("ContextActionService");
 
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
-local ClientAction = require(script.Parent.Parent.ClientAction);
 local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton);
-type ClientAction = ClientAction.ClientAction;
 local QuickSelectionMenu = require(ReplicatedStorage.Client.ReactComponents.QuickSelectionMenu);
 
-local DetachLimbAction = {
+local types = require(ReplicatedStorage.Client.Modules.types);
+
+local DetachLimbClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
   name = "Detach Limb";
   iconImage = "rbxassetid://17551046771";
   description = "Detach a limb of your choice. It only hurts a little bit.";
+  __index = {} :: types.DetachLimbClientAction;
 };
 
-function DetachLimbAction.new(): ClientAction
+local player = Players.LocalPlayer;
 
-  local player = Players.LocalPlayer;
-  local remoteName = `{player.UserId}_{DetachLimbAction.id}`;
-  local _gui: ScreenGui? = nil;
-  local root;
+function DetachLimbClientAction.new(): types.DetachLimbClientAction
 
-  local function breakdown(self: ClientAction)
+  local remoteName = `{player.UserId}_{DetachLimbClientAction.id}`;
+  local overwrittenProperties = {
+    id = DetachLimbClientAction.id;
+    name = DetachLimbClientAction.name;
+    iconImage = DetachLimbClientAction.iconImage;
+    description = DetachLimbClientAction.description;
+    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName);
+  };
 
-    if root then
+  local action = (setmetatable(overwrittenProperties, DetachLimbClientAction) :: any) :: types.DetachLimbClientAction;
 
-      root:unmount();
+  ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+    type = "Action";
+    key = action.id;
+    onActivate = function() action:activate() end;
+    shortcutCharacter = "L";
+    iconImage = "rbxassetid://17551046771";
+  }));
+
+  local function toggleGUI(_, inputState: Enum.UserInputState)
+
+    if inputState == Enum.UserInputState.Begin then
+
+      action:activate()
 
     end;
 
-    if _gui then
-
-      _gui:Destroy();
-      _gui = nil;
-      
-    end;
-
-		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
-    
   end;
 
-  local function activate(self: ClientAction, limbName: string)
-
-    local gui = _gui or Instance.new("ScreenGui");
-    gui.ScreenInsets = Enum.ScreenInsets.None;
-    gui.Parent = player.PlayerGui;
-
-    root = ReactRoblox.createRoot(gui);
-    root:render(React.createElement(QuickSelectionMenu, {
-      options = {
-        {
-          key = "Head";
-          labelText = "Head";
-          iconImage = "rbxassetid://136558858062155"
-        };
-        {
-          key = "LeftArm";
-          labelText = "Left Arm";
-          iconImage = "rbxassetid://136558858062155"
-        };
-        {
-          key = "Torso";
-          labelText = "Torso";
-          iconImage = "rbxassetid://136558858062155"
-        };
-        {
-          key = "RightArm";
-          labelText = "Right Arm";
-          iconImage = "rbxassetid://136558858062155"
-        };
-        {
-          key = "LeftLeg";
-          labelText = "Left Leg";
-          iconImage = "rbxassetid://136558858062155"
-        };
-        {
-          key = "RightLeg";
-          labelText = "Right Leg";
-          iconImage = "rbxassetid://136558858062155"
-        };
-      };
-      onSelectionConfirmed = function(selection)
-
-        root:unmount();
-        gui:Destroy();
-        _gui = nil;
-        ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer(selection.key);
-
-      end;
-    }));
-
-  end;
-
-  local function initialize(self: ClientAction)
-    
-  
-    ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
-      type = "Action";
-      key = self.id;
-      onActivate = function() self:activate() end;
-      shortcutCharacter = "L";
-      iconImage = "rbxassetid://17551046771";
-    }));
-  
-    local function toggleGUI(_, inputState: Enum.UserInputState)
-  
-      if inputState == Enum.UserInputState.Begin then
-  
-        self:activate()
-  
-      end;
-  
-    end;
-  
-    -- Listen for events.
-    ContextActionService:BindActionAtPriority("Detach Limb", toggleGUI, false, 3, Enum.KeyCode.V);
-
-  end;
-
-  local action = ClientAction.new({
-    id = DetachLimbAction.id;
-    name = DetachLimbAction.name;
-    iconImage = DetachLimbAction.iconImage;
-    description = DetachLimbAction.description;
-    activate = activate;
-    breakdown = breakdown;
-    initialize = initialize;
-  });
+  -- Listen for events.
+  ContextActionService:BindActionAtPriority("Detach Limb", toggleGUI, false, 3, Enum.KeyCode.V);
 
   return action;
 
 end
 
-return DetachLimbAction;
+function DetachLimbClientAction.__index:activate()
+
+  local gui = self.gui or Instance.new("ScreenGui");
+  gui.ScreenInsets = Enum.ScreenInsets.None;
+  gui.Parent = player.PlayerGui;
+  self.gui = gui;
+
+  local reactRoot = ReactRoblox.createRoot(gui);
+  reactRoot:render(React.createElement(QuickSelectionMenu, {
+    options = {
+      {
+        key = "Head";
+        labelText = "Head";
+        iconImage = "rbxassetid://136558858062155"
+      };
+      {
+        key = "LeftArm";
+        labelText = "Left Arm";
+        iconImage = "rbxassetid://136558858062155"
+      };
+      {
+        key = "Torso";
+        labelText = "Torso";
+        iconImage = "rbxassetid://136558858062155"
+      };
+      {
+        key = "RightArm";
+        labelText = "Right Arm";
+        iconImage = "rbxassetid://136558858062155"
+      };
+      {
+        key = "LeftLeg";
+        labelText = "Left Leg";
+        iconImage = "rbxassetid://136558858062155"
+      };
+      {
+        key = "RightLeg";
+        labelText = "Right Leg";
+        iconImage = "rbxassetid://136558858062155"
+      };
+    };
+    onSelectionConfirmed = function(selection)
+
+      gui:Destroy();
+      self.gui = nil;
+      self.remoteFunction:InvokeServer(selection.key);
+
+    end;
+  }));
+
+end;
+
+function DetachLimbClientAction.__index:breakdown()
+
+  if self.gui then
+
+    self.gui:Destroy();
+    self.gui = nil;
+    
+  end;
+
+  ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+  
+end
+
+return DetachLimbClientAction;

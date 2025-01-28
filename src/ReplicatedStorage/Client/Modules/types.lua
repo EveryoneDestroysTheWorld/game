@@ -7,7 +7,6 @@ export type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarCon
 
 export type ChangeBallTypeClientAction = ClientAction<{
   gui: ScreenGui?;
-  reactRoot: any; -- React doesn't export RootType. :\
   remoteFunction: RemoteFunction;
   activate: (self: ChangeBallTypeClientAction) -> ();
   breakdown: (self: ChangeBallTypeClientAction) -> ();
@@ -129,6 +128,13 @@ export type ClientEffectMethods = {
   activate: ((self: any, ...any) -> ())?;
   deactivate: ((self: any, ...any) -> ())?;
 }
+
+export type DetachLimbClientAction = ClientAction<{
+  gui: ScreenGui?;
+  remoteFunction: RemoteFunction;
+  activate: (self: DetachLimbClientAction) -> ();
+  breakdown: (self: DetachLimbClientAction) -> ();
+}>;
 
 export type ParalysisClientEffect = ClientEffect<ParalysisClientEffectProperties & ParalysisClientEffectMethods>;
 

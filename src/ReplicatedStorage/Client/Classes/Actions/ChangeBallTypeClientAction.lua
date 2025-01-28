@@ -56,8 +56,7 @@ function ChangeBallTypeClientAction.__index:activate()
   gui.ScreenInsets = Enum.ScreenInsets.None;
   gui.Parent = player.PlayerGui;
 
-  local reactRoot = self.reactRoot or ReactRoblox.createRoot(gui);
-  self.reactRoot = reactRoot;
+  local reactRoot = ReactRoblox.createRoot(gui);
   reactRoot:render(React.createElement(QuickSelectionMenu, {
     options = {
       {
