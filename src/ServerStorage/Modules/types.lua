@@ -108,6 +108,21 @@ export type ExplosivePunchServerAction = ServerAction<{
   currentAnimationTrack: AnimationTrack?;
   explosiveParts: {BasePart};
   activate: (self: ExplosivePunchServerAction) -> ();
+  breakdown: (self: ExplosivePunchServerAction) -> ();
+}>;
+
+export type RocketFeetServerAction = ServerAction<{
+  contestant: ServerContestant;
+  round: ServerRound;
+  bindableFunction: BindableFunction;
+  remoteFunction: RemoteFunction?;
+  minimumRequiredStamina: number;
+  latestActivationTimes: {number};
+  currentAnimationTrack: AnimationTrack?;
+  leftFootExplosivePart: BasePart;
+  rightFootExplosivePart: BasePart;
+  activate: (self: RocketFeetServerAction) -> ();
+  breakdown: (self: RocketFeetServerAction) -> ();
 }>;
 
 export type FireBeamServerAction = ServerAction<{
