@@ -31,7 +31,7 @@ function FireBeamClientAction.new(): types.FireBeamClientAction
 		iconImage = FireBeamClientAction.iconImage;
 		name = FireBeamClientAction.name;
 		description = FireBeamClientAction.description;
-		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName);
+		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
 	};
 
   local action = (setmetatable(overwrittenProperties, FireBeamClientAction) :: any) :: types.FireBeamClientAction;

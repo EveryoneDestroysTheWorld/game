@@ -30,7 +30,7 @@ function TakeFlightClientAction.new(): types.TakeFlightClientAction
 		iconImage = TakeFlightClientAction.iconImage;
 		name = TakeFlightClientAction.name;
 		description = TakeFlightClientAction.description;
-		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName);
+		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
 	};
 
   local action = (setmetatable(overwrittenProperties, TakeFlightClientAction) :: any) :: types.TakeFlightClientAction;

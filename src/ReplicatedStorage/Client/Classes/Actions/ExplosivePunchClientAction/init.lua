@@ -29,7 +29,7 @@ function ExplosivePunchClientAction.new(): types.ExplosivePunchClientAction
     iconImage = ExplosivePunchClientAction.iconImage;
     name = ExplosivePunchClientAction.name;
     description = ExplosivePunchClientAction.description;
-    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName)
+    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName)
   }
 
   local action = (setmetatable(overwrittenProperties, ExplosivePunchClientAction) :: any) :: types.ExplosivePunchClientAction;

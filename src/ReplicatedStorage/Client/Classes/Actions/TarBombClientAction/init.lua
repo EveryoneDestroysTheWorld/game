@@ -30,7 +30,7 @@ function TarBombClientAction.new(): types.TarBombClientAction
 		iconImage = TarBombClientAction.iconImage;
 		name = TarBombClientAction.name;
 		description = TarBombClientAction.description;
-		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName);
+		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
 	}
 
 	local action = (setmetatable(overwrittenProperties, TarBombClientAction) :: any) :: types.TarBombClientAction;

@@ -29,7 +29,7 @@ function BeastSlashClientAction.new(): types.BeastSlashClientAction
 		iconImage = BeastSlashClientAction.iconImage;
 		name = BeastSlashClientAction.name;
 		description = BeastSlashClientAction.description;
-		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName);
+		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
 	}
 
   local action = (setmetatable(overwrittenProperties, BeastSlashClientAction) :: any) :: types.BeastSlashClientAction;

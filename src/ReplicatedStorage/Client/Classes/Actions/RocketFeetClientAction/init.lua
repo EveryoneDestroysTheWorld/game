@@ -28,7 +28,7 @@ function RocketFeetClientAction.new(): types.RocketFeetClientAction
     name = RocketFeetClientAction.name;
     iconImage = RocketFeetClientAction.iconImage;
     description = RocketFeetClientAction.description;
-    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName);
+    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
   }
 
   local action = (setmetatable(overwrittenProperties, RocketFeetClientAction) :: any) :: types.RocketFeetClientAction;

@@ -31,7 +31,7 @@ function DiveBombClientAction.new(): types.DiveBombClientAction
 		iconImage = DiveBombClientAction.iconImage;
 		name = DiveBombClientAction.name;
 		description = DiveBombClientAction.description;
-		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName);
+		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
 	};
 
   local action = (setmetatable(overwrittenProperties, DiveBombClientAction) :: any) :: types.DiveBombClientAction;

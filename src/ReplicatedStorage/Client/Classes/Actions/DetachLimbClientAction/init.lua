@@ -32,7 +32,7 @@ function DetachLimbClientAction.new(): types.DetachLimbClientAction
     name = DetachLimbClientAction.name;
     iconImage = DetachLimbClientAction.iconImage;
     description = DetachLimbClientAction.description;
-    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName);
+    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
   };
 
   local action = (setmetatable(overwrittenProperties, DetachLimbClientAction) :: any) :: types.DetachLimbClientAction;

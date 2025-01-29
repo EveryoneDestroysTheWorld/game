@@ -28,7 +28,7 @@ function DetonateDetachedLimbsClientAction.new(): types.DetonateDetachedLimbsCli
     iconImage = DetonateDetachedLimbsClientAction.iconImage;
     name = DetonateDetachedLimbsClientAction.name;
     description = DetonateDetachedLimbsClientAction.description;
-    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName);
+    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
   };
 
   local action = (setmetatable(overwrittenProperties, DetonateDetachedLimbsClientAction) :: any) :: types.DetonateDetachedLimbsClientAction;
