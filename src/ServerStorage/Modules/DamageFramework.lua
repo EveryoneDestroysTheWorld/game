@@ -48,7 +48,7 @@ export type OptionalExplosionData = {
 	knockUpAmount: number?;
 }
 
-function damageFramework.explosionEvent(coords: Vector3, data: OptionalExplosionData, round: types.ServerRound, contestant: types.ServerContestant, action: types.ServerAction?)
+function damageFramework.explosionEvent(coords: Vector3, data: OptionalExplosionData, action: types.DiveBombServerAction | types.TarBombServerAction)
 
 	local defaults: ExplosionData = {
 		size = 5,
@@ -81,7 +81,7 @@ function damageFramework.explosionEvent(coords: Vector3, data: OptionalExplosion
 		if basePartCurrentDurability and basePartCurrentDurability > 0 then
 
 		ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - (data.objectDamage or defaults.objectDamage), {
-			contestantID = contestant.id;
+			contestantID = action.contestant.id;
 		});
 
 		end;
@@ -92,14 +92,14 @@ function damageFramework.explosionEvent(coords: Vector3, data: OptionalExplosion
 
 		if #validTargets > 0 then
 				
-			for i, possibleTargetContestant in round.contestants do
+			for i, possibleTargetContestant in action.contestant.round.contestants do
 
-				local targetIndex = table.find(validTargets, contestant.name);
-				local character = contestant.character;
+				local targetIndex = table.find(validTargets, action.contestant.name);
+				local character = action.contestant.character;
 				local primaryPart = if character then character.PrimaryPart else nil;
-				if character and primaryPart and targetIndex and contestant.name == validTargets[targetIndex] then
+				if character and primaryPart and targetIndex and action.contestant.name == validTargets[targetIndex] then
 
-					if possibleTargetContestant.id == contestant.id then
+					if possibleTargetContestant.id == action.contestant.id then
 
 						size = size/3
 
@@ -126,8 +126,8 @@ function damageFramework.explosionEvent(coords: Vector3, data: OptionalExplosion
 					
 					end
 					
-					contestant:updateHealth(contestant.currentHealth - (data.playerDamage or defaults.playerDamage) * distanceFromExplosion, {
-						contestantID = contestant.id;
+					possibleTargetContestant:updateHealth(possibleTargetContestant.currentHealth - (data.playerDamage or defaults.playerDamage) * distanceFromExplosion, {
+						contestantID = action.contestant.id;
 						actionID = if action then action.id else nil;
 					});
 					

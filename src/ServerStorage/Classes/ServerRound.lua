@@ -119,7 +119,6 @@ function ServerRound.__index:start(): ()
 
               local action = ServerAction.get(actionID).new({
                 contestant = contestant;
-                round = self;
               });
               table.insert(self.actions, action);
               table.insert(oldActions, action);

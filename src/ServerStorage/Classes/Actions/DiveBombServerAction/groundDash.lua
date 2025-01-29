@@ -68,7 +68,7 @@ return function(action: types.DiveBombServerAction, primaryPart: BasePart, anima
 	tween:Play();
 	task.wait(travelTime*0.6);
 	local data = {}
-	damageFramework.explosionEvent(originalCoords, data, action.contestant.round, action.contestant, action);
+	damageFramework.explosionEvent(originalCoords, data, action);
 	task.wait(travelTime*0.4);
 
 	

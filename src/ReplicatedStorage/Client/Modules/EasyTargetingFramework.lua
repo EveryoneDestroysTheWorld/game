@@ -11,16 +11,13 @@ local targetingFramework = {}
 
 local playerDisplay = {
 	isFree = false;
-	chargeTime = 0;
 }
 
 playerDisplay["charge"] = 0
-function targetingFramework:getData(): (Vector3, boolean, number)
+function targetingFramework:getData(): (Vector3, boolean)
 
 	local coordinates;
 	local shouldUseTarget = false;
-	local chargeTime = playerDisplay.chargeTime;
-
 	--data request received from server
 	if playerDisplay.isFree or not Players.LocalPlayer.Character:FindFirstChild("TargetLocal") then
 
@@ -32,17 +29,15 @@ function targetingFramework:getData(): (Vector3, boolean, number)
 		shouldUseTarget = true;
 
 	end
-
-	--sent data back to server
-	playerDisplay.chargeTime = 0;
 	
-	return coordinates, shouldUseTarget, chargeTime;
+	return coordinates, shouldUseTarget;
 
 end
 
 function targetingFramework.displayTarget(state: "Start" | "Release"): ()
 
 	if state == "Start" then
+
 		playerDisplay["obj"] = ReplicatedStorage.Shared.InGameDisplayObjects.DiveBombIndicator:Clone()
 	--	playerDisplay["obj"].Root.Position = Players.LocalPlayer:GetMouse().Hit.Position + Vector3.new(0,0.5,0)
 		playerDisplay["obj"].Parent = workspace.Terrain
@@ -60,22 +55,22 @@ function targetingFramework.displayTarget(state: "Start" | "Release"): ()
 		playerDisplay["con"] = RunService.Stepped:Connect(function()
 			local target = Players.LocalPlayer.Character:FindFirstChild("Target") or Players.LocalPlayer.Character:FindFirstChild("LocalTarget")
 			if target and not target.Value and not playerDisplay.isFree then
-				playerDisplay["obj"].Root.Position = target.Value.PrimaryPart.Position + Vector3.new(0,-0.5,0)
+				
+				playerDisplay["obj"].Root.Position = target.Value.PrimaryPart.Position + Vector3.new(0, -0.5, 0)
+
 			else
-				playerDisplay["obj"].Root.Position = Players.LocalPlayer:GetMouse().Hit.Position + Vector3.new(0,0.5,0)
+
+				playerDisplay["obj"].Root.Position = Players.LocalPlayer:GetMouse().Hit.Position + Vector3.new(0, 0.5, 0)
+
 			end
 		end)
-		task.delay(0.1, function()
-			playerDisplay["charge"] = 0
-			repeat 
-				playerDisplay["charge"] += 2
-				task.wait(1/15)
-			until playerDisplay["charge"] == 0 or playerDisplay["charge"] >= 100
-		end)
+		
 	else
+
 		playerDisplay["obj"]:Destroy()
 		playerDisplay["con"]:Disconnect()
 		playerDisplay["mouseCon"]:Disconnect()
+		
 	end
 
 end

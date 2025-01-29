@@ -40,7 +40,7 @@ function TarBombClientAction.new(): types.TarBombClientAction
 		key = action.id;
 		onActivate = function()
 
-			action:activate("Input");
+			action:activate(false);
 
 		end;
 		shortcutCharacter = "1";
@@ -52,11 +52,12 @@ function TarBombClientAction.new(): types.TarBombClientAction
 		if inputState == Enum.UserInputState.Begin then
 			
 			targetingFramework.displayTarget("Start")
+			action:activate(true);
 
 		elseif inputState == Enum.UserInputState.End then
 
 			targetingFramework.displayTarget("Release")
-			action:activate();
+			action:activate(false, nil, true);
 
 		end
 
@@ -71,7 +72,7 @@ function TarBombClientAction.new(): types.TarBombClientAction
 			task.wait(0.2)
 			child.Touched:Once(function(touched)
 
-				child.AssemblyLinearVelocity = Vector3.new(0,0,0)
+				child.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 
 			end)
 		end
@@ -82,9 +83,9 @@ function TarBombClientAction.new(): types.TarBombClientAction
 
 end
 
-function TarBombClientAction.__index:activate()
+function TarBombClientAction.__index:activate(shouldCharge: boolean, coordinates: boolean)
 
-	self.remoteFunction:InvokeServer();
+	self.remoteFunction:InvokeServer(shouldCharge, Players.LocalPlayer:GetMouse().Hit.Position);
 
 end
 

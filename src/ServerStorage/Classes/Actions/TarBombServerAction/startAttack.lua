@@ -109,7 +109,7 @@ local function startAttack(action: types.TarBombServerAction, sourcePart: BasePa
 			["KnockUpAmount"] = 0.5,
 		}
 
-		damageFramework.explosionEvent(bomb.Position, data, action.round, action.contestant, action)
+		damageFramework.explosionEvent(bomb.Position, data, action)
 		if split then
 
 			local roll = math.random(2,10)

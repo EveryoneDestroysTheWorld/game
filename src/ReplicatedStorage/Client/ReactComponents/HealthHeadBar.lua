@@ -11,7 +11,7 @@ local function HealthHeadBar(props: HealthHeadBar)
 
   local contestant = props.contestant;
 
-  local healthPercentage, setHealthPercentage = React.useState(0);
+  local healthPercentage, setHealthPercentage = React.useState(1);
 
   React.useEffect(function()
   

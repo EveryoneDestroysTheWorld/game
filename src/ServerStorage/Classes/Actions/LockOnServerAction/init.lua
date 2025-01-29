@@ -53,6 +53,7 @@ function LockOnServerAction.new(properties: types.ServerActionConstructorPropert
 
 			end;
 
+			print("target changed")
 			action.contestant.attributes.draconicKnightTargetModel = target;
 
 		end);

@@ -164,7 +164,6 @@ export type TakeFlightServerAction = ServerAction<{
 
 export type TarBombServerAction = ServerAction<{
   contestant: ServerContestant;
-  round: ServerRound;
   remoteFunction: RemoteFunction?;
   animationTracks: {
     [string]: AnimationTrack;

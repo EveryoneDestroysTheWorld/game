@@ -91,8 +91,6 @@ function TarBombServerAction.__index:activate(shouldCharge: boolean, coordinates
 
 	end
 
-	assert(coordinates);
-
 	if self.contestant.currentStamina >= 20 then
 
 		local character = self.contestant.character;
@@ -105,6 +103,7 @@ function TarBombServerAction.__index:activate(shouldCharge: boolean, coordinates
 
 		else
 
+			assert(coordinates);
 			local charge = 0;
 			if self.startChargeTimeMilliseconds then
 

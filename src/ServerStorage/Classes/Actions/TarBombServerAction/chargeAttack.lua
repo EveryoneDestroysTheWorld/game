@@ -14,7 +14,7 @@ local animateSprite = require(ReplicatedStorage.Shared.Modules.animateSprite);
 
 local function chargeAttack(action: types.TarBombServerAction, primaryPart: BasePart): ()
 
-	local fireBreathChargeGUI = displayObjects.DraconicKnight:FindFirstChild("ChargeMeter"):Clone()
+	local fireBreathChargeGUI = displayObjects:FindFirstChild("ChargeMeter"):Clone()
 	fireBreathChargeGUI.Parent = primaryPart
 	fireBreathChargeGUI.Adornee = primaryPart
 
