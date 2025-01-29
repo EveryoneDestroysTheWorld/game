@@ -122,6 +122,14 @@ export type FireBeamServerAction = ServerAction<{
   charge: number;
 }>;
 
+export type LockOnServerAction = ServerAction<{
+  contestant: ServerContestant;
+  round: ServerRound;
+  previousTargets: {Instance};
+  activate: (self: LockOnServerAction, shouldReleaseLock: boolean?) -> ();
+  breakdown: (self: LockOnServerAction) -> ();
+}>;
+
 export type MeleeServerAction = ServerAction<{
   contestant: ServerContestant;
   round: ServerRound;
