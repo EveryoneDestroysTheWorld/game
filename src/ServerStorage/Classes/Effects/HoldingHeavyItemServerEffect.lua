@@ -1,7 +1,8 @@
 --!strict
+
 local ServerStorage = game:GetService("ServerStorage");
 
-local types = require(script.Parent.Parent.types);
+local types = require(ServerStorage.Modules.types);
 
 local HoldingHeavyItemServerEffect = {
   name = "Holding heavy item";
@@ -31,13 +32,13 @@ end;
 
 function HoldingHeavyItemServerEffect.__index:activate(contestant: types.ServerContestant)
 
-  toggleLocks(contestant, self._lock, true);
+  toggleLocks(contestant, self.lock, true);
 
 end;
 
 function HoldingHeavyItemServerEffect.__index:deactivate(contestant: types.ServerContestant)
 
-  toggleLocks(contestant, self._lock, false);
+  toggleLocks(contestant, self.lock, false);
 
 end;
 

@@ -2,17 +2,17 @@
 -- Writer: Christian Toney (Sudobeast)
 -- This module represents a ServerRound.
 
+local DataStoreService = game:GetService("DataStoreService");
 local HttpService = game:GetService("HttpService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local DataStoreService = game:GetService("DataStoreService");
+local ServerStorage = game:GetService("ServerStorage");
+
 local GameMode = require(script.Parent.GameMode);
 local ServerArchetype = require(script.Parent.ServerArchetype);
 local ServerAction = require(script.Parent.ServerAction);
-local ServerStorage = game:GetService("ServerStorage");
 local Stage = require(ServerStorage.Packages.Stage);
 local Autopilot = require(ServerStorage.Classes.Autopilot);
-
-local types = require(script.Parent.types);
+local types = require(ServerStorage.Modules.types);
 
 local events: {[any]: {[string]: BindableEvent}} = {};
 
@@ -117,8 +117,10 @@ function ServerRound.__index:start(): ()
 
             for _, actionID in ipairs(archetype.actionIDs) do
 
-              local action = ServerAction.get(actionID);
-              action:initialize(contestant, self);
+              local action = ServerAction.get(actionID).new({
+                contestant = contestant;
+                round = self;
+              });
               table.insert(self.actions, action);
               table.insert(oldActions, action);
 
@@ -137,7 +139,7 @@ function ServerRound.__index:start(): ()
 
       if not isSuccess then
 
-        
+        error(errorObject)
 
       end;
 

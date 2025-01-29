@@ -1,7 +1,6 @@
 --!strict
 
 local ServerStorage = game:GetService("ServerStorage");
-local PathfindingService = game:GetService("PathfindingService");
 
 local searchForTargetContestant = require(script.searchForTargetContestant);
 local searchForTargetPart = require(script.searchForTargetPart);

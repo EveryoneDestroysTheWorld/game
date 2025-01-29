@@ -63,7 +63,7 @@ function PotionOfRegenerationServerItem.new(): types.ServerItem
 
       local specificItemID = HttpService:GenerateGUID(false);
       _specificItemID = specificItemID;
-      remoteFunction = createInventoryRemoteFunction(contestant.player, specificItemID, function()
+      remoteFunction = createInventoryRemoteFunction(contestant.player, "Item", specificItemID, function()
       
         self:activate();
 

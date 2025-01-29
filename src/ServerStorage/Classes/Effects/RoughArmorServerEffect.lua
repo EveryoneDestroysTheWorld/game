@@ -20,6 +20,9 @@ function RoughArmorServerEffect.new(properties: types.RoughArmorServerEffectCons
     contestant = properties.contestant;
     baseHealthModifier = {
       delta = 20;
+      cause = {
+        effectID = RoughArmorServerEffect.id;
+      }
     };
     events = {};
   };

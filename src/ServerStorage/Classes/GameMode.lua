@@ -1,8 +1,13 @@
 --!strict
--- Written by Christian Toney (Sudobeast)
--- This module represents a Action.
+-- This class represents a game mode on the server side.
+--
+-- Programmers: Christian Toney (Christian_Toney)
+
+local ServerStorage = game:GetService("ServerStorage");
+
+local types = require(ServerStorage.Modules.types);
+
 local GameMode = {};
-local types = require(script.Parent.types);
 
 function GameMode.new(properties: types.GameModeProperties): types.GameMode
 

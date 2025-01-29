@@ -1,6 +1,8 @@
 --!strict
 
-local types = require(script.Parent.types);
+local ServerStorage = game:GetService("ServerStorage");
+
+local types = require(ServerStorage.Modules.types);
 
 local ServerEffect: types.ServerEffectFactory = {} :: types.ServerEffectFactory;
 
