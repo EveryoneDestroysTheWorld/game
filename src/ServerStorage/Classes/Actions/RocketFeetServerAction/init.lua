@@ -72,9 +72,11 @@ function RocketFeetServerAction.new(properties: types.ServerActionConstructorPro
 
   end;
 
-  if action.contestant.player then
+  local player = action.contestant.player;
+  if player then
 
-    action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function()
+    local remoteID = `{player.UserId}_{action.id}`;
+    action.remoteFunction = createInventoryRemoteFunction(player, "Action", remoteID, function()
     
       action:activate();
 

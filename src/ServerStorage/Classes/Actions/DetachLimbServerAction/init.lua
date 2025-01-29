@@ -45,7 +45,7 @@ function DetachLimbServerAction.new(properties: types.ServerActionConstructorPro
   -- Create a remote function.
   if action.contestant.player then
     
-    action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function(player: Player, limbName: string)
+    action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function(limbName: string)
 
       assert(typeof(limbName) == "string", "Limb name must be a string");
 

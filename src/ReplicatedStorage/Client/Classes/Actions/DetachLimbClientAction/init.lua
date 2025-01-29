@@ -105,6 +105,7 @@ function DetachLimbClientAction.__index:activate()
     };
     onSelectionConfirmed = function(selection)
 
+      reactRoot:unmount();
       gui:Destroy();
       self.gui = nil;
       self.remoteFunction:InvokeServer(selection.key);

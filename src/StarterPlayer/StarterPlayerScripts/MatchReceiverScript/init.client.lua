@@ -95,10 +95,13 @@ ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function
 
   for _, actionID in initializedArchetype.actionIDs do
 
-    print(actionID);
-    local action = ClientAction.get(actionID).new();
-    table.insert(initializedActions, action);
-    print(`Action active: {action.name}`);
+    task.spawn(function()
+    
+      local action = ClientAction.get(actionID).new();
+      table.insert(initializedActions, action);
+      print(`Action active: {action.name}`);
+
+    end);
 
   end;
 
