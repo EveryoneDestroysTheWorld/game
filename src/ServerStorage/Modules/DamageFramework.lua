@@ -82,18 +82,17 @@ function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExpl
 
 				end;
 
-				table.insert(queriedModels, character);
-
 				task.spawn(function()
 
 					local primaryPart = if character then character.PrimaryPart else nil;
 					if character and primaryPart and character == model then
 
-						-- if possibleTargetContestant.id == action.contestant.id then
+						table.insert(queriedModels, character);
+						if possibleTargetContestant.id == action.contestant.id then
 
-						-- 	size = size / 3
+							size = size / 3
 
-						-- end
+						end
 
 						local distanceFromExplosion = 1
 						local DamageFalloff = data.damageFallOff or defaults.damageFallOff;
