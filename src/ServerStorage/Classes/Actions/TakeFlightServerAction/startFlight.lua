@@ -20,7 +20,6 @@ local function startFlight(action: types.TakeFlightServerAction, contestant: typ
 	linearVelocity.MaxAxesForce = Vector3.new(0,math.huge,0);
 	linearVelocity.Parent = primaryPart;
 	linearVelocity.Attachment0 = primaryPart:FindFirstChild("RootAttachment") :: Attachment;
-	linearVelocity:SetAttribute("PlayerControls", false);
 	action.linearVelocity = linearVelocity;
 
 	task.wait(0.3)
@@ -30,7 +29,6 @@ local function startFlight(action: types.TakeFlightServerAction, contestant: typ
 	local tween = TweenService:Create(linearVelocity, TweenInfo.new(1.0, Enum.EasingStyle.Sine), {VectorVelocity = Vector3.new(0,5,0)});
 	tween:Play()
 	task.wait(0.6)
-	linearVelocity:SetAttribute("PlayerControls", true)
 	local humanoid = (primaryPart.Parent :: Instance):FindFirstChild("Humanoid") :: Humanoid;
 	local connection
 	connection = humanoid:GetPropertyChangedSignal("FloorMaterial"):Connect(function(change)
@@ -49,7 +47,7 @@ local function startFlight(action: types.TakeFlightServerAction, contestant: typ
 		while action.linearVelocity == linearVelocity and RunService.Stepped:Wait() do
 
 			local verticalVelocity = if humanoid.Jump then 0.8 else 0;
-			local value = (humanoid.MoveDirection) + Vector3.new(0,verticalVelocity,0)
+			local value = (humanoid.MoveDirection) + Vector3.new(0, verticalVelocity, 0)
 			local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.5, Enum.EasingStyle.Sine), {VectorVelocity = value * 20})
 			tween:Play()
 

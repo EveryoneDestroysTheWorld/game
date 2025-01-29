@@ -12,8 +12,6 @@ local function endFlight(action: types.TakeFlightServerAction, primaryPart: Base
 	local linearVelocity = action.linearVelocity;
 	if linearVelocity then
 
-		linearVelocity:SetAttribute("PlayerControls", false);
-
 		linearVelocity.VectorVelocity = Vector3.new(0,15,0)
 		linearVelocity.MaxAxesForce = Vector3.new(math.huge,math.huge,math.huge);
 		linearVelocity.Parent = primaryPart;

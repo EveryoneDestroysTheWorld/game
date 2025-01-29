@@ -15,7 +15,6 @@ return function(action: types.DiveBombServerAction, primaryPart: BasePart, anima
 
 	if flightConstraint then
 
-		flightConstraint:SetAttribute("PlayerControls", false);
     flightConstraint:Destroy()
 
 	end
