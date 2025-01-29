@@ -31,6 +31,8 @@ function TarBombClientAction.new(): types.TarBombClientAction
 		name = TarBombClientAction.name;
 		description = TarBombClientAction.description;
 		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+		remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
+		isCharging = false;
 	}
 
 	local action = (setmetatable(overwrittenProperties, TarBombClientAction) :: any) :: types.TarBombClientAction;
@@ -47,6 +49,16 @@ function TarBombClientAction.new(): types.TarBombClientAction
 		iconImage = "rbxassetid://73246050129377";
 	}));
 
+	local ignoreInput = false;
+
+	action.remoteEvent.OnClientEvent:Connect(function()
+	
+		targetingFramework.displayTarget("Release");
+		action.isCharging = false;
+		ignoreInput = true;
+
+	end);
+
 	local function checkJump(_, inputState: Enum.UserInputState)
 
 		if inputState == Enum.UserInputState.Begin then
@@ -56,8 +68,23 @@ function TarBombClientAction.new(): types.TarBombClientAction
 
 		elseif inputState == Enum.UserInputState.End then
 
-			targetingFramework.displayTarget("Release")
-			action:activate(false, nil, true);
+			if ignoreInput then
+
+				ignoreInput = false;
+
+			else
+
+				if action.chargeNotificationTask then
+
+					task.cancel(action.chargeNotificationTask);
+					action.chargeNotificationTask = nil;
+
+				end;
+
+				targetingFramework.displayTarget("Release")
+				action:activate(false, nil, true);
+
+			end;
 
 		end
 
@@ -83,7 +110,29 @@ function TarBombClientAction.new(): types.TarBombClientAction
 
 end
 
-function TarBombClientAction.__index:activate(shouldCharge: boolean, coordinates: boolean)
+function TarBombClientAction.__index:activate(shouldCharge: boolean)
+
+	self.isCharging = shouldCharge;
+
+	if self.isCharging then
+
+		if not self.chargeNotificationTask then
+
+			self.chargeNotificationTask = task.spawn(function()
+
+				while self.isCharging and task.wait() do 
+
+					self.remoteEvent:FireServer(Players.LocalPlayer:GetMouse().Hit.Position);
+
+				end;
+
+				self.chargeNotificationTask = nil;
+
+			end);
+
+		end;
+
+	end;
 
 	self.remoteFunction:InvokeServer(shouldCharge, Players.LocalPlayer:GetMouse().Hit.Position);
 

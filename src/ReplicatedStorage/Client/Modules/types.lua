@@ -190,7 +190,10 @@ export type TakeFlightClientAction = ClientAction<{
 
 export type TarBombClientAction = ClientAction<{
   remoteFunction: RemoteFunction;
-  activate: (self: TarBombClientAction) -> ();
+  isCharging: boolean;
+  chargeNotificationTask: thread?;
+  remoteEvent: RemoteEvent;
+  activate: (self: TarBombClientAction, shouldCharge: boolean) -> ();
   breakdown: (self: TarBombClientAction) -> ();
 }>;
 

@@ -99,7 +99,6 @@ function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExpl
 						local DamageFalloff = data.damageFallOff or defaults.damageFallOff;
 						if DamageFalloff then
 
-							print(((primaryPart.Position - coordinates).Magnitude));
 							distanceFromExplosion = ((primaryPart.Position - coordinates).Magnitude);
 
 						else
@@ -116,9 +115,6 @@ function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExpl
 						-- 	createKnockback(primaryPart, distanceFromExplosion * knockback, direction)
 						
 						-- end
-						
-						print(size);
-						print(`{possibleTargetContestant.name}: {math.max((size + 1 - distanceFromExplosion) / (1 + size), 0)}`);
 						
 						possibleTargetContestant:updateHealth(possibleTargetContestant.currentHealth - (data.playerDamage or defaults.playerDamage) * math.max((size + 1 - distanceFromExplosion) / (1 + size), 0), {
 							contestantID = action.contestant.id;

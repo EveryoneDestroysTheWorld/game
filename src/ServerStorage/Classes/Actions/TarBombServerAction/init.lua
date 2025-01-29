@@ -9,6 +9,7 @@ local ServerStorage = game:GetService("ServerStorage");
 local TarBombClientAction = require(ReplicatedStorage.Client.Classes.Actions.TarBombClientAction);
 local types = require(ServerStorage.Modules.types);
 
+local createInventoryRemoteEvent = require(ServerStorage.Modules.createInventoryRemoteEvent);
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
 local mergeTable = require(ReplicatedStorage.Shared.Modules.mergeTable);
 local preloadAnimations = require(ServerStorage.Modules.preloadAnimations);
@@ -74,6 +75,17 @@ function TarBombServerAction.new(properties: types.ServerActionConstructorProper
 
 		end);
 
+		local remoteEvent = createInventoryRemoteEvent(player, "Action", `{player.UserId}_{action.id}`);
+		remoteEvent.OnServerEvent:Connect(function(possiblePlayer: Player, coordinates: Vector3)
+
+			assert(possiblePlayer == player);
+			assert(typeof(coordinates) == "Vector3")
+
+			action.coordinates = coordinates;
+
+		end);
+
+		action.remoteEvent = remoteEvent;
 		action.remoteFunction = remoteFunction;
 
 	end
@@ -82,7 +94,7 @@ function TarBombServerAction.new(properties: types.ServerActionConstructorProper
 
 end;
 
-function TarBombServerAction.__index:activate(shouldCharge: boolean, coordinates: Vector3?, shouldUseTarget: boolean?)
+function TarBombServerAction.__index:activate(shouldCharge: boolean, coordinates: Vector3?, shouldUseTarget: boolean?, shouldBypassStaminaCheck: boolean?)
 
 	local draconicKnightTargetModel = self.contestant.attributes.draconicKnightTargetModel
 	if shouldUseTarget and typeof(draconicKnightTargetModel) == "Model" and draconicKnightTargetModel.PrimaryPart then 
@@ -91,42 +103,42 @@ function TarBombServerAction.__index:activate(shouldCharge: boolean, coordinates
 
 	end
 
-	if self.contestant.currentStamina >= 20 then
+	assert(self.contestant.currentStamina >= 20 or shouldBypassStaminaCheck);
 
-		local character = self.contestant.character;
-		assert(character);
+	local character = self.contestant.character;
+	assert(character);
 
-		if shouldCharge then
+	if shouldCharge then
 
-			assert(character.PrimaryPart);
-			chargeAttack(self, character.PrimaryPart);
+		warn("charge")
+		assert(character.PrimaryPart);
+		chargeAttack(self, character.PrimaryPart);
 
-		else
+	else
 
-			assert(coordinates);
-			local charge = 0;
-			if self.startChargeTimeMilliseconds then
+		warn("fire")
+		assert(coordinates);
+		local charge = 0;
+		if self.startChargeTimeMilliseconds then
 
-				local goalTime = self.startChargeTimeMilliseconds + self.maxChargeTimeMilliseconds;
-				local queryTime = math.min(goalTime, DateTime.now().UnixTimestampMillis);
-				charge = math.max(1, queryTime / goalTime) * 100;
-				self.startChargeTimeMilliseconds = nil;
-			
-			end;
-
-			-- Reduce the player's stamina.
-			self.contestant:updateStamina(math.max(0, self.contestant.currentStamina - 10 - charge));
-			local size = 2 + charge / 10
-	--
-
-			local sourcePart = character:FindFirstChild("Head") or character.PrimaryPart;
-			assert(sourcePart and sourcePart:IsA("BasePart"));
-
-			startAttack(self, sourcePart, coordinates, true, size);
-
-		end;
+			local goalTime = self.startChargeTimeMilliseconds + self.maxChargeTimeMilliseconds;
+			local queryTime = math.min(goalTime, DateTime.now().UnixTimestampMillis);
+			charge = math.min((self.maxChargeTimeMilliseconds - (goalTime - queryTime)) / self.maxChargeTimeMilliseconds, 1) * 100;
+			self.startChargeTimeMilliseconds = nil;
 		
-	end
+		end;
+
+		-- Reduce the player's stamina.
+		self.contestant:updateStamina(math.max(0, self.contestant.currentStamina - 10 - charge));
+		local size = 2 + charge / 10
+--
+
+		local sourcePart = character:FindFirstChild("Head") or character.PrimaryPart;
+		assert(sourcePart and sourcePart:IsA("BasePart"));
+
+		startAttack(self, sourcePart, coordinates, true, size);
+
+	end;
 
 end
 	

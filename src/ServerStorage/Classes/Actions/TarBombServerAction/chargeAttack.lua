@@ -27,8 +27,35 @@ local function chargeAttack(action: types.TarBombServerAction, primaryPart: Base
 	coroutine.wrap(animateSprite)(data, 1)
 
 	local originalChargeTime = DateTime.now().UnixTimestampMillis;
-
 	action.startChargeTimeMilliseconds = originalChargeTime;
+
+	task.spawn(function()
+	
+		while task.wait(0.05) and action.startChargeTimeMilliseconds == originalChargeTime do
+
+			if action.contestant.currentStamina <= 0 then
+
+				if action.remoteEvent and action.contestant.player then
+
+					action.remoteEvent:FireClient(action.contestant.player);
+
+				end;
+
+				action:activate(false, action.coordinates, nil, true)
+				break;
+
+			else
+
+				action.contestant:updateStamina(action.contestant.currentStamina - 1, {
+					actionID = action.id;
+					contestantID = action.contestant.id;
+				});
+
+			end;
+
+		end;
+
+	end);
 
 	task.delay(action.maxChargeTimeMilliseconds / 1000, function()
 

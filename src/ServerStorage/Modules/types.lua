@@ -164,13 +164,15 @@ export type TakeFlightServerAction = ServerAction<{
 
 export type TarBombServerAction = ServerAction<{
   contestant: ServerContestant;
+  coordinates: Vector3?;
+  remoteEvent: RemoteEvent?;
   remoteFunction: RemoteFunction?;
   animationTracks: {
     [string]: AnimationTrack;
   };
   startChargeTimeMilliseconds: number?;
   maxChargeTimeMilliseconds: number;
-  activate: (self: TarBombServerAction, shouldCharge: boolean, coordinates: Vector3?, shouldUseTarget: boolean?) -> ();
+  activate: (self: TarBombServerAction, shouldCharge: boolean, coordinates: Vector3?, shouldUseTarget: boolean?, shouldBypassStaminaCheck: boolean?) -> ();
   breakdown: (self: TarBombServerAction) -> ();
 }>;
 
