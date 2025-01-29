@@ -15,8 +15,8 @@ function ServerAction.get(actionID: string): types.ServerActionClass
   local instance = script.Parent.Actions:FindFirstChild(`{actionID}ServerAction`);
   if instance and instance:IsA("ModuleScript") then
 
-    local effect = require(instance) :: any;
-    return effect;
+    local action = require(instance) :: any;
+    return action;
 
   end
 

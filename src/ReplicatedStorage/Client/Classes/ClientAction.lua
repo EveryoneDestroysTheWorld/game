@@ -14,20 +14,13 @@ local ClientAction = {};
 
 function ClientAction.get(actionID: string): types.ClientActionClass
 
-  for _, instance in script.Parent.Actions:GetChildren() do
-  
-    if instance:IsA("ModuleScript") then
-  
-      local action = require(instance) :: any;
-      if action.id == actionID then
-  
-        return action.new();
-  
-      end;
-  
-    end
-  
-  end;
+  local instance = script.Parent.Actions:FindFirstChild(`{actionID}ClientAction`);
+  if instance and instance:IsA("ModuleScript") then
+
+    local action = require(instance) :: any;
+    return action;
+
+  end
 
   error(`Couldn't find action from ID {actionID}.`);
 

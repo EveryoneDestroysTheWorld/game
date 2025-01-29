@@ -93,8 +93,9 @@ ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function
   initializedArchetype:initialize();
   print(`Archetype active: {initializedArchetype.name}`);
 
-  for _, actionID in ipairs(initializedArchetype.actionIDs) do
+  for _, actionID in initializedArchetype.actionIDs do
 
+    print(actionID);
     local action = ClientAction.get(actionID).new();
     table.insert(initializedActions, action);
     print(`Action active: {action.name}`);
