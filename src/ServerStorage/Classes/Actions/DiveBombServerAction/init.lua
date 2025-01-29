@@ -17,15 +17,17 @@ local DiveBombServerAction = {
 	id = DiveBombClientAction.id;
 	name = DiveBombClientAction.name;
 	description = DiveBombClientAction.description;
-	__index = {} :: types.DiveBombServerAction;
+	__index = {
+		name = DiveBombClientAction.name;
+		id = DiveBombClientAction.id;
+		description = DiveBombClientAction.description;
+	} :: types.DiveBombServerAction;
 };
 
 function DiveBombServerAction.new(properties: types.ServerActionConstructorProperties): types.DiveBombServerAction
 
 	local overwrittenProperties = {
-		name = DiveBombServerAction.name;
-		id = DiveBombServerAction.id;
-		description = DiveBombServerAction.description;
+		contestant = properties.contestant;
 	};
 
 	local action = (setmetatable(overwrittenProperties, DiveBombServerAction) :: any) :: types.DiveBombServerAction;

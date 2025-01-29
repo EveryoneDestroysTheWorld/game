@@ -18,18 +18,19 @@ local FireBeamServerAction = {
 	id = FireBeamClientAction.id;
 	name = FireBeamClientAction.name;
 	description = FireBeamClientAction.description;
-	__index = {} :: types.FireBeamServerAction;
+	__index = {
+		name = FireBeamClientAction.name;
+		id = FireBeamClientAction.id;
+		description = FireBeamClientAction.description;
+		charge = 0;
+		maxChargeTimeMilliseconds = 2000;
+	} :: types.FireBeamServerAction;
 };
 
 function FireBeamServerAction.new(properties: types.ServerActionConstructorProperties): types.FireBeamServerAction
 
 	local overwrittenProperties = {
-		name = FireBeamServerAction.name;
-		id = FireBeamServerAction.id;
-		description = FireBeamServerAction.description;
 		contestant = properties.contestant;
-		charge = 0;
-		maxChargeTimeMilliseconds = 2000;
 	};
 	
   local action = (setmetatable(overwrittenProperties, FireBeamServerAction) :: any) :: types.FireBeamServerAction;

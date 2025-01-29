@@ -20,17 +20,17 @@ local TakeFlightServerAction = {
 	id = TakeFlightClientAction.id;
 	name = TakeFlightClientAction.name;
 	description = TakeFlightClientAction.description;
-	__index = {} :: types.TakeFlightServerAction;
+	__index = {
+		name = TakeFlightClientAction.name;
+		id = TakeFlightClientAction.id;
+		description = TakeFlightClientAction.description;
+	} :: types.TakeFlightServerAction;
 };
 
 function TakeFlightServerAction.new(properties: types.ServerActionConstructorProperties): types.TakeFlightServerAction
 	
 	local overwrittenProperties = {
-		name = TakeFlightServerAction.name;
-		id = TakeFlightServerAction.id;
-		description = TakeFlightServerAction.description;
 		contestant = properties.contestant;
-		round = properties.round;
 	};
 
   local action = (setmetatable(overwrittenProperties, TakeFlightServerAction) :: any) :: types.TakeFlightServerAction;

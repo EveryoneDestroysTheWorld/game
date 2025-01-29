@@ -16,18 +16,20 @@ local ExplosivePunchServerAction = {
   id = ExplosivePunchClientAction.id;
   name = ExplosivePunchClientAction.name;
   description = ExplosivePunchClientAction.description;
-  __index = {} :: types.ExplosivePunchServerAction;
+  __index = {
+    id = ExplosivePunchClientAction.id;
+    name = ExplosivePunchClientAction.name;
+    description = ExplosivePunchClientAction.description;
+    minimumRequiredStamina = 5;
+    latestActivationTimes = {0, 0};
+    explosiveParts = {};
+  } :: types.ExplosivePunchServerAction;
 };
 
 function ExplosivePunchServerAction.new(properties: types.ServerActionConstructorProperties): types.ExplosivePunchServerAction
   
   local overwrittenProperties = {
-    id = ExplosivePunchServerAction.id;
-    name = ExplosivePunchServerAction.name;
-    description = ExplosivePunchServerAction.description;
-    minimumRequiredStamina = 5;
-    latestActivationTimes = {0, 0};
-    explosiveParts = {};
+    contestant = properties.contestant;
   };
   
   local action = (setmetatable(overwrittenProperties, ExplosivePunchServerAction) :: any) :: types.ExplosivePunchServerAction;
@@ -114,7 +116,7 @@ function ExplosivePunchServerAction.__index:activate()
     explosion.Hit:Connect(function(basePart)
 
       -- Damage any parts or contestants that get hit.
-      for _, possibleEnemyContestant in self.round.contestants do
+      for _, possibleEnemyContestant in self.contestant.round.contestants do
 
         task.spawn(function()
 

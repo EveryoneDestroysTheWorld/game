@@ -3,7 +3,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 local getAnimator = require(ReplicatedStorage.Shared.Modules.getAnimator);
-local types = require(ReplicatedStorage.Client.Classes.types);
+local types = require(ReplicatedStorage.Client.Modules.types);
 
 local ParalysisClientEffect = {
   name = "Paralysis";

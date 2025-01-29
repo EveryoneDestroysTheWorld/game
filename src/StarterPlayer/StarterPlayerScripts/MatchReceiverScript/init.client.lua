@@ -9,13 +9,12 @@ local HUDButtonContainer = require(ReplicatedStorage.Client.ReactComponents.HUDB
 local ClientItem = require(ReplicatedStorage.Client.Classes.ClientItem);
 local StarterGui = game:GetService("StarterGui");
 type ClientArchetype = ClientArchetype.ClientArchetype;
-type ClientAction = ClientAction.ClientAction;
 type ClientItem = ClientItem.ClientItem;
 local RoundResultsWindow = require(script.ReactComponents.RoundResultsWindow);
-local types = require(ReplicatedStorage.Client.Classes.types);
+local types = require(ReplicatedStorage.Client.Modules.types);
 
 local initializedArchetype: ClientArchetype = nil;
-local initializedActions: {ClientAction} = {};
+local initializedActions: {types.ClientAction} = {};
 local initializedItems: {[string]: {[string]: ClientItem}} = {};
 
 -- Set up the UI.
@@ -96,8 +95,7 @@ ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function
 
   for _, actionID in ipairs(initializedArchetype.actionIDs) do
 
-    local action = ClientAction.get(actionID);
-    action:initialize();
+    local action = ClientAction.get(actionID).new();
     table.insert(initializedActions, action);
     print(`Action active: {action.name}`);
 

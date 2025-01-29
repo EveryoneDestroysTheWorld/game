@@ -17,17 +17,17 @@ local DetonateDetachedLimbsServerAction = {
   id = DetonateDetachedLimbsClientAction.id;
   name = DetonateDetachedLimbsClientAction.name;
   description = DetonateDetachedLimbsClientAction.description;
-  __index = {} :: types.DetonateDetachedLimbsServerAction;
+  __index = {
+    name = DetonateDetachedLimbsClientAction.name;
+    id = DetonateDetachedLimbsClientAction.id;
+    description = DetonateDetachedLimbsClientAction.description;
+  } :: types.DetonateDetachedLimbsServerAction;
 };
 
 function DetonateDetachedLimbsServerAction.new(properties: types.ServerActionConstructorProperties): types.DetonateDetachedLimbsServerAction
 
   local overwrittenProperties = {
-    name = DetonateDetachedLimbsServerAction.name;
-    id = DetonateDetachedLimbsServerAction.id;
-    description = DetonateDetachedLimbsServerAction.description;
     contestant = properties.contestant;
-    round = properties.round;
   }
 
   local action = (setmetatable(overwrittenProperties, DetonateDetachedLimbsServerAction) :: any) :: types.DetonateDetachedLimbsServerAction;
@@ -83,7 +83,7 @@ function DetonateDetachedLimbsServerAction.__index:activate()
       explosion.Hit:Connect(function(basePart)
 
         -- Damage any parts or contestants that get hit.
-        for _, possibleEnemyContestant in ipairs(self.round.contestants) do
+        for _, possibleEnemyContestant in self.contestant.round.contestants do
 
           task.spawn(function()
 

@@ -17,15 +17,16 @@ local DetachLimbServerAction = {
   id = DetachLimbClientAction.id;
   name = DetachLimbClientAction.name;
   description = DetachLimbClientAction.description;
-  __index = {} :: types.DetachLimbServerAction;
+  __index = {
+    id = DetachLimbClientAction.id;
+    name = DetachLimbClientAction.name;
+    description = DetachLimbClientAction.description;
+  } :: types.DetachLimbServerAction;
 };
 
 function DetachLimbServerAction.new(properties: types.ServerActionConstructorProperties): types.DetachLimbServerAction
 
   local overwrittenProperties = {
-    id = DetachLimbServerAction.id;
-    name = DetachLimbServerAction.name;
-    description = DetachLimbServerAction.description;
     contestant = properties.contestant;
     detachedLimbs = {};
     bindableFunction = Instance.new("BindableFunction");

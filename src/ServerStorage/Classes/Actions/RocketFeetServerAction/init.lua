@@ -16,15 +16,17 @@ local RocketFeetServerAction = {
   id = RocketFeetClientAction.id;
   name = RocketFeetClientAction.name;
   description = RocketFeetClientAction.description;
-  __index = {} :: types.RocketFeetServerAction;
+  __index = {
+    name = RocketFeetClientAction.name;
+    id = RocketFeetClientAction.id;
+    description = RocketFeetClientAction.description;
+  } :: types.RocketFeetServerAction;
 };
 
-function RocketFeetServerAction.new(): types.RocketFeetServerAction
+function RocketFeetServerAction.new(properties: types.ServerActionConstructorProperties): types.RocketFeetServerAction
 
   local overwrittenProperties = {
-    name = RocketFeetServerAction.name;
-    id = RocketFeetServerAction.id;
-    description = RocketFeetServerAction.description;
+    contestant = properties.contestant;
   };
 
   local action = (setmetatable(overwrittenProperties, RocketFeetServerAction) :: any) :: types.RocketFeetServerAction;
@@ -107,7 +109,7 @@ function RocketFeetServerAction.__index:activate()
         explosion.Hit:Connect(function(basePart)
 
           -- Damage any parts or contestants that get hit.
-          for _, possibleEnemyContestant in self.round.contestants do
+          for _, possibleEnemyContestant in self.contestant.round.contestants do
 
             task.spawn(function()
 

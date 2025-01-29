@@ -16,16 +16,18 @@ local LockOnServerAction = {
 	id = LockOnClientAction.id;
 	name = LockOnClientAction.name;
 	description = LockOnClientAction.description;
-	__index = {} :: types.LockOnServerAction;
+	__index = {
+		name = LockOnClientAction.name;
+		id = LockOnClientAction.id;
+		description = LockOnClientAction.description;
+		previousTargets = {};
+	} :: types.LockOnServerAction;
 };
 
 function LockOnServerAction.new(properties: types.ServerActionConstructorProperties): types.LockOnServerAction
 
 	local overwrittenProperties = {
-		name = LockOnServerAction.name;
-		id = LockOnServerAction.id;
-		description = LockOnServerAction.description;
-		previousTargets = {};
+		contestant = properties.contestant;
 	};
 
   local action = (setmetatable(overwrittenProperties, LockOnServerAction) :: any) :: types.LockOnServerAction;

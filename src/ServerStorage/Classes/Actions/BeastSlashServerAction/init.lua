@@ -15,11 +15,15 @@ local animateSprite = require(ReplicatedStorage.Shared.Modules.animateSprite);
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
 local preloadAnimations = require(ServerStorage.Modules.preloadAnimations);
 
-local MeleeServerAction = {
+local BeastSlashServerAction = {
 	id = BeastSlashClientAction.id;
 	name = BeastSlashClientAction.name;
 	description = BeastSlashClientAction.description;
-	__index = {} :: types.BeastSlashServerAction;
+	__index = {
+		name = BeastSlashClientAction.name;
+		id = BeastSlashClientAction.id;
+		description = BeastSlashClientAction.description
+	} :: types.BeastSlashServerAction;
 };
 
 function meleeAttackEffect(character, combo)
@@ -70,17 +74,13 @@ function meleeAttackEffect(character, combo)
 	end
 end
 
-function MeleeServerAction.new(properties: types.ServerActionConstructorProperties): types.BeastSlashServerAction
+function BeastSlashServerAction.new(properties: types.ServerActionConstructorProperties): types.BeastSlashServerAction
 
 	local overwrittenProperties = {
-		name = MeleeServerAction.name;
-		id = MeleeServerAction.id;
-		description = MeleeServerAction.description;
 		contestant = properties.contestant;
-		round = properties.round;
 	};
 
-  local action = (setmetatable(overwrittenProperties, MeleeServerAction) :: any) :: types.BeastSlashServerAction;
+  local action = (setmetatable(overwrittenProperties, BeastSlashServerAction) :: any) :: types.BeastSlashServerAction;
 
 	local animations = {
 		Melee1 = 77919655263406;
@@ -108,7 +108,7 @@ function MeleeServerAction.new(properties: types.ServerActionConstructorProperti
 
 end;
 
-function MeleeServerAction.__index:activate()
+function BeastSlashServerAction.__index:activate()
 
 	local character = self.contestant.character;
 	assert(character);
@@ -127,7 +127,7 @@ function MeleeServerAction.__index:activate()
 				actionID = self.id;
 			};
 
-			melee.KeyDown(meleeData, meleeAttackEffect, self.round, "DK");
+			melee.KeyDown(meleeData, meleeAttackEffect, self.contestant.round, "DK");
 
 		end
 
@@ -135,7 +135,7 @@ function MeleeServerAction.__index:activate()
 
 end;
 
-function MeleeServerAction.__index:breakdown()
+function BeastSlashServerAction.__index:breakdown()
 
 	if self.remoteFunction then
 
@@ -145,4 +145,4 @@ function MeleeServerAction.__index:breakdown()
 
 end
 
-return MeleeServerAction;
+return BeastSlashServerAction;

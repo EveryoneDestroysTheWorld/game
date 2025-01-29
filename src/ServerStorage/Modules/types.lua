@@ -83,7 +83,6 @@ export type DetachLimbServerAction = ServerAction<{
 
 export type DiveBombServerAction = ServerAction<{
   contestant: ServerContestant;
-  round: ServerRound;
   anims: {
     [string]: AnimationTrack;
   };
@@ -92,7 +91,6 @@ export type DiveBombServerAction = ServerAction<{
 
 export type DetonateDetachedLimbsServerAction = ServerAction<{
   contestant: ServerContestant;
-  round: ServerRound;
   bindableFunction: BindableFunction;
   remoteFunction: RemoteFunction?;
   activate: (self: DetonateDetachedLimbsServerAction) -> ();
@@ -100,7 +98,6 @@ export type DetonateDetachedLimbsServerAction = ServerAction<{
 
 export type ExplosivePunchServerAction = ServerAction<{
   contestant: ServerContestant;
-  round: ServerRound;
   bindableFunction: BindableFunction;
   remoteFunction: RemoteFunction?;
   minimumRequiredStamina: number;
@@ -113,7 +110,6 @@ export type ExplosivePunchServerAction = ServerAction<{
 
 export type RocketFeetServerAction = ServerAction<{
   contestant: ServerContestant;
-  round: ServerRound;
   bindableFunction: BindableFunction;
   remoteFunction: RemoteFunction?;
   minimumRequiredStamina: number;
@@ -127,7 +123,6 @@ export type RocketFeetServerAction = ServerAction<{
 
 export type FireBeamServerAction = ServerAction<{
   contestant: ServerContestant;
-  round: ServerRound;
   startChargeTimeMilliseconds: number?;
   maxChargeTimeMilliseconds: number;
   coordinates: Vector3?;
@@ -139,7 +134,6 @@ export type FireBeamServerAction = ServerAction<{
 
 export type LockOnServerAction = ServerAction<{
   contestant: ServerContestant;
-  round: ServerRound;
   previousTargets: {Instance};
   remoteEvent: RemoteEvent?;
   activate: (self: LockOnServerAction, shouldReleaseLock: boolean?) -> ();
@@ -148,7 +142,6 @@ export type LockOnServerAction = ServerAction<{
 
 export type BeastSlashServerAction = ServerAction<{
   contestant: ServerContestant;
-  round: ServerRound;
   bindableFunction: BindableFunction;
   remoteFunction: RemoteFunction?;
   animationTracks: {
@@ -160,7 +153,6 @@ export type BeastSlashServerAction = ServerAction<{
 
 export type TakeFlightServerAction = ServerAction<{
   contestant: ServerContestant;
-  round: ServerRound;
   remoteFunction: RemoteFunction?;
   animationTracks: {
     [string]: AnimationTrack;

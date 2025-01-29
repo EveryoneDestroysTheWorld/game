@@ -31,7 +31,6 @@ function TarBombServerAction.new(properties: types.ServerActionConstructorProper
 
 	local overwrittenProperties = {
 		contestant = properties.contestant;
-		round = properties.round;
 	};
 
 	local action = (setmetatable(overwrittenProperties, TarBombServerAction) :: any) :: types.TarBombServerAction;

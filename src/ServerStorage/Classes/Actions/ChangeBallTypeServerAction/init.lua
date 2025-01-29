@@ -15,15 +15,16 @@ local ChangeBallTypeServerAction = {
   id = ChangeBallTypeClientAction.id;
   name = ChangeBallTypeClientAction.name;
   description = ChangeBallTypeClientAction.description;
-  __index = {};
+  __index = {
+    name = ChangeBallTypeClientAction.name;
+    id = ChangeBallTypeClientAction.id;
+    description = ChangeBallTypeClientAction.description;
+  } :: types.ChangeBallTypeServerAction;
 };
 
 function ChangeBallTypeServerAction.new(properties: types.ServerActionConstructorProperties): types.ChangeBallTypeServerAction
 
   local overwrittenProperties = {
-    name = ChangeBallTypeServerAction.name;
-    id = ChangeBallTypeServerAction.id;
-    description = ChangeBallTypeServerAction.description;
     contestant = properties.contestant;
   };
 

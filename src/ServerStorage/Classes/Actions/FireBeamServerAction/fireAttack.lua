@@ -88,7 +88,7 @@ local function fireAttack(action: types.FireBeamServerAction, primaryPart: BaseP
 						while newFireDebuffProp:GetAttribute("Duration") ~= 0 and task.wait(1) do
 							
 							newFireDebuffProp:SetAttribute("Duration", newFireDebuffProp:GetAttribute("Duration") :: number - 1)
-							for _, contestant in action.round.contestants do
+							for _, contestant in action.contestant.round.contestants do
 
 								if contestant.character and contestant.character == model then
 
