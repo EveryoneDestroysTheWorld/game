@@ -174,6 +174,14 @@ export type LockOnClientAction = ClientAction<{
   breakdown: (self: LockOnClientAction) -> ();
 }>;
 
+export type RocketFeetClientAction = ClientAction<{
+  remoteFunction: RemoteFunction;
+  jumpButtonClickEvent: RBXScriptConnection?;
+  cFrameEvent: RBXScriptConnection?;
+  activate: (self: RocketFeetClientAction) -> ();
+  breakdown: (self: RocketFeetClientAction) -> ();
+}>;
+
 export type TakeFlightClientAction = ClientAction<{
   remoteFunction: RemoteFunction;
   activate: (self: DetonateDetachedLimbsClientAction) -> ();

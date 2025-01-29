@@ -179,11 +179,7 @@ local function getDataFromClient(player: Player): Vector3
 	
 end
 
-function TarBombServerAction.new(): ServerAction
-
-	local _contestant: ServerContestant?;
-	local _round: ServerRound?;
-	local anims;
+function TarBombServerAction.new(): types.TarBombServerAction
 
 	local function activate(self: ServerAction)
 
