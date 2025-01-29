@@ -44,7 +44,7 @@ function TarBombClientAction.new(): types.TarBombClientAction
 
 		end;
 		shortcutCharacter = "1";
-		iconImage = "rbxassetid://17771917538";
+		iconImage = "rbxassetid://73246050129377";
 	}));
 
 	local function checkJump(_, inputState: Enum.UserInputState)

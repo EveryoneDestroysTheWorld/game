@@ -43,7 +43,7 @@ function BeastSlashClientAction.new(): types.BeastSlashClientAction
 
 		end;
 		shortcutCharacter = "1";
-		iconImage = "rbxassetid://17771917538";
+		iconImage = "rbxassetid://104334768004371";
 	}));
 
 	local function checkJump(_, inputState: Enum.UserInputState)

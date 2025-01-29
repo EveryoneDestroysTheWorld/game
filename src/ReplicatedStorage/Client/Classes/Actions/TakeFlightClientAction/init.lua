@@ -44,7 +44,7 @@ function TakeFlightClientAction.new(): types.TakeFlightClientAction
 
 		end;
 		shortcutCharacter = "Space";
-		iconImage = "rbxassetid://17771917538";
+		iconImage = "rbxassetid://92011231218008";
 	}));
 
 	local function checkJump(_, inputState: Enum.UserInputState)

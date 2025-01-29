@@ -59,7 +59,6 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 			local animatorR = if wingPropRight then wingPropRight:FindFirstChild("Animator") else nil;
 			if animatorR and animatorR:IsA("AnimationController") then
 
-				print(2);
 				animationTracks = mergeTable(animationTracks, preloadAnimations(animatorR, {
 					right = 87777396509498,
 					rightIdle = 112159869158031,
@@ -71,7 +70,6 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 			local animatorL = if wingPropLeft then wingPropLeft:FindFirstChild("Animator") else nil;
 			if animatorL and animatorL:IsA("AnimationController") then
 
-				print(2);
 				animationTracks = mergeTable(animationTracks, preloadAnimations(animatorL, {
 					left = 72026942510156,
 					leftIdle = 109626445218372,

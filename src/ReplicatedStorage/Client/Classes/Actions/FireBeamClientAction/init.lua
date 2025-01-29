@@ -80,7 +80,7 @@ function FireBeamClientAction.new(): types.FireBeamClientAction
 
 		end;
 		shortcutCharacter = "1";
-		iconImage = "rbxassetid://17771917538";
+		iconImage = "rbxassetid://81218648792587";
 	}));
 
 	return action;

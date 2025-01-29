@@ -45,7 +45,7 @@ function DiveBombClientAction.new(): types.DiveBombClientAction
 
 		end;
 		shortcutCharacter = "1";
-		iconImage = "rbxassetid://17771917538";
+		iconImage = "rbxassetid://87098535403201";
 	}));
 
 	player = Players.LocalPlayer;

@@ -95,7 +95,14 @@ function mAnimate2.animateCFrame(model: Model, animation)
 		local lastCFrame = CFrame.new(Vector3.new(0,0,0))
 		local amountToAdjust = CFrame.new(Vector3.new(0,0,0))
 
-		local weldPart = script.MoonAnimateAnchor:Clone()
+		-- local weldPart = script.MoonAnimateAnchor:Clone()
+		local weldPart = Instance.new("Part");
+		weldPart.Anchored = true;
+		weldPart.Transparency = 1;
+		weldPart.CanCollide = false;
+		local rigidConstraint = Instance.new("RigidConstraint");
+		rigidConstraint.Parent = weldPart;
+		
 		local primaryPart = model.PrimaryPart;
 		assert(primaryPart);
 
@@ -117,7 +124,7 @@ function mAnimate2.animateCFrame(model: Model, animation)
 			local humanoid = model:FindFirstChild("Humanoid");
 			assert(humanoid and humanoid:IsA("Humanoid"));
 
-			if currentFrame >= lastFrame and weldPart then
+			if currentFrame >= (tonumber(lastFrame) or 0) and weldPart then
 
 				Connection:Disconnect()
 				weldPart:Destroy()
@@ -125,7 +132,7 @@ function mAnimate2.animateCFrame(model: Model, animation)
 
 			else
 
-				if currentFrame >= nextFrame then
+				if currentFrame >= (tonumber(nextFrame) or 0) then
 
 					arrayNumber += 1
 					previousFrame = listInOrder[arrayNumber]
@@ -135,8 +142,8 @@ function mAnimate2.animateCFrame(model: Model, animation)
 
 				end
 
-				local nextFramePercentage = (currentFrame - previousFrame) / (nextFrame - previousFrame)
-				local resultPosition = previousFrameCFrame:Lerp(nextFrameCFrame, nextFramePercentage)
+				local nextFramePercentage = (currentFrame - (tonumber(previousFrame) or 0)) / ((tonumber(nextFrame) or 0) - (tonumber(previousFrame) or 0))
+				local resultPosition: CFrame = previousFrameCFrame:Lerp(nextFrameCFrame, nextFramePercentage)
 				local noYAxis = Vector3.new(1, 0, 1);
 				local yAxis = Vector3.new(0, 1, 0);
 				amountToAdjust = (
