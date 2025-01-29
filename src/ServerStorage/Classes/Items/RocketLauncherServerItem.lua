@@ -10,7 +10,7 @@ local RocketLauncherClientItem = require(ReplicatedStorage.Client.Classes.Items.
 local HttpService = game:GetService("HttpService");
 local ServerStorage = game:GetService("ServerStorage");
 local ServerEffect = require(ServerStorage.Classes.ServerEffect);
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local RocketLauncherServerItem = {
   id = RocketLauncherClientItem.id;

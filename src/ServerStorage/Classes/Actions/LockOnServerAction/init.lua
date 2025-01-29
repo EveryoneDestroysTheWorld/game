@@ -6,7 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
 local LockOnClientAction = require(ReplicatedStorage.Client.Classes.Actions.LockOnClientAction);
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local lookAtTarget = require(ReplicatedStorage.Shared.Modules.lookAtTarget);
 local searchForLockOnTarget = require(ReplicatedStorage.Shared.Modules.searchForLockOnTarget);

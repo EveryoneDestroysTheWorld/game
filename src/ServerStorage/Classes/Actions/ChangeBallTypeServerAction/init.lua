@@ -7,7 +7,7 @@ local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 local ChangeBallTypeClientAction = require(ReplicatedStorage.Client.Classes.Actions.ChangeBallTypeClientAction);
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
 

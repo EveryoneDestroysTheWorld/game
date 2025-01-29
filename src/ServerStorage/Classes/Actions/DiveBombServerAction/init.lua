@@ -7,7 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
 local DiveBombClientAction = require(ReplicatedStorage.Client.Classes.Actions.DiveBombClientAction);
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
 local startAttack = require(script.startAttack);

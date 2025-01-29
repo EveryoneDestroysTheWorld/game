@@ -12,7 +12,7 @@ local PotionOfRegenerationClientItem = require(ReplicatedStorage.Client.Classes.
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
 local HttpService = game:GetService("HttpService");
 local ServerEffect = require(ServerStorage.Classes.ServerEffect);
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local PotionOfRegenerationServerItem = {
   id = PotionOfRegenerationClientItem.id;

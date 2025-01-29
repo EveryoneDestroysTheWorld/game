@@ -9,7 +9,7 @@ local ServerEffect = require(script.Parent.Parent.ServerEffect);
 local downContestant = require(ServerStorage.Modules.downContestant);
 local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local UndeadConsciousnessServerArchetype = {
   id = UndeadConsciousnessClientArchetype.id;

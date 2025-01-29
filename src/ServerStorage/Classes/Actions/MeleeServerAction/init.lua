@@ -8,7 +8,7 @@ local ServerStorage = game:GetService("ServerStorage");
 
 local MeleeClientAction = require(ReplicatedStorage.Client.Classes.Actions.MeleeClientAction);
 local displayObjects = ReplicatedStorage.Shared.InGameDisplayObjects;
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 local melee = require(script.Framework);
 
 local animateSprite = require(ReplicatedStorage.Shared.Modules.animateSprite);

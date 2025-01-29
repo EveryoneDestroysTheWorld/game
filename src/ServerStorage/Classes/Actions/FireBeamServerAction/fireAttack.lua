@@ -5,7 +5,7 @@ local ServerStorage = game:GetService("ServerStorage");
 local TweenService = game:GetService("TweenService");
 
 local displayObjects = ReplicatedStorage.Shared.InGameDisplayObjects;
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local animateSprite = require(ReplicatedStorage.Shared.Modules.animateSprite);
 

@@ -7,7 +7,7 @@ local ServerStorage = game:GetService("ServerStorage");
 local TweenService = game:GetService("TweenService");
 
 local damageFramework = require(ServerStorage.Modules.DamageFramework);
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 return function(action: types.DiveBombServerAction, primaryPart: BasePart, animations, coords: Vector3)
 

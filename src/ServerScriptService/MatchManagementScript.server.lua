@@ -11,7 +11,7 @@ local ServerRound = require(ServerStorage.Classes.ServerRound);
 local ServerContestant = require(ServerStorage.Classes.ServerContestant);
 local Profile = require(ServerStorage.Packages.Profile);
 local StarterPlayerScripts = game:GetService("StarterPlayer").StarterPlayerScripts;
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 -- Initialize the round.
 local round;

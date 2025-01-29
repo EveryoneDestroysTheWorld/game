@@ -3,7 +3,7 @@
 local ServerStorage = game:GetService("ServerStorage");
 local PathfindingService = game:GetService("PathfindingService");
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 --[[
   Searches for a target contestant. 

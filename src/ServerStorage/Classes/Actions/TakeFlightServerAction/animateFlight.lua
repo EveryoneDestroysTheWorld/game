@@ -5,7 +5,7 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local function animateFlight(action: types.TakeFlightServerAction, primaryPart: BasePart, animData: Vector3, isEndingFlight: boolean)
 

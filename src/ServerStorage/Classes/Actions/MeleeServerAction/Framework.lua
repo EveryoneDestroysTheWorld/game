@@ -7,7 +7,7 @@ local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService");
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local mAnimate2 = require(ReplicatedStorage.Shared.Modules.MoonAnimator);
 local meleeAttackFramework = {}

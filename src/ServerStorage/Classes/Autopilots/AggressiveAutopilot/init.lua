@@ -7,7 +7,7 @@ local searchForTargetContestant = require(script.searchForTargetContestant);
 local searchForTargetPart = require(script.searchForTargetPart);
 local healSelf = require(script.healSelf);
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local AggressiveAutopilot = {
   name = "Aggressive";

@@ -7,7 +7,7 @@ local RunService = game:GetService("RunService");
 local ServerStorage = game:GetService("ServerStorage");
 local TweenService = game:GetService("TweenService");
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local function startFlight(action: types.TakeFlightServerAction, contestant: types.ServerContestant, primaryPart: BasePart)
 

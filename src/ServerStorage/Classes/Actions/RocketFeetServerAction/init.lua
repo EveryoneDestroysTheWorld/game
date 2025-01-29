@@ -8,7 +8,7 @@ local ServerAction = require(script.Parent.Parent.ServerAction);
 local RocketFeetClientAction = require(ReplicatedStorage.Client.Classes.Actions.RocketFeetClientAction);
 local ServerStorage = game:GetService("ServerStorage");
 local assertContestantIsNotActionLocked = require(ServerStorage.Modules.assertContestantIsNotActionLocked);
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local RocketFeetServerAction = {
   id = RocketFeetClientAction.id;

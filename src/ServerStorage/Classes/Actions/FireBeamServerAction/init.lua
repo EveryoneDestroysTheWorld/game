@@ -7,7 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
 local FireBeamClientAction = require(ReplicatedStorage.Client.Classes.Actions.FireBeamClientAction);
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local createInventoryRemoteEvent = require(ServerStorage.Modules.createInventoryRemoteEvent);
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);

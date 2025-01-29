@@ -2,7 +2,7 @@
 local ServerStorage = game:GetService("ServerStorage");
 local ServerEffect = require(ServerStorage.Classes.ServerEffect);
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local UndeadServerEffect = {
   name = "Undead";

@@ -7,7 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local GameMode = require(script.Parent.Parent.GameMode);
 local HttpService = game:GetService("HttpService");
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 -- This is the class.
 local TurfWarGameMode = {

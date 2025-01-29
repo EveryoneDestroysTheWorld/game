@@ -13,7 +13,7 @@ local createInventoryRemoteFunction = require(ServerStorage.Modules.createInvent
 local createInventoryRemoteEvent = require(ServerStorage.Modules.createInventoryRemoteEvent);
 local ServerEffect = require(ServerStorage.Classes.ServerEffect);
 local HttpService = game:GetService("HttpService");
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local SuperHammerServerItem = {
   id = SuperHammerClientItem.id;

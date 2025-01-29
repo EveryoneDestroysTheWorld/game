@@ -8,7 +8,7 @@ local ExplosiveMimicClientArchetype = require(ReplicatedStorage.Client.Classes.A
 
 local downContestant = require(ServerStorage.Modules.downContestant);
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local ExplosiveMimicServerArchetype = {
   id = ExplosiveMimicClientArchetype.id;
