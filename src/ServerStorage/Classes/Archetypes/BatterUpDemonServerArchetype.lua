@@ -8,7 +8,7 @@ local BatterUpDemonClientArchetype = require(ReplicatedStorage.Client.Classes.Ar
 local downContestant = require(ServerStorage.Modules.downContestant);
 local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local BatterUpDemonServerArchetype = {
   id = BatterUpDemonClientArchetype.id;

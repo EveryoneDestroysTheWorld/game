@@ -8,7 +8,7 @@ local ExplosiveMimicClientArchetype = require(ReplicatedStorage.Client.Classes.A
 
 local downContestant = require(ServerStorage.Modules.downContestant);
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local ExplosiveMimicServerArchetype = {
   id = ExplosiveMimicClientArchetype.id;
@@ -121,7 +121,9 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
           local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability") :: number?;
           if basePartCurrentDurability and basePartCurrentDurability > 0 then
   
-            ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 100, archetype.contestant);
+            ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 100, {
+              contestantID = archetype.contestant.id;
+            });
   
           end;
   

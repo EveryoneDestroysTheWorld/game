@@ -3,7 +3,7 @@
 local ServerStorage = game:GetService("ServerStorage");
 local PathfindingService = game:GetService("PathfindingService");
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 --[[
   Searches for a target contestant. 
@@ -57,7 +57,7 @@ return function(autopilotContestant: types.ServerContestant): types.ServerContes
       raycastParams.FilterType = Enum.RaycastFilterType.Include;
 
       local raycastResult = workspace:Raycast(botHead.CFrame.Position, enemyPrimaryPart.CFrame.Position - botHead.CFrame.Position, raycastParams);
-      if raycastResult.Instance:IsDescendantOf(contestant.character) then
+      if raycastResult and raycastResult.Instance:IsDescendantOf(contestant.character) then
 
         table.insert(visibleContestants, contestant);
 

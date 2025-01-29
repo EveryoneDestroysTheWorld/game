@@ -1,6 +1,8 @@
 --!strict
 
-local types = require(script.Parent.types);
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
+local types = require(ReplicatedStorage.Client.Modules.types);
 
 local ClientEffect: types.ClientEffectFactory = {} :: types.ClientEffectFactory;
 

@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local HttpService = game:GetService("HttpService");
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 local getAnimator = require(ReplicatedStorage.Shared.Modules.getAnimator);
 
 local ParalysisServerEffect = {

@@ -2,7 +2,7 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 return function(contestant: types.ServerContestant): BasePart?
 

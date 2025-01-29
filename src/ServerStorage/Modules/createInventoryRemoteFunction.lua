@@ -1,11 +1,12 @@
 --!strict
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-return function(contestantPlayer: Player, specificItemID: string, onServerInvoke: (...unknown) -> (...unknown)): RemoteFunction
+return function(contestantPlayer: Player, type: "Item" | "Action", specificItemID: string, onServerInvoke: (...any) -> (...any)): RemoteFunction
 
   local remoteFunction = Instance.new("RemoteFunction");
   remoteFunction.Name = specificItemID;
-  remoteFunction.Parent = ReplicatedStorage.Shared.Functions.ItemFunctions;
+  remoteFunction.Parent = if type == "Item" then ReplicatedStorage.Shared.Functions.ItemFunctions else ReplicatedStorage.Shared.Functions.ActionFunctions;
   remoteFunction.OnServerInvoke = function(invokingPlayer: Player, ...: unknown): ()
 
     if contestantPlayer == invokingPlayer then
@@ -14,7 +15,7 @@ return function(contestantPlayer: Player, specificItemID: string, onServerInvoke
 
     else
 
-      error(`{invokingPlayer.Name} ({invokingPlayer.UserId}) may not use another player's item.`, 0);
+      error(`{invokingPlayer.Name} ({invokingPlayer.UserId}) may not use another player's {type:lower()}.`, 0);
 
     end
 

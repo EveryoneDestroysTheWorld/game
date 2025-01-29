@@ -4,7 +4,9 @@
 -- Programmers: Christian Toney (Christian_Toney)
 -- © 2025 Beastslash LLC
 
-local types = require(script.Parent.types);
+local ServerStorage = game:GetService("ServerStorage");
+
+local types = require(ServerStorage.Modules.types);
 
 local Autopilot = {} :: types.AutopilotFactory;
 

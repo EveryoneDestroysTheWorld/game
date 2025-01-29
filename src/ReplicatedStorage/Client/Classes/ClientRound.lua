@@ -5,8 +5,9 @@
 -- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
 local ClientContestant = require(script.Parent.ClientContestant);
-local types = require(ReplicatedStorage.Client.Classes.types);
+local types = require(ReplicatedStorage.Client.Modules.types);
 
 export type RoundStatus = "Waiting for players" | "Contestant selection" | "Matchup preview" | "Initializing character models" | "Pre-round countdown" | "Active";
 

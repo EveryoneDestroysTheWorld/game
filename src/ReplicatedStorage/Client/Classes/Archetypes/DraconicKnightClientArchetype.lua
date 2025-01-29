@@ -13,7 +13,7 @@ local DraconicKnightClientArchetype = {
   name = "Draconic Knight";
   description = "Fly above the enemy and let the vengeance flow";
   iconImage = "rbxassetid://18584519829";
-  actionIDs = {"LockOn", "DKFlight", "DKDiveBomb", "DKMelee", "DKTarBomb", "DKFireBeam"};
+  actionIDs = {"LockOn", "TakeFlight", "DiveBomb", "BeastSlash", "TarBomb", "FireBeam"};
   type = "Defender" :: "Defender";
 };
 

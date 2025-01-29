@@ -1,7 +1,7 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local types = require(ReplicatedStorage.Client.Classes.types);
+local types = require(ReplicatedStorage.Client.Modules.types);
 
 type HealthHeadBar = {
   contestant: types.ClientContestant;
@@ -11,7 +11,7 @@ local function HealthHeadBar(props: HealthHeadBar)
 
   local contestant = props.contestant;
 
-  local healthPercentage, setHealthPercentage = React.useState(0);
+  local healthPercentage, setHealthPercentage = React.useState(1);
 
   React.useEffect(function()
   

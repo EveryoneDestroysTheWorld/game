@@ -3,7 +3,7 @@
 local ServerStorage = game:GetService("ServerStorage");
 local HttpService = game:GetService("HttpService");
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local RoughArmorServerEffect = {
   name = "Rough Armor";
@@ -20,6 +20,9 @@ function RoughArmorServerEffect.new(properties: types.RoughArmorServerEffectCons
     contestant = properties.contestant;
     baseHealthModifier = {
       delta = 20;
+      cause = {
+        effectID = RoughArmorServerEffect.id;
+      }
     };
     events = {};
   };

@@ -1,15 +1,30 @@
 {
   "luau-lsp.sourcemap.rojoProjectFile": "development.project.json",
   "cSpell.words": [
+    "adornee",
     "Beastslash",
+    "Blockcast",
+    "bomblet",
+    "debuff",
+    "freefall",
     "gsub",
+    "Hati",
+    "hati_bati",
     "ipairs",
+    "keybind",
     "Keypoint",
+    "knockback",
+    "lerp",
+    "maxn",
+    "Millis",
     "pcall",
     "ragdoll",
     "rbxassetid",
+    "scriptable",
     "setmetatable",
-    "Toney"
+    "Toney",
+    "tonumber",
+    "tostring"
   ],
   "luau-lsp.fflags.enableNewSolver": false
 }

@@ -3,7 +3,7 @@
 local ServerStorage = game:GetService("ServerStorage");
 local HttpService = game:GetService("HttpService");
 
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 local RegenerationServerEffect = {
   name = "Regeneration";

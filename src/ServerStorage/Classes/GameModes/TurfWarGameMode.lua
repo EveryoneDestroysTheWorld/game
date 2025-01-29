@@ -7,7 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local GameMode = require(script.Parent.Parent.GameMode);
 local HttpService = game:GetService("HttpService");
-local types = require(ServerStorage.Classes.types);
+local types = require(ServerStorage.Modules.types);
 
 -- This is the class.
 local TurfWarGameMode = {
@@ -250,14 +250,14 @@ function TurfWarGameMode.new(round: types.ServerRound): types.GameMode
 
       end));
       
-      ServerStorage.Functions.ModifyPartCurrentDurability.OnInvoke = function(basePart, newDurability, contestant)
+      ServerStorage.Functions.ModifyPartCurrentDurability.OnInvoke = function(basePart, newDurability, cause: types.Cause)
 
         local currentDurability = basePart:GetAttribute("CurrentDurability");
         if currentDurability > 0 then
 
           if newDurability <= 0 then
 
-            basePart:SetAttribute("DestroyerID", contestant.id);
+            basePart:SetAttribute("DestroyerID", cause.contestantID);
 
           end;
           basePart:SetAttribute("CurrentDurability", newDurability);

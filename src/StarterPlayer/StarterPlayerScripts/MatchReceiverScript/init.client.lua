@@ -9,13 +9,12 @@ local HUDButtonContainer = require(ReplicatedStorage.Client.ReactComponents.HUDB
 local ClientItem = require(ReplicatedStorage.Client.Classes.ClientItem);
 local StarterGui = game:GetService("StarterGui");
 type ClientArchetype = ClientArchetype.ClientArchetype;
-type ClientAction = ClientAction.ClientAction;
 type ClientItem = ClientItem.ClientItem;
 local RoundResultsWindow = require(script.ReactComponents.RoundResultsWindow);
-local types = require(ReplicatedStorage.Client.Classes.types);
+local types = require(ReplicatedStorage.Client.Modules.types);
 
 local initializedArchetype: ClientArchetype = nil;
-local initializedActions: {ClientAction} = {};
+local initializedActions: {types.ClientAction} = {};
 local initializedItems: {[string]: {[string]: ClientItem}} = {};
 
 -- Set up the UI.
@@ -79,27 +78,34 @@ ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function
   -- Disable the current archetype.
   if initializedArchetype then
 
-    initializedArchetype:breakdown();
+    coroutine.wrap(initializedArchetype.breakdown)(initializedArchetype);
 
   end;
 
   for _, action in initializedActions do
 
-    action:breakdown();
+    coroutine.wrap(action.breakdown)(action);
 
   end;
 
   -- Set up the archetype and actions.
   initializedArchetype = ClientArchetype.get(archetypeID);
-  initializedArchetype:initialize();
-  print(`Archetype active: {initializedArchetype.name}`);
+  task.spawn(function()
+    
+    initializedArchetype:initialize();
+    print(`Archetype active: {initializedArchetype.name}`);
 
-  for _, actionID in ipairs(initializedArchetype.actionIDs) do
+  end);
 
-    local action = ClientAction.get(actionID);
-    action:initialize();
-    table.insert(initializedActions, action);
-    print(`Action active: {action.name}`);
+  for _, actionID in initializedArchetype.actionIDs do
+
+    task.spawn(function()
+    
+      local action = ClientAction.get(actionID).new();
+      table.insert(initializedActions, action);
+      print(`Action active: {action.name}`);
+
+    end);
 
   end;
 

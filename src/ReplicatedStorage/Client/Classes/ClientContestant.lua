@@ -1,7 +1,8 @@
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local types = require(ReplicatedStorage.Client.Classes.types);
+
+local types = require(ReplicatedStorage.Client.Modules.types);
 
 local ClientContestant = {
   __index = {};
