@@ -37,6 +37,7 @@ function ChangeBallTypeClientAction.new(): types.ChangeBallTypeClientAction
   ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
     type = "Action";
     key = action.id;
+    shortcutCharacter = "L";
     onActivate = function() 
     
       action:activate();
