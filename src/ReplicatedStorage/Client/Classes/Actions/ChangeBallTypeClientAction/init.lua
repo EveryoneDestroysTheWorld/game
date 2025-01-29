@@ -24,12 +24,13 @@ local player = Players.LocalPlayer;
 
 function ChangeBallTypeClientAction.new(): types.ChangeBallTypeClientAction
 
+  local remoteName = `{player.UserId}_{ChangeBallTypeClientAction.id}`;
   local overwrittenProperties = {
     id = ChangeBallTypeClientAction.id;
     name = ChangeBallTypeClientAction.name;
     iconImage = ChangeBallTypeClientAction.iconImage;
     description = ChangeBallTypeClientAction.description;
-    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(`{player.UserId}_{ChangeBallTypeClientAction.id}`);
+    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
   };
 
   local action = (setmetatable(overwrittenProperties, ChangeBallTypeClientAction) :: any) :: types.ChangeBallTypeClientAction;
