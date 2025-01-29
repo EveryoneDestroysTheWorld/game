@@ -81,7 +81,6 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 
 	end;
 
-	print(animationTracks);
 	action.animationTracks = animationTracks;
 
 	local player = action.contestant.player;
