@@ -38,7 +38,6 @@ export type KeyDownData = {
 	heavyAttackMomentumMultiplier: number?;
 	lightStaminaDrain: number?;
 	heavyStaminaDrain: number?;
-	actionID: string;
 }
 
 -- 			data template
@@ -65,7 +64,7 @@ export type AttackState = "Processing" | "Buffered" | "Buffered2" | "ButtonRelea
 local currentlyAttacking: {
 	[types.ServerContestant]: AttackState
 } = {}
-function meleeAttackFramework.KeyDown(data: KeyDownData, effect: (...any) -> (any), round, archetypeABRV: string)
+function meleeAttackFramework.KeyDown(action: types.BeastSlashServerAction, data: KeyDownData, effect: (...any) -> (any), round, archetypeABRV: string)
 
 	local shouldRepeat = false;
 	repeat
@@ -182,8 +181,8 @@ function meleeAttackFramework.KeyDown(data: KeyDownData, effect: (...any) -> (an
 								table.insert(blockedModels, model);
 
 								contestant:updateHealth(contestant.currentHealth - damage, {
-									contestant = contestant;
-									actionID = data.actionID;
+									contestantID = action.contestant.id;
+									actionID = action.id;
 								});
 
 								break;

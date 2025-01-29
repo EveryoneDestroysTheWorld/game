@@ -110,6 +110,7 @@ function TarBombServerAction.__index:activate(shouldCharge: boolean, coordinates
 				local goalTime = self.startChargeTimeMilliseconds + self.maxChargeTimeMilliseconds;
 				local queryTime = math.min(goalTime, DateTime.now().UnixTimestampMillis);
 				charge = math.max(1, queryTime / goalTime) * 100;
+				self.startChargeTimeMilliseconds = nil;
 			
 			end;
 

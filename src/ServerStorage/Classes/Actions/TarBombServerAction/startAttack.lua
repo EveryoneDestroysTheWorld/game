@@ -99,24 +99,25 @@ local function startAttack(action: types.TarBombServerAction, sourcePart: BasePa
 		task.wait(explosionDelaySeconds or defaultExplosionDelaySeconds);
 
 		local data = {
-			["Size"] = size,
-			["Knockback"] = size * 20,
-			["PlayerDamage"] = size * 4	,
-			["ObjectDamage"] = size * 3,
-			["DamageFalloff"] = true,
-			["KnockbackOwner?"] = false,
-			["DamageOwner?"] = true,
-			["KnockUpAmount"] = 0.5,
+			size = size,
+			knockback = size * 20,
+			playerDamage = size * 4	,
+			objectDamage = size * 3,
+			damageFalloff = true,
+			knockbackOwner = false,
+			damageOwner = true,
+			knockUpAmount = 0.5,
 		}
 
 		damageFramework.explosionEvent(bomb.Position, data, action)
 		if split then
 
-			local roll = math.random(2,10)
-			for i = 1, roll do
+			local bombletCount = math.random(2, 10);
+			local bombletSize = size / math.random(2, 4);
+			for i = 1, bombletCount do
 
 				local scatterCoordinates = coordinates + Vector3.new(math.random(-100, 100) / 10, 0, math.random(-100, 100) / 10);
-				coroutine.wrap(startAttack)(action, bomb, scatterCoordinates, false, 8 / roll, math.random(1, 1.5));
+				coroutine.wrap(startAttack)(action, bomb, scatterCoordinates, false, bombletSize, math.random(1, 1.5));
 
 			end
 

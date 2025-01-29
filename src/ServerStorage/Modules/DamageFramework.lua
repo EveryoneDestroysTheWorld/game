@@ -48,7 +48,7 @@ export type OptionalExplosionData = {
 	knockUpAmount: number?;
 }
 
-function damageFramework.explosionEvent(coords: Vector3, data: OptionalExplosionData, action: types.DiveBombServerAction | types.TarBombServerAction)
+function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExplosionData, action: types.DiveBombServerAction | types.TarBombServerAction)
 
 	local defaults: ExplosionData = {
 		size = 5,
@@ -60,20 +60,76 @@ function damageFramework.explosionEvent(coords: Vector3, data: OptionalExplosion
 	}
 
 	local size = data.size or defaults.size;
-	local validTargets = {};
 	local explosion = Instance.new("Explosion");
 	explosion.BlastPressure = 0;
 	explosion.BlastRadius = 1 + size;
 	explosion.DestroyJointRadiusPercent = 0;
-	explosion.Position = coords;
+	explosion.Position = coordinates;
 	explosion.Parent = workspace;
+	local queriedModels = {};
 	explosion.Hit:Connect(function(basePart)
 
 		-- Damage any parts or contestants that get hit.
 		local model = basePart:FindFirstAncestorOfClass("Model")
-		if model and model:FindFirstChild("Humanoid") then
+		if model and model:FindFirstChild("Humanoid") and model.PrimaryPart then
 
-			table.insert(validTargets, model.Name)
+			for i, possibleTargetContestant in action.contestant.round.contestants do
+				
+				local character = possibleTargetContestant.character;
+				if not character or table.find(queriedModels, character) then
+
+					continue;
+
+				end;
+
+				table.insert(queriedModels, character);
+
+				task.spawn(function()
+
+					local primaryPart = if character then character.PrimaryPart else nil;
+					if character and primaryPart and character == model then
+
+						-- if possibleTargetContestant.id == action.contestant.id then
+
+						-- 	size = size / 3
+
+						-- end
+
+						local distanceFromExplosion = 1
+						local DamageFalloff = data.damageFallOff or defaults.damageFallOff;
+						if DamageFalloff then
+
+							print(((primaryPart.Position - coordinates).Magnitude));
+							distanceFromExplosion = ((primaryPart.Position - coordinates).Magnitude);
+
+						else
+
+							--print("No damage falloff")
+							
+						end
+
+						-- local knockback = data.knockback or defaults.knockback;
+						-- if knockback > 0 then
+							
+						-- 	local knockUp = data.knockUpAmount or defaults.knockUpAmount;
+						-- 	local direction = (primaryPart.Position - coordinates) / (primaryPart.Position - coordinates).Magnitude * Vector3.new(1.3, 0.5, 1.3) + Vector3.new(0,knockUp,0)
+						-- 	createKnockback(primaryPart, distanceFromExplosion * knockback, direction)
+						
+						-- end
+						
+						print(size);
+						print(`{possibleTargetContestant.name}: {math.max((size + 1 - distanceFromExplosion) / (1 + size), 0)}`);
+						
+						possibleTargetContestant:updateHealth(possibleTargetContestant.currentHealth - (data.playerDamage or defaults.playerDamage) * math.max((size + 1 - distanceFromExplosion) / (1 + size), 0), {
+							contestantID = action.contestant.id;
+							actionID = if action then action.id else nil;
+						});
+						
+					end
+
+				end);
+
+			end
 
 		end;
 		
@@ -82,58 +138,10 @@ function damageFramework.explosionEvent(coords: Vector3, data: OptionalExplosion
 
 		ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - (data.objectDamage or defaults.objectDamage), {
 			contestantID = action.contestant.id;
+			actionID = action.id;
 		});
 
 		end;
-
-	end);
-
-	task.delay(0.1, function()
-
-		if #validTargets > 0 then
-				
-			for i, possibleTargetContestant in action.contestant.round.contestants do
-
-				local targetIndex = table.find(validTargets, action.contestant.name);
-				local character = action.contestant.character;
-				local primaryPart = if character then character.PrimaryPart else nil;
-				if character and primaryPart and targetIndex and action.contestant.name == validTargets[targetIndex] then
-
-					if possibleTargetContestant.id == action.contestant.id then
-
-						size = size/3
-
-					end
-
-					local distanceFromExplosion = 1
-					local DamageFalloff = data.damageFallOff or defaults.damageFallOff;
-					if DamageFalloff then
-
-						distanceFromExplosion -= ((primaryPart.Position - coords).Magnitude / size);
-
-					else
-
-						--print("No damage falloff")
-						
-					end
-
-					local knockback = data.knockback or defaults.knockback;
-					if knockback > 0 then
-						
-						local knockUp = data.knockUpAmount or defaults.knockUpAmount;
-						local direction = (primaryPart.Position - coords) / (primaryPart.Position - coords).Magnitude * Vector3.new(1.3, 0.5, 1.3) + Vector3.new(0,knockUp,0)
-						createKnockback(primaryPart, distanceFromExplosion * knockback, direction)
-					
-					end
-					
-					possibleTargetContestant:updateHealth(possibleTargetContestant.currentHealth - (data.playerDamage or defaults.playerDamage) * distanceFromExplosion, {
-						contestantID = action.contestant.id;
-						actionID = if action then action.id else nil;
-					});
-					
-				end
-			end
-		end
 
 	end);
 

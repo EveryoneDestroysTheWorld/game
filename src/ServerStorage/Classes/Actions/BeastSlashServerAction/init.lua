@@ -124,10 +124,9 @@ function BeastSlashServerAction.__index:activate()
 				maxCombo = 3,
 				animations = self.animationTracks,
 				contestant = self.contestant,
-				actionID = self.id;
 			};
 
-			melee.KeyDown(meleeData, meleeAttackEffect, self.contestant.round, "DK");
+			melee.KeyDown(self, meleeData, meleeAttackEffect, self.contestant.round, "DK");
 
 		end
 
