@@ -7,9 +7,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 local UserInputService = game:GetService("UserInputService");
+local RunService = game:GetService("RunService");
 
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
+local targetingFramework = require(ReplicatedStorage.Client.Modules.EasyTargetingFramework);
 local types = require(ReplicatedStorage.Client.Modules.types);
 
 local FireBeamClientAction = {
@@ -32,6 +34,7 @@ function FireBeamClientAction.new(): types.FireBeamClientAction
 		name = FireBeamClientAction.name;
 		description = FireBeamClientAction.description;
 		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+		isCharging = false;
 	};
 
   local action = (setmetatable(overwrittenProperties, FireBeamClientAction) :: any) :: types.FireBeamClientAction;
@@ -39,18 +42,52 @@ function FireBeamClientAction.new(): types.FireBeamClientAction
 
 	local remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
 	assert(remoteEvent:IsA("RemoteEvent"));
+	
+	local shouldIgnoreInput = false;
+	local function checkJump(_, inputState: Enum.UserInputState)
 
-	remoteEvent.OnClientEvent:Connect(function(shouldActivateUpdateTask)
+		if inputState == Enum.UserInputState.Begin then
+			
+			targetingFramework.displayTarget("Start")
+			action:activate(true);
+
+		elseif inputState == Enum.UserInputState.End then
+
+			if shouldIgnoreInput then
+
+				shouldIgnoreInput = false;
+
+			else
+
+				if action.chargeNotificationTask then
+
+					task.cancel(action.chargeNotificationTask);
+					action.chargeNotificationTask = nil;
+
+				end;
+
+				targetingFramework.displayTarget("Release")
+				action:activate(false, nil, true);
+
+			end;
+
+		end
+
+	end;
+
+	ContextActionService:BindAction("ActivateFireBeam", checkJump, false, Enum.KeyCode.Two, Enum.KeyCode.KeypadTwo);
+
+	action.remoteEvent = remoteEvent.OnClientEvent:Connect(function(shouldActivateUpdateTask)
 
 		if shouldActivateUpdateTask then
 
 			updateTask = updateTask or task.spawn(function()
 
-				while task.wait() do
+				while RunService.RenderStepped:Wait() do
 
 					local mousePosition = UserInputService:GetMouseLocation();
 					local unitRay = workspace.CurrentCamera:ViewportPointToRay(mousePosition.X, mousePosition.Y)
-					local raycastResult = workspace:Raycast(unitRay.Origin, unitRay.Direction);
+					local raycastResult = workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000);
 					local position = if raycastResult then raycastResult.Position else unitRay.Direction * 1000;
 					remoteEvent:FireServer(position);
 
@@ -87,9 +124,9 @@ function FireBeamClientAction.new(): types.FireBeamClientAction
 
 end
 
-function FireBeamClientAction.__index:activate()
+function FireBeamClientAction.__index:activate(shouldCharge: boolean)
 
-	self.remoteFunction:InvokeServer();
+	self.remoteFunction:InvokeServer(shouldCharge);
 
 end
 

@@ -151,20 +151,23 @@ export type DetonateDetachedLimbsClientAction = ClientAction<{
 
 export type DiveBombClientAction = ClientAction<{
   remoteFunction: RemoteFunction;
-  activate: (self: DetonateDetachedLimbsClientAction) -> ();
-  breakdown: (self: DetonateDetachedLimbsClientAction) -> ();
+  activate: (self: DiveBombClientAction) -> ();
+  breakdown: (self: DiveBombClientAction) -> ();
 }>;
 
 export type ExplosivePunchClientAction = ClientAction<{
   remoteFunction: RemoteFunction;
-  activate: (self: DetonateDetachedLimbsClientAction) -> ();
-  breakdown: (self: DetonateDetachedLimbsClientAction) -> ();
+  activate: (self: ExplosivePunchClientAction) -> ();
+  breakdown: (self: ExplosivePunchClientAction) -> ();
 }>;
 
 export type FireBeamClientAction = ClientAction<{
   remoteFunction: RemoteFunction;
-  activate: (self: DetonateDetachedLimbsClientAction) -> ();
-  breakdown: (self: DetonateDetachedLimbsClientAction) -> ();
+  chargeNotificationTask: thread?;
+  remoteEvent: RemoteEvent;
+  isCharging: boolean;
+  activate: (self: FireBeamClientAction, shouldCharge: boolean) -> ();
+  breakdown: (self: FireBeamClientAction) -> ();
 }>;
 
 export type LockOnClientAction = ClientAction<{

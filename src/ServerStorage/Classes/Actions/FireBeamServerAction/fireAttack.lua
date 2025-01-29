@@ -46,7 +46,7 @@ local function fireAttack(action: types.FireBeamServerAction, primaryPart: BaseP
 
 		end;
 
-		local fireBeamProp = displayObjects.DraconicKnight:FindFirstChild("FireBeamProp"):Clone()
+		local fireBeamProp = displayObjects:FindFirstChild("FireBeamProp"):Clone()
 		fireBeamProp.Parent = primaryPart.Parent
 		fireBeamProp.Root.Position = faceCenterAttachment.WorldPosition
 		fireBeamProp.AlignPosition.Attachment1 = faceCenterAttachment
@@ -190,7 +190,7 @@ local function fireAttack(action: types.FireBeamServerAction, primaryPart: BaseP
 			local tween1 = TweenService:Create(fireBeamProp.Target, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {Position = action.coordinates or Vector3.zero})
 			tween1:Play()
 
-			fireBeamProp.Particles.Fire.Speed = NumberRange.new(distance,distance)
+			fireBeamProp.Particles.Fire.Speed = NumberRange.new(distance, distance);
 			coroutine.wrap(animateSprite)(data, action.charge / 100)
 			action.charge -= rate;
 

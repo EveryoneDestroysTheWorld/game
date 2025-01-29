@@ -38,9 +38,10 @@ function FireBeamServerAction.new(properties: types.ServerActionConstructorPrope
 	if action.contestant.player then
 
 		local remoteID = `{action.contestant.player.UserId}_{action.id}`;
-		action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", remoteID, function()
+		action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", remoteID, function(shouldCharge: boolean)
     
-      action:activate();
+			assert(not shouldCharge or typeof(shouldCharge) == "boolean");
+      action:activate(shouldCharge);
 
     end);
 
@@ -69,19 +70,17 @@ function FireBeamServerAction.__index:activate(shouldCharge: boolean)
 	assert(primaryPart);
 
 	local isContestantFlying = not not primaryPart:FindFirstChild("FlightConstraint");
-	if isContestantFlying then
+	assert(isContestantFlying);
 
-		if shouldCharge then
+	if shouldCharge then
 
-			chargeAttack(self, primaryPart);
+		chargeAttack(self, primaryPart);
 
-		else
+	else
 
-			fireAttack(self, primaryPart);
+		fireAttack(self, primaryPart);
 
-		end
-
-	end;
+	end
 
 end
 

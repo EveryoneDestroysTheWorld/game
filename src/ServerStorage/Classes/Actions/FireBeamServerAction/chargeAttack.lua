@@ -14,7 +14,7 @@ local animateSprite = require(ReplicatedStorage.Shared.Modules.animateSprite);
 
 local function chargeAttack(action: types.FireBeamServerAction, primaryPart: BasePart): ()
 
-	local fireBreathChargeGUI = displayObjects.DraconicKnight:FindFirstChild("ChargeMeter"):Clone()
+	local fireBreathChargeGUI = displayObjects:FindFirstChild("ChargeMeter"):Clone()
 	fireBreathChargeGUI.Parent = primaryPart
 	fireBreathChargeGUI.Adornee = primaryPart
 
@@ -29,6 +29,41 @@ local function chargeAttack(action: types.FireBeamServerAction, primaryPart: Bas
 	local originalChargeTime = DateTime.now().UnixTimestampMillis;
 
 	action.startChargeTimeMilliseconds = originalChargeTime;
+
+	task.spawn(function()
+	
+		while task.wait(0.05) and action.startChargeTimeMilliseconds == originalChargeTime do
+
+			local player = action.contestant.player;
+			if action.contestant.currentStamina <= 0 then
+
+				if action.remoteEvent and player then
+
+					action.remoteEvent:FireClient(player);
+
+				end;
+
+				action:activate(false, action.coordinates, nil, true)
+				break;
+
+			else
+
+				if action.remoteEvent and player then
+
+					action.remoteEvent:FireClient(player, true);
+
+				end;
+
+				action.contestant:updateStamina(action.contestant.currentStamina - 1, {
+					actionID = action.id;
+					contestantID = action.contestant.id;
+				});
+
+			end;
+
+		end;
+
+	end);
 
 	task.delay(action.maxChargeTimeMilliseconds / 1000, function()
 
