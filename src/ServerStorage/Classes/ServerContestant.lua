@@ -221,7 +221,7 @@ function ServerContestant.__index:removeEffect(effect: types.ServerEffect): ()
 
   end;
 
-  events[self].onEffectsUpdated:Fire(self.effects);
+  events[self].onEffectsUpdated:Fire();
 
 end;
 
