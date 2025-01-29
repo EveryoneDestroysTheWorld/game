@@ -47,13 +47,17 @@ function TakeFlightClientAction.new(): types.TakeFlightClientAction
 		iconImage = "rbxassetid://92011231218008";
 	}));
 
+	local lastTime = 0;
 	local function checkJump(_, inputState: Enum.UserInputState)
 		
-		if inputState == Enum.UserInputState.Begin then
+		local currentTime = DateTime.now().UnixTimestampMillis;
+		if inputState == Enum.UserInputState.Begin and currentTime - lastTime <= 500 then
 
 			action:activate();
 
 		end;
+
+		lastTime = currentTime;
 
 	end;
 

@@ -108,7 +108,7 @@ function TakeFlightServerAction.__index:activate(): boolean
 		assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {self.contestant.character}'s Humanoid`);
 
 		local primaryPart = self.contestant.character.PrimaryPart;
-		if humanoid:GetState() == Enum.HumanoidStateType.Freefall and primaryPart then
+		if primaryPart then
 
 			if primaryPart:FindFirstChild("FlightConstraint") then
 
@@ -118,6 +118,7 @@ function TakeFlightServerAction.__index:activate(): boolean
 
 			elseif self.contestant.currentStamina >= 10 then
 
+				print("check");
 				self.contestant:updateStamina(math.max(0, self.contestant.currentStamina - 10));
 
 				coroutine.wrap(startFlight)(self, self.contestant, primaryPart);
