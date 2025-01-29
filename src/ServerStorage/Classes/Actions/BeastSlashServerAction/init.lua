@@ -6,7 +6,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
-local MeleeClientAction = require(ReplicatedStorage.Client.Classes.Actions.MeleeClientAction);
+local BeastSlashClientAction = require(ReplicatedStorage.Client.Classes.Actions.BeastSlashClientAction);
 local displayObjects = ReplicatedStorage.Shared.InGameDisplayObjects;
 local types = require(ServerStorage.Modules.types);
 local melee = require(script.Framework);
@@ -16,9 +16,9 @@ local createInventoryRemoteFunction = require(ServerStorage.Modules.createInvent
 local preloadAnimations = require(ServerStorage.Modules.preloadAnimations);
 
 local MeleeServerAction = {
-	id = MeleeClientAction.id;
-	name = MeleeClientAction.name;
-	description = MeleeClientAction.description;
+	id = BeastSlashClientAction.id;
+	name = BeastSlashClientAction.name;
+	description = BeastSlashClientAction.description;
 	__index = {} :: types.MeleeServerAction;
 };
 

@@ -5,6 +5,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
 export type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
 
+export type BeastSlashClientAction = ClientAction<{
+  remoteFunction: RemoteFunction;
+  activate: (self: BeastSlashClientAction) -> ();
+  breakdown: (self: BeastSlashClientAction) -> ();
+}>;
+
 export type ChangeBallTypeClientAction = ClientAction<{
   gui: ScreenGui?;
   remoteFunction: RemoteFunction;
