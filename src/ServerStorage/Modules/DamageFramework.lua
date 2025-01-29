@@ -59,7 +59,7 @@ function damageFramework.explosionEvent(coords: Vector3, data: OptionalExplosion
 		knockUpAmount = 1,
 	}
 
-	local size = data["Size"] or defaults["Size"]
+	local size = data.size or defaults.size;
 	local validTargets = {};
 	local explosion = Instance.new("Explosion");
 	explosion.BlastPressure = 0;
@@ -80,7 +80,7 @@ function damageFramework.explosionEvent(coords: Vector3, data: OptionalExplosion
 		local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability") :: number?;
 		if basePartCurrentDurability and basePartCurrentDurability > 0 then
 
-		ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - (data["ObjectDamage"] or defaults["ObjectDamage"]), {
+		ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - (data.objectDamage or defaults.objectDamage), {
 			contestantID = contestant.id;
 		});
 
@@ -97,7 +97,7 @@ function damageFramework.explosionEvent(coords: Vector3, data: OptionalExplosion
 				local targetIndex = table.find(validTargets, contestant.name);
 				local character = contestant.character;
 				local primaryPart = if character then character.PrimaryPart else nil;
-				if character and primaryPart and targetIndex and contestant["name"] == validTargets[targetIndex] then
+				if character and primaryPart and targetIndex and contestant.name == validTargets[targetIndex] then
 
 					if possibleTargetContestant.id == contestant.id then
 
@@ -126,8 +126,8 @@ function damageFramework.explosionEvent(coords: Vector3, data: OptionalExplosion
 					
 					end
 					
-					contestant:updateHealth(contestant.currentHealth - (data["PlayerDamage"] or defaults["PlayerDamage"]) * distanceFromExplosion, {
-						contestant = contestant;
+					contestant:updateHealth(contestant.currentHealth - (data.playerDamage or defaults.playerDamage) * distanceFromExplosion, {
+						contestantID = contestant.id;
 						actionID = if action then action.id else nil;
 					});
 					
