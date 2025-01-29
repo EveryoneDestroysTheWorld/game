@@ -49,6 +49,8 @@ export type AutopilotMethods = {
   run: (self: any) -> ();
 }
 
+export type BallType = "Regular";
+
 export type BatterUpDemonServerArchetype = BatterUpDemonServerArchetypeProperties & BatterUpDemonServerArchetypeMethods;
 
 export type BatterUpDemonServerArchetypeProperties = ServerArchetypeProperties<{
@@ -70,6 +72,8 @@ export type ChangeBallTypeServerAction = ServerAction<{
   contestant: ServerContestant;
   bindableFunction: BindableFunction;
   remoteFunction: RemoteFunction?;
+  activate: (self: ChangeBallTypeServerAction, ballType: BallType) -> ();
+  breakdown: (self: ChangeBallTypeServerAction) -> ();
 }>;
 
 export type DetachLimbServerAction = ServerAction<{
@@ -94,6 +98,7 @@ export type DetonateDetachedLimbsServerAction = ServerAction<{
   bindableFunction: BindableFunction;
   remoteFunction: RemoteFunction?;
   activate: (self: DetonateDetachedLimbsServerAction) -> ();
+  breakdown: (self: DetonateDetachedLimbsServerAction) -> ();
 }>;
 
 export type ExplosivePunchServerAction = ServerAction<{

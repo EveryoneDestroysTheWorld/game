@@ -32,22 +32,25 @@ function ChangeBallTypeServerAction.new(properties: types.ServerActionConstructo
 
   if action.contestant.player then
   
-    action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function()
+    action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function(ballType: types.BallType)
     
-      action:activate();
+      action:activate(ballType);
 
     end);
 
   end;
 
+  action.contestant.attributes.ballType = action.contestant.attributes.ballType or "Regular";
+
   return action;
 
 end;
 
-function ChangeBallTypeServerAction.__index:activate(): ()
+function ChangeBallTypeServerAction.__index:activate(ballType: types.BallType): ()
 
-  -- TODO: Change ball type.
-
+  local allowedBallTypes = {"Regular"};
+  assert(ballType and typeof(ballType) == "string" and table.find(allowedBallTypes, ballType));
+  self.contestant.attributes.ballType = ballType;
 
 end;
 
