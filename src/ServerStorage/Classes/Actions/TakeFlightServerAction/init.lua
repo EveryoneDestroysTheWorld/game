@@ -118,7 +118,6 @@ function TakeFlightServerAction.__index:activate(): boolean
 
 			elseif self.contestant.currentStamina >= 10 then
 
-				print("check");
 				self.contestant:updateStamina(math.max(0, self.contestant.currentStamina - 10));
 
 				coroutine.wrap(startFlight)(self, self.contestant, primaryPart);
