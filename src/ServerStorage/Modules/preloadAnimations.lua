@@ -3,7 +3,7 @@
 -- Designer: Christian Toney (Christian_Toney)
 -- © 2024 – 2025 Beastslash LLC
 
-local function preloadAnimations(animator: Animator, animations: {[string]: number})
+local function preloadAnimations(animator: Animator | AnimationController, animations: {[string]: number})
 
 	local animationTracks: {[string]: AnimationTrack} = {}
 

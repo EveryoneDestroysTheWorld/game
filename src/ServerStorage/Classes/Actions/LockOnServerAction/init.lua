@@ -36,8 +36,9 @@ function LockOnServerAction.new(properties: types.ServerActionConstructorPropert
 	if player then
 
 		local remoteEvent = createInventoryRemoteEvent(player, "Action", `{player.UserId}_{action.id}`);
-		remoteEvent.OnClientEvent:Connect(function(targetModelName: string?)
+		remoteEvent.OnServerEvent:Connect(function(possiblePlayer: Player, targetModelName: string?)
 		
+			assert(possiblePlayer == player)
 			assert(not targetModelName or typeof(targetModelName) == "string");
 			local target;
 

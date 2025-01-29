@@ -27,6 +27,7 @@ function LockOnClientAction.new(): types.LockOnClientAction
 		iconImage = LockOnClientAction.iconImage;
 		name = LockOnClientAction.name;
 		description = LockOnClientAction.description;
+		previousTargets = {};
 	};
 	
   local action = (setmetatable(overwrittenProperties, LockOnClientAction) :: any) :: types.LockOnClientAction;
@@ -45,7 +46,7 @@ function LockOnClientAction.new(): types.LockOnClientAction
 
 	end;
 
-	local targetingGUI = ReplicatedStorage.Client:WaitForChild("InGameDisplayObjects"):WaitForChild("TargetingFrame"):Clone()
+	local targetingGUI = ReplicatedStorage.Shared:WaitForChild("InGameDisplayObjects"):WaitForChild("TargetingFrameGUI"):Clone()
 	targetingGUI.Parent = workspace;
 	action.targetingGUI = targetingGUI;
 

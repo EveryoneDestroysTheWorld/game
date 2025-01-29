@@ -108,7 +108,7 @@ function mAnimate2.animateCFrame(model: Model, animation)
 		local nextFrameCFrame = animation:FindFirstChild(nextFrame).Values:FindFirstChild("0").Value
 		local originalHipHeight = weldPart.Parent.Humanoid.HipHeight
 		
-		Connection = RunService.RenderStepped:Connect(function(step: number)
+		Connection = RunService.Stepped:Connect(function(_, step: number)
 
 			local NewDT = step * 60
 			FrameTime += NewDT

@@ -39,7 +39,7 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 
 	local character = action.contestant.character;
 	local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
-	if character and character:IsA("Humanoid") and humanoid then
+	if character and humanoid then
 
 		local animator = humanoid:FindFirstChild("Animator") :: Animator;
 		if animator then
@@ -57,8 +57,9 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 
 			local wingPropRight = wingProp:FindFirstChild("WingsPropRight");
 			local animatorR = if wingPropRight then wingPropRight:FindFirstChild("Animator") else nil;
-			if animatorR and animatorR:IsA("Animator") then
+			if animatorR and animatorR:IsA("AnimationController") then
 
+				print(2);
 				animationTracks = mergeTable(animationTracks, preloadAnimations(animatorR, {
 					right = 87777396509498,
 					rightIdle = 112159869158031,
@@ -68,8 +69,9 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 			
 			local wingPropLeft = wingProp:FindFirstChild("WingsPropLeft");
 			local animatorL = if wingPropLeft then wingPropLeft:FindFirstChild("Animator") else nil;
-			if animatorL and animatorL:IsA("Animator") then
+			if animatorL and animatorL:IsA("AnimationController") then
 
+				print(2);
 				animationTracks = mergeTable(animationTracks, preloadAnimations(animatorL, {
 					left = 72026942510156,
 					leftIdle = 109626445218372,
@@ -81,6 +83,7 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 
 	end;
 
+	print(animationTracks);
 	action.animationTracks = animationTracks;
 
 	local player = action.contestant.player;

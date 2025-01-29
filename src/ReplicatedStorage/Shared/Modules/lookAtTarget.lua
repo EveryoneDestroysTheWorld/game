@@ -98,7 +98,7 @@ local function lookAtTarget(character: Model, targetModel: Model?, targetingGUI:
 
 		local connection
 		local i = 0
-		connection = game:GetService("RunService").RenderStepped:Connect(function()
+		connection = game:GetService("RunService").Stepped:Connect(function()
 
 			i+=1
 

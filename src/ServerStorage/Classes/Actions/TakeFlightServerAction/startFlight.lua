@@ -46,7 +46,7 @@ local function startFlight(action: types.TakeFlightServerAction, contestant: typ
 
 	task.spawn(function()
 	
-		while action.linearVelocity == linearVelocity and RunService.RenderStepped:Wait() do
+		while action.linearVelocity == linearVelocity and RunService.Stepped:Wait() do
 
 			local verticalVelocity = if humanoid.Jump then 0.8 else 0;
 			local value = (humanoid.MoveDirection) + Vector3.new(0,verticalVelocity,0)
