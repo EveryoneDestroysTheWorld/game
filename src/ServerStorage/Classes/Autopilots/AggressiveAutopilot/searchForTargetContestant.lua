@@ -57,7 +57,7 @@ return function(autopilotContestant: types.ServerContestant): types.ServerContes
       raycastParams.FilterType = Enum.RaycastFilterType.Include;
 
       local raycastResult = workspace:Raycast(botHead.CFrame.Position, enemyPrimaryPart.CFrame.Position - botHead.CFrame.Position, raycastParams);
-      if raycastResult.Instance:IsDescendantOf(contestant.character) then
+      if raycastResult and raycastResult.Instance:IsDescendantOf(contestant.character) then
 
         table.insert(visibleContestants, contestant);
 
