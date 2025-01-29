@@ -106,14 +106,14 @@ function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExpl
 							
 						end
 
-						-- local knockback = data.knockback or defaults.knockback;
-						-- if knockback > 0 then
+						local knockback = data.knockback or defaults.knockback;
+						if knockback > 0 then
 							
-						-- 	local knockUp = data.knockUpAmount or defaults.knockUpAmount;
-						-- 	local direction = (primaryPart.Position - coordinates) / (primaryPart.Position - coordinates).Magnitude * Vector3.new(1.3, 0.5, 1.3) + Vector3.new(0,knockUp,0)
-						-- 	createKnockback(primaryPart, distanceFromExplosion * knockback, direction)
+							local knockUp = data.knockUpAmount or defaults.knockUpAmount;
+							local direction = (primaryPart.Position - coordinates) / (primaryPart.Position - coordinates).Magnitude * Vector3.new(1.3, 0.5, 1.3) + Vector3.new(0,knockUp,0)
+							createKnockback(primaryPart, distanceFromExplosion * knockback, direction)
 						
-						-- end
+						end
 						
 						possibleTargetContestant:updateHealth(possibleTargetContestant.currentHealth - (data.playerDamage or defaults.playerDamage) * math.max((size + 1 - distanceFromExplosion) / (1 + size), 0), {
 							contestantID = action.contestant.id;
