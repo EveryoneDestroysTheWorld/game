@@ -19,7 +19,7 @@ local MeleeServerAction = {
 	id = BeastSlashClientAction.id;
 	name = BeastSlashClientAction.name;
 	description = BeastSlashClientAction.description;
-	__index = {} :: types.MeleeServerAction;
+	__index = {} :: types.BeastSlashServerAction;
 };
 
 function meleeAttackEffect(character, combo)
@@ -70,7 +70,7 @@ function meleeAttackEffect(character, combo)
 	end
 end
 
-function MeleeServerAction.new(properties: types.ServerActionConstructorProperties): types.MeleeServerAction
+function MeleeServerAction.new(properties: types.ServerActionConstructorProperties): types.BeastSlashServerAction
 
 	local overwrittenProperties = {
 		name = MeleeServerAction.name;
@@ -80,7 +80,7 @@ function MeleeServerAction.new(properties: types.ServerActionConstructorProperti
 		round = properties.round;
 	};
 
-  local action = (setmetatable(overwrittenProperties, MeleeServerAction) :: any) :: types.MeleeServerAction;
+  local action = (setmetatable(overwrittenProperties, MeleeServerAction) :: any) :: types.BeastSlashServerAction;
 
 	local animations = {
 		Melee1 = 77919655263406;
@@ -92,7 +92,7 @@ function MeleeServerAction.new(properties: types.ServerActionConstructorProperti
 	assert(character);
 	local humanoid = character:FindFirstChild("Humanoid") :: Humanoid;
 	local animator = humanoid:FindFirstChild("Animator") :: Animator;
-	action.animationTracks = preloadAnimations(humanoid, animator, animations);
+	action.animationTracks = preloadAnimations(animator, animations);
 
 	if action.contestant.player then
 

@@ -29,7 +29,7 @@ local function fireAttack(action: types.FireBeamServerAction, primaryPart: BaseP
 	local queryTime = math.min(goalTime, DateTime.now().UnixTimestampMillis);
 	action.charge = math.max(1, queryTime / goalTime) * 100;
 
-	if action.charge >= 300 then
+	if action.charge >= 15 then
 
 		local character = primaryPart.Parent;
 		assert(character);

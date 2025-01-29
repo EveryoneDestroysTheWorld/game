@@ -13,7 +13,7 @@ type Profile = Profile.Profile;
 local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
 type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
 type PatchableTurfWarContestantStatistics = TurfWarContestantStatistics.PatchableContestantTurfWarStatistics;
-local types = require(script.Parent.types);
+local types = require(ServerStorage.Modules.types);
 
 local ServerContestant = {
   __index = {
@@ -29,6 +29,8 @@ local ServerContestant = {
     currentStamina = 100;
     items = {};
     isDisqualified = false;
+    attributes = {};
+    tags = {};
   } :: types.ServerContestant;
 };
 

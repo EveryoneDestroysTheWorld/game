@@ -1,6 +1,6 @@
 --!strict
--- Programmer: Hati (hati_bati) and Christian Toney (Christian_Toney)
--- Designer: Christian Toney (Christian_Toney)
+-- Programmers: Hati (hati_bati) and Christian Toney (Christian_Toney)
+-- Designers: Hati (hati_bati) and Christian Toney (Christian_Toney)
 -- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
@@ -12,7 +12,7 @@ local types = require(ServerStorage.Modules.types);
 
 local animateSprite = require(ReplicatedStorage.Shared.Modules.animateSprite);
 
-local function chargeAttack(action: types.FireBeamServerAction, primaryPart: BasePart): ()
+local function chargeAttack(action: types.TarBombServerAction, primaryPart: BasePart): ()
 
 	local fireBreathChargeGUI = displayObjects.DraconicKnight:FindFirstChild("ChargeMeter"):Clone()
 	fireBreathChargeGUI.Parent = primaryPart

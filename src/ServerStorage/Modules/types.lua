@@ -141,11 +141,12 @@ export type LockOnServerAction = ServerAction<{
   contestant: ServerContestant;
   round: ServerRound;
   previousTargets: {Instance};
+  remoteEvent: RemoteEvent?;
   activate: (self: LockOnServerAction, shouldReleaseLock: boolean?) -> ();
   breakdown: (self: LockOnServerAction) -> ();
 }>;
 
-export type MeleeServerAction = ServerAction<{
+export type BeastSlashServerAction = ServerAction<{
   contestant: ServerContestant;
   round: ServerRound;
   bindableFunction: BindableFunction;
@@ -153,7 +154,8 @@ export type MeleeServerAction = ServerAction<{
   animationTracks: {
     [string]: AnimationTrack;
   };
-  activate: (self: MeleeServerAction) -> ();
+  activate: (self: BeastSlashServerAction) -> ();
+  breakdown: (self: BeastSlashServerAction) -> ();
 }>;
 
 export type TakeFlightServerAction = ServerAction<{
@@ -166,6 +168,19 @@ export type TakeFlightServerAction = ServerAction<{
   linearVelocity: LinearVelocity?;
   activate: (self: TakeFlightServerAction) -> boolean;
   breakdown: (self: TakeFlightServerAction) -> ();
+}>;
+
+export type TarBombServerAction = ServerAction<{
+  contestant: ServerContestant;
+  round: ServerRound;
+  remoteFunction: RemoteFunction?;
+  animationTracks: {
+    [string]: AnimationTrack;
+  };
+  startChargeTimeMilliseconds: number?;
+  maxChargeTimeMilliseconds: number;
+  activate: (self: TarBombServerAction, shouldCharge: boolean, coordinates: Vector3?, shouldUseTarget: boolean?) -> ();
+  breakdown: (self: TarBombServerAction) -> ();
 }>;
 
 export type DraconicKnightServerArchetype = DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods;
@@ -486,6 +501,12 @@ export type ServerContestantProperties = {
   baseStamina: number;
 
   statistics: TurfWarContestantStatistics.TurfWarContestantStatistics?;
+
+  attributes: {
+    [string]: unknown;
+  };
+
+  tags: {string};
   
 }
 

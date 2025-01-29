@@ -184,8 +184,14 @@ export type RocketFeetClientAction = ClientAction<{
 
 export type TakeFlightClientAction = ClientAction<{
   remoteFunction: RemoteFunction;
-  activate: (self: DetonateDetachedLimbsClientAction) -> ();
-  breakdown: (self: DetonateDetachedLimbsClientAction) -> ();
+  activate: (self: TakeFlightClientAction) -> ();
+  breakdown: (self: TakeFlightClientAction) -> ();
+}>;
+
+export type TarBombClientAction = ClientAction<{
+  remoteFunction: RemoteFunction;
+  activate: (self: TarBombClientAction) -> ();
+  breakdown: (self: TarBombClientAction) -> ();
 }>;
 
 export type ParalysisClientEffect = ClientEffect<ParalysisClientEffectProperties & ParalysisClientEffectMethods>;

@@ -11,6 +11,7 @@ local types = require(ServerStorage.Modules.types);
 
 local animateFlight = require(script.animateFlight);
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
+local mergeTable = require(ReplicatedStorage.Shared.Modules.mergeTable);
 local endFlight = require(script.endFlight);
 local preloadAnimations = require(ServerStorage.Modules.preloadAnimations);
 local startFlight = require(script.startFlight);
@@ -38,28 +39,16 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 
 	local character = action.contestant.character;
 	local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
-	if character and character:IsA("Humanoid") and humanoid and humanoid:IsA("Humanoid") then
-
-		local function updateAnimationTracks(animator: Animator, assetIDs: {[string]: number}): ()
-
-			local newTracks = preloadAnimations(humanoid, animator, assetIDs);
-			
-			for key, track in newTracks do
-
-				animationTracks[key] = track;
-
-			end;
-
-		end;
+	if character and character:IsA("Humanoid") and humanoid then
 
 		local animator = humanoid:FindFirstChild("Animator") :: Animator;
 		if animator then
 
-			updateAnimationTracks(animator, {
+			animationTracks = mergeTable(animationTracks, preloadAnimations(animator, {
 				["end"] = 101417868579212,
 				start = 92928175332389,
 				idle = 109371600216543
-			});
+			}));
 
 		end;
 
@@ -70,10 +59,10 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 			local animatorR = if wingPropRight then wingPropRight:FindFirstChild("Animator") else nil;
 			if animatorR and animatorR:IsA("Animator") then
 
-				updateAnimationTracks(animatorR, {
+				animationTracks = mergeTable(animationTracks, preloadAnimations(animatorR, {
 					right = 87777396509498,
 					rightIdle = 112159869158031,
-				});
+				}));
 
 			end;
 			
@@ -81,10 +70,10 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 			local animatorL = if wingPropLeft then wingPropLeft:FindFirstChild("Animator") else nil;
 			if animatorL and animatorL:IsA("Animator") then
 
-				updateAnimationTracks(animatorL, {
+				animationTracks = mergeTable(animationTracks, preloadAnimations(animatorL, {
 					left = 72026942510156,
 					leftIdle = 109626445218372,
-				});
+				}));
 
 			end;
 

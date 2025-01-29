@@ -80,9 +80,4 @@ function targetingFramework.displayTarget(state: "Start" | "Release"): ()
 
 end
 
-
-
-
-
-
 return targetingFramework

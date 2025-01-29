@@ -1,103 +1,98 @@
 --!strict
--- Programmer: Hati (hati_bati)
+-- Programmer: Hati (hati_bati) and Christian Toney (Christian_Toney)
 -- Designer: Christian Toney (Christian_Toney)
--- © 2024 Beastslash LLC
+-- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
-local ClientAction = require(script.Parent.Parent.ClientAction);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
-local targetingFramework = require(script.Parent.Framework.EasyTargetingFramework);
-type ClientAction = ClientAction.ClientAction;
+local targetingFramework = require(ReplicatedStorage.Client.Modules.EasyTargetingFramework);
+local types = require(ReplicatedStorage.Client.Modules.types);
 
-local TarBombAction = {
+local TarBombClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 	iconImage = "rbxassetid://17771917538";
 	name = "Tar Bomb";
 	description = "Launch a projectile at the target location which explodes after a small amount of time, spreading tar onto nearby targets. Tar covered targets are slowed and take flat additional damage from all sources.";
+	__index = {} :: types.TarBombClientAction;
 };
 
-function TarBombAction.new(): ClientAction
+function TarBombClientAction.new(): types.TarBombClientAction
 
-	local player: Player;
-	local remoteName: string;
+	local player = Players.LocalPlayer;
+	local remoteName = `{player.UserId}_{TarBombClientAction.id}`
 
-	local function breakdown(self: ClientAction)
+	local overwrittenProperties = {
+		id = TarBombClientAction.id;
+		iconImage = TarBombClientAction.iconImage;
+		name = TarBombClientAction.name;
+		description = TarBombClientAction.description;
+		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName);
+	}
 
-		ContextActionService:UnbindAction("ActivateTarBomb");
-		ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+	local action = (setmetatable(overwrittenProperties, TarBombClientAction) :: any) :: types.TarBombClientAction;
 
-	end;
+	ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+		type = "Action";
+		key = action.id;
+		onActivate = function()
 
-	local function activate(self: ClientAction)
-    
-		targetingFramework.waitForServerResponse("TarBomb")
-		ReplicatedStorage.Shared.Functions.ActionFunctions:FindFirstChild(remoteName):InvokeServer();
-
-	end;
-
-	local function initialize(self: ClientAction)
-
-		ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
-			type = "Action";
-      key = self.id;
-			onActivate = function()
-
-				self:activate("Input");
-
-			end;
-			shortcutCharacter = "1";
-			iconImage = "rbxassetid://17771917538";
-		}));
-
-		player = Players.LocalPlayer;
-		remoteName = `{player.UserId}_{self.id}`;
-
-		local function checkJump(_, inputState: Enum.UserInputState)
-
-			if inputState == Enum.UserInputState.Begin then
-				
-				targetingFramework.displayTarget("Start")
-
-			elseif inputState == Enum.UserInputState.End then
-
-				targetingFramework.displayTarget("Release")
-				self:activate();
-
-			end
+			action:activate("Input");
 
 		end;
+		shortcutCharacter = "1";
+		iconImage = "rbxassetid://17771917538";
+	}));
 
-		ContextActionService:BindActionAtPriority("ActivateTarBomb", checkJump, false, 2, Enum.KeyCode.One);
+	local function checkJump(_, inputState: Enum.UserInputState)
 
-		workspace.Terrain.ChildAdded:Connect(function(child)
-			if child.Name == "TarBomb" then
-				local connection
-				task.wait(0.2)
-				connection = child.Touched:Connect(function(touched)
-					connection:Disconnect()
-					child.AssemblyLinearVelocity = Vector3.new(0,0,0)
-				end)
-			end
-		
-		end)
+		if inputState == Enum.UserInputState.Begin then
+			
+			targetingFramework.displayTarget("Start")
 
-		
+		elseif inputState == Enum.UserInputState.End then
+
+			targetingFramework.displayTarget("Release")
+			action:activate();
+
+		end
+
 	end;
 
-	return ClientAction.new({
-		id = TarBombAction.id;
-		iconImage = TarBombAction.iconImage;
-		name = TarBombAction.name;
-		description = TarBombAction.description;
-		activate = activate;
-		breakdown = breakdown;
-		initialize = initialize;
-	});
+	ContextActionService:BindActionAtPriority("ActivateTarBomb", checkJump, false, 2, Enum.KeyCode.One);
+
+	workspace.Terrain.ChildAdded:Connect(function(child)
+
+		if child.Name == "TarBomb" then
+
+			task.wait(0.2)
+			child.Touched:Once(function(touched)
+
+				child.AssemblyLinearVelocity = Vector3.new(0,0,0)
+
+			end)
+		end
+	
+	end)
+
+	return action;
 
 end
 
-return TarBombAction;
+function TarBombClientAction.__index:activate()
+
+	self.remoteFunction:InvokeServer();
+
+end
+
+function TarBombClientAction.__index:breakdown()
+
+	ContextActionService:UnbindAction("ActivateTarBomb");
+	ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+
+end
+
+return TarBombClientAction;
