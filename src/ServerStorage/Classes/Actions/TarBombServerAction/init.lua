@@ -4,66 +4,18 @@
 -- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local TweenService = game:GetService("TweenService")
-local ServerContestant = require(script.Parent.Parent.ServerContestant);
-type ServerContestant = ServerContestant.ServerContestant;
-local ServerAction = require(script.Parent.Parent.ServerAction);
-type ServerAction = ServerAction.ServerAction;
-local TarBombClientAction = require(ReplicatedStorage.Client.Classes.Actions.DKTarBombClientAction);
-local damageFramework = require(ServerStorage.Modules.DamageFramework);
-local ServerRound = require(script.Parent.Parent.ServerRound);
-type ServerRound = ServerRound.ServerRound;
 local ServerStorage = game:GetService("ServerStorage");
+
+local TarBombClientAction = require(ReplicatedStorage.Client.Classes.Actions.TarBombClientAction);
+local damageFramework = require(ServerStorage.Modules.DamageFramework);
+local types = require(ServerStorage.Modules.types);
 
 local TarBombServerAction = {
 	id = TarBombClientAction.id;
 	name = TarBombClientAction.name;
 	description = TarBombClientAction.description;
+	__index = {} :: types.TarBombServerAction;
 };
-
-local function damageEvent(primaryPart: BasePart, round: ServerRound, contestant: ServerContestant, size, player)
-
-	local explosion = Instance.new("Explosion", primaryPart);
-	explosion.BlastPressure = 0;
-	explosion.BlastRadius = 1 + size;
-	explosion.DestroyJointRadiusPercent = 0;
-	explosion.Position = primaryPart.Position;
-	local validTargets = {};
-	explosion.Hit:Connect(function(basePart)
-		-- Damage any parts or contestants that get hit.
-		local model = basePart:FindFirstAncestorOfClass("Model")
-		if model and model:FindFirstChild("Humanoid") then
-			table.insert(validTargets, model.Name)
-		end;
-		
-		local basePartCurrentDurability = basePart:GetAttribute("CurrentDurability") :: number?;
-		if basePartCurrentDurability and basePartCurrentDurability > 0 then
-
-		ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - 35, {
-			contestantID = contestant.id;
-		});
-
-		end;
-
-	end);
-	task.delay(0.1, function()
-	if #validTargets > 0 then
-			
-		for i, contestant in ipairs(round.contestants) do
-			if contestant["name"] == validTargets[table.find(validTargets, contestant["name"])] then
-				if contestant["name"] == player then
-					size = size/2
-				end
-				contestant:updateHealth(contestant.currentHealth - size*3, {
-					contestant = contestant;
-					actionID = actionID;
-				});
-			end
-		end
-	end
-end)
-
-end
 
 local function startAttack(sourcePart: BasePart, animations, coords: Vector3, round: ServerRound, contestant: ServerContestant, split, size, useTarget, delay)
 	print(size)
@@ -168,7 +120,6 @@ local function startAttack(sourcePart: BasePart, animations, coords: Vector3, ro
 	
 end
 
-
 local function preloadAnims(char: Model): {[string]: AnimationTrack}
 
 	local humanoid = char:FindFirstChild("Humanoid") :: Humanoid;
@@ -227,7 +178,6 @@ local function getDataFromClient(player: Player): Vector3
 	return event:GetAttribute("Coords") :: Vector3, event:GetAttribute("UseTarget"), event:GetAttribute("Charge")
 	
 end
-
 
 function TarBombServerAction.new(): ServerAction
 
