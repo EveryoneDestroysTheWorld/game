@@ -78,20 +78,24 @@ ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function
   -- Disable the current archetype.
   if initializedArchetype then
 
-    initializedArchetype:breakdown();
+    coroutine.wrap(initializedArchetype.breakdown)(initializedArchetype);
 
   end;
 
   for _, action in initializedActions do
 
-    action:breakdown();
+    coroutine.wrap(action.breakdown)(action);
 
   end;
 
   -- Set up the archetype and actions.
   initializedArchetype = ClientArchetype.get(archetypeID);
-  initializedArchetype:initialize();
-  print(`Archetype active: {initializedArchetype.name}`);
+  task.spawn(function()
+    
+    initializedArchetype:initialize();
+    print(`Archetype active: {initializedArchetype.name}`);
+
+  end);
 
   for _, actionID in initializedArchetype.actionIDs do
 
