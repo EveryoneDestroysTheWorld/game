@@ -16,7 +16,13 @@ type PatchableTurfWarContestantStatistics = TurfWarContestantStatistics.Patchabl
 local types = require(ServerStorage.Modules.types);
 
 local ServerContestant = {
-  __index = {
+  __index = {} :: types.ServerContestant;
+};
+
+local events: {[any]: {[string]: BindableEvent}} = {};
+function ServerContestant.new(properties: types.ServerContestantConstructorProperties): types.ServerContestant
+
+  local overwrittenProperties = {
     walkSpeedWeights = {};
     baseModifiers = {
       health = {};
@@ -31,13 +37,11 @@ local ServerContestant = {
     isDisqualified = false;
     attributes = {};
     tags = {};
-  } :: types.ServerContestant;
-};
-
-local events: {[any]: {[string]: BindableEvent}} = {};
-function ServerContestant.new(properties: types.ServerContestantConstructorProperties): types.ServerContestant
-
-  local contestant = (setmetatable(properties, ServerContestant) :: unknown) :: types.ServerContestant;
+    id = properties.id;
+    name = properties.name;
+    round = properties.round;
+  };
+  local contestant = (setmetatable(overwrittenProperties, ServerContestant) :: unknown) :: types.ServerContestant;
 
   -- Set up events.
   local eventNames = {"onDisqualified", "onHealthUpdated", "onStaminaUpdated", "onArchetypeUpdated", "onCharacterUpdated", "onInventoryUpdated", "onEffectsUpdated"};
@@ -206,7 +210,7 @@ function ServerContestant.__index:removeEffect(effect: types.ServerEffect): ()
     if possibleEffect == effect then
 
       coroutine.wrap(effect.breakdown)(effect);
-      
+
       table.remove(self.effects, index);
 
     end;

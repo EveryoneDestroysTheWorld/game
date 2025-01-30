@@ -48,7 +48,7 @@ export type OptionalExplosionData = {
 	knockUpAmount: number?;
 }
 
-function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExplosionData, action: types.DiveBombServerAction | types.TarBombServerAction)
+function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExplosionData, action: types.DiveBombServerAction | types.TarBombServerAction, callback: ((victim: types.ServerContestant) -> ())?)
 
 	local defaults: ExplosionData = {
 		size = 5,
@@ -56,7 +56,7 @@ function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExpl
 		playerDamage = 5,
 		objectDamage = 5,
 		damageFallOff = true,
-		knockUpAmount = 1,
+		knockUpAmount = 1
 	}
 
 	local size = data.size or defaults.size;
@@ -119,6 +119,12 @@ function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExpl
 							contestantID = action.contestant.id;
 							actionID = if action then action.id else nil;
 						});
+
+						if callback then
+
+							callback(possibleTargetContestant);
+
+						end;
 						
 					end
 

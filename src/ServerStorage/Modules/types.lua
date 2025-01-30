@@ -490,21 +490,9 @@ export type WalkSpeedWeight = {
 };
 
 export type ServerContestantConstructorProperties = {
-  character: Model?;
-  baseStamina: number?;
-  baseHealth: number?;
-  currentStamina: number?;
-  currentHealth: number?;
-  effects: {ServerEffect}?;
-  walkSpeedWeights: {WalkSpeedWeight}?;
   id: number;
   round: ServerRound;
   name: string;
-  player: Player?;
-  profile: Profile.Profile?;
-  teamID: number?;
-  items: {ServerItem}?;
-  statistics: TurfWarContestantStatistics.TurfWarContestantStatistics?;
 }
 
 export type BaseModifierType = "Health" | "Stamina";

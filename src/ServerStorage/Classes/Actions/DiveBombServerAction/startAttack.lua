@@ -6,6 +6,7 @@
 local ServerStorage = game:GetService("ServerStorage");
 local TweenService = game:GetService("TweenService");
 
+local ServerEffect = require(ServerStorage.Classes.ServerEffect);
 local damageFramework = require(ServerStorage.Modules.DamageFramework);
 local types = require(ServerStorage.Modules.types);
 
@@ -61,8 +62,25 @@ return function(action: types.DiveBombServerAction, primaryPart: BasePart, anima
 	tween:Play();
 	task.wait(travelTime*0.8);
 
-	local data = {}
-	damageFramework.explosionEvent(coords, data, action)
+	local data = {
+		size = 15;
+	}
+	damageFramework.explosionEvent(coords, data, action, function(contestant)
+	
+		if contestant ~= action.contestant then
+
+			local paralysisEffect = ServerEffect.get("Paralysis").new({
+				contestant = contestant;
+			});
+
+			contestant:addEffect(paralysisEffect);
+			task.wait(1);
+
+			contestant:removeEffect(paralysisEffect);
+
+		end;
+
+	end);
 
 	task.wait(travelTime*0.2);
 	
