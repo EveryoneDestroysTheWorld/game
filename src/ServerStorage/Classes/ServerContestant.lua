@@ -205,16 +205,8 @@ function ServerContestant.__index:removeEffect(effect: types.ServerEffect): ()
     local possibleEffect = self.effects[index]
     if possibleEffect == effect then
 
-      if effect.deactivate then
-
-        task.spawn(function()
-        
-          effect.deactivate(effect, self);
-
-        end);
-        
-      end;
-
+      coroutine.wrap(effect.breakdown)(effect);
+      
       table.remove(self.effects, index);
 
     end;

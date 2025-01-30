@@ -11,7 +11,7 @@ local RoughArmorServerEffect = {
   __index = {} :: types.RoughArmorServerEffect;
 }
 
-function RoughArmorServerEffect.new(properties: types.RoughArmorServerEffectConstructorProperties): types.RoughArmorServerEffect
+function RoughArmorServerEffect.new(properties: types.ServerEffectConstructorProperties): types.RoughArmorServerEffect
 
   local effect: types.RoughArmorServerEffectProperties = {
     name = RoughArmorServerEffect.name;
@@ -94,7 +94,7 @@ function RoughArmorServerEffect.__index:activate()
 
 end;
 
-function RoughArmorServerEffect.__index:deactivate()
+function RoughArmorServerEffect.__index:breakdown()
 
   -- Reset the contestant's health.
   self.contestant:removeBaseModifier("Health", self.baseHealthModifier);

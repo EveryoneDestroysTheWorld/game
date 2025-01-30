@@ -11,7 +11,7 @@ local RegenerationServerEffect = {
   __index = {} :: types.RegenerationServerEffect;
 }
 
-function RegenerationServerEffect.new(properties: types.RegenerationServerEffectConstructorProperties): types.RegenerationServerEffect
+function RegenerationServerEffect.new(properties: types.ServerEffectConstructorProperties): types.RegenerationServerEffect
 
   local effect: types.RegenerationServerEffectProperties = {
     name = RegenerationServerEffect.name;
@@ -46,7 +46,7 @@ function RegenerationServerEffect.__index:activate()
 
 end;
 
-function RegenerationServerEffect.__index:deactivate()
+function RegenerationServerEffect.__index:breakdown()
 
   self.shouldRegenerate = false;
 
