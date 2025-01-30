@@ -49,7 +49,7 @@ export type AutopilotMethods = {
   run: (self: any) -> ();
 }
 
-export type BallType = "Regular";
+export type BallType = "Electric" | "Poison" | "Regular";
 
 export type BatterUpDemonServerArchetype = BatterUpDemonServerArchetypeProperties & BatterUpDemonServerArchetypeMethods;
 

@@ -48,7 +48,7 @@ end;
 
 function ChangeBallTypeServerAction.__index:activate(ballType: types.BallType): ()
 
-  local allowedBallTypes = {"Poison", "Regular"};
+  local allowedBallTypes = {"Electric", "Poison", "Regular"};
   assert(ballType and typeof(ballType) == "string" and table.find(allowedBallTypes, ballType));
   self.contestant.attributes.ballType = ballType;
 
