@@ -1,7 +1,8 @@
 --!strict
 local ServerStorage = game:GetService("ServerStorage");
-local ServerEffect = require(ServerStorage.Classes.ServerEffect);
+local HttpService = game:GetService("HttpService");
 
+local ServerEffect = require(ServerStorage.Classes.ServerEffect);
 local types = require(ServerStorage.Modules.types);
 
 local UndeadServerEffect = {
@@ -10,12 +11,13 @@ local UndeadServerEffect = {
   __index = {} :: types.UndeadServerEffect;
 }
 
-function UndeadServerEffect.new(properties: types.UndeadServerEffectConstructorProperties): types.UndeadServerEffect
+function UndeadServerEffect.new(properties: types.ServerEffectConstructorProperties): types.UndeadServerEffect
 
   local effect: types.UndeadServerEffectProperties = {
     name = UndeadServerEffect.name;
     id = UndeadServerEffect.id;
     contestant = properties.contestant;
+    uniqueID = HttpService:GenerateGUID(false);
     walkSpeedWeight = {
       walkSpeed = 12;
       weight = 1;
@@ -86,7 +88,7 @@ function UndeadServerEffect.__index:activate()
 
 end;
 
-function UndeadServerEffect.__index:deactivate()
+function UndeadServerEffect.__index:breakdown()
 
   self.contestant:removeWalkSpeedWeight(self.walkSpeedWeight);
 

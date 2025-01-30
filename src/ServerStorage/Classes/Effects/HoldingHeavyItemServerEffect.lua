@@ -1,6 +1,7 @@
 --!strict
 
 local ServerStorage = game:GetService("ServerStorage");
+local HttpService = game:GetService("HttpService");
 
 local types = require(ServerStorage.Modules.types);
 
@@ -18,9 +19,11 @@ local function toggleLocks(contestant: types.ServerContestant, lock, shouldLock:
 
 end;
 
-function HoldingHeavyItemServerEffect.new(properties: types.HoldingHeavyItemServerEffectConstructorProperties): types.HoldingHeavyItemServerEffect 
+function HoldingHeavyItemServerEffect.new(properties: types.ServerEffectConstructorProperties): types.HoldingHeavyItemServerEffect 
 
   local effect = {
+    contestant = properties.contestant;
+    uniqueID = HttpService:GenerateGUID(false);
     _lock = {};
     name = HoldingHeavyItemServerEffect.name;
     id = HoldingHeavyItemServerEffect.id;
@@ -30,15 +33,15 @@ function HoldingHeavyItemServerEffect.new(properties: types.HoldingHeavyItemServ
 
 end;
 
-function HoldingHeavyItemServerEffect.__index:activate(contestant: types.ServerContestant)
+function HoldingHeavyItemServerEffect.__index:activate()
 
-  toggleLocks(contestant, self.lock, true);
+  toggleLocks(self.contestant, self.lock, true);
 
 end;
 
-function HoldingHeavyItemServerEffect.__index:deactivate(contestant: types.ServerContestant)
+function HoldingHeavyItemServerEffect.__index:breakdown()
 
-  toggleLocks(contestant, self.lock, false);
+  toggleLocks(self.contestant, self.lock, false);
 
 end;
 

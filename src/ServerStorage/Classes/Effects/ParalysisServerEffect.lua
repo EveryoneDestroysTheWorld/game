@@ -5,6 +5,7 @@ local ServerStorage = game:GetService("ServerStorage");
 local HttpService = game:GetService("HttpService");
 
 local types = require(ServerStorage.Modules.types);
+
 local getAnimator = require(ReplicatedStorage.Shared.Modules.getAnimator);
 
 local ParalysisServerEffect = {
@@ -13,7 +14,7 @@ local ParalysisServerEffect = {
   __index = {} :: types.ParalysisServerEffect;
 }
 
-function ParalysisServerEffect.new(properties: types.ParalysisServerEffectConstructorProperties): types.ParalysisServerEffect
+function ParalysisServerEffect.new(properties: types.ServerEffectConstructorProperties): types.ParalysisServerEffect
 
   local effect: types.ParalysisServerEffectProperties = {
     name = ParalysisServerEffect.name;
@@ -82,7 +83,7 @@ function ParalysisServerEffect.__index:activate()
 
 end;
 
-function ParalysisServerEffect.__index:deactivate()
+function ParalysisServerEffect.__index:breakdown()
 
   self.contestant:removeWalkSpeedWeight(self.weight);
 

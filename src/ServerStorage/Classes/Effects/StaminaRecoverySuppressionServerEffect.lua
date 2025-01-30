@@ -1,5 +1,6 @@
 --!strict
 local ServerStorage = game:GetService("ServerStorage");
+local HttpService = game:GetService("HttpService");
 
 local types = require(ServerStorage.Modules.types);
 
@@ -9,15 +10,23 @@ local StaminaRecoverySuppressionServerEffect = {
   __index = {} :: types.InvincibilityServerEffect;
 }
 
-function StaminaRecoverySuppressionServerEffect.new(properties: types.InvinicbilityServerEffectConstructorProperties): types.InvincibilityServerEffect
+function StaminaRecoverySuppressionServerEffect.new(properties: types.ServerEffectConstructorProperties): types.InvincibilityServerEffect
 
   local effect = {
-    expirationTimeMilliseconds = properties.expirationTimeMilliseconds;
     name = StaminaRecoverySuppressionServerEffect.name;
     id = StaminaRecoverySuppressionServerEffect.id;
+    uniqueID = HttpService:GenerateGUID(false);
   };
 
   return (setmetatable(effect, StaminaRecoverySuppressionServerEffect) :: unknown) :: types.InvincibilityServerEffect
+
+end;
+
+function StaminaRecoverySuppressionServerEffect.__index:activate()
+
+end;
+
+function StaminaRecoverySuppressionServerEffect.__index:breakdown()
 
 end;
 

@@ -148,11 +148,11 @@ local didSuccessfullyInitializeRound, message = pcall(function()
       -- Add the NPC to the contestant list.
       local botContestant = ServerContestant.new({
         id = i * 0.01;
-        character = character;
         name = character.Name;
-        teamID = if i > team1BotCount then 2 else 1;
         round = round;
       });
+      botContestant.teamID = if i > team1BotCount then 2 else 1;
+      botContestant:updateCharacter(character);
   
       round:addContestant(botContestant);
   
@@ -281,12 +281,13 @@ local didSuccessfullyInitializeRound, message = pcall(function()
         local contestant = ServerContestant.new({
           id = player.UserId;
           player = player;
-          character = player.Character;
           name = player.Name;
-          profile = profile;
-          teamID = 1; -- TODO: Fix this
           round = round;
         });
+        contestant:updateCharacter(player.Character);
+        contestant.profile = profile;
+        contestant.player = player;
+        contestant.teamID = 1;
         
         round:addContestant(contestant);
   
