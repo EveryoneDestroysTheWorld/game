@@ -66,6 +66,11 @@ function ChangeBallTypeClientAction.__index:activate()
         labelText = "Regular Ball";
         iconImage = "rbxassetid://139648735745838"
       };
+      {
+        key = "Poison";
+        labelText = "Poison Ball";
+        iconImage = "rbxassetid://89838520119073"
+      };
     };
     onSelectionConfirmed = function(selection)
 
