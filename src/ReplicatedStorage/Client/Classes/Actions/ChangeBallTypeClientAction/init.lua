@@ -67,6 +67,11 @@ function ChangeBallTypeClientAction.__index:activate()
         iconImage = "rbxassetid://139648735745838"
       };
       {
+        key = "Explosive";
+        labelText = "Explosive Ball";
+        iconImage = "rbxassetid://73246050129377"
+      };
+      {
         key = "Electric";
         labelText = "Electric Ball";
         iconImage = "rbxassetid://84087555822097"
