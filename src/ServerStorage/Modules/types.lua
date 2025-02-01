@@ -171,6 +171,16 @@ export type ChangeBallTypeServerAction = ServerAction<{
   breakdown: (self: ChangeBallTypeServerAction) -> ();
 }>;
 
+export type HeresThePitchServerAction = ServerAction<{
+  contestant: ServerContestant;
+  collisionGroupName: string;
+  bindableFunction: BindableFunction;
+  remoteFunction: RemoteFunction?;
+  playerBalls: {Instance};
+  activate: (self: HeresThePitchServerAction, coordinates: Vector3) -> ();
+  breakdown: (self: HeresThePitchServerAction) -> ();
+}>;
+
 export type DetachLimbServerAction = ServerAction<{
   contestant: ServerContestant;
   detachedLimbs: {

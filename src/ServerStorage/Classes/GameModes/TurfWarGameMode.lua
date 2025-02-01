@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local GameMode = require(script.Parent.Parent.GameMode);
 local HttpService = game:GetService("HttpService");
+local PhysicsService = game:GetService("PhysicsService");
 local types = require(ServerStorage.Modules.types);
 
 -- This is the class.
@@ -233,6 +234,39 @@ function TurfWarGameMode.new(round: types.ServerRound): types.GameMode
         end;
 
         table.insert(events, contestant.onHealthUpdated:Connect(trackEliminations));
+
+        if contestant.character then
+
+          local shouldRegisterGroup = true;
+          local collisionGroupName = `Contestant-{contestant.id}`;
+          for _, collisionGroup in PhysicsService:GetRegisteredCollisionGroups() do
+
+            if collisionGroup.name == collisionGroupName then
+
+              shouldRegisterGroup = false;
+              break;
+
+            end;
+          
+          end
+
+          if shouldRegisterGroup then
+
+            PhysicsService:RegisterCollisionGroup(collisionGroupName);
+
+          end;
+
+          for _, instance in contestant.character:GetChildren() do
+
+            if instance:IsA("BasePart") then
+
+              instance.CollisionGroup = collisionGroupName;
+
+            end;
+
+          end;
+
+        end;
 
       end;
 

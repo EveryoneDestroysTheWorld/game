@@ -142,6 +142,13 @@ export type DetachLimbClientAction = ClientAction<{
   breakdown: (self: DetachLimbClientAction) -> ();
 }>;
 
+export type HeresThePitchClientAction = ClientAction<{
+  remoteEvent: RemoteEvent;
+  remoteFunction: RemoteFunction;
+  activate: (self: HeresThePitchClientAction) -> ();
+  breakdown: (self: HeresThePitchClientAction) -> ();
+}>;
+
 export type DetonateDetachedLimbsClientAction = ClientAction<{
   gui: ScreenGui?;
   remoteFunction: RemoteFunction;
