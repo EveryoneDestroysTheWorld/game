@@ -63,8 +63,9 @@ local function processRegularBall(action: types.HeresThePitchServerAction, goalD
     direction = if originalDirection.Magnitude == 0 then Vector3.zero else originalDirection.Unit * math.min(originalDirection.Magnitude, maxDistance);
 
   end;
+  
+  -- TODO: Use charge to reduce duration.
   local duration = math.log(1.001 + direction.Magnitude * 0.01);
-  -- Limit impulse with max distance.
   local force = direction / duration + Vector3.new(0, workspace.Gravity * duration * 0.5, 0);
   realBall:ApplyImpulse(force * realBall.AssemblyMass);
   realBall:SetNetworkOwner();
