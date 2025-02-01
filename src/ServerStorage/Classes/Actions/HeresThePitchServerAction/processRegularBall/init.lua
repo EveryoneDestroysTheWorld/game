@@ -68,6 +68,7 @@ local function processRegularBall(action: types.HeresThePitchServerAction, goalD
   local victimHistory: {[number]: number} = {};
   realBall.Touched:Connect(function(part: BasePart)
 
+    -- TODO: Verify that the ball is moving fast.
     local possibleContestantModel = part:FindFirstAncestorOfClass("Model");
     local didFindValidModel = possibleContestantModel and possibleContestantModel ~= action.contestant.character;
     if didFindValidModel then
