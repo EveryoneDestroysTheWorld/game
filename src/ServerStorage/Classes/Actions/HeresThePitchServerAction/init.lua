@@ -36,9 +36,10 @@ function HeresThePitchServerAction.new(properties: types.ServerActionConstructor
 
   if action.contestant.player then
   
-    action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function()
+    action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function(goalDestination: Vector3?)
 
-      return action:activate();
+      assert(not goalDestination or typeof(goalDestination) == "Vector3");
+      return action:activate(goalDestination);
 
     end);
 
