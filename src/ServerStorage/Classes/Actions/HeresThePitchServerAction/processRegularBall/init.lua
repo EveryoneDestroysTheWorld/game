@@ -68,6 +68,17 @@ local function processRegularBall(action: types.HeresThePitchServerAction, goalD
   local victimHistory: {[number]: number} = {};
   realBall.Touched:Connect(function(part: BasePart)
 
+    if not action.contestant.character or not part:IsDescendantOf(action.contestant.character) then
+
+      local trail = realBall:FindFirstChild("Trail");
+      if trail then
+
+        trail:Destroy();
+
+      end;
+
+    end;
+
     -- TODO: Verify that the ball is moving fast.
     local possibleContestantModel = part:FindFirstAncestorOfClass("Model");
     local didFindValidModel = possibleContestantModel and possibleContestantModel ~= action.contestant.character;
