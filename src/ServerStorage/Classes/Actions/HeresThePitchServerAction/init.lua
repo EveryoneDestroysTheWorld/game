@@ -10,7 +10,7 @@ local PhysicsService = game:GetService("PhysicsService");
 local HeresThePitchClientAction = require(ReplicatedStorage.Client.Classes.Actions.HeresThePitchClientAction);
 local types = require(ServerStorage.Modules.types);
 
-local processRegularBall = require(script.processRegularBall);
+local processBall = require(script.processBall);
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
 
 local HeresThePitchServerAction = {
@@ -74,19 +74,7 @@ export type PitchingFunction = (action: types.HeresThePitchServerAction, coordin
 
 function HeresThePitchServerAction.__index:activate(coordinates: Vector3): string?
 
-  -- Verify that a ball type has been defined.
-  local allowedBallTypes: {types.BallType} = {"Explosive", "Electric", "Poison", "Regular"};
-  local ballType: types.BallType? = self.contestant.attributes.ballType :: types.BallType?;
-  assert(ballType and typeof(ballType) == "string" and table.find(allowedBallTypes, ballType));
-
-  local processingFunctions: {[types.BallType]: PitchingFunction} = {
-    Regular = processRegularBall;
-  };
-
-  local preparePitch = processingFunctions[ballType];
-  assert(preparePitch);
-
-  return preparePitch(self, coordinates);
+  return processBall(self, coordinates);
 
 end;
 

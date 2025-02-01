@@ -5,17 +5,26 @@ local ServerStorage = game:GetService("ServerStorage");
 
 local types = require(ServerStorage.Modules.types);
 
-local function processRegularBall(action: types.HeresThePitchServerAction, goalDestination: Vector3?): ()
+local function processBall(action: types.HeresThePitchServerAction, goalDestination: Vector3?): ()
+
+  -- Verify that a ball type has been defined.
+  local allowedBallTypes: {types.BallType} = {"Explosive", "Electric", "Poison", "Regular"};
+  local ballType: types.BallType? = action.contestant.attributes.ballType :: types.BallType?;
+  assert(ballType and typeof(ballType) == "string" and table.find(allowedBallTypes, ballType));
+
+  local ballName = `{ballType}Ball`;
+  local ballFolder = script.Parent.Balls:FindFirstChild(ballName);
+  assert(ballFolder, `Couldn't find {ballName} in Balls folder.`);
 
   local pitcher = action.contestant;
-  assert(pitcher.character);
+  assert(pitcher.character, `Couldn't find the pitcher's character. Are they dead?`);
   
   -- Connect the ball to the player's hand and track who gets hit.
   -- TODO: Allow customization of hand.
   local throwingHand = pitcher.character:FindFirstChild("RightHand") or pitcher.character:FindFirstChild("LeftHand");
   assert(throwingHand and throwingHand:IsA("BasePart"), "Could not find RightHand or LeftHand.");
   
-  local animationBall = script.Ball:Clone();
+  local animationBall = ballFolder.Ball:Clone();
   animationBall.CFrame = throwingHand.CFrame;
   animationBall.CollisionGroup = action.collisionGroupName;
   animationBall.Name = `{animationBall.Name}-{HttpService:GenerateGUID(false)}`
@@ -45,10 +54,11 @@ local function processRegularBall(action: types.HeresThePitchServerAction, goalD
   local ballCFrame = animationBall.CFrame;
   animationBall:Destroy();
 
-  local realBall = script.Ball:Clone();
+  local realBall = ballFolder.Ball:Clone();
   realBall.CFrame = ballCFrame;
   realBall.CollisionGroup = action.collisionGroupName;
   realBall.Parent = workspace;
+  realBall:SetNetworkOwner();
   
   local direction = throwingHand.CFrame.LookVector * 5;
   if goalDestination then
@@ -63,9 +73,13 @@ local function processRegularBall(action: types.HeresThePitchServerAction, goalD
   local duration = math.log(1.001 + direction.Magnitude * 0.01);
   local force = direction / duration + Vector3.new(0, workspace.Gravity * duration * 0.5, 0);
   realBall:ApplyImpulse(force * realBall.AssemblyMass);
-  realBall:SetNetworkOwner();
   
-  local victimHistory: {[number]: number} = {};
+  local actionScript = ballFolder:FindFirstChild("onTouched");
+  assert(actionScript and actionScript:IsA("ModuleScript"), `Couldn't find "onTouched" ModuleScript in {ballFolder.Name} folder.`);
+
+  local onTouched = require(actionScript) :: (action: types.HeresThePitchServerAction, ball: BasePart, part: BasePart) -> ();
+  assert(typeof(onTouched) == "function", "onTouched script must be a function.");
+
   realBall.Touched:Connect(function(part: BasePart)
 
     if not action.contestant.character or not part:IsDescendantOf(action.contestant.character) then
@@ -79,45 +93,10 @@ local function processRegularBall(action: types.HeresThePitchServerAction, goalD
 
     end;
 
-    -- TODO: Verify that the ball is moving fast.
-    local possibleContestantModel = part:FindFirstAncestorOfClass("Model");
-    local didFindValidModel = possibleContestantModel and possibleContestantModel ~= action.contestant.character;
-    if didFindValidModel then
-
-      for _, contestant in action.contestant.round.contestants do
-
-        if contestant.character == possibleContestantModel then
-
-          local latestValidHitTime = victimHistory[contestant.id];
-          local currentHitTime = os.time();
-          local duplicateVictimCooldownSeconds = 3;
-          if latestValidHitTime and currentHitTime >= latestValidHitTime + duplicateVictimCooldownSeconds then
-  
-            victimHistory[contestant.id] = nil;
-  
-          end;
-  
-          if not victimHistory[contestant.id] then
-
-            victimHistory[contestant.id] = currentHitTime;
-  
-            contestant:updateHealth(math.max(contestant.currentHealth - 20, 0), {
-              contestantID = action.contestant.id;
-              actionID = action.id;
-            });
-            
-          end;
-  
-          break;
-  
-        end;
-  
-      end;
-
-    end;
+    onTouched(action, realBall, part);
 
   end);
 
 end;
 
-return processRegularBall;
+return processBall;
