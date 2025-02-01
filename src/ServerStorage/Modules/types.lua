@@ -176,7 +176,7 @@ export type HeresThePitchServerAction = ServerAction<{
   collisionGroupName: string;
   bindableFunction: BindableFunction;
   remoteFunction: RemoteFunction?;
-  playerBalls: {Instance};
+  balls: {Instance};
   activate: (self: HeresThePitchServerAction, coordinates: Vector3) -> ();
   breakdown: (self: HeresThePitchServerAction) -> ();
 }>;

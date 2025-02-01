@@ -5,6 +5,8 @@ local ServerStorage = game:GetService("ServerStorage");
 
 local types = require(ServerStorage.Modules.types);
 
+local removeExcessiveBalls = require(script.Parent.removeExcessiveBalls);
+
 local function processBall(action: types.HeresThePitchServerAction, goalDestination: Vector3?): ()
 
   -- Verify that a ball type has been defined.
@@ -18,27 +20,30 @@ local function processBall(action: types.HeresThePitchServerAction, goalDestinat
 
   local pitcher = action.contestant;
   assert(pitcher.character, `Couldn't find the pitcher's character. Are they dead?`);
-  
+
   -- Connect the ball to the player's hand and track who gets hit.
   -- TODO: Allow customization of hand.
   local throwingHand = pitcher.character:FindFirstChild("RightHand") or pitcher.character:FindFirstChild("LeftHand");
   assert(throwingHand and throwingHand:IsA("BasePart"), "Could not find RightHand or LeftHand.");
-  
-  local animationBall = ballFolder.Ball:Clone();
-  animationBall.CFrame = throwingHand.CFrame;
-  animationBall.CollisionGroup = action.collisionGroupName;
+
+  local animationBall: Model = ballFolder.Ball:Clone();
   animationBall.Name = `{animationBall.Name}-{HttpService:GenerateGUID(false)}`
+
+  local ballMesh = animationBall:FindFirstChild("Mesh");
+  assert(ballMesh and ballMesh:IsA("BasePart"));
+  ballMesh.CFrame = throwingHand.CFrame;
+  ballMesh.CollisionGroup = action.collisionGroupName;
   animationBall.Parent = workspace;
 
   local weld = Instance.new("WeldConstraint");
-  weld.Part0 = animationBall;
+  weld.Part0 = ballMesh;
   weld.Part1 = throwingHand;
-  weld.Parent = animationBall;
+  weld.Parent = ballMesh;
 
   if pitcher.player and action.remoteFunction then
 
     -- Keep the server weld in the player's hand while the client processes it.
-    animationBall:SetNetworkOwner(pitcher.player);
+    ballMesh:SetNetworkOwner(pitcher.player);
     action.remoteFunction:InvokeClient(pitcher.player, animationBall.Name);
 
   else
@@ -51,14 +56,25 @@ local function processBall(action: types.HeresThePitchServerAction, goalDestinat
   -- Two different balls are required because of Roblox's limitations on network ownership.
   -- This method minimizes the delay when throwing the ball. 
   -- It also helps keep the game secure because the ball is owned by the server.
-  local ballCFrame = animationBall.CFrame;
+  local ballCFrame = ballMesh.CFrame;
   animationBall:Destroy();
 
-  local realBall = ballFolder.Ball:Clone();
-  realBall.CFrame = ballCFrame;
-  realBall.CollisionGroup = action.collisionGroupName;
+  removeExcessiveBalls(action);
+
+  local realBall: Model = ballFolder.Ball:Clone();
+  ballMesh = realBall:FindFirstChild("Mesh");
+  ballMesh.CFrame = ballCFrame;
+  ballMesh.CollisionGroup = action.collisionGroupName;
   realBall.Parent = workspace;
-  realBall:SetNetworkOwner();
+  ballMesh:SetNetworkOwner();
+  table.insert(action.balls, realBall);
+
+  local hitbox = realBall:FindFirstChild("Hitbox");
+  if hitbox and hitbox:IsA("BasePart") then
+
+    hitbox.CollisionGroup = action.collisionGroupName;
+
+  end;
   
   local direction = throwingHand.CFrame.LookVector * 5;
   if goalDestination then
@@ -72,15 +88,15 @@ local function processBall(action: types.HeresThePitchServerAction, goalDestinat
   -- TODO: Use charge to reduce duration.
   local duration = math.log(1.001 + direction.Magnitude * 0.01);
   local force = direction / duration + Vector3.new(0, workspace.Gravity * duration * 0.5, 0);
-  realBall:ApplyImpulse(force * realBall.AssemblyMass);
+  ballMesh:ApplyImpulse(force * ballMesh.AssemblyMass);
   
   local actionScript = ballFolder:FindFirstChild("onTouched");
   assert(actionScript and actionScript:IsA("ModuleScript"), `Couldn't find "onTouched" ModuleScript in {ballFolder.Name} folder.`);
 
-  local onTouched = require(actionScript) :: (action: types.HeresThePitchServerAction, ball: BasePart, part: BasePart) -> ();
+  local onTouched = require(actionScript) :: (action: types.HeresThePitchServerAction, ball: Model, part: BasePart) -> ();
   assert(typeof(onTouched) == "function", "onTouched script must be a function.");
 
-  realBall.Touched:Connect(function(part: BasePart)
+  ballMesh.Touched:Connect(function(part: BasePart)
 
     if not action.contestant.character or not part:IsDescendantOf(action.contestant.character) then
 

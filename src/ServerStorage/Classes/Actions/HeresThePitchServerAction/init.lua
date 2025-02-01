@@ -29,7 +29,7 @@ function HeresThePitchServerAction.new(properties: types.ServerActionConstructor
   local overwrittenProperties = {
     contestant = properties.contestant;
     collisionGroupName = `{properties.contestant.id}-{HeresThePitchServerAction.id}`;
-    playerBalls = {};
+    balls = {};
   };
 
   local action = (setmetatable(overwrittenProperties, HeresThePitchServerAction) :: any) :: types.HeresThePitchServerAction;

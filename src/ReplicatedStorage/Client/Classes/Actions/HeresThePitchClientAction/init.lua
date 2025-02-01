@@ -48,14 +48,14 @@ function HeresThePitchClientAction.new(): types.HeresThePitchClientAction
 
   action.remoteFunction.OnClientInvoke = function(ballName: string)
 
-    local ball = workspace:FindFirstChild(ballName);
-    assert(ball);
+    -- local ball = workspace:FindFirstChild(ballName);
+    -- assert(ball);
 
-    local weld = ball:FindFirstChild("WeldConstraint");
-    assert(weld and weld:IsA("WeldConstraint"));
+    -- local weld = ball:FindFirstChild("WeldConstraint");
+    -- assert(weld and weld:IsA("WeldConstraint"));
 
-    -- TODO: Run animations
-    local throwingHand = weld.Part1;
+    -- -- TODO: Run animations
+    -- local throwingHand = weld.Part1;
 
   end;
 
