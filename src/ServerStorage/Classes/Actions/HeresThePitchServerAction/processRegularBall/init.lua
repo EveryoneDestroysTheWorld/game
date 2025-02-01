@@ -37,13 +37,8 @@ local function processRegularBall(action: types.HeresThePitchServerAction, goalD
     -- Play pitching animation.
     warn("NO ANIMATION")
 
-    -- Launch the ball in the direction that the contestant faces.
-    -- AlignPosition was under consideration, but ApplyImpulse allows for more control over the ball.
-    -- In the future, we should consider using VectorForce to support more pitching styles.
-
   end;
 
-  
   -- Two different balls are required because of Roblox's limitations on network ownership.
   -- This method minimizes the delay when throwing the ball. 
   -- It also helps keep the game secure because the ball is owned by the server.
