@@ -26,13 +26,15 @@ local function onTouched(action: types.HeresThePitchServerAction, ball: Model, p
 
       contestant:addEffect(paralysisEffect);
 
-      task.delay(2, function()
+      local stunLengthSeconds = 2;
+      task.delay(stunLengthSeconds, function()
       
         contestant:removeEffect(paralysisEffect);
 
       end);
 
-      contestant:updateHealth(math.max(contestant.currentHealth - 5, 0), {
+      local electrocutionDamage = 5;
+      contestant:updateHealth(math.max(contestant.currentHealth - electrocutionDamage, 0), {
         contestantID = action.contestant.id;
         actionID = action.id;
       });
@@ -56,7 +58,6 @@ local function onTouched(action: types.HeresThePitchServerAction, ball: Model, p
     local touchingParts = workspace:GetPartsInPart(part);
     for _, touchingPart in touchingParts do
 
-      print("Checking" .. touchingPart.Name)
       local touchingContestant = findContestantFromPart(contestantList, touchingPart);
       if touchingContestant then
 
