@@ -1,9 +1,11 @@
 --!strict
--- Writer: Christian Toney (Sudobeast)
--- This module represents a ServerRound.
+-- This module represents a server round.
+--
+-- Programmers: Christian Toney (Christian_Toney)
+-- © 2024 – 2025 Beastslash LLC
 
-local DataStoreService = game:GetService("DataStoreService");
 local HttpService = game:GetService("HttpService");
+local MemoryStoreService = game:GetService("MemoryStoreService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
@@ -45,7 +47,7 @@ end;
 function ServerRound.fromPrivateServerID(privateServerID: number): types.ServerRound
 
   -- Verify metadata integrity.
-  local roundMetadataEncoded = DataStoreService:GetDataStore("PrivateServerRoundMetadata"):GetAsync(privateServerID);
+  local roundMetadataEncoded = MemoryStoreService:GetHashMap("PrivateServerRoundMetadata"):GetAsync(privateServerID);
   assert(typeof(roundMetadataEncoded) == "string", "Couldn't find a round metadata.");
   local roundMetadata = HttpService:JSONDecode(roundMetadataEncoded);
   assert(typeof(roundMetadata) == "table", "Round metadata isn't a table.");
