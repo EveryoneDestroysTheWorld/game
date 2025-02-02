@@ -49,25 +49,8 @@ function ParalysisServerEffect.__index:activate()
   local character = self.contestant.character;
   if self.contestant.player and self.remoteFunction then
 
-    -- Handle the animations on the client.
     ReplicatedStorage.Shared.Functions.InitializeEffect:InvokeClient(self.contestant.player, self.id, self.uniqueID, true);
     self.remoteFunction:InvokeClient(self.contestant.player);
-
-  else
-    
-    -- Handle the animations on the server.
-    -- local animator = getAnimator(self.contestant.character);
-
-    -- if animator then
-
-    --   for _, track in animator:GetPlayingAnimationTracks() do
-
-    --     self.frozenAnimations[track] = track.Speed;
-    --     track:AdjustSpeed(0);
-
-    --   end;
-
-    -- end;
 
   end;
 
@@ -94,21 +77,6 @@ function ParalysisServerEffect.__index:breakdown()
   if self.contestant.player then
 
     ReplicatedStorage.Shared.Functions.InitializeEffect:InvokeClient(self.contestant.player, self.id, self.uniqueID, false);
-
-  else
-
-    -- local animator = getAnimator(character);
-    -- if animator then
-
-    --   for track, normalSpeed in self.frozenAnimations do
-
-    --     track:AdjustSpeed(normalSpeed);
-
-    --   end;
-
-    --   self.frozenAnimations = {};
-
-    -- end;
 
   end;
 
