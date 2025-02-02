@@ -38,13 +38,13 @@ local function onTouched(action: types.HeresThePitchServerAction, ball: Model, p
   local function electrocuteContestant(contestant: types.ServerContestant)
 
     local immunitySeconds = 3;
-    local attributeName = `{action.id}_LatestElectrocutionTime_{tostring(contestant.id):gsub("%.", "_")}`;
-    local latestDamage = ball:GetAttribute(attributeName);
+    local attributeName = `{action.id}_LatestElectrocutionTime`;
+    local latestDamage = contestant.attributes[attributeName];
     local currentTime = os.time();
     local isContestantImmune = type(latestDamage) == "number" and latestDamage + immunitySeconds > currentTime;
     if not isContestantImmune then
 
-      ball:SetAttribute(attributeName, currentTime);
+      contestant.attributes[attributeName] = currentTime;
 
       local paralysisEffect = ServerEffect.get("Paralysis").new({
         contestant = contestant;
