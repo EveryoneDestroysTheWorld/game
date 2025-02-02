@@ -19,17 +19,16 @@ local types = require(ServerStorage.Modules.types);
 local events: {[any]: {[string]: BindableEvent}} = {};
 
 local ServerRound = {
-  __index = {
-    contestants = {};
-    actions = {};
-    archetypes = {};
-    autopilotTasks = {};
-  } :: types.ServerRound;
+  __index = {} :: types.ServerRound;
 };
 
 function ServerRound.new(properties: types.ServerRoundConstructorProperties): types.ServerRound
 
   local round = setmetatable(properties :: types.ServerRoundProperties, ServerRound) :: types.ServerRound;
+  round.contestants = {};
+  round.actions = {};
+  round.archetypes = {};
+  round.autopilotTasks = {};
   round.stage = properties.stage or Stage.fromID(properties.stageID);
 
   events[round] = {};
