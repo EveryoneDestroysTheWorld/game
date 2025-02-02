@@ -54,6 +54,7 @@ function ServerRound.fromPrivateServerID(privateServerID: number): types.ServerR
   assert(typeof(roundMetadata.stageID) == "string", "Stage ID isn't a string.");
   assert(typeof(roundMetadata.gameModeID) == "string", "Game mode ID isn't a string.");
   assert(typeof(roundMetadata.contestantIDs) == "table", "Round contestant IDs isn't a table.");
+  assert(not roundMetadata.duration or typeof(roundMetadata.duration) == "number", "Round duration must be a number.");
 
   for index, possibleContestantID in pairs(roundMetadata.contestantIDs) do
 
@@ -67,6 +68,7 @@ function ServerRound.fromPrivateServerID(privateServerID: number): types.ServerR
     id = roundMetadata.id;
     stageID = roundMetadata.stageID;
     gameModeID = roundMetadata.gameModeID;
+    duration = roundMetadata.duration;
     contestantIDs = roundMetadata.contestantIDs;
     status = "Waiting for players" :: types.RoundStatus;
   });
