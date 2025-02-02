@@ -1,6 +1,7 @@
 --!strict
 
 local ServerStorage = game:GetService("ServerStorage");
+local TweenService = game:GetService("TweenService");
 
 local ServerEffect = require(ServerStorage.Classes.ServerEffect);
 local types = require(ServerStorage.Modules.types);
@@ -8,6 +9,31 @@ local types = require(ServerStorage.Modules.types);
 local findContestantFromPart = require(ServerStorage.Modules.findContestantFromPart);
 
 local function onTouched(action: types.HeresThePitchServerAction, ball: Model, part: BasePart)
+
+  local function createHighlight(instance: BasePart | Model)
+
+    local highlight = Instance.new("Highlight");
+    highlight.FillColor = Color3.fromRGB(237, 255, 43);
+    highlight.FillTransparency = if instance:IsA("BasePart") then 0.9 else 0;
+    highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
+    highlight.OutlineColor = Color3.new(1, 1, 1);
+    highlight.OutlineTransparency = 0;
+    highlight.Parent = instance;
+
+    local tween = TweenService:Create(highlight, TweenInfo.new(), {
+      FillTransparency = 1;
+      OutlineTransparency = 1;
+    });
+
+    tween.Completed:Once(function()
+    
+      highlight:Destroy();
+
+    end);
+
+    tween:Play();
+
+  end;
 
   local function electrocuteContestant(contestant: types.ServerContestant)
 
@@ -39,6 +65,12 @@ local function onTouched(action: types.HeresThePitchServerAction, ball: Model, p
         actionID = action.id;
       });
 
+      if contestant.character then
+
+        createHighlight(contestant.character);
+
+      end
+
     end;
 
   end;
@@ -54,6 +86,8 @@ local function onTouched(action: types.HeresThePitchServerAction, ball: Model, p
     end;
 
   elseif part.Material == Enum.Material.Metal then
+
+    createHighlight(part);
 
     local touchingParts = workspace:GetPartsInPart(part);
     for _, touchingPart in touchingParts do
