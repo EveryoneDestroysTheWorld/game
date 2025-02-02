@@ -2,6 +2,7 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 
+local RagdollService = require(ServerStorage.Modules.RagdollService);
 local types = require(ServerStorage.Modules.types);
 
 local findContestantFromPart = require(ServerStorage.Modules.findContestantFromPart);
@@ -22,24 +23,47 @@ local function onTouched(action: types.HeresThePitchServerAction, ball: Model, p
       local immuneContestants = {};
       local explosion = Instance.new("Explosion");
       explosion.Position = ballPosition;
+      explosion.BlastPressure = 0;
       explosion.DestroyJointRadiusPercent = 0;
       explosion.Hit:Connect(function(hitPart: BasePart)
 
         local contestant = findContestantFromPart(action.contestant.round.contestants, hitPart);
-        if not contestant or table.find(immuneContestants, contestant) then
+        if contestant and not table.find(immuneContestants, contestant) then
 
-          return;
+          table.insert(immuneContestants, contestant);
+
+          contestant:updateHealth(math.max(contestant.currentHealth - 15, 0), {
+            contestantID = action.contestant.id;
+            actionID = action.id;
+          });
+
+          local character = contestant.character;
+          local primaryPart = if contestant.character then contestant.character.PrimaryPart else nil;
+          local humanoid = if contestant.character then contestant.character:FindFirstChild("Humanoid") else nil;
+          if character and primaryPart and humanoid and humanoid:IsA("Humanoid") then
+
+            local ragdollKey = {};
+            RagdollService:ragdollCharacter(character, ragdollKey);
+
+            primaryPart.AssemblyLinearVelocity += primaryPart.CFrame:VectorToObjectSpace(primaryPart.Position - explosion.Position) * 500;
+
+            task.delay(1, function()
+            
+              RagdollService:restoreCharacter(character, ragdollKey);
+
+            end);
+
+          else
+  
+            local force = hitPart.CFrame:VectorToObjectSpace(hitPart.Position - explosion.Position) * 500;
+            hitPart:ApplyImpulse(force);
+
+          end;
 
         end;
-
-        table.insert(immuneContestants, contestant);
-
-        contestant:updateHealth(math.max(contestant.currentHealth - 15, 0), {
-          contestantID = action.contestant.id;
-          actionID = action.id;
-        });
-      
+        
       end);
+
       explosion.Parent = workspace;
 
     end;

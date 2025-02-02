@@ -215,6 +215,7 @@ export type ParalysisClientEffectProperties = {
   contestant: ClientContestant;
   uniqueID: string;
   events: {RBXScriptConnection};
+  remoteFunction: RemoteFunction;
   frozenAnimations: {
     [AnimationTrack]: number;
   }

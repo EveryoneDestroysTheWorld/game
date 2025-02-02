@@ -430,6 +430,8 @@ export type ParalysisServerEffectProperties = {
   weight: WalkSpeedWeight;
   contestant: ServerContestant;
   uniqueID: string;
+  remoteFunction: RemoteFunction?;
+  ragdollKey: {};
   frozenAnimations: {
     [AnimationTrack]: number;
   };
