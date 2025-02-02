@@ -4,9 +4,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local HttpService = game:GetService("HttpService");
 
+local RagdollService = require(ServerStorage.Modules.RagdollService);
 local types = require(ServerStorage.Modules.types);
-
-local getAnimator = require(ReplicatedStorage.Shared.Modules.getAnimator);
 
 local ParalysisServerEffect = {
   name = "Paralysis";
@@ -25,25 +24,21 @@ function ParalysisServerEffect.new(properties: types.ServerEffectConstructorProp
       walkSpeed = 0;
       weight = math.huge;
     };
+    ragdollKey = {};
     frozenAnimations = {};
   };
 
-  return (setmetatable(effect, ParalysisServerEffect) :: unknown) :: types.ParalysisServerEffect
+  if properties.contestant.player then
 
-end;
+    local remoteFunction = Instance.new("RemoteFunction");
+    remoteFunction.Parent = ReplicatedStorage.Shared.Functions.EffectFunctions;
+    remoteFunction.Name = effect.uniqueID;
 
-local function togglePlatformStand(character: Model?, shouldEnable: boolean)
-
-  if character then
-
-    local humanoid = character:FindFirstChild("Humanoid");
-    if humanoid and humanoid:IsA("Humanoid") then
-
-      humanoid.PlatformStand = shouldEnable;
-
-    end;
+    effect.remoteFunction = remoteFunction;
 
   end;
+
+  return (setmetatable(effect, ParalysisServerEffect) :: unknown) :: types.ParalysisServerEffect
 
 end;
 
@@ -51,35 +46,20 @@ function ParalysisServerEffect.__index:activate()
 
   self.contestant:addWalkSpeedWeight(self.weight);
 
-  if self.contestant.player then
+  local character = self.contestant.character;
+  if self.contestant.player and self.remoteFunction then
 
-    -- Handle the animations on the client.
-    local remoteFunction = Instance.new("RemoteFunction");
-    remoteFunction.Name = self.uniqueID;
-    remoteFunction.Parent = ReplicatedStorage.Shared.Functions.EffectFunctions;
     ReplicatedStorage.Shared.Functions.InitializeEffect:InvokeClient(self.contestant.player, self.id, self.uniqueID, true);
-    remoteFunction:InvokeClient(self.contestant.player);
-
-  else
-    
-    -- Handle the animations on the server.
-    local animator = getAnimator(self.contestant.character);
-
-    if animator then
-
-      for _, track in animator:GetPlayingAnimationTracks() do
-
-        self.frozenAnimations[track] = track.Speed;
-        track:AdjustSpeed(0);
-
-      end;
-
-    end;
+    self.remoteFunction:InvokeClient(self.contestant.player);
 
   end;
 
   -- Tip the player.
-  togglePlatformStand(self.contestant.character, true);
+  if character then
+
+    RagdollService:ragdollCharacter(character, self.ragdollKey, self.contestant.player)
+
+  end;
 
 end;
 
@@ -87,28 +67,24 @@ function ParalysisServerEffect.__index:breakdown()
 
   self.contestant:removeWalkSpeedWeight(self.weight);
 
+  local character = self.contestant.character;
+  if character then
+
+    RagdollService:restoreCharacter(character, self.ragdollKey, self.contestant.player);
+
+  end;
+
   if self.contestant.player then
 
     ReplicatedStorage.Shared.Functions.InitializeEffect:InvokeClient(self.contestant.player, self.id, self.uniqueID, false);
 
-  else
-
-    local animator = getAnimator(self.contestant.character);
-    if animator then
-
-      for track, normalSpeed in self.frozenAnimations do
-
-        track:AdjustSpeed(normalSpeed);
-
-      end;
-
-      self.frozenAnimations = {};
-
-    end;
-
   end;
 
-  togglePlatformStand(self.contestant.character, false);
+  if self.remoteFunction then
+
+    self.remoteFunction:Destroy();
+
+  end;
 
 end;
 

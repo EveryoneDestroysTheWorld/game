@@ -11,7 +11,7 @@ return function(contestantPlayer: Player, type: "Item" | "Action", specificItemI
 
     if contestantPlayer == invokingPlayer then
 
-      onServerInvoke(...);
+      return onServerInvoke(...);
 
     else
 

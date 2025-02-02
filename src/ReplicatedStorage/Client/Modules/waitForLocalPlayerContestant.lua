@@ -10,7 +10,6 @@ local function waitForLocalPlayerContestant(): types.ClientContestant
 
   local round = ClientRound.fromServerRound();
   local localPlayerContestant;
-  local onLocalPlayerContestantPresent = Instance.new("BindableEvent");
 
   local function checkContestants()
 
@@ -19,7 +18,6 @@ local function waitForLocalPlayerContestant(): types.ClientContestant
       if contestant.player and contestant.player == Players.LocalPlayer then
     
         localPlayerContestant = contestant;
-        onLocalPlayerContestantPresent:Fire();
         break;
 
       end;
@@ -28,11 +26,10 @@ local function waitForLocalPlayerContestant(): types.ClientContestant
 
   end;
 
+  local onContestantAdded = round.onContestantAdded:Connect(checkContestants);
   task.spawn(checkContestants)
 
-  local onContestantAdded = round.onContestantAdded:Connect(checkContestants);
-
-  onLocalPlayerContestantPresent.Event:Wait();
+  repeat task.wait() until localPlayerContestant;
 
   onContestantAdded:Disconnect();
 

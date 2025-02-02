@@ -171,6 +171,16 @@ export type ChangeBallTypeServerAction = ServerAction<{
   breakdown: (self: ChangeBallTypeServerAction) -> ();
 }>;
 
+export type HeresThePitchServerAction = ServerAction<{
+  contestant: ServerContestant;
+  collisionGroupName: string;
+  bindableFunction: BindableFunction;
+  remoteFunction: RemoteFunction?;
+  balls: {Instance};
+  activate: (self: HeresThePitchServerAction, coordinates: Vector3) -> ();
+  breakdown: (self: HeresThePitchServerAction) -> ();
+}>;
+
 export type DetachLimbServerAction = ServerAction<{
   contestant: ServerContestant;
   detachedLimbs: {
@@ -420,6 +430,8 @@ export type ParalysisServerEffectProperties = {
   weight: WalkSpeedWeight;
   contestant: ServerContestant;
   uniqueID: string;
+  remoteFunction: RemoteFunction?;
+  ragdollKey: {};
   frozenAnimations: {
     [AnimationTrack]: number;
   };
