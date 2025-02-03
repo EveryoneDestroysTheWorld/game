@@ -3,8 +3,7 @@
 name: Approve test runs
 
 on:
-  check_run:
-    types: [created]
+  check_run
 
 jobs:
   approve:
