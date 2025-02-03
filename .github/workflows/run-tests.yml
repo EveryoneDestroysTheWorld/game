@@ -142,7 +142,6 @@ jobs:
             
             } catch (error) {
             
-              core.error("A test case failed");
               core.setFailed(error);
             
             }
