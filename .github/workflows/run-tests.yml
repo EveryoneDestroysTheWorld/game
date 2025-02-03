@@ -3,6 +3,12 @@ name: Run Luau tests
 on: 
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
+    paths:
+      - "src/**"
+      - "aftman.toml"
+      - "wally.toml"
+      - "development.project.json"
+      - ".github/workflows/run-tests.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -25,7 +31,7 @@ jobs:
         run: wally install
 
       - name: Build Rojo project
-        run: rojo build staging.project.json -o build.rbxl
+        run: rojo build development.project.json -o build.rbxl
 
       - name: Upload project
         uses: actions/upload-artifact@v4.4.0
@@ -72,7 +78,7 @@ jobs:
           roblox_api_key: ${{ secrets.ROBLOX_DEPLOYMENT_API_KEY }}
           universe_id: ${{ vars.ROBLOX_UNIVERSE_ID }}
           place_id: ${{ vars.ROBLOX_PLACE_ID }}
-          luau_file: "src/ServerStorage/Modules/runTests.lua"
+          luau_file: "src/ServerStorage/Modules/runTests.luau"
           output_file: 'output.txt' # optional
           dump_to_summary: true
 
