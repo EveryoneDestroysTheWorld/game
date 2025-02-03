@@ -79,7 +79,7 @@ jobs:
           universe_id: ${{ vars.ROBLOX_UNIVERSE_ID }}
           place_id: ${{ vars.ROBLOX_PLACE_ID }}
           luau_file: "src/ServerStorage/Modules/testRunner.lua"
-          output_file: '${{ runner.temp }}/testResults.json' # optional
+          output_file: 'testResults.json' # optional
           dump_to_summary: true
 
       - name: Verify all tests passed
@@ -88,7 +88,7 @@ jobs:
           script: |
             try {
 
-              let testResults = require("${{runner.temp}}/testResults.json");
+              let testResults = require("./testResults.json");
               let indexedGroup = {};
               let groups = [testResults]
               let nameGroups = []
