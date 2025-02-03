@@ -1,0 +1,85 @@
+name: Run Luau tests
+
+on: 
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  build:
+    if: ${{ !github.event.pull_request.draft }}
+    name: Build
+    runs-on: ubuntu-24.04
+    environment: Development
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Set up Aftman
+        uses: ok-nick/setup-aftman@v0.4.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Wally packages
+        run: wally install
+
+      - name: Build Rojo project
+        run: rojo build staging.project.json -o build.rbxl
+
+      - name: Upload project
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: build.rbxl
+          path: build.rbxl
+    
+  publish:
+    name: Deploy
+    environment: Development
+    runs-on: ubuntu-24.04
+    needs: build
+    steps:
+      - name: Download project
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: build.rbxl
+
+      - name: POST to Roblox API
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          ROBLOX_UNIVERSE_ID: ${{ vars.ROBLOX_UNIVERSE_ID }}
+          ROBLOX_PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
+        run: | 
+          curl \
+          --fail-with-body \
+          -H "x-api-key: $ROBLOX_API_KEY" \
+          -H "Content-Type: application/xml" \
+          --data-binary @build.rbxl \
+          "https://apis.roblox.com/universes/v1/""$ROBLOX_UNIVERSE_ID""/places/""$ROBLOX_PLACE_ID""/versions?versionType=Published"
+
+  test:
+    runs-on: ubuntu-24.04
+    environment: Development
+    name: Run tests
+    needs: publish
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Execute script
+        uses: grand-hawk/action-roblox-luau-execution@1.0.0
+        with:
+          roblox_api_key: ${{ secrets.ROBLOX_API_KEY }}
+          universe_id: ${{ vars.ROBLOX_UNIVERSE_ID }}
+          place_id: ${{ vars.ROBLOX_PLACE_ID }}
+          luau_file: "src/ServerStorage/Modules/runTests.lua"
+          output_file: 'output.txt' # optional
+          dump_to_summary: true
+
+      - name: Set GitHub check status
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          conclusion: ${{ job.status }}
+          name: "Test Luau scripts"
