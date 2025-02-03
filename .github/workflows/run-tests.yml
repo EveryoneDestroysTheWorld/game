@@ -78,6 +78,6 @@ jobs:
           roblox_api_key: ${{ secrets.ROBLOX_DEPLOYMENT_API_KEY }}
           universe_id: ${{ vars.ROBLOX_UNIVERSE_ID }}
           place_id: ${{ vars.ROBLOX_PLACE_ID }}
-          luau_file: "src/ServerStorage/Modules/testRunner.luau"
+          luau_file: "src/ServerStorage/Modules/testRunner.lua"
           output_file: '${{ runner.temp }}/output.json' # optional
           dump_to_summary: true
