@@ -1,0 +1,147 @@
+name: Run Luau tests
+
+on: 
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+    paths:
+      - "src/**"
+      - "aftman.toml"
+      - "wally.toml"
+      - "development.project.json"
+      - ".github/workflows/run-tests.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+
+jobs:
+  build:
+    if: ${{ !github.event.pull_request.draft }}
+    name: Build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Set up Aftman
+        uses: ok-nick/setup-aftman@v0.4.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Wally packages
+        run: wally install
+
+      - name: Build Rojo project
+        run: rojo build development.project.json -o build.rbxl
+
+      - name: Upload project
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: build.rbxl
+          path: build.rbxl
+    
+  publish:
+    name: Deploy
+    environment: Development
+    runs-on: ubuntu-24.04
+    needs: build
+    steps:
+      - name: Download project
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: build.rbxl
+
+      - name: POST to Roblox API
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_DEPLOYMENT_API_KEY }}
+          ROBLOX_UNIVERSE_ID: ${{ vars.ROBLOX_UNIVERSE_ID }}
+          ROBLOX_PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
+        run: | 
+          curl \
+          --fail-with-body \
+          -H "x-api-key: $ROBLOX_API_KEY" \
+          -H "Content-Type: application/xml" \
+          --data-binary @build.rbxl \
+          "https://apis.roblox.com/universes/v1/""$ROBLOX_UNIVERSE_ID""/places/""$ROBLOX_PLACE_ID""/versions?versionType=Published"
+
+  test:
+    runs-on: ubuntu-24.04
+    environment: Development
+    name: Test
+    needs: publish
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Execute script
+        uses: Christian-Toney/action-roblox-luau-execution@79921e7ef07cae70187fb41e21d447fe2ed91941
+        with:
+          roblox_api_key: ${{ secrets.ROBLOX_DEPLOYMENT_API_KEY }}
+          universe_id: ${{ vars.ROBLOX_UNIVERSE_ID }}
+          place_id: ${{ vars.ROBLOX_PLACE_ID }}
+          luau_file: "src/ServerStorage/Modules/testRunner.lua"
+          output_file: 'testResults.json' # optional
+          dump_to_summary: true
+
+      - name: Verify all tests passed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+
+              let testResults = require("./testResults.json");
+              let indexedGroup = {};
+              let groups = [testResults]
+              let nameGroups = []
+              let closestIndexedGroup = indexedGroup;
+              while (groups.length >= 1) {
+
+                let shouldGoUp = true;
+                let currentGroup = groups[groups.length - 1];
+                for (const caseName of Object.keys(currentGroup)) {
+
+                  const caseValue = currentGroup[caseName];
+                  if (closestIndexedGroup[caseName]) {
+
+                    continue;
+
+                  } else if (typeof(caseValue) === "object") {
+
+                    closestIndexedGroup[caseName] = {};
+                    closestIndexedGroup = closestIndexedGroup[caseName];
+                    groups.push(caseValue);
+                    nameGroups.push(caseName);
+                    shouldGoUp = false;
+
+                    break;
+
+                  } else if (!caseValue || typeof(caseValue) !== "boolean") {
+                    
+                    throw new Error("A test case failed.");
+                  
+                  }
+
+                }
+
+                if (shouldGoUp) {
+
+                  groups.pop();
+                  nameGroups.pop();
+
+                  let newClosestIndexedGroup = indexedGroup;
+                  for (const name of nameGroups) {
+
+                    newClosestIndexedGroup = newClosestIndexedGroup[name]
+
+                  }
+
+                  closestIndexedGroup = newClosestIndexedGroup;
+
+                }
+
+              }
+            
+            } catch (error) {
+            
+              core.setFailed(error);
+            
+            }
