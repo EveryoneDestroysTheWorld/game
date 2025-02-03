@@ -5,14 +5,13 @@ on:
     types: [opened, reopened, synchronize, ready_for_review]
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
 
 jobs:
   build:
     if: ${{ !github.event.pull_request.draft }}
     name: Build
     runs-on: ubuntu-24.04
-    environment: Development
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
@@ -47,7 +46,7 @@ jobs:
 
       - name: POST to Roblox API
         env:
-          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_DEPLOYMENT_API_KEY }}
           ROBLOX_UNIVERSE_ID: ${{ vars.ROBLOX_UNIVERSE_ID }}
           ROBLOX_PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
         run: | 
@@ -70,7 +69,7 @@ jobs:
       - name: Execute script
         uses: grand-hawk/action-roblox-luau-execution@1.0.0
         with:
-          roblox_api_key: ${{ secrets.ROBLOX_API_KEY }}
+          roblox_api_key: ${{ secrets.ROBLOX_DEPLOYMENT_API_KEY }}
           universe_id: ${{ vars.ROBLOX_UNIVERSE_ID }}
           place_id: ${{ vars.ROBLOX_PLACE_ID }}
           luau_file: "src/ServerStorage/Modules/runTests.lua"
