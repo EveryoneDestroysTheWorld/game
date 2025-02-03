@@ -66,7 +66,7 @@ jobs:
   test:
     runs-on: ubuntu-24.04
     environment: Development
-    name: Run tests
+    name: Test
     needs: publish
     steps:
       - name: Checkout repository
