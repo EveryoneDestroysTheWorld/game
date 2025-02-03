@@ -1,15 +1,16 @@
 --!strict
+
+local Players = game:GetService("Players");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype);
 type ClientArchetype = ClientArchetype.ClientArchetype;
-local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
-type ClientContestant = ClientContestant.ClientContestant;
 local StatContainer = require(script.Parent.StatContainer);
 local Button = require(ReplicatedStorage.Client.ReactComponents.Button);
-local Players = game:GetService("Players");
+local types = require(ReplicatedStorage.Client.Modules.types);
 
 type RoundTimerProps = {
   round: ClientRound;
@@ -17,7 +18,7 @@ type RoundTimerProps = {
 
 local function ArchetypeStatsContainer(props: RoundTimerProps)
 
-  local contestant, setContestant = React.useState(nil :: ClientContestant?);
+  local contestant, setContestant = React.useState(nil :: types.ClientContestant?);
   local archetypeName: string?, setArchetypeName = React.useState(nil :: string?);
   local canSelectArchetype, setCanSelectArchetype = React.useState(true);
 
@@ -47,8 +48,8 @@ local function ArchetypeStatsContainer(props: RoundTimerProps)
   
     task.spawn(function()
 
-      local focusedContestant: ClientContestant?;
-      for _, contestant in props.round.contestants do
+      local focusedContestant: types.ClientContestant?;
+      for _, contestant in props.round:getContestants() do
 
         if contestant.player == Players.LocalPlayer then
 

@@ -4,15 +4,15 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
-local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
-type ClientContestant = ClientContestant.ClientContestant;
 local HeadBarContainer = require(ReplicatedStorage.Client.ReactComponents.HeadBarContainer);
 local Players = game:GetService("Players");
+
+local types = require(ReplicatedStorage.Client.Modules.types);
 
 local round = ClientRound.fromServerRound();
 local events = {};
 
-local function initializeContestant(contestant: ClientContestant): ()
+local function initializeContestant(contestant: types.ClientContestant): ()
 
   if contestant.player and contestant.player == Players.LocalPlayer then
 
@@ -59,7 +59,7 @@ end;
 
 round.onContestantAdded:Connect(function(contestantID)
 
-  for _, contestant in round.contestants do
+  for _, contestant in round:getContestants() do
 
     if contestant.id == contestantID then
 
@@ -71,7 +71,7 @@ round.onContestantAdded:Connect(function(contestantID)
 
 end);
 
-for _, contestant in ipairs(round.contestants) do
+for _, contestant in round:getContestants() do
   
   initializeContestant(contestant);
 

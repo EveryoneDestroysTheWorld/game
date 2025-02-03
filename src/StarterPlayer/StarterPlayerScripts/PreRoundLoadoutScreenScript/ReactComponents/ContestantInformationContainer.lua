@@ -1,11 +1,11 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ContestantFrame = require(script.Parent.ContestantFrame);
-local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
-type ClientContestant = ClientContestant.ClientContestant;
+local types = require(ReplicatedStorage.Client.Modules.types);
 
-local function ContestantInformationContainer(props: {teams: {{ClientContestant}}})
+local function ContestantInformationContainer(props: {teams: {{types.ClientContestant}}})
 
   local teamIndex, setTeamIndex = React.useState(1);
   local contestantIndex, setContestantIndex = React.useState(1);

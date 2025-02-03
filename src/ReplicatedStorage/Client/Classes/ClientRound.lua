@@ -26,8 +26,6 @@ export type RoundProperties = {
 
   status: RoundStatus;
 
-  contestants: {types.ClientContestant};
-
 }
 
 local ClientRound = {
@@ -50,7 +48,6 @@ local serverRound: ClientRound;
 function ClientRound.new(properties: RoundProperties): ClientRound
 
   local round = setmetatable(properties, ClientRound);
-
   -- Set up events.
   local events: {[string]: BindableEvent} = {};
   local eventNames = {"onStopped", "onStarted", "onEnded", "onStatusChanged", "onContestantAdded", "onContestantRemoved"};
@@ -61,27 +58,15 @@ function ClientRound.new(properties: RoundProperties): ClientRound
 
   end
 
-  ReplicatedStorage.Shared.Events.ContestantAdded.OnClientEvent:Connect(function(roundID: string, contestantProperties: types.ClientContestantConstructorProperties)
-  
-    local contestant = ClientContestant.new(contestantProperties);
-    table.insert(round.contestants, contestant);
-    events.onContestantAdded:Fire(contestant.id);
+  ReplicatedStorage.Shared.Events.ContestantAdded.OnClientEvent:Connect(function(roundID: string, contestantID: number)
+
+    events.onContestantAdded:Fire(contestantID);
 
   end);
 
   ReplicatedStorage.Shared.Events.ContestantRemoved.OnClientEvent:Connect(function(roundID: string, contestantID: number)
   
-    for index, contestant in ipairs(round.contestants) do
-
-      if contestant.id == contestantID then
-
-        table.remove(round.contestants, index);
-        events.onContestantRemoved:Fire(contestant.id);
-        break;
-
-      end;
-
-    end;
+    events.onContestantRemoved:Fire(contestantID);
 
   end);
 
@@ -152,7 +137,7 @@ function ClientRound.fromServerRound(): ClientRound
       local roundConstructorProperties = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer();
 
       local contestants = {}
-      for _, contestant in ipairs(roundConstructorProperties.contestants) do
+      for _, contestant in roundConstructorProperties.contestants do
 
         table.insert(contestants, ClientContestant.new(contestant));
 
@@ -170,5 +155,19 @@ function ClientRound.fromServerRound(): ClientRound
   return serverRound;
 
 end;
+
+function ClientRound.__index:getContestants(): {types.ClientContestant}
+
+  local contestants = {};
+  
+  for _, properties in ReplicatedStorage.Shared.Functions.GetRound:InvokeServer().contestants do
+
+    table.insert(contestants, ClientContestant.new(properties));
+
+  end;
+
+  return contestants;
+
+end
 
 return ClientRound;

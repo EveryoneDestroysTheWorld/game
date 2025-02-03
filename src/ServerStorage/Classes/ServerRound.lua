@@ -206,7 +206,7 @@ function ServerRound.__index:addContestant(contestant: types.ServerContestant): 
 
   table.insert(self.contestants, contestant);
   events[self].onContestantAdded:Fire(contestant.id);
-  ReplicatedStorage.Shared.Events.ContestantAdded:FireAllClients(self.id, contestant:convertToClient());
+  ReplicatedStorage.Shared.Events.ContestantAdded:FireAllClients(self.id, contestant.id);
 
 end;
 

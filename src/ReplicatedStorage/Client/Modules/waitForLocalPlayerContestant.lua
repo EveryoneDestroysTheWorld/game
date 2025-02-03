@@ -13,7 +13,7 @@ local function waitForLocalPlayerContestant(): types.ClientContestant
 
   local function checkContestants()
 
-    for _, contestant in round.contestants do
+    for _, contestant in round:getContestants() do
 
       if contestant.player and contestant.player == Players.LocalPlayer then
     

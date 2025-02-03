@@ -1,14 +1,14 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
+
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 local RoundTimer = require(script.ReactComponents.RoundTimer);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
-local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
-type ClientContestant = ClientContestant.ClientContestant;
 local BottomCenterSection = require(script.ReactComponents.BottomCenterSection);
+local types = require(ReplicatedStorage.Client.Modules.types);
 
 local popupContainer = nil;
 local player = Players.LocalPlayer;
@@ -21,15 +21,15 @@ local function setupGUI()
     popupContainer.Name = "MatchHUD";
     popupContainer.Parent = player:WaitForChild("PlayerGui");
     popupContainer.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
-    popupContainer.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets;
+    popupContainer.ScreenInsets = Enum.ScreenInsets.None;
     popupContainer.ResetOnSpawn = false;
     popupContainer.DisplayOrder = 1;
     popupContainer.Enabled = true;
 
     local round = ClientRound.fromServerRound();
 
-    local contestant: ClientContestant?;
-    for _, possibleContestant in round.contestants do
+    local contestant: types.ClientContestant?;
+    for _, possibleContestant in round:getContestants() do
 
       if possibleContestant.id == player.UserId then
 

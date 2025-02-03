@@ -114,7 +114,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
   end;
   
   -- Get the match info.
-  local expectedPlayerIDs = {};
+  local expectedPlayerIDs = round.contestantIDs;
   
   local function startRound()
   

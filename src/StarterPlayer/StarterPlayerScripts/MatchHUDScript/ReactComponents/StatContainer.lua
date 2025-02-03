@@ -3,12 +3,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
-local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
-type ClientContestant = ClientContestant.ClientContestant;
+
+local types = require(ReplicatedStorage.Client.Modules.types);
 
 type StatContainerProperties = {
   iconImage: string;
-  contestant: ClientContestant;
+  contestant: types.ClientContestant;
   layoutOrder: number;
 }
 

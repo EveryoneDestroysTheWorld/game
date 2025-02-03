@@ -1,6 +1,5 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-local TweenService = game:GetService("TweenService");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local WaitingMessage = require(script.Parent.WaitingMessage);
 local TransitionCircle = require(script.Parent.TransitionCircle);
@@ -8,8 +7,6 @@ local ContestantInformationContainer = require(script.Parent.ContestantInformati
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 type RoundStatus = ClientRound.RoundStatus;
-local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
-type ClientContestant = ClientContestant.ClientContestant;
 local ActiveRoundNotification = require(script.Parent.ActiveRoundNotification);
 
 local function PreRoundLoadoutScreen()
@@ -34,7 +31,7 @@ local function PreRoundLoadoutScreen()
 
         local newTeams = {};
 
-        for _, contestant in round.contestants do
+        for _, contestant in round:getContestants() do
 
           if not newTeams[contestant.teamID] then
 
@@ -52,6 +49,7 @@ local function PreRoundLoadoutScreen()
 
       round.onContestantAdded:Connect(updateTeams);
       round.onContestantRemoved:Connect(updateTeams);
+      updateTeams();
 
       setRoundStatus(round.status);
 
