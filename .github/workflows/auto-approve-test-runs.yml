@@ -1,0 +1,58 @@
+# If GitHub adds a feature that lets specific workflow jobs skip approvals, this action should be deprecated in favor of that feature.
+
+name: Approve test runs
+
+on:
+  check_run:
+    types: [created]
+
+jobs:
+  approve:
+    if: ${{ github.event.check_run.name == 'Test' }}
+    name: Approve test runs
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+      checks: read
+      deployments: read
+    steps:
+      - name: Get environment ID
+        id: get_environment_id
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+            
+              const repositoryData = github.repository.split("/")
+
+              const environment = await octokit.rest.repos.getEnvironment({
+                owner: repositoryData[0],
+                repo: repositoryData[1],
+                environment_name: github.event.check_run.deployment.environment
+              });
+
+              core.setOutput("GITHUB_ENVIRONMENT_ID", environment.id);
+
+            } catch (error) {
+             
+              core.setFailed(error);
+            
+            }
+
+      - name: POST to GitHub API
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_RUN_ID: ${{github.event.check_run.id}}
+          GITHUB_REPOSITORY_OWNER: ${{github.repository_owner}}
+          GITHUB_REPOSITORY_NAME: ${{github.repository}}
+          GITHUB_ENVIRONMENT_ID: ${{steps.get_environment_id.outputs.GITHUB_ENVIRONMENT_ID}}
+          COMMENT: "Test automatically approved."
+        run: | 
+          curl -L \
+          -X POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ""$GITHUB_TOKEN""\
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/""$GITHUB_REPOSITORY_OWNER""/""$GITHUB_REPOSITORY_NAME""/actions/runs/""$GITHUB_RUN_ID""/pending_deployments \
+          -d '{"environment_ids":[{""$GITHUB_ENVIRONMENT_ID""}],"state":"approved","comment":""$COMMENT""}'
+
