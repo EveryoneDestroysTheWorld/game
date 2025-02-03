@@ -55,6 +55,7 @@ jobs:
         with:
           node-version: 22
           cache: "pnpm"
+          cache-dependency-path: ./packages/mtc-artillery/pnpm-lock.yaml
 
       - name: Download project
         uses: actions/download-artifact@v4.1.8
