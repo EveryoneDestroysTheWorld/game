@@ -72,19 +72,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - uses: pnpm/action-setup@v4.0.0
+        with:
+          version: 9
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+          cache-dependency-path: ./packages/mtc-artillery/pnpm-lock.yaml
+
       - name: Execute script
         uses: grand-hawk/action-roblox-luau-execution@1.0.0
         with:
           roblox_api_key: ${{ secrets.ROBLOX_DEPLOYMENT_API_KEY }}
           universe_id: ${{ vars.ROBLOX_UNIVERSE_ID }}
           place_id: ${{ vars.ROBLOX_PLACE_ID }}
-          luau_file: "src/ServerStorage/Modules/runTests.luau"
+          luau_file: "src/ServerStorage/Modules/runTests.lua"
           output_file: 'output.txt' # optional
           dump_to_summary: true
-
-      - name: Set GitHub check status
-        uses: LouisBrunner/checks-action@v2.0.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          conclusion: ${{ job.status }}
-          name: "Test Luau scripts"
