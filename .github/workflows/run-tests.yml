@@ -79,5 +79,70 @@ jobs:
           universe_id: ${{ vars.ROBLOX_UNIVERSE_ID }}
           place_id: ${{ vars.ROBLOX_PLACE_ID }}
           luau_file: "src/ServerStorage/Modules/testRunner.lua"
-          output_file: '${{ runner.temp }}/output.json' # optional
+          output_file: '${{ runner.temp }}/testResults.json' # optional
           dump_to_summary: true
+
+      - name: Verify all tests passed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+
+              let testResults = require("${{runner.temp}}/testResults.json");
+              let indexedGroup = {};
+              let groups = [testResults]
+              let nameGroups = []
+              let closestIndexedGroup = indexedGroup;
+              while (groups.length >= 1) {
+
+                let shouldGoUp = true;
+                let currentGroup = groups[groups.length - 1];
+                for (const caseName of Object.keys(currentGroup)) {
+
+                  const caseValue = currentGroup[caseName];
+                  if (closestIndexedGroup[caseName]) {
+
+                    continue;
+
+                  } else if (typeof(caseValue) === "object") {
+
+                    closestIndexedGroup[caseName] = {};
+                    closestIndexedGroup = closestIndexedGroup[caseName];
+                    groups.push(caseValue);
+                    nameGroups.push(caseName);
+                    shouldGoUp = false;
+
+                    break;
+
+                  } else if (!caseValue || typeof(caseValue) !== "boolean") {
+                    
+                    throw new Error("A test case failed.");
+                  
+                  }
+
+                }
+
+                if (shouldGoUp) {
+
+                  groups.pop();
+                  nameGroups.pop();
+
+                  let newClosestIndexedGroup = indexedGroup;
+                  for (const name of nameGroups) {
+
+                    newClosestIndexedGroup = newClosestIndexedGroup[name]
+
+                  }
+
+                  closestIndexedGroup = newClosestIndexedGroup;
+
+                }
+
+              }
+            
+            } catch (error) {
+            
+              core.error("A test case failed");
+              core.setFailed(error);
+            
+            }

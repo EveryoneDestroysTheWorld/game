@@ -72,8 +72,8 @@ local function runTests(): TestCaseResults
   
         if shouldGoUp then
   
-          table.remove(groups, 1);
-          table.remove(nameGroups, 1);
+          table.remove(groups, #groups);
+          table.remove(nameGroups, #nameGroups);
   
           local newClosestGroup = testResults;
           for _, name in nameGroups do
@@ -81,6 +81,8 @@ local function runTests(): TestCaseResults
             newClosestGroup = newClosestGroup[name] :: TestCaseResults;
   
           end;
+
+          closestGroup = newClosestGroup;
   
         end;
   
