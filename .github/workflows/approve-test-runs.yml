@@ -20,7 +20,7 @@ jobs:
           app-id: ${{ vars.WAS_GITHUB_APP_ID }}
           private-key: ${{ secrets.WAS_GITHUB_APP_PRIVATE_KEY }}
 
-      - name: Get Environment ID
+      - name: Get environment ID
         id: environment-id
         shell: pwsh
         run: |
