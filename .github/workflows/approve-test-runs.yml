@@ -8,6 +8,7 @@ on:
 
 jobs:
   approve:
+    if: ${{ github.event.check_run.name == 'Test' }}
     name: Approve test runs
     runs-on: ubuntu-24.04
     environment: Workflow Approval Service
