@@ -145,30 +145,3 @@ jobs:
               core.setFailed(error);
             
             }
-              
-  request_test_approval:
-    runs-on: ubuntu-24.04
-    environment: Workflow Approval Service
-    name: Request automatic test approval
-    needs: publish
-    steps:
-      - name: Get GitHub App installation token
-        uses: actions/create-github-app-token@v1.11.3
-        id: app-token
-        with:
-          app-id: ${{ vars.WAS_GITHUB_APP_ID }}
-          private-key: ${{ secrets.WAS_GITHUB_APP_PRIVATE_KEY }}
-
-      - name: Trigger workflow
-        env:
-          GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
-          GITHUB_REPOSITORY_OWNER: ${{ github.event.organization.login }}
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          ENVIRONMENT_NAME: "Development"
-        run: |
-          curl -X POST \
-          --fail-with-body \
-          -H "Authorization: token ""$GITHUB_TOKEN""" \
-          -H "Accept: application/vnd.github.everest-preview+json" \
-          https://api.github.com/repos/""$GITHUB_REPOSITORY_OWNER""/""$GITHUB_REPOSITORY_NAME""/dispatches \
-          -d '{"event_type": "test_check_request", "client_payload": {"environment_name": "Development", "run_id": "${{github.run_id}}"}}'
