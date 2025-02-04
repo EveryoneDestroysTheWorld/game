@@ -3,12 +3,12 @@
 name: Approve test runs
 
 on:
-  check_run:
-    types: [created]
+  repository_dispatch:
+    types: [test_check_request]
 
 jobs:
   approve:
-    if: ${{ github.event.check_run.name == 'Test' }}
+    if: ${{ github.event.client_payload.check_run_name }}
     name: Approve test runs
     runs-on: ubuntu-24.04
     environment: Workflow Approval Service
@@ -31,7 +31,7 @@ jobs:
           }
           if ($response) {
             foreach ($environment in $response.environments) {
-              if ($environment.name -eq "${{ github.event.check_run.deployment.environment }}") {
+              if ($environment.name -eq "${{ github.event.client_payload.environment_name }}") {
                 $environmentId = $environment.id
                 break
               }
