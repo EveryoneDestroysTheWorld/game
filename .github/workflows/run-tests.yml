@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-24.04
     environment: Development
     name: Test
-    needs: request_test_approval
+    needs: publish
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
