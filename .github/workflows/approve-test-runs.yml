@@ -4,11 +4,10 @@ name: Approve test runs
 
 on:
   check_run:
-    types: [created, rerequested]
+    types: [created]
 
 jobs:
   approve:
-    if: ${{ github.event.check_run.name == 'Test' }}
     name: Approve test runs
     runs-on: ubuntu-24.04
     environment: Workflow Approval Service
