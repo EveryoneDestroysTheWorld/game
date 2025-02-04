@@ -4,7 +4,7 @@ name: Approve test runs
 
 on:
   check_run:
-    types: [created]
+    types: [created, rerequested]
 
 jobs:
   approve:
