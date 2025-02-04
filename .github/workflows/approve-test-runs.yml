@@ -3,12 +3,12 @@
 name: Approve test runs
 
 on:
-  check_run:
-    types: [created]
+  repository_dispatch:
+    types: [test_check_request]
 
 jobs:
   approve:
-    if: ${{ github.event.check_run.name == 'Test' }}
+    if: ${{ github.event.client_payload.check_run_name }}
     name: Approve test runs
     runs-on: ubuntu-24.04
     environment: Workflow Approval Service
@@ -20,18 +20,18 @@ jobs:
           app-id: ${{ vars.WAS_GITHUB_APP_ID }}
           private-key: ${{ secrets.WAS_GITHUB_APP_PRIVATE_KEY }}
 
-      - name: Get Environment ID
+      - name: Get environment ID
         id: environment-id
         shell: pwsh
         run: |
           $environmentId = ""
           $url = "https://api.github.com/repos/${{ github.repository }}/environments"
           $response = Invoke-RestMethod -Uri $url -Method Get -Headers @{
-            Authorization = "Bearer ${{ steps.app-token.outputs.token }}"
+            Authorization = "token ${{ steps.app-token.outputs.token }}"
           }
           if ($response) {
             foreach ($environment in $response.environments) {
-              if ($environment.name -eq "${{ github.event.check_run.deployment.environment }}") {
+              if ($environment.name -eq "${{ github.event.client_payload.environment_name }}") {
                 $environmentId = $environment.id
                 break
               }
@@ -51,5 +51,5 @@ jobs:
           }
           "@
           Invoke-RestMethod -Uri $url -Method POST -Headers @{
-            Authorization = "Bearer ${{ steps.app-token.outputs.token }}"
+            Authorization = "token ${{ steps.app-token.outputs.token }}"
           } -Body $body -ContentType "application/json"
