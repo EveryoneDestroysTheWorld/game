@@ -8,7 +8,7 @@ on:
 
 jobs:
   approve:
-    if: ${{ github.event.client_payload.check_run_name }}
+    if: ${{ github.event.client_payload.run_id }}
     name: Approve test runs
     runs-on: ubuntu-24.04
     environment: Workflow Approval Service
@@ -42,7 +42,7 @@ jobs:
       - name: POST to GitHub API
         shell: pwsh
         run: |
-          $url = "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/pending_deployments"
+          $url = "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.client_payload.run_id }}/pending_deployments"
           $body = @"
           {
             "environment_ids": [ ${{ steps.environment-id.outputs.environment_id }} ],
