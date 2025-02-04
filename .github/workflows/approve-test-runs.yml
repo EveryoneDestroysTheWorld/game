@@ -31,7 +31,7 @@ jobs:
           }
           if ($response) {
             foreach ($environment in $response.environments) {
-              if ($environment.name -eq "${{ github.event.client_payload.workflow_environment_name }}") {
+              if ($environment.name -eq "${{ github.event.client_payload.environment_name }}") {
                 $environmentId = $environment.id
                 break
               }
