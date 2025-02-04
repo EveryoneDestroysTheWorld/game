@@ -1,0 +1,55 @@
+# If GitHub adds a feature that lets specific workflow jobs skip approvals, this action should be deprecated in favor of that feature.
+
+name: Approve test runs
+
+on:
+  check_run:
+    types: [created]
+
+jobs:
+  approve:
+    if: ${{ github.event.check_run.name == 'Test' }}
+    name: Approve test runs
+    runs-on: ubuntu-24.04
+    environment: Workflow Approval Service
+    steps:
+      - name: Get GitHub App installation token
+        uses: actions/create-github-app-token@v1.11.3
+        id: app-token
+        with:
+          app-id: ${{ vars.WAS_GITHUB_APP_ID }}
+          private-key: ${{ secrets.WAS_GITHUB_APP_PRIVATE_KEY }}
+
+      - name: Get Environment ID
+        id: environment-id
+        shell: pwsh
+        run: |
+          $environmentId = ""
+          $url = "https://api.github.com/repos/${{ github.repository }}/environments"
+          $response = Invoke-RestMethod -Uri $url -Method Get -Headers @{
+            Authorization = "Bearer ${{ steps.app-token.outputs.token }}"
+          }
+          if ($response) {
+            foreach ($environment in $response.environments) {
+              if ($environment.name -eq "${{ github.event.check_run.deployment.environment }}") {
+                $environmentId = $environment.id
+                break
+              }
+            }
+          }
+          echo "::set-output name=environment_id::$($environmentId)"
+
+      - name: POST to GitHub API
+        shell: pwsh
+        run: |
+          $url = "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/pending_deployments"
+          $body = @"
+          {
+            "environment_ids": [ ${{ steps.environment-id.outputs.environment_id }} ],
+            "state": "approved",
+            "comment": "Automatically approved for testing."
+          }
+          "@
+          Invoke-RestMethod -Uri $url -Method POST -Headers @{
+            Authorization = "Bearer ${{ steps.app-token.outputs.token }}"
+          } -Body $body -ContentType "application/json"
