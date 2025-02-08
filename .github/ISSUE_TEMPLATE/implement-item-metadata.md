@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 # Dependencies
-* DemoDemons/design#ISSUE_NUMBER: Describes the item.
+* EveryoneDestroysTheWorld/design#ISSUE_NUMBER: Describes the item.
 
 # Completion criteria
 Create two new ModuleScripts: one for the server items folder, and one for the client items folder. Use the provided templates in the README.md files.
