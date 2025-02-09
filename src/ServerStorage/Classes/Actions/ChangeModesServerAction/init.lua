@@ -51,13 +51,13 @@ function ChangeModesServerAction.__index:activate(mode: types.BatterUpDemonModes
 
   local allowedModes: {types.BatterUpDemonModes} = {"Pitcher", "Batter"};
   assert(mode and typeof(mode) == "string" and table.find(allowedModes, mode));
-  self.contestant.attributes.actionMode = mode;
+  self.contestant.attributes.archetypeMode = mode;
 
-  script.ArchetypeModeChanged:Fire(self.contestant.id, mode);
+  ServerStorage.Events.ArchetypeModeChanged:Fire(self.contestant.id);
   
   if self.contestant.player then
     
-    ReplicatedStorage.Shared.Events.ArchetypeModeChanged:FireClient(self.contestant.player, mode);
+    ReplicatedStorage.Shared.Events.ArchetypeModeChanged:FireClient(self.contestant.player);
 
   end
 

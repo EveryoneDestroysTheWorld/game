@@ -13,7 +13,7 @@ local types = require(ReplicatedStorage.Client.Modules.types);
 local id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 local name = "Change Modes";
 local description = "Do a change-up";
-local iconImage = "rbxassetid://18464513809";
+local iconImage = "rbxassetid://131445376714174";
 
 local ChangeModesClientAction = {
   id = id;
@@ -49,7 +49,7 @@ function ChangeModesClientAction.new(): types.ChangeModesClientAction
       action:activate();
 
     end;
-    iconImage = "rbxassetid://75206024784140";
+    iconImage = iconImage;
   }));
 
   return action;
@@ -58,8 +58,9 @@ end
 
 function ChangeModesClientAction.__index:activate()
 
-  local requestedMode = if self.currentMode == "Pitcher" then "Batter" else "Pitcher";
+  local requestedMode: types.BatterUpDemonMode = if self.currentMode == "Pitcher" then "Batter" else "Pitcher";
   self.remoteFunction:InvokeServer(requestedMode);
+  self.currentMode = requestedMode;
 
 end
 
