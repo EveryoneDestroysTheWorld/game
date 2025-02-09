@@ -34,17 +34,6 @@ function HeresThePitchServerAction.new(properties: types.ServerActionConstructor
 
   local action = (setmetatable(overwrittenProperties, HeresThePitchServerAction) :: any) :: types.HeresThePitchServerAction;
 
-  if action.contestant.player then
-  
-    action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function(goalDestination: Vector3?)
-
-      assert(not goalDestination or typeof(goalDestination) == "Vector3");
-      return action:activate(goalDestination);
-
-    end);
-
-  end;
-
   action.contestant.attributes.ballType = action.contestant.attributes.ballType or "Regular";
 
   local shouldRegisterGroup = true;
@@ -66,6 +55,20 @@ function HeresThePitchServerAction.new(properties: types.ServerActionConstructor
 
   end;
 
+  local player = action.contestant.player;
+  if player then
+  
+    action.remoteFunction = createInventoryRemoteFunction(player, "Action", `{player.UserId}_{action.id}`, function(goalDestination: Vector3?)
+
+      assert(not goalDestination or typeof(goalDestination) == "Vector3");
+      return action:activate(goalDestination);
+
+    end);
+
+    ReplicatedStorage.Shared.Functions.InitializeAction:InvokeClient(player, action.id);
+
+  end;
+
   return action;
 
 end;
@@ -73,6 +76,8 @@ end;
 export type PitchingFunction = (action: types.HeresThePitchServerAction, coordinates: Vector3) -> string?;
 
 function HeresThePitchServerAction.__index:activate(coordinates: Vector3): string?
+
+  assert(self.contestant.attributes.actionMode == "Pitcher", "Contestant must be in pitcher mode to use this action.");
 
   return processBall(self, coordinates);
 
@@ -83,6 +88,12 @@ function HeresThePitchServerAction.__index:breakdown(): ()
   if self.remoteFunction then
 
     self.remoteFunction:Destroy();
+
+  end;
+
+  if self.contestant.player then
+
+    ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(self.contestant.player, self.id);
 
   end;
 

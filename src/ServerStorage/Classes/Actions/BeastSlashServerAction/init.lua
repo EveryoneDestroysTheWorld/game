@@ -94,13 +94,16 @@ function BeastSlashServerAction.new(properties: types.ServerActionConstructorPro
 	local animator = humanoid:FindFirstChild("Animator") :: Animator;
 	action.animationTracks = preloadAnimations(animator, animations);
 
-	if action.contestant.player then
+	local player = action.contestant.player;
+	if player then
 
-		action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function()
+		action.remoteFunction = createInventoryRemoteFunction(player, "Action", `{player.UserId}_{action.id}`, function()
     
       action:activate();
 
     end);
+
+		ReplicatedStorage.Shared.Functions.InitializeAction:InvokeClient(player, action.id);
 
 	end
 
@@ -141,6 +144,12 @@ function BeastSlashServerAction.__index:breakdown()
 		self.remoteFunction:Destroy();
 
 	end
+
+	if self.contestant.player then
+
+    ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(self.contestant.player, self.id);
+
+  end;
 
 end
 

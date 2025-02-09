@@ -93,6 +93,8 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 		end);
 
 		action.remoteFunction = remoteFunction;
+		
+		ReplicatedStorage.Shared.Functions.InitializeAction:InvokeClient(player, action.id);
 
 	end;
 
@@ -164,6 +166,12 @@ function TakeFlightServerAction.__index:breakdown()
 		end;
 
 	end;
+
+	if self.contestant.player then
+
+    ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(self.contestant.player, self.id);
+
+  end;
 
 end
 

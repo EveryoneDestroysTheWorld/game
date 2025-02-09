@@ -73,6 +73,34 @@ ReplicatedStorage.Client.Functions.DestroyHUDButton.OnInvoke = function(buttonTy
 
 end;
 
+ReplicatedStorage.Shared.Functions.BreakdownAction.OnClientInvoke = function(actionID: string)
+
+  for index, action in initializedActions do
+
+    if action.id == actionID then
+
+      coroutine.wrap(action.breakdown)(action);
+      table.remove(initializedActions, index);
+      break;
+
+    end;
+
+  end;
+
+end;
+
+ReplicatedStorage.Shared.Functions.InitializeAction.OnClientInvoke = function(actionID: string)
+
+  task.spawn(function()
+    
+    local action = ClientAction.get(actionID).new();
+    table.insert(initializedActions, action);
+    print(`Action active: {action.name}`);
+
+  end);
+
+end;
+
 ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function(archetypeID: string)
 
   -- Disable the current archetype.
@@ -82,13 +110,7 @@ ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function
 
   end;
 
-  for _, action in initializedActions do
-
-    coroutine.wrap(action.breakdown)(action);
-
-  end;
-
-  -- Set up the archetype and actions.
+  -- Set up the archetype.
   initializedArchetype = ClientArchetype.get(archetypeID);
   task.spawn(function()
     
@@ -96,18 +118,6 @@ ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function
     print(`Archetype active: {initializedArchetype.name}`);
 
   end);
-
-  for _, actionID in initializedArchetype.actionIDs do
-
-    task.spawn(function()
-    
-      local action = ClientAction.get(actionID).new();
-      table.insert(initializedActions, action);
-      print(`Action active: {action.name}`);
-
-    end);
-
-  end;
 
 end;
 
@@ -148,15 +158,23 @@ ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function()
   -- Breakdown the archetype and actions.
   if initializedArchetype then
 
-    initializedArchetype:breakdown();
-    print(`Archetype disabled: {initializedArchetype.name}`);
+    task.spawn(function()
+    
+      initializedArchetype:breakdown();
+      print(`Archetype disabled: {initializedArchetype.name}`);
+
+    end);
 
   end;
 
   for _, action in initializedActions do
 
-    action:breakdown();
-    print(`Action disabled: {action.name}`);
+    task.spawn(function()
+
+      action:breakdown();
+      print(`Action disabled: {action.name}`);
+
+    end)
 
   end;
 
@@ -164,8 +182,12 @@ ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function()
 
     for _, item in pairs(itemList) do
 
-      item:breakdown();
-      print(`Item disabled: {item.name}`);
+      task.spawn(function()
+        
+        item:breakdown();
+        print(`Item disabled: {item.name}`);
+
+      end);
   
     end;
 
@@ -182,7 +204,7 @@ ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function()
   roundResultsGUI.Enabled = true;
 
   local roundResultsGUIRoot = ReactRoblox.createRoot(roundResultsGUI);
-  roundResultsGUIRoot:render(RoundResultsWindow);
+  roundResultsGUIRoot:render(React.createElement(RoundResultsWindow));
 
 end);
 

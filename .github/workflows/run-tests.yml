@@ -73,7 +73,7 @@ jobs:
         uses: actions/checkout@v4.1.7
 
       - name: Execute script
-        uses: Christian-Toney/action-roblox-luau-execution@79921e7ef07cae70187fb41e21d447fe2ed91941
+        uses: grand-hawk/action-roblox-luau-execution@v1.0.1
         with:
           roblox_api_key: ${{ secrets.ROBLOX_DEPLOYMENT_API_KEY }}
           universe_id: ${{ vars.ROBLOX_UNIVERSE_ID }}

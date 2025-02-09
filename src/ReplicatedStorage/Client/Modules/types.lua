@@ -18,6 +18,14 @@ export type ChangeBallTypeClientAction = ClientAction<{
   breakdown: (self: ChangeBallTypeClientAction) -> ();
 }>;
 
+export type ChangeModesClientAction = ClientAction<{
+  currentMode: "Batter" | "Pitcher";
+  remoteFunction: RemoteFunction;
+  isProcessing: boolean;
+  activate: (self: ChangeModesClientAction) -> ();
+  breakdown: (self: ChangeModesClientAction) -> ();
+}>;
+
 export type ClientAction<Extension = unknown> = ClientActionProperties & Extension & ClientActionMethods;
 
 export type ClientActionClass<ConstructorProperties = any, Action = any> = {

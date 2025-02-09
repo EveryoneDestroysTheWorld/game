@@ -88,6 +88,8 @@ function TarBombServerAction.new(properties: types.ServerActionConstructorProper
 		action.remoteEvent = remoteEvent;
 		action.remoteFunction = remoteFunction;
 
+		ReplicatedStorage.Shared.Functions.InitializeAction:InvokeClient(player, action.id);
+
 	end
 
 	return action;
@@ -149,6 +151,12 @@ function TarBombServerAction.__index:breakdown()
 		self.remoteFunction:Destroy();
 
 	end
+
+	if self.contestant.player then
+
+    ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(self.contestant.player, self.id);
+
+  end;
 
 end
 

@@ -30,13 +30,16 @@ function ChangeModesServerAction.new(properties: types.ServerActionConstructorPr
 
   local action = (setmetatable(overwrittenProperties, ChangeModesServerAction) :: any) :: types.ChangeModesServerAction;
 
-  if action.contestant.player then
+  local player = action.contestant.player;
+  if player then
   
-    action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function(mode: types.BatterUpDemonModes)
+    action.remoteFunction = createInventoryRemoteFunction(player, "Action", `{player.UserId}_{action.id}`, function(mode: types.BatterUpDemonModes)
     
       action:activate(mode);
 
     end);
+
+    ReplicatedStorage.Shared.Functions.InitializeAction:InvokeClient(player, action.id);
 
   end;
 
@@ -50,6 +53,14 @@ function ChangeModesServerAction.__index:activate(mode: types.BatterUpDemonModes
   assert(mode and typeof(mode) == "string" and table.find(allowedModes, mode));
   self.contestant.attributes.actionMode = mode;
 
+  script.ArchetypeModeChanged:Fire(self.contestant.id, mode);
+  
+  if self.contestant.player then
+    
+    ReplicatedStorage.Shared.Events.ArchetypeModeChanged:FireClient(self.contestant.player, mode);
+
+  end
+
 end;
 
 function ChangeModesServerAction.__index:breakdown(): ()
@@ -57,6 +68,12 @@ function ChangeModesServerAction.__index:breakdown(): ()
   if self.remoteFunction then
 
     self.remoteFunction:Destroy();
+
+  end;
+
+  if self.contestant.player then
+
+    ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(self.contestant.player, self.id);
 
   end;
 
