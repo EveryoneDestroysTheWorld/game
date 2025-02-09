@@ -7,8 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
-local React = require(ReplicatedStorage.Shared.Packages.react);
-local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton);
+local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local types = require(ReplicatedStorage.Client.Modules.types);
 
 local ExplosivePunchClientAction = {
@@ -34,7 +33,7 @@ function ExplosivePunchClientAction.new(): types.ExplosivePunchClientAction
 
   local action = (setmetatable(overwrittenProperties, ExplosivePunchClientAction) :: any) :: types.ExplosivePunchClientAction;
 
-  ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+  HUDService:addHUDButton({
     type = "Action";
     key = action.id;
     onActivate = function()
@@ -44,7 +43,7 @@ function ExplosivePunchClientAction.new(): types.ExplosivePunchClientAction
     end;
     shortcutCharacter = "L";
     iconImage = "rbxassetid://17771917538";
-  }));
+  });
 
   local function checkJump(_, inputState: Enum.UserInputState)
 
@@ -71,7 +70,7 @@ end
 function ExplosivePunchClientAction.__index:breakdown()
 
   ContextActionService:UnbindAction("ActivateExplosivePunch");
-  ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+  HUDService:removeHUDButton("Action", self.id);
 
 end
 

@@ -7,8 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
-local React = require(ReplicatedStorage.Shared.Packages.react);
-local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton);
+local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local types = require(ReplicatedStorage.Client.Modules.types);
 
 local HeresThePitchClientAction = {
@@ -34,7 +33,7 @@ function HeresThePitchClientAction.new(): types.HeresThePitchClientAction
 
   local action = (setmetatable(overwrittenProperties, HeresThePitchClientAction) :: any) :: types.HeresThePitchClientAction;
 
-  ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+  HUDService:addHUDButton({
     type = "Action";
     key = action.id;
     shortcutCharacter = "L";
@@ -44,7 +43,7 @@ function HeresThePitchClientAction.new(): types.HeresThePitchClientAction
 
     end;
     iconImage = "rbxassetid://90434649353486";
-  }));
+  });
 
   action.remoteFunction.OnClientInvoke = function(ballName: string)
 
@@ -84,7 +83,7 @@ end
 
 function HeresThePitchClientAction.__index:breakdown()
     
-  ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+  HUDService:removeHUDButton("Action", self.id);
   ContextActionService:UnbindAction("ActivateFoulBallBlitz");
 
 end;

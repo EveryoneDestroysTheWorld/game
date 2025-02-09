@@ -33,6 +33,9 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
 
   local archetype = (setmetatable(overwrittenProperties, BatterUpDemonServerArchetype) :: any) :: types.BatterUpDemonServerArchetype;
 
+  archetype.contestant.attributes.archetypeMode = "Pitcher";
+  ServerStorage.Events.ArchetypeModeChanged:Fire(archetype.id);
+
   if properties.contestant.player then
 
     task.spawn(function()

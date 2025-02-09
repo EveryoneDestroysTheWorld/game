@@ -146,6 +146,8 @@ export type AutopilotMethods = {
 
 export type BallType = "Explosive" | "Electric" | "Poison" | "Regular";
 
+export type BatterUpDemonModes = "Batter" | "Pitcher";
+
 export type BatterUpDemonServerArchetype = BatterUpDemonServerArchetypeProperties & BatterUpDemonServerArchetypeMethods;
 
 export type BatterUpDemonServerArchetypeProperties = ServerArchetypeProperties<{
@@ -169,6 +171,14 @@ export type ChangeBallTypeServerAction = ServerAction<{
   remoteFunction: RemoteFunction?;
   activate: (self: ChangeBallTypeServerAction, ballType: BallType) -> ();
   breakdown: (self: ChangeBallTypeServerAction) -> ();
+}>;
+
+export type ChangeModesServerAction = ServerAction<{
+  contestant: ServerContestant;
+  bindableFunction: BindableFunction;
+  remoteFunction: RemoteFunction?;
+  activate: (self: ChangeModesServerAction, mode: BatterUpDemonModes) -> ();
+  breakdown: (self: ChangeModesServerAction) -> ();
 }>;
 
 export type HeresThePitchServerAction = ServerAction<{
@@ -470,6 +480,13 @@ export type ServerAction<ExtendedProperties = unknown> = {
 
 export type ServerActionClass<ConstructorProperties = any, Action = any> = {
   new: (...ConstructorProperties) -> Action
+}
+
+export type ServerActionFactory = {
+  get: (
+    ((effectID: "ChangeModes") -> ServerActionClass<ServerActionConstructorProperties, ChangeModesServerAction>)
+    & ((actionID: string) -> ServerActionClass)
+  );
 }
 
 export type ServerArchetype = ServerArchetypeProperties & ServerArchetypeMethods;

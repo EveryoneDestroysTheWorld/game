@@ -9,7 +9,7 @@ export type TestCaseResults = {
 }
 
 export type TestCase = {
-  [string]: TestCase | () -> boolean;
+  [string]: TestCase | () -> ();
 }
 
 --[[
@@ -52,7 +52,8 @@ local function runTests(): TestCaseResults
   
             xpcall(function()
             
-              closestGroup[caseName] = caseValue();
+              caseValue()
+              closestGroup[caseName] = true;
 
             end, function(message)
 

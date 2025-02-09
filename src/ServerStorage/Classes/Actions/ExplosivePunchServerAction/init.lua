@@ -74,6 +74,7 @@ function ExplosivePunchServerAction.new(properties: types.ServerActionConstructo
 
     end);
     
+    ReplicatedStorage.Shared.Functions.InitializeAction:InvokeClient(player, action.id);
 
   end;
 
@@ -180,6 +181,12 @@ function ExplosivePunchServerAction.__index:breakdown()
   if self.remoteFunction then
     
     self.remoteFunction:Destroy();
+
+  end;
+
+  if self.contestant.player then
+
+    ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(self.contestant.player, self.id);
 
   end;
   

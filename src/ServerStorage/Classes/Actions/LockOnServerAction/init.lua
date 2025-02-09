@@ -59,6 +59,8 @@ function LockOnServerAction.new(properties: types.ServerActionConstructorPropert
 		end);
 
 		action.remoteEvent = remoteEvent;
+		
+		ReplicatedStorage.Shared.Functions.InitializeAction:InvokeClient(player, action.id);
 
 	end;
 	
@@ -96,6 +98,12 @@ function LockOnServerAction.__index:breakdown()
 		self.remoteEvent:Destroy();
 
 	end;
+
+	if self.contestant.player then
+
+    ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(self.contestant.player, self.id);
+
+  end;
 
 end
 

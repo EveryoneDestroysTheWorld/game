@@ -72,9 +72,10 @@ function DiveBombServerAction.new(properties: types.ServerActionConstructorPrope
 
 	end;
 
-	if action.contestant.player then
+	local player = action.contestant.player;
+	if player then
 
-		action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function(coordinates, shouldUseTarget)
+		action.remoteFunction = createInventoryRemoteFunction(player, "Action", `{player.UserId}_{action.id}`, function(coordinates, shouldUseTarget)
 		
 			assert(typeof(coordinates) == "Vector3");
 			assert(typeof(shouldUseTarget) == "boolean");
@@ -82,6 +83,8 @@ function DiveBombServerAction.new(properties: types.ServerActionConstructorPrope
 			action:activate(coordinates, shouldUseTarget);
 
 		end);
+
+		ReplicatedStorage.Shared.Functions.InitializeAction:InvokeClient(player, action.id);
 
 	end
 
@@ -120,6 +123,12 @@ function DiveBombServerAction.__index:breakdown()
 		self.remoteFunction:Destroy();
 
 	end
+
+	if self.contestant.player then
+
+    ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(self.contestant.player, self.id);
+
+  end;
 
 end;
 

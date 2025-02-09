@@ -82,6 +82,8 @@ function RocketFeetServerAction.new(properties: types.ServerActionConstructorPro
 
     end);
 
+    ReplicatedStorage.Shared.Functions.InitializeAction:InvokeClient(player, action.id);
+
   end
 
   return action;
@@ -183,6 +185,12 @@ function RocketFeetServerAction.__index:breakdown()
 
   self.leftFootExplosivePart:Destroy();
   self.rightFootExplosivePart:Destroy();
+
+  if self.contestant.player then
+
+    ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(self.contestant.player, self.id);
+
+  end;
 
 end
 

@@ -35,17 +35,18 @@ function FireBeamServerAction.new(properties: types.ServerActionConstructorPrope
 	
   local action = (setmetatable(overwrittenProperties, FireBeamServerAction) :: any) :: types.FireBeamServerAction;
 
-	if action.contestant.player then
+	local player = action.contestant.player;
+	if player then
 
-		local remoteID = `{action.contestant.player.UserId}_{action.id}`;
-		action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", remoteID, function(shouldCharge: boolean)
+		local remoteID = `{player.UserId}_{action.id}`;
+		action.remoteFunction = createInventoryRemoteFunction(player, "Action", remoteID, function(shouldCharge: boolean)
     
 			assert(not shouldCharge or typeof(shouldCharge) == "boolean");
       action:activate(shouldCharge);
 
     end);
 
-		local remoteEvent = createInventoryRemoteEvent(action.contestant.player, "Action", remoteID);
+		local remoteEvent = createInventoryRemoteEvent(player, "Action", remoteID);
 		remoteEvent.OnServerEvent:Connect(function(player: Player, coordinates: Vector3)
 		
 			assert(player == action.contestant.player);
@@ -54,6 +55,8 @@ function FireBeamServerAction.new(properties: types.ServerActionConstructorPrope
 
 		end);
 		action.remoteEvent = remoteEvent;
+
+		ReplicatedStorage.Shared.Functions.InitializeAction:InvokeClient(player, action.id);
 
 	end
 
@@ -97,6 +100,12 @@ function FireBeamServerAction.__index:breakdown()
 		self.remoteEvent:Destroy();
 
 	end;
+
+	if self.contestant.player then
+
+    ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(self.contestant.player, self.id);
+
+  end;
 
 end
 

@@ -21,7 +21,6 @@ local function setupGUI()
     if shouldEnable and not gui then
 
       local newGUI = Instance.new("ScreenGui");
-      print("yeah");
       gui = newGUI;
       newGUI.Parent = Players.LocalPlayer:WaitForChild("PlayerGui");
       newGUI.Name = "ArchetypeSelectorGUI";

@@ -7,13 +7,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
-local React = require(ReplicatedStorage.Shared.Packages.react);
-local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
+local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local types = require(ReplicatedStorage.Client.Modules.types);
 
 local TakeFlightClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
-	iconImage = "rbxassetid://17771917538";
+	iconImage = "rbxassetid://92011231218008";
 	name = "Take Flight";
 	description = "You are great at flying! I'm surprised those wings can carry you.";
 	__index = {} :: types.TakeFlightClientAction;
@@ -35,7 +34,7 @@ function TakeFlightClientAction.new(): types.TakeFlightClientAction
 
   local action = (setmetatable(overwrittenProperties, TakeFlightClientAction) :: any) :: types.TakeFlightClientAction;
 
-	ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+	HUDService:addHUDButton({
 		type = "Action";
 		key = action.id;
 		onActivate = function()
@@ -44,8 +43,8 @@ function TakeFlightClientAction.new(): types.TakeFlightClientAction
 
 		end;
 		shortcutCharacter = "Space";
-		iconImage = "rbxassetid://92011231218008";
-	}));
+		iconImage = TakeFlightClientAction.iconImage;
+	});
 
 	local lastTime = 0;
 	local function checkJump(_, inputState: Enum.UserInputState)
@@ -76,7 +75,7 @@ end;
 function TakeFlightClientAction.__index:breakdown()
 
 	ContextActionService:UnbindAction("ActivateTakeFlight");
-	ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+	HUDService:removeHUDButton("Action", self.id);
 
 end;
 

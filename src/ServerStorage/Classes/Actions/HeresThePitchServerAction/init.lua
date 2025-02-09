@@ -34,37 +34,71 @@ function HeresThePitchServerAction.new(properties: types.ServerActionConstructor
 
   local action = (setmetatable(overwrittenProperties, HeresThePitchServerAction) :: any) :: types.HeresThePitchServerAction;
 
-  if action.contestant.player then
-  
-    action.remoteFunction = createInventoryRemoteFunction(action.contestant.player, "Action", `{action.contestant.player.UserId}_{action.id}`, function(goalDestination: Vector3?)
+  local function initializeAction()
 
-      assert(not goalDestination or typeof(goalDestination) == "Vector3");
-      return action:activate(goalDestination);
+    action.contestant.attributes.ballType = action.contestant.attributes.ballType or "Regular";
 
-    end);
+    local shouldRegisterGroup = true;
+    for _, collisionGroup in PhysicsService:GetRegisteredCollisionGroups() do
 
-  end;
+      if collisionGroup.name == action.collisionGroupName then
 
-  action.contestant.attributes.ballType = action.contestant.attributes.ballType or "Regular";
+        shouldRegisterGroup = false;
+        break;
 
-  local shouldRegisterGroup = true;
-  for _, collisionGroup in PhysicsService:GetRegisteredCollisionGroups() do
+      end;
+    
+    end
 
-    if collisionGroup.name == action.collisionGroupName then
+    if shouldRegisterGroup then
 
-      shouldRegisterGroup = false;
-      break;
+      PhysicsService:RegisterCollisionGroup(action.collisionGroupName);
+      PhysicsService:CollisionGroupSetCollidable(action.collisionGroupName, `Contestant-{action.contestant.id}`, false);
 
     end;
-  
-  end
 
-  if shouldRegisterGroup then
+    local player = action.contestant.player;
+    if player then
+    
+      action.remoteFunction = createInventoryRemoteFunction(player, "Action", `{player.UserId}_{action.id}`, function(goalDestination: Vector3?)
 
-    PhysicsService:RegisterCollisionGroup(action.collisionGroupName);
-    PhysicsService:CollisionGroupSetCollidable(action.collisionGroupName, `Contestant-{action.contestant.id}`, false);
+        assert(not goalDestination or typeof(goalDestination) == "Vector3");
+        return action:activate(goalDestination);
+
+      end);
+
+      ReplicatedStorage.Shared.Functions.InitializeAction:InvokeClient(player, action.id);
+
+    end;
 
   end;
+
+  local function verifyArchetypeMode()
+
+    local archetypeMode = action.contestant.attributes.archetypeMode;
+    if archetypeMode == "Pitcher" then
+
+      initializeAction();
+
+    else
+
+      action:breakdown();
+
+    end;
+
+  end;
+  
+  verifyArchetypeMode();
+
+  ServerStorage.Events.ArchetypeModeChanged.Event:Connect(function(contestantID: number)
+  
+    if contestantID == action.contestant.id then
+
+      verifyArchetypeMode();
+
+    end;
+
+  end);
 
   return action;
 
@@ -73,6 +107,8 @@ end;
 export type PitchingFunction = (action: types.HeresThePitchServerAction, coordinates: Vector3) -> string?;
 
 function HeresThePitchServerAction.__index:activate(coordinates: Vector3): string?
+
+  assert(self.contestant.attributes.archetypeMode == "Pitcher", "Contestant must be in pitcher mode to use this action.");
 
   return processBall(self, coordinates);
 
@@ -83,6 +119,12 @@ function HeresThePitchServerAction.__index:breakdown(): ()
   if self.remoteFunction then
 
     self.remoteFunction:Destroy();
+
+  end;
+
+  if self.contestant.player then
+
+    ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(self.contestant.player, self.id);
 
   end;
 

@@ -7,8 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
-local React = require(ReplicatedStorage.Shared.Packages.react);
-local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
+local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local targetingFramework = require(ReplicatedStorage.Client.Modules.EasyTargetingFramework);
 local types = require(ReplicatedStorage.Client.Modules.types);
 
@@ -37,7 +36,7 @@ function TarBombClientAction.new(): types.TarBombClientAction
 
 	local action = (setmetatable(overwrittenProperties, TarBombClientAction) :: any) :: types.TarBombClientAction;
 
-	ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+	HUDService:addHUDButton({
 		type = "Action";
 		key = action.id;
 		onActivate = function()
@@ -47,7 +46,7 @@ function TarBombClientAction.new(): types.TarBombClientAction
 		end;
 		shortcutCharacter = "1";
 		iconImage = "rbxassetid://73246050129377";
-	}));
+	});
 
 	local ignoreInput = false;
 
@@ -141,7 +140,7 @@ end
 function TarBombClientAction.__index:breakdown()
 
 	ContextActionService:UnbindAction("ActivateTarBomb");
-	ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+	HUDService:removeHUDButton("Action", self.id);
 
 end
 
