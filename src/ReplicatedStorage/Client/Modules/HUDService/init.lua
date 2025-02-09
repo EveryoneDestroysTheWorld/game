@@ -14,7 +14,7 @@ local HUDService = {
   actionButtonProperties = {} :: {HUDServiceTypes.HUDButtonProperties};
 }
 
-function HUDService:initialize()
+function HUDService:initialize(): ()
 
   local player = Players.LocalPlayer;
   local actionButtonContainerGUI = Instance.new("ScreenGui");
@@ -46,7 +46,7 @@ function HUDService:initialize()
 
 end;
 
-function HUDService:refreshRoots()
+function HUDService:refreshRoots(): ()
 
   HUDService.itemButtonContainerRoot:render(
     React.createElement(HUDButtonContainer, {
@@ -64,7 +64,7 @@ function HUDService:refreshRoots()
 
 end;
 
-function HUDService:sortActionButtons()
+function HUDService:sortActionButtons(): ()
 
   table.sort(HUDService.actionButtonProperties, function(actionButton1, actionButton2)
     
