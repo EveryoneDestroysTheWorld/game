@@ -8,6 +8,7 @@ local ContextActionService = game:GetService("ContextActionService");
 local Players = game:GetService("Players");
 local UserInputService = game:GetService("UserInputService");
 
+local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local types = require(ReplicatedStorage.Client.Modules.types);
 
 local RocketFeetClientAction = {
@@ -65,6 +66,14 @@ function RocketFeetClientAction.new(): types.RocketFeetClientAction
 
   end;
 
+  HUDService:addHUDButton({
+    type = "Action";
+    key = action.id;
+    onActivate = function() action:activate() end;
+    shortcutCharacter = "L";
+    iconImage = RocketFeetClientAction.iconImage;
+  });
+
   return action;
 
 end
@@ -91,7 +100,7 @@ function RocketFeetClientAction.__index:breakdown()
 
   end
   
-  ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+  HUDService:removeHUDButton("Action", self.id);
 
 end
 

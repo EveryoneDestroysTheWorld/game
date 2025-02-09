@@ -1,77 +1,23 @@
 --!strict
-local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
 local Players = game:GetService("Players");
-local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype);
-local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
+local player = Players.LocalPlayer;
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
-local HUDButtonContainer = require(ReplicatedStorage.Client.ReactComponents.HUDButtonContainer);
+local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype);
+local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
 local ClientItem = require(ReplicatedStorage.Client.Classes.ClientItem);
-local StarterGui = game:GetService("StarterGui");
 type ClientArchetype = ClientArchetype.ClientArchetype;
 type ClientItem = ClientItem.ClientItem;
 local RoundResultsWindow = require(script.ReactComponents.RoundResultsWindow);
 local types = require(ReplicatedStorage.Client.Modules.types);
+local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 
 local initializedArchetype: ClientArchetype = nil;
 local initializedActions: {types.ClientAction} = {};
 local initializedItems: {[string]: {[string]: ClientItem}} = {};
-
--- Set up the UI.
-local player = Players.LocalPlayer;
-local actionButtonContainer = Instance.new("ScreenGui");
-actionButtonContainer.Name = "ActionButtonContainerGUI";
-actionButtonContainer.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
-actionButtonContainer.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets;
-actionButtonContainer.ResetOnSpawn = false;
-actionButtonContainer.DisplayOrder = 1;
-actionButtonContainer.Enabled = true;
-
-local itemButtonContainer = actionButtonContainer:Clone();
-itemButtonContainer.Name = "ItemButtonContainerGUI";
-local actionButtonContainerRoot = ReactRoblox.createRoot(actionButtonContainer);
-local itemButtonContainerRoot = ReactRoblox.createRoot(itemButtonContainer);
-
-local actionButtons = {};
-local itemButtons = {};
-local function rerenderRoots()
-
-  itemButtonContainer.Parent = player.PlayerGui;
-  itemButtonContainerRoot:render(React.createElement(HUDButtonContainer, {type = "Item"}, React.createElement(React.Fragment, {}, itemButtons)));
-
-  actionButtonContainer.Parent = player.PlayerGui;
-  actionButtonContainerRoot:render(React.createElement(HUDButtonContainer, {type = "Action"}, React.createElement(React.Fragment, {}, actionButtons)));
-
-end;
-
-ReplicatedStorage.Client.Functions.AddHUDButton.OnInvoke = function(buttonType: "Action" | "Item", buttonComponent)
-  
-  assert(buttonType == "Action" or buttonType == "Item");
-  assert(buttonComponent);
-
-  table.insert(if buttonType == "Action" then actionButtons else itemButtons, buttonComponent);
-  rerenderRoots();
-
-end;
-
-ReplicatedStorage.Client.Functions.DestroyHUDButton.OnInvoke = function(buttonType: "Action" | "Item", key: number)
-
-  local list = if buttonType == "Action" then actionButtons else itemButtons;
-
-  for index, component in list :: {any} do
-
-    if component.key == key then
-
-      table.remove(list, index);
-      break;
-
-    end;
-
-  end;
-
-  rerenderRoots();
-
-end;
 
 ReplicatedStorage.Shared.Functions.BreakdownAction.OnClientInvoke = function(actionID: string)
 
@@ -112,6 +58,7 @@ ReplicatedStorage.Shared.Functions.InitializeArchetype.OnClientInvoke = function
 
   -- Set up the archetype.
   initializedArchetype = ClientArchetype.get(archetypeID);
+  HUDService:setActionIDList(initializedArchetype.actionIDs);
   task.spawn(function()
     
     initializedArchetype:initialize();
@@ -144,16 +91,10 @@ ReplicatedStorage.Shared.Functions.BreakdownItem.OnClientInvoke = function(itemI
   print(`Breaking down item: {item.name}`);
   item:breakdown();
   initializedItems[itemID][specificItemID] = nil;
-  rerenderRoots();
 
 end;
 
 ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function()
-
-  -- Remove the GUI.
-  ReplicatedStorage.Client.Functions.AddHUDButton.OnInvoke = nil;
-  itemButtonContainerRoot:unmount();
-  actionButtonContainerRoot:unmount();
 
   -- Breakdown the archetype and actions.
   if initializedArchetype then
@@ -208,21 +149,4 @@ ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function()
 
 end);
 
-while not pcall(function()
-
-  local resetBindable = Instance.new("BindableEvent")
-  resetBindable.Event:Connect(function()
-
-    ReplicatedStorage.Shared.Events.ResetButtonPressed:FireServer();
-
-  end)
-
-  -- This will remove the current behavior for when the reset button 
-  -- is pressed and just fire resetBindable instead.
-  StarterGui:SetCore("ResetButtonCallback", resetBindable);
-  
-end) do
-
-  task.wait();
-
-end;
+HUDService:initialize();

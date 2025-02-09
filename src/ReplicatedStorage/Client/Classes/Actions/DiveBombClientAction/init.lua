@@ -7,8 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
-local React = require(ReplicatedStorage.Shared.Packages.react);
-local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
+local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local targetingFramework = require(ReplicatedStorage.Client.Modules.EasyTargetingFramework);
 local types = require(ReplicatedStorage.Client.Modules.types);
 
@@ -36,7 +35,7 @@ function DiveBombClientAction.new(): types.DiveBombClientAction
 
   local action = (setmetatable(overwrittenProperties, DiveBombClientAction) :: any) :: types.DiveBombClientAction;
 
-	ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+	HUDService:addHUDButton({
 		type = "Action";
 		key = action.id;
 		onActivate = function()
@@ -46,7 +45,7 @@ function DiveBombClientAction.new(): types.DiveBombClientAction
 		end;
 		shortcutCharacter = "1";
 		iconImage = "rbxassetid://87098535403201";
-	}));
+	});
 
 	player = Players.LocalPlayer;
 
@@ -81,7 +80,7 @@ end
 function DiveBombClientAction.__index:breakdown()
 
 	ContextActionService:UnbindAction("ActivateDiveBomb");
-	ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+	HUDService:removeHUDButton("Action", self.id);
 
 end
 

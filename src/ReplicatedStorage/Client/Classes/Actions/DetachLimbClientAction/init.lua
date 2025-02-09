@@ -9,7 +9,7 @@ local ContextActionService = game:GetService("ContextActionService");
 
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
-local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton);
+local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local QuickSelectionMenu = require(ReplicatedStorage.Client.ReactComponents.QuickSelectionMenu);
 
 local types = require(ReplicatedStorage.Client.Modules.types);
@@ -37,13 +37,13 @@ function DetachLimbClientAction.new(): types.DetachLimbClientAction
 
   local action = (setmetatable(overwrittenProperties, DetachLimbClientAction) :: any) :: types.DetachLimbClientAction;
 
-  ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+  HUDService:addHUDButton({
     type = "Action";
     key = action.id;
     onActivate = function() action:activate() end;
     shortcutCharacter = "L";
     iconImage = "rbxassetid://17551046771";
-  }));
+  });
 
   local function toggleGUI(_, inputState: Enum.UserInputState)
 
@@ -124,7 +124,7 @@ function DetachLimbClientAction.__index:breakdown()
     
   end;
 
-  ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+  HUDService:removeHUDButton("Action", self.id);
   
 end
 

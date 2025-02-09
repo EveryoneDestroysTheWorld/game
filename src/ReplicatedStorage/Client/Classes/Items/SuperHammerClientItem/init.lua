@@ -61,7 +61,7 @@ function SuperHammerClientItem.new(): ClientItem
   local function breakdown(self: ClientItem)
 
     assert(_specificItemID);
-    ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Item", _specificItemID);
+    HUDService:removeHUDButton("Item", _specificItemID);
     ContextActionService:UnbindAction("ActivateSuperHammer");
     _specificItemID = nil;
 

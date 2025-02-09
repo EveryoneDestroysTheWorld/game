@@ -7,8 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
-local React = require(ReplicatedStorage.Shared.Packages.react);
-local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
+local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local types = require(ReplicatedStorage.Client.Modules.types);
 
 local BeastSlashClientAction = {
@@ -34,7 +33,7 @@ function BeastSlashClientAction.new(): types.BeastSlashClientAction
 
   local action = (setmetatable(overwrittenProperties, BeastSlashClientAction) :: any) :: types.BeastSlashClientAction;
 
-	ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+	HUDService:addHUDButton({
 		type = "Action";
 		key = action.id;
 		onActivate = function()
@@ -44,7 +43,7 @@ function BeastSlashClientAction.new(): types.BeastSlashClientAction
 		end;
 		shortcutCharacter = "1";
 		iconImage = "rbxassetid://104334768004371";
-	}));
+	});
 
 	local function checkJump(_, inputState: Enum.UserInputState)
 
@@ -75,7 +74,7 @@ end
 function BeastSlashClientAction.__index:breakdown()
 
 	ContextActionService:UnbindAction("ActivateMelee");
-	ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+	HUDService:removeHUDButton("Action", self.id);
 
 end
 

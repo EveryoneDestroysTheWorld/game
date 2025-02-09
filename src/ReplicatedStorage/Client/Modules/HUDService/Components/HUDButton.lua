@@ -3,16 +3,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local UserInputService = game:GetService("UserInputService");
 local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
-local CircleUICorner = require(script.Parent.CircleUICorner);
+local CircleUICorner = require(ReplicatedStorage.Client.ReactComponents.CircleUICorner);
+local HUDServiceTypes = require(script.Parent.Parent.types);
 
-type HUDButtonProps = {
-  type: "Action" | "Item";
-  onActivate: () -> ();
-  shortcutCharacter: string;
-  iconImage: string?;
-}
-
-local function HUDButton(props: HUDButtonProps)
+local function HUDButton(props: HUDServiceTypes.HUDButtonProperties)
 
   local isKeyboardEnabled, setIsKeyboardEnabled = React.useState(false);
 

@@ -8,7 +8,7 @@ local Players = game:GetService("Players");
 
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton);
+local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local QuickSelectionMenu = require(ReplicatedStorage.Client.ReactComponents.QuickSelectionMenu);
 local types = require(ReplicatedStorage.Client.Modules.types);
 
@@ -35,7 +35,7 @@ function ChangeBallTypeClientAction.new(): types.ChangeBallTypeClientAction
 
   local action = (setmetatable(overwrittenProperties, ChangeBallTypeClientAction) :: any) :: types.ChangeBallTypeClientAction;
 
-  ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+  HUDService:addHUDButton({
     type = "Action";
     key = action.id;
     shortcutCharacter = "L";
@@ -45,7 +45,7 @@ function ChangeBallTypeClientAction.new(): types.ChangeBallTypeClientAction
 
     end;
     iconImage = "rbxassetid://75206024784140";
-  }));
+  });
 
   return action;
 
@@ -96,7 +96,7 @@ end
 
 function ChangeBallTypeClientAction.__index:breakdown()
     
-  ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+  HUDService:removeHUDButton("Action", self.id);
 
 end;
 

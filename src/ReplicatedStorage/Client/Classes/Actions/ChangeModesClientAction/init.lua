@@ -7,7 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton);
+local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local types = require(ReplicatedStorage.Client.Modules.types);
 
 local id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
@@ -40,7 +40,7 @@ function ChangeModesClientAction.new(): types.ChangeModesClientAction
 
   local action = (setmetatable(overwrittenProperties, ChangeModesClientAction) :: any) :: types.ChangeModesClientAction;
 
-  ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+  HUDService:addHUDButton({
     type = "Action";
     key = action.id;
     shortcutCharacter = "L";
@@ -50,7 +50,7 @@ function ChangeModesClientAction.new(): types.ChangeModesClientAction
 
     end;
     iconImage = iconImage;
-  }));
+  });
 
   return action;
 
@@ -66,7 +66,7 @@ end
 
 function ChangeModesClientAction.__index:breakdown()
     
-  ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+  HUDService:removeHUDButton("Action", self.id);
 
 end;
 

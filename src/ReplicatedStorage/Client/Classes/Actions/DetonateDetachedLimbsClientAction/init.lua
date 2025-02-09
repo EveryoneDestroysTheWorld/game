@@ -6,8 +6,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 
-local React = require(ReplicatedStorage.Shared.Packages.react);
-local HUDButton = require(script.Parent.Parent.Parent.ReactComponents.HUDButton);
+local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local types = require(ReplicatedStorage.Client.Modules.types);
 
 local DetonateDetachedLimbsClientAction = {
@@ -33,7 +32,7 @@ function DetonateDetachedLimbsClientAction.new(): types.DetonateDetachedLimbsCli
 
   local action = (setmetatable(overwrittenProperties, DetonateDetachedLimbsClientAction) :: any) :: types.DetonateDetachedLimbsClientAction;
 
-  ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Action", React.createElement(HUDButton, {
+  HUDService:addHUDButton({
     type = "Action";
     key = action.id;
     onActivate = function() 
@@ -43,7 +42,7 @@ function DetonateDetachedLimbsClientAction.new(): types.DetonateDetachedLimbsCli
     end;
     shortcutCharacter = "L";
     iconImage = "rbxassetid://136558858062155";
-  }));
+  });
   
   return action;
 
@@ -57,7 +56,7 @@ end;
 
 function DetonateDetachedLimbsClientAction.__index:breakdown()
     
-  ReplicatedStorage.Client.Functions.DestroyHUDButton:Invoke("Action", self.id);
+  HUDService:removeHUDButton("Action", self.id);
 
 end
 
