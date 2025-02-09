@@ -6,7 +6,7 @@ local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useRespo
 local CircleUICorner = require(ReplicatedStorage.Client.ReactComponents.CircleUICorner);
 local HUDServiceTypes = require(script.Parent.Parent.types);
 
-local function HUDButton(props: HUDServiceTypes.HUDButtonProperties)
+local function HUDButton(props: HUDServiceTypes.HUDButtonProperties & {LayoutOrder: number})
 
   local isKeyboardEnabled, setIsKeyboardEnabled = React.useState(false);
 
@@ -33,6 +33,7 @@ local function HUDButton(props: HUDServiceTypes.HUDButtonProperties)
     BackgroundTransparency = 1;
     AutomaticSize = Enum.AutomaticSize.XY;
     Text = "";
+    LayoutOrder = props.LayoutOrder;
   }, {
     UIListLayout = React.createElement("UIListLayout", {
       SortOrder = Enum.SortOrder.LayoutOrder;

@@ -16,9 +16,16 @@ local function HUDButtonContainer(properties: HUDButtonContainerProperties)
   local isActionList = properties.type == "Action";
   local buttons = {};
 
-  for _, propertyList in properties.buttonPropertiesList do
+  for index, propertyList in properties.buttonPropertiesList do
 
-    table.insert(buttons, React.createElement(HUDButton, propertyList));
+    table.insert(buttons, React.createElement(HUDButton, {
+      iconImage = propertyList.iconImage;
+      key = propertyList.key;
+      type = propertyList.type;
+      onActivate = propertyList.onActivate;
+      shortcutCharacter = propertyList.shortcutCharacter;
+      LayoutOrder = index;
+    }));
 
   end;
 
