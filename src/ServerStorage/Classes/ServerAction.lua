@@ -8,7 +8,7 @@ local ServerStorage = game:GetService("ServerStorage");
 
 local types = require(ServerStorage.Modules.types);
 
-local ServerAction = {};
+local ServerAction: types.ServerActionFactory = {} :: types.ServerActionFactory;
 
 function ServerAction.get(actionID: string): types.ServerActionClass
 

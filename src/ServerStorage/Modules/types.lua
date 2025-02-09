@@ -482,6 +482,13 @@ export type ServerActionClass<ConstructorProperties = any, Action = any> = {
   new: (...ConstructorProperties) -> Action
 }
 
+export type ServerActionFactory = {
+  get: (
+    ((effectID: "ChangeModes") -> ServerActionClass<ServerActionConstructorProperties, ChangeModesServerAction>)
+    & ((actionID: string) -> ServerActionClass)
+  );
+}
+
 export type ServerArchetype = ServerArchetypeProperties & ServerArchetypeMethods;
 
 export type ServerArchetypeClass = ServerArchetypeProperties & {new: (...any) -> ServerArchetype};
