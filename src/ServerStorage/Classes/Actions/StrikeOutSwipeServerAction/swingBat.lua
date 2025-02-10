@@ -24,6 +24,7 @@ local function swingBat(action: types.StrikeOutSwipeServerAction, bat: Accessory
   action.startChargeTimeMilliseconds = nil;
 
   local charge = calculateCharge(startTime, action.maxChargeDurationMilliseconds);
+  warn(charge);
 
   -- Run the swipe animation. Players should run animations on their own client.
   local player = action.contestant.player;

@@ -29,7 +29,7 @@ function StrikeOutSwipeServerAction.new(properties: types.ServerActionConstructo
   local action = (setmetatable({}, StrikeOutSwipeServerAction) :: any) :: types.StrikeOutSwipeServerAction;
   action.contestant = properties.contestant;
   action.startChargeTimeMilliseconds = 0;
-  action.maxChargeDurationMilliseconds = 100;
+  action.maxChargeDurationMilliseconds = 1000;
   action.maxDamage = 20;
   action.requiredStamina = 5;
   action.touchedTimeLimitSeconds = 1;
