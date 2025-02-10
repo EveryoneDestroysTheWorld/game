@@ -65,7 +65,7 @@ local function chargeAttack(action: types.FireBeamServerAction, primaryPart: Bas
 
 	end);
 
-	task.delay(action.maxChargeTimeMilliseconds / 1000, function()
+	task.delay(action.maxChargeDurationMilliseconds / 1000, function()
 
 		if action.startChargeTimeMilliseconds == originalChargeTime then
 

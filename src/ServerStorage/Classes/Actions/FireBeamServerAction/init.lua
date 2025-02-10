@@ -23,7 +23,7 @@ local FireBeamServerAction = {
 		id = FireBeamClientAction.id;
 		description = FireBeamClientAction.description;
 		charge = 0;
-		maxChargeTimeMilliseconds = 2000;
+		maxChargeDurationMilliseconds = 2000;
 	} :: types.FireBeamServerAction;
 };
 

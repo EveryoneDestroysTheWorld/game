@@ -155,6 +155,7 @@ export type BatterUpDemonServerArchetypeProperties = ServerArchetypeProperties<{
   ragdollClone: Model?;
   events: {RBXScriptConnection};
   isContestantDowned: boolean;
+  type: ArchetypeType;
 }>
 
 export type BatterUpDemonServerArchetypeConstructorProperties = {
@@ -244,7 +245,7 @@ export type RocketFeetServerAction = ServerAction<{
 export type FireBeamServerAction = ServerAction<{
   contestant: ServerContestant;
   startChargeTimeMilliseconds: number?;
-  maxChargeTimeMilliseconds: number;
+  maxChargeDurationMilliseconds: number;
   coordinates: Vector3?;
   bindableFunction: BindableFunction;
   remoteFunction: RemoteFunction?;
@@ -291,7 +292,7 @@ export type TarBombServerAction = ServerAction<{
     [string]: AnimationTrack;
   };
   startChargeTimeMilliseconds: number?;
-  maxChargeTimeMilliseconds: number;
+  maxChargeDurationMilliseconds: number;
   activate: (self: TarBombServerAction, shouldCharge: boolean, coordinates: Vector3?, shouldUseTarget: boolean?, shouldBypassStaminaCheck: boolean?) -> ();
   breakdown: (self: TarBombServerAction) -> ();
 }>;
@@ -485,13 +486,32 @@ export type ServerActionClass<ConstructorProperties = any, Action = any> = {
 export type ServerActionFactory = {
   get: (
     ((effectID: "ChangeModes") -> ServerActionClass<ServerActionConstructorProperties, ChangeModesServerAction>)
+    & ((effectID: "StrikeOutStrike") -> ServerActionClass<ServerActionConstructorProperties, StrikeOutSwipeServerAction>)
     & ((actionID: string) -> ServerActionClass)
   );
 }
 
+export type StrikeOutSwipeServerAction = ServerAction<{
+  bat: BasePart;
+  contestant: ServerContestant;
+  remoteFunction: RemoteFunction?;
+  startChargeTimeMilliseconds: number?;
+  maxChargeDurationMilliseconds: number;
+  requiredStamina: number;
+  touchedEvent: RBXScriptConnection?;
+  touchedExpirationTask: thread;
+  touchedTimeLimitSeconds: number;
+  maxDamage: number;
+  modeChangedEvent: RBXScriptConnection?;
+  activate: (self: StrikeOutSwipeServerAction, shouldCharge: boolean) -> ();
+  breakdown: (self: StrikeOutSwipeServerAction) -> ();
+}>;
+
 export type ServerArchetype = ServerArchetypeProperties & ServerArchetypeMethods;
 
 export type ServerArchetypeClass = ServerArchetypeProperties & {new: (...any) -> ServerArchetype};
+
+export type ArchetypeType = "Fighter" | "Defender" | "Destroyer" | "Supporter";
 
 export type ServerArchetypeProperties<ExtendedProperties = unknown> = {
   
@@ -499,9 +519,9 @@ export type ServerArchetypeProperties<ExtendedProperties = unknown> = {
   
   name: string;
 
-  description: string?;
+  description: string;
 
-  type: "Fighter" | "Defender" | "Destroyer" | "Supporter";
+  type: ArchetypeType;
 
   actionIDs: {string};
   

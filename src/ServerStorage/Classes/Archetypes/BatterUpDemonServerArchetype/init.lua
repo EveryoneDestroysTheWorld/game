@@ -16,25 +16,39 @@ local BatterUpDemonServerArchetype = {
   description = BatterUpDemonClientArchetype.description;
   actionIDs = BatterUpDemonClientArchetype.actionIDs;
   type = BatterUpDemonClientArchetype.type;
-  __index = {} :: types.BatterUpDemonServerArchetype;
+  __index = {
+    id = BatterUpDemonClientArchetype.id;
+    name = BatterUpDemonClientArchetype.name;
+    description = BatterUpDemonClientArchetype.description;
+    actionIDs = BatterUpDemonClientArchetype.actionIDs;
+    type = BatterUpDemonClientArchetype.type :: types.ArchetypeType;
+  } :: types.BatterUpDemonServerArchetype;
 };
 
 function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerArchetypeConstructorProperties): types.BatterUpDemonServerArchetype
 
-  local overwrittenProperties = {
-    id = BatterUpDemonServerArchetype.id;
-    name = BatterUpDemonServerArchetype.name;
-    description = BatterUpDemonServerArchetype.description;
-    actionIDs = BatterUpDemonServerArchetype.actionIDs;
-    type = BatterUpDemonServerArchetype.type;
-    contestant = properties.contestant;
-    events = {};
-  };
-
-  local archetype = (setmetatable(overwrittenProperties, BatterUpDemonServerArchetype) :: any) :: types.BatterUpDemonServerArchetype;
+  local archetype = (setmetatable({}, BatterUpDemonServerArchetype) :: any) :: types.BatterUpDemonServerArchetype;
+  archetype.events = {};
+  archetype.contestant = properties.contestant;
 
   archetype.contestant.attributes.archetypeMode = "Pitcher";
   ServerStorage.Events.ArchetypeModeChanged:Fire(archetype.id);
+  table.insert(archetype.events, ServerStorage.Events.ArchetypeModeChanged.Event:Connect(function()
+  
+    if archetype.contestant.attributes.archetypeMode == "Batter" then
+
+      local character = archetype.contestant.character;
+      local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
+      if humanoid and humanoid:IsA("Humanoid") then
+
+        local bat = script.Bat:Clone();
+        humanoid:AddAccessory(bat);
+
+      end
+
+    end;
+
+  end));
 
   if properties.contestant.player then
 
@@ -46,7 +60,7 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
 
   end;
 
-  table.insert(overwrittenProperties.events, archetype.contestant.onHealthUpdated:Connect(function()
+  table.insert(archetype.events, archetype.contestant.onHealthUpdated:Connect(function()
   
     if archetype.isContestantDowned and archetype.contestant.currentHealth > 0 then
       

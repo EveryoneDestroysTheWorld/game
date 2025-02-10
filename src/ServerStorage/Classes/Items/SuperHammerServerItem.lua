@@ -140,6 +140,7 @@ function SuperHammerServerItem.new(): types.ServerItem
 
       -- Make the contestant invincible for 10 seconds.
       local invincibilityEffect = ServerEffect.get("Invincibility").new({
+        contestant = _contestant;
         expirationTimeMilliseconds = DateTime.now().UnixTimestampMillis + 10000;
       });
 
