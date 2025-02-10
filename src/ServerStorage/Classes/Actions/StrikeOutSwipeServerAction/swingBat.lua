@@ -7,9 +7,11 @@ local types = require(ServerStorage.Modules.types);
 local calculateCharge = require(ServerStorage.Modules.calculateCharge);
 local findContestantFromPart = require(ServerStorage.Modules.findContestantFromPart);
 
-local function swingBat(action: types.StrikeOutSwipeServerAction, bat: BasePart): ()
+local function swingBat(action: types.StrikeOutSwipeServerAction, bat: Accessory): ()
 
   assert(action.startChargeTimeMilliseconds);
+  local batHandle = bat:FindFirstChild("Handle");
+  assert(batHandle and batHandle:IsA("BasePart"));
   
   -- Reduce the stamina.
   action.contestant:updateStamina(action.contestant.currentStamina - action.requiredStamina, {
@@ -62,7 +64,7 @@ local function swingBat(action: types.StrikeOutSwipeServerAction, bat: BasePart)
   end;
 
   local immuneContestantIDs = {}
-  action.touchedEvent = action.bat.Touched:Connect(function(basePart)
+  action.touchedEvent = batHandle.Touched:Connect(function(basePart)
   
     local victim = findContestantFromPart(action.contestant.round.contestants, basePart);
     if victim and victim.id ~= action.contestant.id and not table.find(immuneContestantIDs, victim.id) then

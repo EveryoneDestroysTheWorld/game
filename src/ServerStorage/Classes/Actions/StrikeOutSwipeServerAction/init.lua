@@ -95,7 +95,7 @@ function StrikeOutSwipeServerAction.__index:activate(shouldCharge: boolean): ()
 
     local character = self.contestant.character;
     local bat = if character then character:FindFirstChild("Bat") else nil;
-    assert(bat and bat:IsA("BasePart"), "The contestant's bat is missing.");
+    assert(bat and bat:IsA("Accessory"), "The contestant's bat is missing.");
 
     swingBat(self, bat);
 
