@@ -3,6 +3,7 @@
 -- Designers: Christian Toney (Christian_Toney)
 -- © 2025 Beastslash LLC
 
+local ContextActionService = game:GetService("ContextActionService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 
@@ -47,55 +48,95 @@ function ChangeBallTypeClientAction.new(): types.ChangeBallTypeClientAction
     iconImage = "rbxassetid://75206024784140";
   });
 
+  local function checkKey(_, inputState: Enum.UserInputState, inputObject: InputObject)
+
+    if inputState == Enum.UserInputState.Begin then
+
+      local map = {
+        [Enum.KeyCode.One] = "Regular";
+        [Enum.KeyCode.Two] = "Explosive";
+        [Enum.KeyCode.Three] = "Electric";
+        [Enum.KeyCode.Four] = "Poison";
+      };
+
+      local ballType = map[inputObject.KeyCode];
+      if ballType then
+
+        action:activate(ballType);
+
+      end;
+
+    end;
+
+  end;
+
+  ContextActionService:BindAction("ActivateChangeBallType", checkKey, false, Enum.KeyCode.One, Enum.KeyCode.Two, Enum.KeyCode.Three, Enum.KeyCode.Four)
+
   return action;
 
 end
 
-function ChangeBallTypeClientAction.__index:activate()
+function ChangeBallTypeClientAction.__index:activate(ballType: types.BallType?)
 
-  local gui = self.gui or Instance.new("ScreenGui");
-  self.gui = gui;
-  gui.ScreenInsets = Enum.ScreenInsets.None;
-  gui.Parent = player.PlayerGui;
+  if ballType then
 
-  local reactRoot = ReactRoblox.createRoot(gui);
-  reactRoot:render(React.createElement(QuickSelectionMenu, {
-    options = {
-      {
-        key = "Regular";
-        labelText = "Regular Ball";
-        iconImage = "rbxassetid://139648735745838"
-      };
-      {
-        key = "Explosive";
-        labelText = "Explosive Ball";
-        iconImage = "rbxassetid://73246050129377"
-      };
-      {
-        key = "Electric";
-        labelText = "Electric Ball";
-        iconImage = "rbxassetid://84087555822097"
-      };
-      {
-        key = "Poison";
-        labelText = "Poison Ball";
-        iconImage = "rbxassetid://89838520119073"
-      };
-    };
-    onSelectionConfirmed = function(selection)
+    if self.gui then
 
-      reactRoot:unmount();
-      gui:Destroy();
+      self.gui:Destroy();
       self.gui = nil;
-      self.remoteFunction:InvokeServer(selection.key);
 
     end;
-  }));
+
+    self.remoteFunction:InvokeServer(ballType);
+
+  else
+
+    local gui = self.gui or Instance.new("ScreenGui");
+    self.gui = gui;
+    gui.ScreenInsets = Enum.ScreenInsets.None;
+    gui.Parent = player.PlayerGui;
+
+    local reactRoot = ReactRoblox.createRoot(gui);
+    reactRoot:render(React.createElement(QuickSelectionMenu, {
+      options = {
+        {
+          key = "Regular";
+          labelText = "Regular Ball";
+          iconImage = "rbxassetid://139648735745838"
+        };
+        {
+          key = "Explosive";
+          labelText = "Explosive Ball";
+          iconImage = "rbxassetid://73246050129377"
+        };
+        {
+          key = "Electric";
+          labelText = "Electric Ball";
+          iconImage = "rbxassetid://84087555822097"
+        };
+        {
+          key = "Poison";
+          labelText = "Poison Ball";
+          iconImage = "rbxassetid://89838520119073"
+        };
+      };
+      onSelectionConfirmed = function(selection)
+
+        reactRoot:unmount();
+        gui:Destroy();
+        self.gui = nil;
+        self.remoteFunction:InvokeServer(selection.key);
+
+      end;
+    }));
+
+  end;
 
 end
 
 function ChangeBallTypeClientAction.__index:breakdown()
     
+  ContextActionService:UnbindAction("ActivateChangeBallType");
   HUDService:removeHUDButton("Action", self.id);
 
 end;
