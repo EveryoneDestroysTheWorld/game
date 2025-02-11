@@ -3,6 +3,8 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 
+local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
+
 local createMockContestant = require(ServerStorage.Modules.createMockContestant);
 
 return {
@@ -10,11 +12,15 @@ return {
     ["creates a bat for the contestant in batter mode"] = function()
 
       local contestant = createMockContestant();
-      local character = Instance.new("Model");
+      ServerArchetype.get("BatterUpDemon").new({
+        contestant = contestant;
+      });
+
+      local character = ServerStorage.NPCRigs.Rig:Clone();
       contestant:updateCharacter(character);
 
       contestant.attributes.archetypeMode = "Batter";
-      ServerStorage.Events.ArchetypeModeChanged:Fire();
+      ServerStorage.Events.ArchetypeModeChanged:Fire(contestant.id);
 
       local bat = character:WaitForChild("Bat", 1);
       assert(bat);
@@ -23,16 +29,20 @@ return {
     ["removes the contestant's bat in pitcher mode"] = function()
 
       local contestant = createMockContestant();
-      local character = Instance.new("Model");
+      local character = ServerStorage.NPCRigs.Rig:Clone();
       contestant:updateCharacter(character);
+
+      ServerArchetype.get("BatterUpDemon").new({
+        contestant = contestant;
+      });
       
       contestant.attributes.archetypeMode = "Pitcher";
-      ServerStorage.Events.ArchetypeModeChanged:Fire();
+      ServerStorage.Events.ArchetypeModeChanged:Fire(contestant.id);
       local bat: Instance? = character:WaitForChild("Bat", 1);
       assert(not bat);
 
       contestant.attributes.archetypeMode = "Batter";
-      ServerStorage.Events.ArchetypeModeChanged:Fire();
+      ServerStorage.Events.ArchetypeModeChanged:Fire(contestant.id);
       bat = character:WaitForChild("Bat", 1);
       assert(bat);
 
@@ -54,10 +64,15 @@ return {
       end);
 
       contestant.attributes.archetypeMode = "Pitcher";
-      ServerStorage.Events.ArchetypeModeChanged:Fire();
+      ServerStorage.Events.ArchetypeModeChanged:Fire(contestant.id);
       continueEvent.Event:Wait();
 
-      task.cancel(timeoutThread);
+      if coroutine.status(timeoutThread) == "running" then
+
+        task.cancel(timeoutThread);
+
+      end;
+      
       changeEvent:Disconnect();
       assert(not bat.Parent);
 

@@ -32,12 +32,12 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
   archetype.contestant = properties.contestant;
 
   archetype.contestant.attributes.archetypeMode = "Pitcher";
-  ServerStorage.Events.ArchetypeModeChanged:Fire(archetype.id);
-  table.insert(archetype.events, ServerStorage.Events.ArchetypeModeChanged.Event:Connect(function()
+  ServerStorage.Events.ArchetypeModeChanged:Fire(archetype.contestant.id);
+  table.insert(archetype.events, ServerStorage.Events.ArchetypeModeChanged.Event:Connect(function(contestantID: number)
   
-    if archetype.contestant.attributes.archetypeMode == "Batter" then
+    local character = archetype.contestant.character;
+    if contestantID == archetype.contestant.id and archetype.contestant.attributes.archetypeMode == "Batter" then
 
-      local character = archetype.contestant.character;
       local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
       if humanoid and humanoid:IsA("Humanoid") then
 
@@ -45,6 +45,15 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
         humanoid:AddAccessory(bat);
 
       end
+
+    else
+
+      local bat = if character then character:FindFirstChild("Bat") else nil;
+      if bat then
+
+        bat:Destroy();
+
+      end;
 
     end;
 
