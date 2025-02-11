@@ -3,9 +3,11 @@
 -- Designers: Christian Toney (Christian_Toney)
 -- © 2025 Beastslash LLC
 
+local ContextActionService = game:GetService("ContextActionService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 
+local KeybindNotificationService = require(ReplicatedStorage.Client.Modules.KeybindNotificationService);
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local types = require(ReplicatedStorage.Client.Modules.types);
 
@@ -32,24 +34,35 @@ local player = Players.LocalPlayer;
 function ChangeModesClientAction.new(): types.ChangeModesClientAction
 
   local remoteName = `{player.UserId}_{ChangeModesClientAction.id}`;
-  local overwrittenProperties = {
-    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
-    currentMode = "Pitcher";
-  };
-
-  local action = (setmetatable(overwrittenProperties, ChangeModesClientAction) :: any) :: types.ChangeModesClientAction;
+  local action = (setmetatable({}, ChangeModesClientAction) :: any) :: types.ChangeModesClientAction;
+  action.remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+  action.currentMode = "Pitcher";
 
   HUDService:addHUDButton({
     type = "Action";
     key = action.id;
-    shortcutCharacter = "L";
+    description = action.name;
+    shortcutCharacter = "V";
     onActivate = function() 
     
       action:activate();
 
     end;
-    iconImage = iconImage;
+    iconImage = action.iconImage;
   });
+
+  local function checkKey(_, inputState: Enum.UserInputState, inputObject: InputObject)
+
+    if inputState == Enum.UserInputState.Begin then
+
+      action:activate();
+      KeybindNotificationService:setMessage(action.currentMode);
+
+    end;
+
+  end;
+
+  ContextActionService:BindAction("ActivateChangeModesAction", checkKey, false, Enum.KeyCode.V);
 
   return action;
 

@@ -7,6 +7,7 @@ local ContextActionService = game:GetService("ContextActionService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 
+local KeybindNotificationService = require(ReplicatedStorage.Client.Modules.KeybindNotificationService);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
@@ -49,7 +50,7 @@ function ChangeBallTypeClientAction.new(): types.ChangeBallTypeClientAction
       action:activate();
 
     end;
-    iconImage = iconImage;
+    iconImage = action.iconImage;
   });
 
   local function checkKey(_, inputState: Enum.UserInputState, inputObject: InputObject)
@@ -67,6 +68,7 @@ function ChangeBallTypeClientAction.new(): types.ChangeBallTypeClientAction
       if ballType then
 
         action:activate(ballType);
+        KeybindNotificationService:setMessage(`{ballType} Ball`);
 
       end;
 
@@ -74,7 +76,7 @@ function ChangeBallTypeClientAction.new(): types.ChangeBallTypeClientAction
 
   end;
 
-  ContextActionService:BindAction("ActivateChangeBallType", checkKey, false, Enum.KeyCode.One, Enum.KeyCode.Two, Enum.KeyCode.Three, Enum.KeyCode.Four)
+  ContextActionService:BindAction("ActivateChangeBallTypeAction", checkKey, false, Enum.KeyCode.One, Enum.KeyCode.Two, Enum.KeyCode.Three, Enum.KeyCode.Four);
 
   return action;
 
@@ -140,7 +142,7 @@ end
 
 function ChangeBallTypeClientAction.__index:breakdown()
     
-  ContextActionService:UnbindAction("ActivateChangeBallType");
+  ContextActionService:UnbindAction("ActivateChangeBallTypeAction");
   HUDService:removeHUDButton("Action", self.id);
 
 end;
