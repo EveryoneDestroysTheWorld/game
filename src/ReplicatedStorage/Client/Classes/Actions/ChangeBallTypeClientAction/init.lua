@@ -13,12 +13,22 @@ local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local QuickSelectionMenu = require(ReplicatedStorage.Client.ReactComponents.QuickSelectionMenu);
 local types = require(ReplicatedStorage.Client.Modules.types);
 
+local id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
+local name = "Change Ball Type";
+local description = "Do a change-up";
+local iconImage = "rbxassetid://75206024784140";
+
 local ChangeBallTypeClientAction = {
-  id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
-  name = "Change Ball Type";
-  description = "Do a change-up";
-  iconImage = "rbxassetid://18464513809";
-  __index = {} :: types.ChangeBallTypeClientAction;
+  id = id;
+  name = name;
+  description = description;
+  iconImage = iconImage;
+  __index = {
+    id = id;
+    name = name;
+    iconImage = iconImage;
+    description = description;
+  } :: types.ChangeBallTypeClientAction;
 };
 
 local player = Players.LocalPlayer;
@@ -26,26 +36,20 @@ local player = Players.LocalPlayer;
 function ChangeBallTypeClientAction.new(): types.ChangeBallTypeClientAction
 
   local remoteName = `{player.UserId}_{ChangeBallTypeClientAction.id}`;
-  local overwrittenProperties = {
-    id = ChangeBallTypeClientAction.id;
-    name = ChangeBallTypeClientAction.name;
-    iconImage = ChangeBallTypeClientAction.iconImage;
-    description = ChangeBallTypeClientAction.description;
-    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
-  };
-
-  local action = (setmetatable(overwrittenProperties, ChangeBallTypeClientAction) :: any) :: types.ChangeBallTypeClientAction;
+  local action = (setmetatable({}, ChangeBallTypeClientAction) :: any) :: types.ChangeBallTypeClientAction;
+  action.remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
 
   HUDService:addHUDButton({
     type = "Action";
     key = action.id;
-    shortcutCharacter = "L";
+    -- shortcutCharacter = "0 - 9";
+    description = action.name;
     onActivate = function() 
     
       action:activate();
 
     end;
-    iconImage = "rbxassetid://75206024784140";
+    iconImage = iconImage;
   });
 
   local function checkKey(_, inputState: Enum.UserInputState, inputObject: InputObject)
