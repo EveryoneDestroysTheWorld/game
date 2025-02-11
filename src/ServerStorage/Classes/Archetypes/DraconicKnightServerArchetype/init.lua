@@ -36,7 +36,6 @@ function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServe
   };
 
   local archetype = (setmetatable(overwrittenProperties, DraconicKnightServerArchetype) :: any) :: types.DraconicKnightServerArchetype;
-  archetype.actions = initializeArchetypeActions(archetype.actionIDs, archetype.contestant);
 
   if properties.contestant.player then
 
@@ -100,6 +99,8 @@ function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServe
     end;
 
   end));
+
+  archetype.actions = initializeArchetypeActions(archetype.actionIDs, archetype.contestant);
 
   return archetype;
 

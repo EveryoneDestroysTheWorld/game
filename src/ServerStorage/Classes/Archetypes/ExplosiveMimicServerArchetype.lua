@@ -33,7 +33,6 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
   };
 
   local archetype = (setmetatable(overwrittenProperties, ExplosiveMimicServerArchetype) :: any) :: types.ExplosiveMimicServerArchetype;
-  archetype.actions = initializeArchetypeActions(archetype.actionIDs, archetype.contestant);
 
   if archetype.contestant.player then
 
@@ -165,6 +164,8 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
     end;
 
   end));
+
+  archetype.actions = initializeArchetypeActions(archetype.actionIDs, archetype.contestant);
 
   return archetype;
 

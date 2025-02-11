@@ -6,14 +6,13 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 
-local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local types = require(ReplicatedStorage.Client.Modules.types);
 
 local id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 local name = "Change Modes";
 local description = "Do a change-up";
-local iconImage = "rbxassetid://131445376714174";
+local iconImage = "rbxassetid://70575380921626";
 
 local ChangeModesClientAction = {
   id = id;

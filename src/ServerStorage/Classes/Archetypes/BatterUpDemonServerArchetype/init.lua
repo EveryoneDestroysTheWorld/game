@@ -115,8 +115,6 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
 
   end));
 
-  archetype.actions = initializeArchetypeActions(filterTable(archetype.actionIDs, isActionIDAllowed), archetype.contestant);
-
   if properties.contestant.player then
 
     task.spawn(function()
@@ -152,6 +150,8 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
     end;
 
   end));
+
+  archetype.actions = initializeArchetypeActions(filterTable(archetype.actionIDs, isActionIDAllowed), archetype.contestant);
 
   return archetype;
 

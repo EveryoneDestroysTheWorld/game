@@ -144,7 +144,9 @@ function SuperHammerServerItem.new(): types.ServerItem
         expirationTimeMilliseconds = DateTime.now().UnixTimestampMillis + 10000;
       });
 
-      local holdingHeavyItemEffect = ServerEffect.get("HoldingHeavyItem").new();
+      local holdingHeavyItemEffect = ServerEffect.get("HoldingHeavyItem").new({
+        contestant = _contestant;
+      });
 
       _contestant:addEffect(invincibilityEffect);
       _contestant:addEffect(holdingHeavyItemEffect);

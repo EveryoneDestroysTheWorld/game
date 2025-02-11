@@ -6,10 +6,10 @@
 -- © 2024 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
 local ClientItem = require(script.Parent.Parent.ClientItem);
 type ClientItem = ClientItem.ClientItem;
-local React = require(ReplicatedStorage.Shared.Packages.react);
-local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
+local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 
 local PotionOfRegenerationClientItem = {
   id = script.Name:sub(1, script.Name:gsub("ClientItem", ""):len());
@@ -39,14 +39,12 @@ function PotionOfRegenerationClientItem.new(): ClientItem
   local function initialize(self: ClientItem, specificItemID: string)
 
     _specificItemID = specificItemID;
-    local hudButton = React.createElement(HUDButton, {
+    HUDService:addHUDButton({
       type = "Item";
       key = specificItemID;
       onActivate = function() self:activate() end;
       iconImage = "rbxassetid://17551046771";
     });
-
-    ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Item", hudButton);
 
   end;
 

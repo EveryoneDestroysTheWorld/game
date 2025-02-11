@@ -7,11 +7,12 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
+
 local ClientItem = require(script.Parent.Parent.ClientItem);
 type ClientItem = ClientItem.ClientItem;
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
-local HUDButton = require(ReplicatedStorage.Client.ReactComponents.HUDButton);
+local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local ContextActionService = game:GetService("ContextActionService");
 local ComboNotification = require(script.ComboNotification);
 
@@ -77,7 +78,7 @@ function SuperHammerClientItem.new(): ClientItem
   local function initialize(self: ClientItem, specificItemID: string)
 
     _specificItemID = specificItemID;
-    local hudButton = React.createElement(HUDButton, {
+    HUDService:addHUDButton({
       type = "Item";
       key = specificItemID;
       onActivate = function() 
@@ -88,8 +89,6 @@ function SuperHammerClientItem.new(): ClientItem
       end;
       iconImage = "rbxassetid://17551046771";
     });
-    
-    ReplicatedStorage.Client.Functions.AddHUDButton:Invoke("Item", hudButton);
 
     local event = ReplicatedStorage.Shared.Events.ItemEvents:FindFirstChild(_specificItemID);
     if event and event:IsA("RemoteEvent") then

@@ -38,7 +38,6 @@ function UndeadConsciousnessServerArchetype.new(properties: types.UndeadConsciou
   };
 
   local archetype = (setmetatable(overwrittenProperties, UndeadConsciousnessServerArchetype) :: any) :: types.UndeadConsciousnessServerArchetype;
-  archetype.actions = initializeArchetypeActions(archetype.actionIDs, archetype.contestant);
 
   -- Give the player a random item. 
   local randomItem = ServerItem.random(); -- TODO: Uncomment before merging PR
@@ -86,6 +85,8 @@ function UndeadConsciousnessServerArchetype.new(properties: types.UndeadConsciou
 
   table.insert(archetype.events, archetype.contestant.onHealthUpdated:Connect(checkHealth));
   checkHealth();
+  
+  archetype.actions = initializeArchetypeActions(archetype.actionIDs, archetype.contestant);
 
   return archetype;
 
