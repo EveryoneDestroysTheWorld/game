@@ -4,9 +4,12 @@ local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 local BatterUpDemonClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.BatterUpDemonClientArchetype);
+local ServerAction = require(ServerStorage.Classes.ServerAction);
 
 local downContestant = require(ServerStorage.Modules.downContestant);
 local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
+local initializeArchetypeActions = require(ServerStorage.Modules.initializeArchetypeActions);
+local filterTable = require(ReplicatedStorage.Shared.Modules.filterTable);
 
 local types = require(ServerStorage.Modules.types);
 
@@ -33,6 +36,16 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
 
   archetype.contestant.attributes.archetypeMode = "Pitcher";
   ServerStorage.Events.ArchetypeModeChanged:Fire(archetype.contestant.id);
+
+  local function isActionIDAllowed(actionID: string): boolean
+
+    local allowedActionIDs = if archetype.contestant.attributes.archetypeMode == "Pitcher" then {"HeresThePitch", "ChangeBallType"} else {"StrikeOutSwipe"};
+    table.insert(allowedActionIDs, "ChangeModes");
+
+    return not not table.find(allowedActionIDs, actionID);
+
+  end;
+
   table.insert(archetype.events, ServerStorage.Events.ArchetypeModeChanged.Event:Connect(function(contestantID: number)
   
     local character = archetype.contestant.character;
@@ -57,7 +70,52 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
 
     end;
 
+    for _, actionID in archetype.actionIDs do
+
+      task.spawn(function()
+
+        local shouldCreateAction = true;
+        for _, action in archetype.actions do
+
+          if action.id == actionID then
+
+            if not isActionIDAllowed(action.id) then
+
+              action:breakdown();
+
+              local index = table.find(archetype.actions, action);
+              if index then
+
+                table.remove(archetype.actions, index);
+
+              end;
+
+            end;
+
+            shouldCreateAction = false;
+            break;
+
+          end;
+
+        end;
+
+        if shouldCreateAction then
+
+          local action = ServerAction.get(actionID).new({
+            contestant = archetype.contestant;
+          })
+
+          table.insert(archetype.actions, action);
+
+        end;
+        
+      end);
+
+    end;
+
   end));
+
+  archetype.actions = initializeArchetypeActions(filterTable(archetype.actionIDs, isActionIDAllowed), archetype.contestant);
 
   if properties.contestant.player then
 
@@ -111,6 +169,16 @@ function BatterUpDemonServerArchetype.__index:breakdown()
 
     self.ragdollClone:Destroy();
     
+  end;
+
+  for _, action in self.actions do
+
+    task.spawn(function()
+    
+      action:breakdown();
+
+    end);
+
   end;
 
 end;

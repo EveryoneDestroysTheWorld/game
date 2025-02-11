@@ -148,23 +148,24 @@ export type BallType = "Explosive" | "Electric" | "Poison" | "Regular";
 
 export type BatterUpDemonModes = "Batter" | "Pitcher";
 
-export type BatterUpDemonServerArchetype = BatterUpDemonServerArchetypeProperties & BatterUpDemonServerArchetypeMethods;
+export type BatterUpDemonServerArchetype = ServerArchetype<BatterUpDemonServerArchetypeProperties & BatterUpDemonServerArchetypeMethods>;
 
-export type BatterUpDemonServerArchetypeProperties = ServerArchetypeProperties<{
+export type BatterUpDemonServerArchetypeProperties = {
   contestant: ServerContestant;
   ragdollClone: Model?;
   events: {RBXScriptConnection};
   isContestantDowned: boolean;
   type: ArchetypeType;
-}>
+  actions: {ServerAction};
+};
 
 export type BatterUpDemonServerArchetypeConstructorProperties = {
   contestant: ServerContestant;
 }
 
-export type BatterUpDemonServerArchetypeMethods = ServerArchetypeMethods<{
+export type BatterUpDemonServerArchetypeMethods = {
   
-}>;
+};
 
 export type ChangeBallTypeServerAction = ServerAction<{
   contestant: ServerContestant;
@@ -297,60 +298,63 @@ export type TarBombServerAction = ServerAction<{
   breakdown: (self: TarBombServerAction) -> ();
 }>;
 
-export type DraconicKnightServerArchetype = DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods;
+export type DraconicKnightServerArchetype = ServerArchetype<DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods>;
 
-export type DraconicKnightServerArchetypeProperties = ServerArchetypeProperties<{
+export type DraconicKnightServerArchetypeProperties = {
   contestant: ServerContestant;
   ragdollClone: Model?;
   events: {RBXScriptConnection};
   roughArmorEffect: RoughArmorServerEffect;
   wingProp: Model?;
-}>;
+  actions: {ServerAction}; 
+};
 
 export type DraconicKnightServerArchetypeConstructorProperties = {
   contestant: ServerContestant;
 }
 
-export type DraconicKnightServerArchetypeMethods = ServerArchetypeMethods<{
+export type DraconicKnightServerArchetypeMethods = {
   
-}>;
+};
 
-export type ExplosiveMimicServerArchetype = ExplosiveMimicServerArchetypeProperties & ExplosiveMimicServerArchetypeMethods;
+export type ExplosiveMimicServerArchetype = ServerArchetype<ExplosiveMimicServerArchetypeProperties & ExplosiveMimicServerArchetypeMethods>;
 
-export type ExplosiveMimicServerArchetypeProperties = ServerArchetypeProperties<{
+export type ExplosiveMimicServerArchetypeProperties = {
   contestant: ServerContestant;
   ragdollClone: Model?;
   round: ServerRound;
   events: {RBXScriptConnection};
-}>;
+  actions: {ServerAction};
+};
 
 export type ExplosiveMimicServerArchetypeConstructorProperties = {
   contestant: ServerContestant;
   round: ServerRound;
 }
 
-export type ExplosiveMimicServerArchetypeMethods = ServerArchetypeMethods<{
+export type ExplosiveMimicServerArchetypeMethods = {
   
-}>;
+};
 
-export type UndeadConsciousnessServerArchetype = UndeadConsciousnessServerArchetypeProperties & UndeadConsciousnessServerArchetypeMethods;
+export type UndeadConsciousnessServerArchetype = ServerArchetype<UndeadConsciousnessServerArchetypeProperties & UndeadConsciousnessServerArchetypeMethods>;
 
-export type UndeadConsciousnessServerArchetypeProperties = ServerArchetypeProperties<{
+export type UndeadConsciousnessServerArchetypeProperties = {
   contestant: ServerContestant;
   ragdollClone: Model?;
   round: ServerRound;
   events: {RBXScriptConnection};
   undeadEffect: UndeadServerEffect;
-}>;
+  actions: {ServerAction};
+};
 
 export type UndeadConsciousnessServerArchetypeConstructorProperties = {
   contestant: ServerContestant;
   round: ServerRound;
 }
 
-export type UndeadConsciousnessServerArchetypeMethods = ServerArchetypeMethods<{
+export type UndeadConsciousnessServerArchetypeMethods = {
   
-}>;
+};
 
 export type RoundStatus = ClientRound.RoundStatus;
 
@@ -505,18 +509,17 @@ export type StrikeOutSwipeServerAction = ServerAction<{
   touchedTimeLimitSeconds: number;
   baseDamage: number;
   maxBonusDamage: number;
-  modeChangedEvent: RBXScriptConnection?;
   activate: (self: StrikeOutSwipeServerAction, shouldCharge: boolean) -> ();
   breakdown: (self: StrikeOutSwipeServerAction) -> ();
 }>;
 
-export type ServerArchetype = ServerArchetypeProperties & ServerArchetypeMethods;
+export type ServerArchetype<ExtendedProperties = unknown> = ServerArchetypeProperties & ExtendedProperties & ServerArchetypeMethods;
 
 export type ServerArchetypeClass = ServerArchetypeProperties & {new: (...any) -> ServerArchetype};
 
 export type ArchetypeType = "Fighter" | "Defender" | "Destroyer" | "Supporter";
 
-export type ServerArchetypeProperties<ExtendedProperties = unknown> = {
+export type ServerArchetypeProperties = {
   
   id: string;
   
@@ -528,13 +531,13 @@ export type ServerArchetypeProperties<ExtendedProperties = unknown> = {
 
   actionIDs: {string};
   
-} & ExtendedProperties;
+};
 
-export type ServerArchetypeMethods<ExtendedMethods = unknown> = {
+export type ServerArchetypeMethods = {
 
   breakdown: (self: any) -> ();
 
-} & ExtendedMethods;
+};
 
 export type WalkSpeedWeight = {
   walkSpeed: number;
@@ -647,8 +650,6 @@ export type ServerRoundProperties = ServerRoundConstructorProperties & {
   stage: Stage.Stage;
 
   archetypes: {ServerArchetype};
-
-  actions: {ServerAction};
 
   contestants: {ServerContestant};
 

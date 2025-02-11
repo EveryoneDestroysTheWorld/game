@@ -1,4 +1,5 @@
 --!strict
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
@@ -8,6 +9,7 @@ local types = require(ServerStorage.Modules.types);
 
 local downContestant = require(ServerStorage.Modules.downContestant);
 local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
+local initializeArchetypeActions = require(ServerStorage.Modules.initializeArchetypeActions);
 
 local DraconicKnightServerArchetype = {
   id = DraconicKnightClientArchetype.id;
@@ -34,6 +36,7 @@ function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServe
   };
 
   local archetype = (setmetatable(overwrittenProperties, DraconicKnightServerArchetype) :: any) :: types.DraconicKnightServerArchetype;
+  archetype.actions = initializeArchetypeActions(archetype.actionIDs, archetype.contestant);
 
   if properties.contestant.player then
 
@@ -119,6 +122,16 @@ function DraconicKnightServerArchetype.__index:breakdown()
   if self.ragdollClone then
 
     self.ragdollClone:Destroy();
+
+  end;
+
+  for _, action in self.actions do
+
+    task.spawn(function()
+    
+      action:breakdown();
+
+    end);
 
   end;
 

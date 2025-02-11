@@ -11,7 +11,6 @@ local ServerStorage = game:GetService("ServerStorage");
 
 local GameMode = require(script.Parent.GameMode);
 local ServerArchetype = require(script.Parent.ServerArchetype);
-local ServerAction = require(script.Parent.ServerAction);
 local Stage = require(ServerStorage.Packages.Stage);
 local Autopilot = require(ServerStorage.Classes.Autopilot);
 local types = require(ServerStorage.Modules.types);
@@ -26,7 +25,6 @@ function ServerRound.new(properties: types.ServerRoundConstructorProperties): ty
 
   local round = setmetatable(properties :: types.ServerRoundProperties, ServerRound) :: types.ServerRound;
   round.contestants = {};
-  round.actions = {};
   round.archetypes = {};
   round.autopilotTasks = {};
   round.stage = properties.stage or Stage.fromID(properties.stageID);
@@ -85,11 +83,9 @@ function ServerRound.__index:start(): ()
 
   -- Ready the archetypes and actions.
   self.archetypes = {};
-  self.actions = {};
   for _, contestant in ipairs(self.contestants) do
 
     local oldArchetype: types.ServerArchetype?;
-    local oldActions: {types.ServerAction} = {};
 
     local function updateArchetype()
 
@@ -103,12 +99,6 @@ function ServerRound.__index:start(): ()
 
           end;
 
-          for _, action in oldActions do
-
-            action:breakdown();
-
-          end;
-
           if contestant.archetypeID then
 
             local archetype = ServerArchetype.get(contestant.archetypeID).new({
@@ -117,16 +107,6 @@ function ServerRound.__index:start(): ()
             });
             table.insert(self.archetypes, archetype);
             oldArchetype = archetype;
-
-            for _, actionID in ipairs(archetype.actionIDs) do
-
-              local action = ServerAction.get(actionID).new({
-                contestant = contestant;
-              });
-              table.insert(self.actions, action);
-              table.insert(oldActions, action);
-
-            end;
 
           end;
 
@@ -267,20 +247,6 @@ function ServerRound.__index:stop(forced: boolean?): ()
         archetype:breakdown(); 
       
       end);
-
-    end;
-
-  end;
-
-  if self.actions then
-
-    for _, action in ipairs(self.actions :: {types.ServerAction}) do
-
-      task.spawn(function() 
-        
-        action:breakdown(); 
-      
-      end)
 
     end;
 
