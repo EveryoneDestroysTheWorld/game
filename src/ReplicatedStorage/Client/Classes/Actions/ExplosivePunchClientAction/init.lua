@@ -45,7 +45,7 @@ function ExplosivePunchClientAction.new(): types.ExplosivePunchClientAction
     iconImage = "rbxassetid://17771917538";
   });
 
-  local function checkJump(_, inputState: Enum.UserInputState)
+  local function checkInput(_, inputState: Enum.UserInputState)
 
     if inputState == Enum.UserInputState.Begin then
 
@@ -55,7 +55,7 @@ function ExplosivePunchClientAction.new(): types.ExplosivePunchClientAction
 
   end;
 
-  ContextActionService:BindActionAtPriority("ActivateExplosivePunch", checkJump, false, 2, Enum.UserInputType.MouseButton1);
+  ContextActionService:BindActionAtPriority("ActivateExplosivePunch", checkInput, false, 2, Enum.UserInputType.MouseButton1, Enum.KeyCode.X);
 
   return action;
 
