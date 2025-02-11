@@ -16,7 +16,7 @@ local function chargeSwing(action: types.StrikeOutSwipeServerAction): ()
 		while task.wait(0.05) and action.startChargeTimeMilliseconds == originalChargeTime do
 
 			-- local player = action.contestant.player;
-			if action.contestant.currentStamina <= 0 then
+			if action.contestant.currentStamina <= action.requiredStamina then
 
         -- -- Let the player know to stop charging.
 				-- if action.remoteEvent and player then

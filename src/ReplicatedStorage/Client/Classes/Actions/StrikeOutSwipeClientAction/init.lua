@@ -38,13 +38,19 @@ function StrikeOutSwipeClientAction.new(): types.StrikeOutSwipeClientAction
 
   action.remoteFunction.OnClientInvoke = function()
 
-    -- Run client animations.
-    -- local punchAnimation = Instance.new("Animation");
-    -- punchAnimation.AnimationId = `rbxassetid://{if shouldUseBothArms then "17783699843" elseif shouldUseRightPunch then "17759014502" else "17758265394"}`;
-    -- if self.currentAnimationTrack then self.currentAnimationTrack:Stop(0) end; 
-    -- local currentAnimationTrack = animator:LoadAnimation(punchAnimation);
-    -- self.currentAnimationTrack = currentAnimationTrack;
-    -- currentAnimationTrack:Play(0.025);
+    local character = player.Character;
+    local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
+    local animator = if humanoid then humanoid:FindFirstChild("Animator") else nil;
+
+    if animator and animator:IsA("Animator") then
+
+      local swingAnimation = Instance.new("Animation");
+      swingAnimation.AnimationId = `rbxassetid://123556732066116`;
+      local currentAnimationTrack = animator:LoadAnimation(swingAnimation);
+      currentAnimationTrack.Looped = false;
+      currentAnimationTrack:Play(0, 1, 8);
+
+    end;
 
   end;
 
