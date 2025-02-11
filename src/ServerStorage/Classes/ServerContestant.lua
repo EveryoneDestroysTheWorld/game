@@ -328,7 +328,7 @@ function ServerContestant.__index:updateCharacter(newCharacter: Model?): ()
 
   self.character = newCharacter;
   ReplicatedStorage.Shared.Events.CharacterUpdated:FireAllClients(self.id, if newCharacter then newCharacter.Name else nil);
-  events[self].onCharacterUpdated:Fire(newCharacter);
+  events[self].onCharacterUpdated:Fire();
 
 end;
 

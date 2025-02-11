@@ -1,5 +1,4 @@
 --!strict
--- Currently, physics tests can't be done over Roblox's Open Cloud. 
 
 local ServerStorage = game:GetService("ServerStorage");
 
@@ -8,11 +7,11 @@ local ServerAction = require(ServerStorage.Classes.ServerAction);
 local createMockContestant = require(ServerStorage.Modules.createMockContestant);
 
 return {
-  HeresThePitchServerAction = {
-    ["only works in pitcher mode"] = function()
+  ChangeModesServerAction = {
+    ["only works in batter mode"] = function()
 
       local contestant = createMockContestant();
-      local action = ServerAction.get("ChangeModes").new({
+      local action = ServerAction.get("StrikeOutSwipe").new({
         contestant = contestant;
       });
 
@@ -26,10 +25,10 @@ return {
 
       end;
 
-      contestant.attributes.archetypeMode = "Batter";
+      contestant.attributes.archetypeMode = "Pitcher";
       assert(not canRunAction());
 
-      -- contestant.attributes.archetypeMode = "Pitcher";
+      -- contestant.attributes.archetypeMode = "Batter";
       -- assert(canRunAction());
 
     end;

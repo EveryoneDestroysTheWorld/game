@@ -8,6 +8,7 @@ local displayObjects = ReplicatedStorage.Shared.InGameDisplayObjects;
 local types = require(ServerStorage.Modules.types);
 
 local animateSprite = require(ReplicatedStorage.Shared.Modules.animateSprite);
+local calculateCharge = require(ServerStorage.Modules.calculateCharge);
 
 local function fireAttack(action: types.FireBeamServerAction, primaryPart: BasePart)
 
@@ -25,9 +26,7 @@ local function fireAttack(action: types.FireBeamServerAction, primaryPart: BaseP
 		spriteSheet = "8x8"
 	}
 
-	local goalTime = action.startChargeTimeMilliseconds + action.maxChargeTimeMilliseconds;
-	local queryTime = math.min(goalTime, DateTime.now().UnixTimestampMillis);
-	action.charge = math.max(1, queryTime / goalTime) * 100;
+	action.charge = calculateCharge(action.startChargeTimeMilliseconds, action.maxChargeDurationMilliseconds) * 100;
 
 	if action.charge >= 15 then
 

@@ -5,10 +5,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
 local ExplosiveMimicClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.ExplosiveMimicClientArchetype);
+local types = require(ServerStorage.Modules.types);
 
 local downContestant = require(ServerStorage.Modules.downContestant);
-
-local types = require(ServerStorage.Modules.types);
+local initializeArchetypeActions = require(ServerStorage.Modules.initializeArchetypeActions);
 
 local ExplosiveMimicServerArchetype = {
   id = ExplosiveMimicClientArchetype.id;
@@ -165,6 +165,8 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
 
   end));
 
+  archetype.actions = initializeArchetypeActions(archetype.actionIDs, archetype.contestant);
+
   return archetype;
 
 end;
@@ -174,6 +176,16 @@ function ExplosiveMimicServerArchetype.__index:breakdown()
   for _, event in self.events do
 
     event:Disconnect();
+
+  end;
+
+  for _, action in self.actions do
+
+    task.spawn(function()
+    
+      action:breakdown();
+
+    end);
 
   end;
 

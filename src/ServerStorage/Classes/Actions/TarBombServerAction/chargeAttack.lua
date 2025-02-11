@@ -57,7 +57,7 @@ local function chargeAttack(action: types.TarBombServerAction, primaryPart: Base
 
 	end);
 
-	task.delay(action.maxChargeTimeMilliseconds / 1000, function()
+	task.delay(action.maxChargeDurationMilliseconds / 1000, function()
 
 		if action.startChargeTimeMilliseconds == originalChargeTime then
 

@@ -24,7 +24,7 @@ local TarBombServerAction = {
 		id = TarBombClientAction.id;
 		name = TarBombClientAction.name;
 		description = TarBombClientAction.description;
-		maxChargeTimeMilliseconds = 2000;
+		maxChargeDurationMilliseconds = 2000;
 	} :: types.TarBombServerAction;
 };
 
@@ -123,9 +123,9 @@ function TarBombServerAction.__index:activate(shouldCharge: boolean, coordinates
 		local charge = 0;
 		if self.startChargeTimeMilliseconds then
 
-			local goalTime = self.startChargeTimeMilliseconds + self.maxChargeTimeMilliseconds;
+			local goalTime = self.startChargeTimeMilliseconds + self.maxChargeDurationMilliseconds;
 			local queryTime = math.min(goalTime, DateTime.now().UnixTimestampMillis);
-			charge = math.min((self.maxChargeTimeMilliseconds - (goalTime - queryTime)) / self.maxChargeTimeMilliseconds, 1) * 100;
+			charge = math.min((self.maxChargeDurationMilliseconds - (goalTime - queryTime)) / self.maxChargeDurationMilliseconds, 1) * 100;
 			self.startChargeTimeMilliseconds = nil;
 		
 		end;

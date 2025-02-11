@@ -1,15 +1,16 @@
 --!strict
+
 local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 local UndeadConsciousnessClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.UndeadConsciousnessClientArchetype);
 local ServerItem = require(script.Parent.Parent.ServerItem);
 local ServerEffect = require(script.Parent.Parent.ServerEffect);
+local types = require(ServerStorage.Modules.types);
 
 local downContestant = require(ServerStorage.Modules.downContestant);
 local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
-
-local types = require(ServerStorage.Modules.types);
+local initializeArchetypeActions = require(ServerStorage.Modules.initializeArchetypeActions);
 
 local UndeadConsciousnessServerArchetype = {
   id = UndeadConsciousnessClientArchetype.id;
@@ -84,6 +85,8 @@ function UndeadConsciousnessServerArchetype.new(properties: types.UndeadConsciou
 
   table.insert(archetype.events, archetype.contestant.onHealthUpdated:Connect(checkHealth));
   checkHealth();
+  
+  archetype.actions = initializeArchetypeActions(archetype.actionIDs, archetype.contestant);
 
   return archetype;
 
@@ -100,6 +103,16 @@ function UndeadConsciousnessServerArchetype.__index:breakdown()
   for _, event in self.events do
 
     event:Disconnect();
+
+  end;
+
+  for _, action in self.actions do
+
+    task.spawn(function()
+    
+      action:breakdown();
+
+    end);
 
   end;
 
