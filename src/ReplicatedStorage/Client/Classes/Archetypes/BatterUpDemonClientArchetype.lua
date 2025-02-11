@@ -11,7 +11,11 @@ local BatterUpDemonClientArchetype = {
   name = "Batter-Up Demon";
   description = "You'll never strike out with this one.";
   iconImage = "rbxassetid://18584519829";
-  actionIDs = {"StrikeOutSwipe", "HeresThePitch", "ChangeBallType", "ChangeModes"};
+  actionIDs = {
+    "StrikeOutSwipe", -- Only available in batter mode
+    "HeresThePitch", "ChangeBallType", -- Only available in pitcher mode
+    "ChangeModes" -- Global
+  };
   type = "Fighter" :: "Fighter";
 };
 
