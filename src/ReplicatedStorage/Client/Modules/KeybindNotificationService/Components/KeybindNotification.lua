@@ -18,7 +18,6 @@ local function KeybindNotification(properties: KeybindNotificationProperties)
 
     if textLabelRef.current then
 
-      print("go");
       textLabelRef.current.TextTransparency = 0;
 
     end;

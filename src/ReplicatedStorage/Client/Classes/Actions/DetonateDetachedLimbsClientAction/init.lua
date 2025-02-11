@@ -3,6 +3,7 @@
 -- Designers: Christian Toney (Christian_Toney)
 -- © 2024 – 2025 Beastslash LLC
 
+local ContextActionService = game:GetService("ContextActionService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 
@@ -43,6 +44,18 @@ function DetonateDetachedLimbsClientAction.new(): types.DetonateDetachedLimbsCli
     shortcutCharacter = "L";
     iconImage = "rbxassetid://136558858062155";
   });
+
+  local function checkInput(_, inputState: Enum.UserInputState)
+
+    if inputState == Enum.UserInputState.Begin then
+
+      action:activate();
+    
+    end;
+
+  end;
+
+  ContextActionService:BindAction("ActivateDetonateDetachedLimbsAction", checkInput, false, Enum.KeyCode.V);
   
   return action;
 
@@ -57,6 +70,7 @@ end;
 function DetonateDetachedLimbsClientAction.__index:breakdown()
     
   HUDService:removeHUDButton("Action", self.id);
+  ContextActionService:UnbindAction("ActivateDetonateDetachedLimbsAction");
 
 end
 

@@ -56,7 +56,7 @@ function DetachLimbClientAction.new(): types.DetachLimbClientAction
   end;
 
   -- Listen for events.
-  ContextActionService:BindActionAtPriority("Detach Limb", toggleGUI, false, 3, Enum.KeyCode.V);
+  ContextActionService:BindActionAtPriority("ActivateDetachLimbAction", toggleGUI, false, 3, Enum.KeyCode.C);
 
   return action;
 
@@ -124,6 +124,7 @@ function DetachLimbClientAction.__index:breakdown()
     
   end;
 
+  ContextActionService:UnbindAction("ActivateDetachLimbAction");
   HUDService:removeHUDButton("Action", self.id);
   
 end
