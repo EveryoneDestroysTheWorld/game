@@ -12,6 +12,7 @@ local types = require(ServerStorage.Modules.types);
 local chargeSwing = require(script.chargeSwing);
 local swingBat = require(script.swingBat);
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
+local createInventoryRemoteEvent = require(ServerStorage.Modules.createInventoryRemoteEvent);
 
 local StrikeOutSwipeServerAction = {
   id = StrikeOutSwipeClientAction.id;
@@ -40,11 +41,14 @@ function StrikeOutSwipeServerAction.new(properties: types.ServerActionConstructo
     local player = action.contestant.player;
     if player then
     
-      action.remoteFunction = createInventoryRemoteFunction(player, "Action", `{player.UserId}_{action.id}`, function(shouldCharge: boolean)
+      local remoteID = `{player.UserId}_{action.id}`;
+      action.remoteFunction = createInventoryRemoteFunction(player, "Action", remoteID, function(shouldCharge: boolean)
       
         action:activate(shouldCharge);
 
       end);
+
+      action.remoteEvent = createInventoryRemoteEvent(player, "Action", remoteID);
 
       ReplicatedStorage.Shared.Functions.InitializeAction:InvokeClient(player, action.id);
 
@@ -109,6 +113,12 @@ function StrikeOutSwipeServerAction.__index:breakdown(): ()
   if self.remoteFunction then
 
     self.remoteFunction:Destroy();
+
+  end;
+
+  if self.remoteEvent then
+
+    self.remoteEvent:Destroy();
 
   end;
 

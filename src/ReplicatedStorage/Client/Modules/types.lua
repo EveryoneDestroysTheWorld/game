@@ -30,6 +30,7 @@ export type ChangeModesClientAction = ClientAction<{
 
 export type StrikeOutSwipeClientAction = ClientAction<{
   remoteFunction: RemoteFunction;
+  remoteEvent: RemoteEvent;
   swingAnimation: AnimationTrack?;
 }>;
 

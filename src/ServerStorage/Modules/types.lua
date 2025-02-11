@@ -499,6 +499,7 @@ export type StrikeOutSwipeServerAction = ServerAction<{
   maxChargeDurationMilliseconds: number;
   requiredStamina: number;
   touchedEvent: RBXScriptConnection?;
+  remoteEvent: RemoteEvent?;
   swingAnimation: AnimationTrack?;
   touchedExpirationTask: thread;
   touchedTimeLimitSeconds: number;

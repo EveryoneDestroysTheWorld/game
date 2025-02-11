@@ -35,6 +35,7 @@ function StrikeOutSwipeClientAction.new(): types.StrikeOutSwipeClientAction
   local remoteName = `{player.UserId}_{StrikeOutSwipeClientAction.id}`;
   local action = (setmetatable({}, StrikeOutSwipeClientAction) :: any) :: types.StrikeOutSwipeClientAction;
   action.remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+  action.remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
 
   action.remoteFunction.OnClientInvoke = function(shouldCharge: boolean): ()
 
@@ -61,6 +62,13 @@ function StrikeOutSwipeClientAction.new(): types.StrikeOutSwipeClientAction
 
   end;
 
+  local isExhausted = false;
+  action.remoteEvent.OnClientEvent:Connect(function()
+  
+    isExhausted = true;
+
+  end);
+
   HUDService:addHUDButton({
     type = "Action";
     key = action.id;
@@ -82,7 +90,15 @@ function StrikeOutSwipeClientAction.new(): types.StrikeOutSwipeClientAction
 
     elseif inputState == Enum.UserInputState.End then
 
-      action:activate(false);
+      if isExhausted then
+
+        isExhausted = false;
+        
+      else 
+        
+        action:activate(false);
+
+      end;
 
     end;
 
