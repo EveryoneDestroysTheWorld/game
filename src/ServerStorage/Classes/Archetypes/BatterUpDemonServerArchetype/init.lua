@@ -46,6 +46,43 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
 
   end;
 
+  if properties.contestant.player then
+
+    task.spawn(function()
+      
+      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(archetype.contestant.player, archetype.id);
+    
+    end);
+
+  end;
+
+  table.insert(archetype.events, archetype.contestant.onHealthUpdated:Connect(function()
+  
+    if archetype.isContestantDowned and archetype.contestant.currentHealth > 0 then
+      
+      if archetype.ragdollClone then
+
+        archetype.ragdollClone:Destroy();
+
+      end;
+
+    elseif not archetype.isContestantDowned and archetype.contestant.currentHealth <= 0 then
+
+      archetype.isContestantDowned = true;
+
+      if archetype.contestant.character then
+
+        archetype.ragdollClone = createRagdollClone(archetype.contestant.character);
+
+      end;
+
+      downContestant(archetype.contestant);
+
+    end;
+
+  end));
+
+  archetype.actions = initializeArchetypeActions(filterTable(archetype.actionIDs, isActionIDAllowed), archetype.contestant);
   table.insert(archetype.events, ServerStorage.Events.ArchetypeModeChanged.Event:Connect(function(contestantID: number)
   
     local character = archetype.contestant.character;
@@ -114,44 +151,6 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
     end;
 
   end));
-
-  if properties.contestant.player then
-
-    task.spawn(function()
-      
-      ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(archetype.contestant.player, archetype.id);
-    
-    end);
-
-  end;
-
-  table.insert(archetype.events, archetype.contestant.onHealthUpdated:Connect(function()
-  
-    if archetype.isContestantDowned and archetype.contestant.currentHealth > 0 then
-      
-      if archetype.ragdollClone then
-
-        archetype.ragdollClone:Destroy();
-
-      end;
-
-    elseif not archetype.isContestantDowned and archetype.contestant.currentHealth <= 0 then
-
-      archetype.isContestantDowned = true;
-
-      if archetype.contestant.character then
-
-        archetype.ragdollClone = createRagdollClone(archetype.contestant.character);
-
-      end;
-
-      downContestant(archetype.contestant);
-
-    end;
-
-  end));
-
-  archetype.actions = initializeArchetypeActions(filterTable(archetype.actionIDs, isActionIDAllowed), archetype.contestant);
 
   return archetype;
 

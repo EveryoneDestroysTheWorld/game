@@ -1,6 +1,7 @@
 --!strict
 
 local ServerStorage = game:GetService("ServerStorage");
+
 local ServerContestant = require(ServerStorage.Classes.ServerContestant);
 local types = require(ServerStorage.Modules.types);
 
