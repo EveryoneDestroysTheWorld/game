@@ -30,6 +30,7 @@ export type ChangeModesClientAction = ClientAction<{
 
 export type StrikeOutSwipeClientAction = ClientAction<{
   remoteFunction: RemoteFunction;
+  swingAnimation: AnimationTrack?;
 }>;
 
 export type ClientAction<Extension = unknown> = ClientActionProperties & Extension & ClientActionMethods;

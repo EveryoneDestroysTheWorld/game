@@ -103,8 +103,6 @@ function RagdollService:restoreCharacter(character: Model, key: any, player: Pla
 
     if #ragdollData.keys <= 0 then
 
-      
-
       for _, motor6D in ragdollData.motor6Ds do
 
         motor6D.Enabled = true;

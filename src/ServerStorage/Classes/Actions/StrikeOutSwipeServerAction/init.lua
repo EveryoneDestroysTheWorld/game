@@ -30,9 +30,10 @@ function StrikeOutSwipeServerAction.new(properties: types.ServerActionConstructo
   action.contestant = properties.contestant;
   action.startChargeTimeMilliseconds = 0;
   action.maxChargeDurationMilliseconds = 1000;
-  action.maxDamage = 20;
+  action.baseDamage = 12;
+  action.maxBonusDamage = 10;
   action.requiredStamina = 5;
-  action.touchedTimeLimitSeconds = 1;
+  action.touchedTimeLimitSeconds = 0.8;
 
   local function initializeAction()
 

@@ -1,7 +1,10 @@
 --!strict
 
 local ServerStorage = game:GetService("ServerStorage");
+
 local types = require(ServerStorage.Modules.types);
+
+local playSwingAnimation = require(script.Parent.playSwingAnimation);
 
 --[[
   Charges the contestant's bat before they swing it. The longer the charge, the bigger the WHAM!
@@ -10,6 +13,8 @@ local function chargeSwing(action: types.StrikeOutSwipeServerAction): ()
 
   local originalChargeTime = DateTime.now().UnixTimestampMillis;
   action.startChargeTimeMilliseconds = originalChargeTime;
+
+	playSwingAnimation(action, true);
 
   task.spawn(function()
 	

@@ -2,10 +2,12 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 
+local RagdollService = require(ServerStorage.Modules.RagdollService);
 local types = require(ServerStorage.Modules.types);
 
 local calculateCharge = require(ServerStorage.Modules.calculateCharge);
 local findContestantFromPart = require(ServerStorage.Modules.findContestantFromPart);
+local playSwingAnimation = require(script.Parent.playSwingAnimation);
 
 local function swingBat(action: types.StrikeOutSwipeServerAction, bat: Accessory): ()
 
@@ -26,28 +28,7 @@ local function swingBat(action: types.StrikeOutSwipeServerAction, bat: Accessory
   local charge = calculateCharge(startTime, action.maxChargeDurationMilliseconds);
 
   -- Run the swipe animation. Players should run animations on their own client.
-  local player = action.contestant.player;
-  if player and action.remoteFunction then
-
-    action.remoteFunction:InvokeClient(player);
-
-  else
-    
-    local character = action.contestant.character;
-    local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
-    local animator = if humanoid then humanoid:FindFirstChild("Animator") else nil;
-
-    if animator and animator:IsA("Animator") then
-
-      local swingAnimation = Instance.new("Animation");
-      swingAnimation.AnimationId = `rbxassetid://123556732066116`;
-      local currentAnimationTrack = animator:LoadAnimation(swingAnimation);
-      currentAnimationTrack.Looped = false;
-      currentAnimationTrack:Play(0, 1, 8);
-
-    end;
-
-  end;
+  playSwingAnimation(action, false);
 
   -- Damage hit contestants.
   if action.touchedEvent then
@@ -70,10 +51,32 @@ local function swingBat(action: types.StrikeOutSwipeServerAction, bat: Accessory
 
       table.insert(immuneContestantIDs, victim.id);
 
-      victim:updateHealth(math.max(victim.currentHealth - action.maxDamage * charge, 0), {
+      victim:updateHealth(math.max(victim.currentHealth - action.baseDamage - action.maxBonusDamage * charge, 0), {
         actionID = action.id;
         contestantID = action.contestant.id;
       });
+
+      local character = victim.character;
+      if character and not RagdollService.ragdolls[character] then
+
+        local ragdollKey = `{action.contestant.id}-{action.id}`;
+        RagdollService:ragdollCharacter(character, ragdollKey);
+
+        task.delay(0.5, function()
+        
+          RagdollService:restoreCharacter(character, ragdollKey);
+
+        end);
+
+        local primaryPart = character.PrimaryPart;
+        if primaryPart then
+
+          local force = primaryPart.CFrame:VectorToObjectSpace(primaryPart.Position - batHandle.Position) * 100;
+          primaryPart:ApplyImpulse(force);
+
+        end;
+
+      end;
 
     end;
 

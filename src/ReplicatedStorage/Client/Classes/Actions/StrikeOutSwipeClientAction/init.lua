@@ -33,10 +33,10 @@ local player = Players.LocalPlayer;
 function StrikeOutSwipeClientAction.new(): types.StrikeOutSwipeClientAction
 
   local remoteName = `{player.UserId}_{StrikeOutSwipeClientAction.id}`;
-  local action = (setmetatable({}, StrikeOutSwipeClientAction) :: any) :: types.ChangeModesClientAction;
+  local action = (setmetatable({}, StrikeOutSwipeClientAction) :: any) :: types.StrikeOutSwipeClientAction;
   action.remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
 
-  action.remoteFunction.OnClientInvoke = function()
+  action.remoteFunction.OnClientInvoke = function(shouldCharge: boolean): ()
 
     local character = player.Character;
     local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
@@ -44,11 +44,18 @@ function StrikeOutSwipeClientAction.new(): types.StrikeOutSwipeClientAction
 
     if animator and animator:IsA("Animator") then
 
+      if action.swingAnimation then
+
+        action.swingAnimation:Stop(0);
+
+      end;
+
       local swingAnimation = Instance.new("Animation");
       swingAnimation.AnimationId = `rbxassetid://123556732066116`;
       local currentAnimationTrack = animator:LoadAnimation(swingAnimation);
       currentAnimationTrack.Looped = false;
-      currentAnimationTrack:Play(0, 1, 8);
+      currentAnimationTrack:Play(if shouldCharge then 1 else 0, 1, if shouldCharge then 0 else 8);
+      action.swingAnimation = currentAnimationTrack;
 
     end;
 
