@@ -62,6 +62,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
   
   end;
   
+  local archetypeIDListCache = {};
   ReplicatedStorage.Shared.Functions.GetArchetypeIDs.OnServerInvoke = function(player: Player): {string}
   
     local contestant = getContestantFromPlayer(player);
@@ -69,7 +70,8 @@ local didSuccessfullyInitializeRound, message = pcall(function()
     assert(contestant.profile, "Couldn't find the player's profile.");
   
     -- Verify that the player has the default archetypes.
-    local archetypeIDs = contestant.profile:getArchetypeIDs();
+    local archetypeIDs = archetypeIDListCache[player.UserId] or contestant.profile:getArchetypeIDs();
+    archetypeIDListCache[player.UserId] = archetypeIDs;
     local _newArchetypeIDs: {string}? = nil;
     for _, archetypeID in {"ExplosiveMimic", "BatterUpDemon", "DraconicKnight", "UndeadConsciousness"} do
   
@@ -106,7 +108,9 @@ local didSuccessfullyInitializeRound, message = pcall(function()
     assert(contestant.profile, `Couldn't find the {playerIdentifier}'s profile.`);
   
     -- Verify that the contestant has that archetype.
-    assert(table.find(contestant.profile:getArchetypeIDs(), archetypeID), `{playerIdentifier} doesn't own archetype {archetypeID}, so it can't be used in this round.`);
+    local archetypeIDs = archetypeIDListCache[player.UserId] or contestant.profile:getArchetypeIDs();
+    archetypeIDListCache[player.UserId] = archetypeIDs;
+    assert(table.find(archetypeIDs, archetypeID), `{playerIdentifier} doesn't own archetype {archetypeID}, so it can't be used in this round.`);
   
     -- Update the archetype.
     contestant:updateArchetypeID(archetypeID);
