@@ -16,7 +16,7 @@ local function Button(properties: ButtonProperties)
   return React.createElement("TextButton", {
     LayoutOrder = properties.LayoutOrder;
     Size = UDim2.new(1, 0, 0, 30);
-    BackgroundTransparency = 0.6;
+    BackgroundTransparency = 0.8;
     BorderSizePixel = 0;
     BackgroundColor3 = Color3.new();
     Text = "";
@@ -46,7 +46,7 @@ local function Button(properties: ButtonProperties)
       Position = UDim2.new(0.5, 0, 0.5, 0);
       BackgroundTransparency = 1;
       AutomaticSize = Enum.AutomaticSize.XY;
-      FontFace = Font.fromId(11702779517, Enum.FontWeight.Light);
+      FontFace = Font.fromId(11702779517, Enum.FontWeight.Regular);
       TextColor3 = Color3.new(1, 1, 1);
       TextSize = 14;
       Text = properties.Text;

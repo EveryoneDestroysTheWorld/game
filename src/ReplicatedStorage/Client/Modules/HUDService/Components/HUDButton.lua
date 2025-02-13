@@ -44,7 +44,7 @@ local function HUDButton(props: HUDServiceTypes.HUDButtonProperties & {LayoutOrd
     IconContainerButton = React.createElement("TextButton", {
       [React.Event.Activated] = onActivate;
       AnchorPoint = Vector2.new(0.5, 0.5);
-      BackgroundTransparency = 0.4;
+      BackgroundTransparency = 0.8;
       BackgroundColor3 = Color3.new(0, 0, 0);
       BorderSizePixel = 0;
       Text = "";

@@ -168,6 +168,14 @@ local didSuccessfullyInitializeRound, message = pcall(function()
 
       if contestant.player then
 
+        -- Cache archetype data while this is happening.
+        task.spawn(function()
+        
+          local archetypeIDs = archetypeIDListCache[contestant.player.UserId] or contestant.profile:getArchetypeIDs();
+          archetypeIDListCache[contestant.player.UserId] = archetypeIDs;
+
+        end);
+
         table.insert(viewingPlayers, contestant.player);
 
       end;
