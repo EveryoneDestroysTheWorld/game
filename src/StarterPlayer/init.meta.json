@@ -1,0 +1,10 @@
+{
+  "className": "StarterPlayer",
+  "properties": {
+    "DevComputerCameraMovementMode": "Classic",
+    "DevTouchCameraMovementMode": "Follow",
+    "DevComputerMovementMode": "KeyboardMouse",
+    "DevTouchMovementMode": "Scriptable",
+    "EnableMouseLockOption": false
+  }
+}
