@@ -4,7 +4,6 @@ local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 local UndeadConsciousnessClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.UndeadConsciousnessClientArchetype);
-local ServerItem = require(script.Parent.Parent.ServerItem);
 local ServerEffect = require(script.Parent.Parent.ServerEffect);
 local types = require(ServerStorage.Modules.types);
 
@@ -23,26 +22,18 @@ local UndeadConsciousnessServerArchetype = {
 
 function UndeadConsciousnessServerArchetype.new(properties: types.UndeadConsciousnessServerArchetypeConstructorProperties): types.UndeadConsciousnessServerArchetype
 
-  local overwrittenProperties = {
-    id = UndeadConsciousnessServerArchetype.id;
-    name = UndeadConsciousnessServerArchetype.name;
-    description = UndeadConsciousnessServerArchetype.description;
-    actionIDs = UndeadConsciousnessServerArchetype.actionIDs;
-    type = UndeadConsciousnessServerArchetype.type;
+  local archetype = (setmetatable({}, UndeadConsciousnessServerArchetype) :: any) :: types.UndeadConsciousnessServerArchetype;
+  archetype.id = UndeadConsciousnessServerArchetype.id;
+  archetype.name = UndeadConsciousnessServerArchetype.name;
+  archetype.description = UndeadConsciousnessServerArchetype.description;
+  archetype.actionIDs = UndeadConsciousnessServerArchetype.actionIDs;
+  archetype.type = UndeadConsciousnessServerArchetype.type;
+  archetype.contestant = properties.contestant;
+  archetype.round = properties.round;
+  archetype.undeadEffect = ServerEffect.get("Undead").new({
     contestant = properties.contestant;
-    round = properties.round;
-    undeadEffect = ServerEffect.get("Undead").new({
-      contestant = properties.contestant;
-    });
-    events = {};
-  };
-
-  local archetype = (setmetatable(overwrittenProperties, UndeadConsciousnessServerArchetype) :: any) :: types.UndeadConsciousnessServerArchetype;
-
-  -- Give the player a random item. 
-  local randomItem = ServerItem.random(); -- TODO: Uncomment before merging PR
-  randomItem:initialize(archetype.contestant, archetype.round);
-  archetype.contestant:addItem(randomItem);
+  });
+  archetype.events = {};
 
   if archetype.contestant.player then
 
@@ -51,7 +42,6 @@ function UndeadConsciousnessServerArchetype.new(properties: types.UndeadConsciou
   end;
 
   local isDowned = false;
-  
   local function checkHealth()
 
     if isDowned and archetype.contestant.currentHealth > 0 then

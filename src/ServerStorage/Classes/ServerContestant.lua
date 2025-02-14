@@ -22,26 +22,24 @@ local ServerContestant = {
 local events: {[any]: {[string]: BindableEvent}} = {};
 function ServerContestant.new(properties: types.ServerContestantConstructorProperties): types.ServerContestant
 
-  local overwrittenProperties = {
-    walkSpeedWeights = {};
-    baseModifiers = {
-      health = {};
-      stamina = {};
-    };
-    baseHealth = 100;
-    currentHealth = 100;
-    effects = {};
-    baseStamina = 100;
-    currentStamina = 100;
-    items = {};
-    isDisqualified = false;
-    attributes = {};
-    tags = {};
-    id = properties.id;
-    name = properties.name;
-    round = properties.round;
+  local contestant = (setmetatable({}, ServerContestant) :: unknown) :: types.ServerContestant;
+  contestant.baseHealth = 1000;
+  contestant.currentHealth = contestant.baseHealth;
+  contestant.baseStamina = 100;
+  contestant.currentStamina = contestant.baseStamina;
+  contestant.items = {};
+  contestant.isDisqualified = false;
+  contestant.attributes = {};
+  contestant.tags = {};
+  contestant.walkSpeedWeights = {};
+  contestant.baseModifiers = {
+    health = {};
+    stamina = {};
   };
-  local contestant = (setmetatable(overwrittenProperties, ServerContestant) :: unknown) :: types.ServerContestant;
+  contestant.effects = {};
+  contestant.id = properties.id;
+  contestant.name = properties.name;
+  contestant.round = properties.round;
 
   -- Set up events.
   local eventNames = {"onDisqualified", "onHealthUpdated", "onStaminaUpdated", "onArchetypeUpdated", "onCharacterUpdated", "onInventoryUpdated", "onEffectsUpdated"};

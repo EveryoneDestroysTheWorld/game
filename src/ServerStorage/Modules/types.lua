@@ -298,6 +298,19 @@ export type TarBombServerAction = ServerAction<{
   breakdown: (self: TarBombServerAction) -> ();
 }>;
 
+export type DefaultServerArchetype = ServerArchetype<DefaultServerArchetypeProperties & DefaultServerArchetypeMethods>;
+
+export type DefaultServerArchetypeProperties = {
+  events: {RBXScriptConnection};
+  contestant: ServerContestant;
+  isContestantDowned: boolean;
+  ragdollClone: Model?;
+}
+
+export type DefaultServerArchetypeMethods = {
+
+}
+
 export type DraconicKnightServerArchetype = ServerArchetype<DraconicKnightServerArchetypeProperties & DraconicKnightServerArchetypeMethods>;
 
 export type DraconicKnightServerArchetypeProperties = {

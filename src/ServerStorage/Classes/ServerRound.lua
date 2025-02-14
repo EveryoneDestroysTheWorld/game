@@ -99,11 +99,12 @@ function ServerRound.__index:start(): ()
 
           end;
 
+          contestant.archetypeID = contestant.archetypeID or "Default";
+
           if contestant.archetypeID then
 
             local archetype = ServerArchetype.get(contestant.archetypeID).new({
               contestant = contestant;
-              round = self;
             });
             table.insert(self.archetypes, archetype);
             oldArchetype = archetype;
