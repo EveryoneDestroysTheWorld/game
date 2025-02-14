@@ -2,9 +2,12 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 
+local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
+
+local attackContestant = require(script.attackContestant);
+local destroyPart = require(script.destroyPart);
 local searchForTargetContestant = require(script.searchForTargetContestant);
 local searchForTargetPart = require(script.searchForTargetPart);
-local healSelf = require(script.healSelf);
 
 local types = require(ServerStorage.Modules.types);
 
@@ -28,29 +31,40 @@ end;
 
 function AggressiveAutopilot.__index:run(): ()
 
-  local character = self.contestant.character;
-  if not character then return end;
-
-  if self.contestant.currentHealth > 0 then
+  local archetype = self.contestant.archetype;
+  if archetype and archetype.id ~= "Default" then
     
-    local targetContestant = searchForTargetContestant(self.contestant);
-    local targetPart = searchForTargetPart(self.contestant);
+    if archetype.id == "ExplosiveMimic" then
+    
+      -- Prioritize parts over contestants, unless the contestants attack the user.
+      local targetContestant = searchForTargetContestant(self.contestant);
+      local targetPart = searchForTargetPart(self.contestant);
 
-    if targetPart or targetContestant then
+      if targetPart then
 
-      -- TODO: Choose the part or the contestant as the final target.
+        destroyPart(self.contestant, targetPart);
 
-    else
+      elseif targetContestant then
+        
+        attackContestant(self.contestant, targetContestant)
 
-      if self.contestant.currentHealth < self.contestant:getModifiedBaseValue("Health") then
+      else
 
-        healSelf(self.contestant);
-  
+        -- TODO: Get out of harm's way to heal?
+
+        -- TODO: Give the bot a hint.
+
       end;
 
-      -- TODO: Give the bot a hint.
-
     end;
+
+  else
+
+    archetype = ServerArchetype.get("ExplosiveMimic").new({
+      contestant = self.contestant;
+    });
+
+    self.contestant:updateArchetype(archetype);
 
   end;
 

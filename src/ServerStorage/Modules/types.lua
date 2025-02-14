@@ -14,7 +14,7 @@ export type ServerContestant = ServerContestantProperties & ServerContestantEven
 export type ServerContestantProperties = {
   
   -- This could be nil if the server hasn't assigned an archetype to the contestant yet.
-  archetypeID: string?;
+  archetype: ServerArchetype?;
 
   -- The character reference of the contestant. This is here to easily reference characters of bot contestants.
   -- If the contestant is a player, this is the same value as player.Character.
@@ -86,7 +86,7 @@ export type ServerContestantMethods = {
   disqualify: (self: ServerContestant) -> ();
   getModifiedBaseValue: (self: ServerContestant, modifierType: BaseModifierType) -> number;
   getInventoryItemIDs: (self: ServerContestant) -> {string};
-  updateArchetypeID: (self: ServerContestant, newArchetypeID: string) -> ();
+  updateArchetype: (self: ServerContestant, newArchetype: ServerArchetype?) -> ();
   updateCharacter: (self: ServerContestant, newCharacter: Model?) -> ();
   updateInventory: (self: ServerContestant, newInventory: {ServerItem}) -> ();
   updateHealth: (self: ServerContestant, newHealth: number, cause: Cause?) -> ();
@@ -335,7 +335,6 @@ export type ExplosiveMimicServerArchetype = ServerArchetype<ExplosiveMimicServer
 export type ExplosiveMimicServerArchetypeProperties = {
   contestant: ServerContestant;
   ragdollClone: Model?;
-  round: ServerRound;
   events: {RBXScriptConnection};
   actions: {ServerAction};
 };
@@ -542,6 +541,8 @@ export type ServerArchetypeProperties = {
 
   type: ArchetypeType;
 
+  actions: {ServerAction};
+
   actionIDs: {string};
   
 };
@@ -662,13 +663,9 @@ export type ServerRoundProperties = ServerRoundConstructorProperties & {
 
   stage: Stage.Stage;
 
-  archetypes: {ServerArchetype};
-
   contestants: {ServerContestant};
 
   gameMode: GameMode?;
-
-  autopilotTasks: {thread};
 
 };
 

@@ -22,24 +22,21 @@ local DraconicKnightServerArchetype = {
 
 function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServerArchetypeConstructorProperties): types.DraconicKnightServerArchetype
 
-  local overwrittenProperties = {
-    id = DraconicKnightServerArchetype.id;
-    name = DraconicKnightServerArchetype.name;
-    description = DraconicKnightServerArchetype.description;
-    actionIDs = DraconicKnightServerArchetype.actionIDs;
-    type = DraconicKnightServerArchetype.type;
+  local archetype = (setmetatable({}, DraconicKnightServerArchetype) :: any) :: types.DraconicKnightServerArchetype;
+  archetype.id = DraconicKnightServerArchetype.id;
+  archetype.name = DraconicKnightServerArchetype.name;
+  archetype.description = DraconicKnightServerArchetype.description;
+  archetype.actionIDs = DraconicKnightServerArchetype.actionIDs;
+  archetype.type = DraconicKnightServerArchetype.type;
+  archetype.contestant = properties.contestant;
+  archetype.roughArmorEffect = ServerEffect.get("RoughArmor").new({
     contestant = properties.contestant;
-    roughArmorEffect = ServerEffect.get("RoughArmor").new({
-      contestant = properties.contestant;
-    });
-    events = {};
-  };
-
-  local archetype = (setmetatable(overwrittenProperties, DraconicKnightServerArchetype) :: any) :: types.DraconicKnightServerArchetype;
+  });
+  archetype.events = {};
 
   if properties.contestant.player then
 
-    ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(properties.contestant.player, overwrittenProperties.id);
+    ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(properties.contestant.player, archetype.id);
 
   end;
 

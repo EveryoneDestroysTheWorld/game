@@ -1,9 +1,13 @@
 --!strict
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 local PathfindingService = game:GetService("PathfindingService");
 
 local types = require(ServerStorage.Modules.types);
+
+local filterTable = require(ReplicatedStorage.Shared.Modules.filterTable);
+local listContestantInstances = require(script.Parent.listContestantInstances);
 
 --[[
   Searches for a target contestant. 
@@ -21,24 +25,7 @@ return function(autopilotContestant: types.ServerContestant): types.ServerContes
   -- Bots should ensure that the target contestant is within their view.
   -- This keeps things fair.
   local visibleContestants = {};
-  local contestantInstances: {Instance} = {};
-  for _, contestant in round.contestants do
-
-    if contestant.character then
-
-      for _, instance in contestant.character:GetChildren() do
-
-        if instance:IsA("BasePart") then
-
-          table.insert(contestantInstances, instance);
-
-        end;
-
-      end;
-
-    end;
-
-  end;
+  local contestantInstances = listContestantInstances(round.contestants);
 
   for _, contestant in round.contestants do
     
@@ -46,18 +33,24 @@ return function(autopilotContestant: types.ServerContestant): types.ServerContes
 
       local botHead = character:FindFirstChild("Head");
       local enemyPrimaryPart = if contestant.character then contestant.character.PrimaryPart else nil;
-      if not botHead or not botHead:IsA("BasePart") or not enemyPrimaryPart then 
+      if not contestant.character or not botHead or not botHead:IsA("BasePart") or not enemyPrimaryPart then 
         
         continue; 
       
       end;
 
+      local descendants = contestant.character:GetDescendants();
+      local filteredInstances = filterTable(contestantInstances, function(instance)
+
+        return not table.find(descendants, instance);
+
+      end);
       local raycastParams = RaycastParams.new();
-      raycastParams.FilterDescendantsInstances = contestantInstances;
-      raycastParams.FilterType = Enum.RaycastFilterType.Include;
+      raycastParams.FilterDescendantsInstances = filteredInstances;
+      raycastParams.FilterType = Enum.RaycastFilterType.Exclude;
 
       local raycastResult = workspace:Raycast(botHead.CFrame.Position, enemyPrimaryPart.CFrame.Position - botHead.CFrame.Position, raycastParams);
-      if raycastResult and raycastResult.Instance:IsDescendantOf(contestant.character) then
+      if raycastResult and table.find(descendants, raycastResult.Instance) then
 
         table.insert(visibleContestants, contestant);
 

@@ -1,11 +1,20 @@
 --!strict
+
 local ServerStorage = game:GetService("ServerStorage");
+
 local types = require(ServerStorage.Modules.types);
+
+local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
 
 return function(contestant: types.ServerContestant): ()
 
   -- Remove all items from their inventory.
   contestant:updateInventory({});
+  
+  local undeadConsciousnessArchetype = ServerArchetype.get("UndeadConsciousness").new({
+    contestant = contestant;
+  })
+  contestant:updateArchetype(undeadConsciousnessArchetype);
 
   -- Turn the player transparent.
   if contestant.character then

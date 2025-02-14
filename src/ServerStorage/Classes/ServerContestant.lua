@@ -232,7 +232,7 @@ function ServerContestant.__index:convertToClient(): {any}
 
   return {
     id = self.id;
-    archetypeID = self.archetypeID;
+    archetypeID = if self.archetype then self.archetype.id else nil;
     isDisqualified = self.isDisqualified;
     player = self.player;
     name = self.name;
@@ -247,11 +247,19 @@ function ServerContestant.__index:convertToClient(): {any}
 
 end;
 
-function ServerContestant.__index:updateArchetypeID(newArchetypeID: string): ()
+function ServerContestant.__index:updateArchetype(newArchetype: types.ServerArchetype?): ()
 
-  self.archetypeID = newArchetypeID;
-  events[self].onArchetypeUpdated:Fire(newArchetypeID);
-  ReplicatedStorage.Shared.Events.ContestantArchetypeUpdated:FireAllClients(self.id, newArchetypeID);
+  if self.archetype then
+
+    self.archetype:breakdown();
+
+  end;
+
+  self.archetype = newArchetype;
+  
+  local archetypeID = if self.archetype then self.archetype.id else nil;
+  events[self].onArchetypeUpdated:Fire(archetypeID);
+  ReplicatedStorage.Shared.Events.ContestantArchetypeUpdated:FireAllClients(self.id, archetypeID);
 
 end;
 
@@ -343,7 +351,7 @@ function ServerContestant.__index:toString()
 
   return HttpService:JSONEncode({
     id = self.id;
-    archetypeID = self.archetypeID;
+    archetypeID = if self.archetype then self.archetype.id else nil;
   });
 
 end;

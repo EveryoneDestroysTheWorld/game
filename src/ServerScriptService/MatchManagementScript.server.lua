@@ -1,16 +1,21 @@
 -- --!strict
--- Programmers: Christian Toney (Christian_Toney) and Hati (hati_bati) :))))
 -- This script controls the round management stuff.
+--
+-- Programmers: Christian Toney (Christian_Toney) and Hati (hati_bati) :))))
+-- © 2024 – 2025 Beastslash LLC
 
+local HttpService = game:GetService("HttpService");
+local Players = game:GetService("Players");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
-local Players = game:GetService("Players");
-local HttpService = game:GetService("HttpService");
+local StarterPlayer = game:GetService("StarterPlayer");
+
 local Stage = require(ServerStorage.Packages.Stage);
 local ServerRound = require(ServerStorage.Classes.ServerRound);
 local ServerContestant = require(ServerStorage.Classes.ServerContestant);
+local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
 local Profile = require(ServerStorage.Packages.Profile);
-local StarterPlayerScripts = game:GetService("StarterPlayer").StarterPlayerScripts;
+local StarterPlayerScripts = StarterPlayer.StarterPlayerScripts;
 local types = require(ServerStorage.Modules.types);
 
 -- Initialize the round.
@@ -108,12 +113,16 @@ local didSuccessfullyInitializeRound, message = pcall(function()
     assert(contestant.profile, `Couldn't find the {playerIdentifier}'s profile.`);
   
     -- Verify that the contestant has that archetype.
+    assert(archetypeID and typeof(archetypeID) == "string", "Archetype ID must be a string.");
     local archetypeIDs = archetypeIDListCache[player.UserId] or contestant.profile:getArchetypeIDs();
     archetypeIDListCache[player.UserId] = archetypeIDs;
     assert(table.find(archetypeIDs, archetypeID), `{playerIdentifier} doesn't own archetype {archetypeID}, so it can't be used in this round.`);
   
     -- Update the archetype.
-    contestant:updateArchetypeID(archetypeID);
+    local archetype = ServerArchetype.get(archetypeID).new({
+      contestant = contestant;
+    });
+    contestant:updateArchetype(archetype);
   
   end;
   
@@ -148,6 +157,10 @@ local didSuccessfullyInitializeRound, message = pcall(function()
       -- Create the NPC's character.
       local character: Model = ServerStorage:FindFirstChild("NPCRigs"):FindFirstChild("Rig"):Clone();
       character.Name = `BOT {i}`;
+      
+      local humanoid = character:FindFirstChild("Humanoid");
+      assert(humanoid and humanoid:IsA("Humanoid"));
+      humanoid.WalkSpeed = StarterPlayer.CharacterWalkSpeed;
   
       -- Add the NPC to the contestant list.
       local botContestant = ServerContestant.new({
@@ -222,7 +235,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
     
         else
     
-          local character = ServerStorage.NPCRigs.Rig:Clone();
+          local character = contestant.character;
           character.Name = contestant.name;
           character.Parent = workspace;
     

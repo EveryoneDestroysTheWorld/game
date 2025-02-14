@@ -19,18 +19,17 @@ local BatterUpDemonServerArchetype = {
   description = BatterUpDemonClientArchetype.description;
   actionIDs = BatterUpDemonClientArchetype.actionIDs;
   type = BatterUpDemonClientArchetype.type;
-  __index = {
-    id = BatterUpDemonClientArchetype.id;
-    name = BatterUpDemonClientArchetype.name;
-    description = BatterUpDemonClientArchetype.description;
-    actionIDs = BatterUpDemonClientArchetype.actionIDs;
-    type = BatterUpDemonClientArchetype.type :: types.ArchetypeType;
-  } :: types.BatterUpDemonServerArchetype;
+  __index = {} :: types.BatterUpDemonServerArchetype;
 };
 
 function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerArchetypeConstructorProperties): types.BatterUpDemonServerArchetype
 
   local archetype = (setmetatable({}, BatterUpDemonServerArchetype) :: any) :: types.BatterUpDemonServerArchetype;
+  archetype.id = BatterUpDemonClientArchetype.id;
+  archetype.name = BatterUpDemonClientArchetype.name;
+  archetype.description = BatterUpDemonClientArchetype.description;
+  archetype.actionIDs = BatterUpDemonClientArchetype.actionIDs;
+  archetype.type = BatterUpDemonClientArchetype.type :: types.ArchetypeType;
   archetype.events = {};
   archetype.contestant = properties.contestant;
 
@@ -112,7 +111,7 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
       task.spawn(function()
 
         local shouldCreateAction = true;
-        for _, action in archetype.actions do
+        for _, action in ipairs(archetype.actions) do
 
           if action.id == actionID then
 

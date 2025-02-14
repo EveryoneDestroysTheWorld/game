@@ -21,18 +21,14 @@ local ExplosiveMimicServerArchetype = {
 
 function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServerArchetypeConstructorProperties): types.ExplosiveMimicServerArchetype
 
-  local overwrittenProperties = {
-    id = ExplosiveMimicServerArchetype.id;
-    name = ExplosiveMimicServerArchetype.name;
-    description = ExplosiveMimicServerArchetype.description;
-    actionIDs = ExplosiveMimicServerArchetype.actionIDs;
-    type = ExplosiveMimicServerArchetype.type;
-    round = properties.round;
-    contestant = properties.contestant;
-    events = {};
-  };
-
-  local archetype = (setmetatable(overwrittenProperties, ExplosiveMimicServerArchetype) :: any) :: types.ExplosiveMimicServerArchetype;
+  local archetype = (setmetatable({}, ExplosiveMimicServerArchetype) :: any) :: types.ExplosiveMimicServerArchetype;
+  archetype.id = ExplosiveMimicServerArchetype.id;
+  archetype.name = ExplosiveMimicServerArchetype.name;
+  archetype.description = ExplosiveMimicServerArchetype.description;
+  archetype.actionIDs = ExplosiveMimicServerArchetype.actionIDs;
+  archetype.type = ExplosiveMimicServerArchetype.type;
+  archetype.contestant = properties.contestant;
+  archetype.events = {};
 
   if archetype.contestant.player then
 
@@ -99,7 +95,7 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
         explosion.Hit:Connect(function(basePart)
   
           -- Damage any parts or contestants that get hit.
-          for _, possibleEnemyContestant in archetype.round.contestants do
+          for _, possibleEnemyContestant in archetype.contestant.round.contestants do
 
             task.spawn(function()
 
@@ -107,7 +103,7 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
               if possibleEnemyContestant ~= archetype.contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
 
                 table.insert(hitContestants, possibleEnemyContestant);
-                possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 50, {
+                possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 750, {
                   contestantID = archetype.contestant.id;
                   archetypeID = ExplosiveMimicServerArchetype.id;
                 });
