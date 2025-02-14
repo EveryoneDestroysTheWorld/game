@@ -1,5 +1,7 @@
 --!strict
+local GuiService = game:GetService("GuiService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
@@ -7,7 +9,7 @@ local SearchBox = require(script.Parent.SearchBox);
 local SearchResultList = require(script.Parent.SearchResultList);
 local Lighting = game:GetService("Lighting");
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
-local GuiService = game:GetService("GuiService");
+local CameraService = require(ReplicatedStorage.Client.Modules.CameraService);
 
 type RoundTimerProps = {
   round: ClientRound;
@@ -19,6 +21,18 @@ type RoundTimerProps = {
 local function ArchetypeSelectorScreen(props: RoundTimerProps)
 
   local query, setQuery = React.useState("");
+
+  React.useEffect(function()
+  
+    CameraService.lockMouse = false;
+
+    return function()
+
+      CameraService.lockMouse = true;
+
+    end;
+
+  end, {});
 
   React.useEffect(function(): ()
   
