@@ -39,13 +39,7 @@
       }
     },
     "StarterPlayer": {
-      "StarterPlayerScripts": {
-        "$path": "src/StarterPlayer/StarterPlayerScripts"
-      },
-      "StarterCharacterScripts": {
-        "$path": "src/StarterPlayer/StarterCharacterScripts",
-        "$className": "StarterCharacterScripts"
-      }
+      "$path": "src/StarterPlayer"
     }
   }
 }
