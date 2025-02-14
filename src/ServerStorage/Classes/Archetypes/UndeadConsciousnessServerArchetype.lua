@@ -7,8 +7,6 @@ local UndeadConsciousnessClientArchetype = require(ReplicatedStorage.Client.Clas
 local ServerEffect = require(script.Parent.Parent.ServerEffect);
 local types = require(ServerStorage.Modules.types);
 
-local downContestant = require(ServerStorage.Modules.downContestant);
-local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
 local initializeArchetypeActions = require(ServerStorage.Modules.initializeArchetypeActions);
 
 local UndeadConsciousnessServerArchetype = {
@@ -41,41 +39,8 @@ function UndeadConsciousnessServerArchetype.new(properties: types.UndeadConsciou
 
   end;
 
-  local isDowned = false;
-  local function checkHealth()
+  archetype.contestant:addEffect(archetype.undeadEffect);
 
-    if isDowned and archetype.contestant.currentHealth > 0 then
-      
-      isDowned = false;
-      if archetype.ragdollClone then
-
-        archetype.ragdollClone:Destroy();
-
-      end;
-
-      archetype.contestant:removeEffect(archetype.undeadEffect);
-
-    elseif not isDowned and archetype.contestant.currentHealth <= 0 then
-
-      isDowned = true;
-
-      if archetype.contestant.character then
-
-        archetype.ragdollClone = createRagdollClone(archetype.contestant.character);
-
-      end;
-
-      downContestant(archetype.contestant);
-
-      archetype.contestant:addEffect(archetype.undeadEffect);
-
-    end;
-
-  end;
-
-  table.insert(archetype.events, archetype.contestant.onHealthUpdated:Connect(checkHealth));
-  checkHealth();
-  
   archetype.actions = initializeArchetypeActions(archetype.actionIDs, archetype.contestant);
 
   return archetype;
