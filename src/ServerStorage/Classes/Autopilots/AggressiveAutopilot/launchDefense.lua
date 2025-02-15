@@ -4,7 +4,6 @@ local ServerStorage = game:GetService("ServerStorage");
 
 local types = require(ServerStorage.Modules.types);
 
-local attackContestant = require(script.Parent.attackContestant);
 local approachTargetPart = require(script.Parent.approachTargetPart);
 local searchForTargetContestant = require(script.Parent.searchForTargetContestant);
 local searchForTargetPart = require(script.Parent.searchForTargetPart);
