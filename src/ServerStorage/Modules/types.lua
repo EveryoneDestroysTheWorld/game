@@ -84,7 +84,7 @@ export type ServerContestantMethods = {
   addWalkSpeedWeight: (self: ServerContestant, weight: WalkSpeedWeight) -> ();
   addBaseModifier: (self: ServerContestant, modifierType: BaseModifierType, modifier: BaseModifier) -> ();
   addItem: (self: ServerContestant, item: ServerItem) -> ();
-  eliminate: (self: ServerContestant) -> ();
+  eliminate: (self: ServerContestant, shouldCreateRagdoll: boolean) -> ();
   removeBaseModifier: (self: ServerContestant, modifierType: BaseModifierType, modifier: BaseModifier) -> ();
   removeWalkSpeedWeight: (self: ServerContestant, weight: WalkSpeedWeight) -> ();
   removeItem: (self: ServerContestant, item: ServerItem) -> ();

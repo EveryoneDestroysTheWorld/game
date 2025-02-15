@@ -278,13 +278,20 @@ function ServerContestant.__index:updateHealth(newHealth: number, cause: types.C
 
   self.currentHealth = newHealth;
 
-  if self.currentHealth < 0 and not self.isEliminated and not self.isAutoEliminationEnabled then
+  if self.currentHealth < 0 and not self.isEliminated and self.isAutoEliminationEnabled then
 
-    self:eliminate();
+    self:eliminate(true);
   
   elseif self.currentHealth > 0 and self.isEliminated then
 
     self.isEliminated = false;
+
+    if self.archetype then
+
+      self.archetype:breakdown();
+      self:updateArchetype();
+
+    end;
 
     if self.ghostHighlight then
 
@@ -368,13 +375,11 @@ function ServerContestant.__index:updateCharacter(newCharacter: Model?): ()
 
 end;
 
-function ServerContestant.__index:eliminate()
+function ServerContestant.__index:eliminate(shouldCreateRagdoll: boolean)
 
   assert(not self.isEliminated, "Contestant has already been eliminated.");
 
   self.isEliminated = true;
-
-  -- Create a ragdoll clone.
 
   -- Remove all items from their inventory.
   self:updateInventory({});
@@ -391,10 +396,16 @@ function ServerContestant.__index:eliminate()
     if self.characterRagdollClone then
 
       self.characterRagdollClone:Destroy();
+      self.characterRagdollClone = nil;
 
     end;
 
-    self.characterRagdollClone = createRagdollClone(self.character);
+    -- Create a ragdoll clone.
+    if shouldCreateRagdoll then
+      
+      self.characterRagdollClone = createRagdollClone(self.character);
+
+    end;
 
     if self.ghostHighlight then
 

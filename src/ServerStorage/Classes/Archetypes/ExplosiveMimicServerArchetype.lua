@@ -149,10 +149,10 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
 
         if not archetype.contestant.isEliminated then
 
-          archetype.contestant:eliminate();
+          archetype.contestant:eliminate(false);
 
         end;
-        
+
         explosion.Parent = workspace;
         highlight:Destroy();
 

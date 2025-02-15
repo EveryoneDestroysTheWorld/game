@@ -25,7 +25,7 @@ local function launchDefense(autopilot: types.AggressiveAutopilot)
     local isActionInRange = approachTargetPart(character, targetPrimaryPart, 5, 0);
     if isActionInRange then
 
-      targetReviveContestant:updateHealth(targetReviveContestant.baseHealth / 2, {
+      targetReviveContestant:updateHealth(targetReviveContestant:getModifiedBaseValue("Health") / 2, {
         contestantID = autopilot.contestant.id;
       });
 
@@ -34,9 +34,12 @@ local function launchDefense(autopilot: types.AggressiveAutopilot)
   elseif targetRestorePart then
 
     local isActionInRange = approachTargetPart(character, targetRestorePart, 5, 0);
-    if isActionInRange then
+    local baseDurability = targetRestorePart:GetAttribute("BaseDurability");
+    if isActionInRange and typeof(baseDurability) == "number" then
 
-      -- restorePart(targetRestorePart);
+      ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(targetRestorePart, baseDurability, {
+        contestantID = autopilot.contestant.id
+      });
 
     end;
 
