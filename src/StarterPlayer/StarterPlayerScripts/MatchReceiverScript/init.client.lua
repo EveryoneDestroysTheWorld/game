@@ -1,17 +1,12 @@
 --!strict
 
-local Players = game:GetService("Players");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local player = Players.LocalPlayer;
-local React = require(ReplicatedStorage.Shared.Packages.react);
-local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype);
 local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
 local ClientItem = require(ReplicatedStorage.Client.Classes.ClientItem);
 type ClientArchetype = ClientArchetype.ClientArchetype;
 type ClientItem = ClientItem.ClientItem;
-local RoundResultsWindow = require(script.ReactComponents.RoundResultsWindow);
 local types = require(ReplicatedStorage.Client.Modules.types);
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 
@@ -133,19 +128,6 @@ ReplicatedStorage.Shared.Events.RoundEnded.OnClientEvent:Connect(function()
     end;
 
   end;
-
-  -- Add the round results GUI.
-  local roundResultsGUI = Instance.new("ScreenGui");
-  roundResultsGUI.Name = "RoundResultsGUI";
-  roundResultsGUI.Parent = player:WaitForChild("PlayerGui");
-  roundResultsGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
-  roundResultsGUI.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets;
-  roundResultsGUI.ResetOnSpawn = false;
-  roundResultsGUI.DisplayOrder = 1;
-  roundResultsGUI.Enabled = true;
-
-  local roundResultsGUIRoot = ReactRoblox.createRoot(roundResultsGUI);
-  roundResultsGUIRoot:render(React.createElement(RoundResultsWindow));
 
 end);
 

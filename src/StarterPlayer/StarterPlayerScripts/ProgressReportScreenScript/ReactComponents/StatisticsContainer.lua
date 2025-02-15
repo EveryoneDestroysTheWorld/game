@@ -1,18 +1,18 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
-local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
-type ClientContestant = ClientContestant.ClientContestant;
 local StatisticContainer = require(script.Parent.StatisticContainer);
 local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
 type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
+local types = require(ReplicatedStorage.Client.Modules.types);
 
 export type ProgressReportScreenProperties = {
-  selectedContestant: ClientContestant;
+  selectedContestant: types.ClientContestant;
   teams: {
-    [number]: {ClientContestant}
+    [number]: {types.ClientContestant}
   };
 }
 
@@ -31,11 +31,11 @@ local function StatisticsContainer(properties: ProgressReportScreenProperties)
   end, {});
 
   local allStatistics, setAllStatistics = React.useState({});
-  local topAchievers, setTopAchievers = React.useState(nil);
-  React.useState(function()
+  local topAchievers, setTopAchievers = React.useState(nil :: {[string]: {types.ClientContestant}}?);
+  React.useEffect(function()
   
     local newAllStatistics = {};
-    local newTopAchievers: {[string]: {ClientContestant}} = {};
+    local newTopAchievers: {[string]: {types.ClientContestant}} = {};
 
     for _, members in properties.teams do
 
@@ -135,6 +135,8 @@ local function StatisticsContainer(properties: ProgressReportScreenProperties)
     });
 
   end;
+
+  return React.createElement(React.Fragment);
 
 end;
 
