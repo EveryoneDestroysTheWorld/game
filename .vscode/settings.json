@@ -25,7 +25,8 @@
     "setmetatable",
     "Toney",
     "tonumber",
-    "tostring"
+    "tostring",
+    "xpcall"
   ],
   "luau-lsp.fflags.enableNewSolver": false
 }

@@ -10,7 +10,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
 local GameMode = require(script.Parent.GameMode);
-local ServerArchetype = require(script.Parent.ServerArchetype);
 local Stage = require(ServerStorage.Packages.Stage);
 local Autopilot = require(ServerStorage.Classes.Autopilot);
 local types = require(ServerStorage.Modules.types);
@@ -25,8 +24,6 @@ function ServerRound.new(properties: types.ServerRoundConstructorProperties): ty
 
   local round = setmetatable(properties :: types.ServerRoundProperties, ServerRound) :: types.ServerRound;
   round.contestants = {};
-  round.archetypes = {};
-  round.autopilotTasks = {};
   round.stage = properties.stage or Stage.fromID(properties.stageID);
 
   events[round] = {};
@@ -82,54 +79,7 @@ function ServerRound.__index:start(): ()
   (self.gameMode :: types.GameMode):start();
 
   -- Ready the archetypes and actions.
-  self.archetypes = {};
-  for _, contestant in ipairs(self.contestants) do
-
-    local oldArchetype: types.ServerArchetype?;
-
-    local function updateArchetype()
-
-      local isSuccess, errorObject = xpcall(function()
-
-        if not oldArchetype or oldArchetype.id ~= contestant.archetypeID then
-
-          if oldArchetype then
-
-            oldArchetype:breakdown();
-
-          end;
-
-          contestant.archetypeID = contestant.archetypeID or "Default";
-
-          if contestant.archetypeID then
-
-            local archetype = ServerArchetype.get(contestant.archetypeID).new({
-              contestant = contestant;
-            });
-            table.insert(self.archetypes, archetype);
-            oldArchetype = archetype;
-
-          end;
-
-        end;
-
-      end, function(errorMessage)
-      
-        self:stop(true);
-        warn(`[Round] Round stopped due to an error: {errorMessage}\n{debug.traceback()}`);
-
-      end);
-
-      if not isSuccess then
-
-        error(errorObject)
-
-      end;
-
-    end;
-
-    contestant.onArchetypeUpdated:Connect(updateArchetype);
-    task.spawn(updateArchetype);
+  for _, contestant in self.contestants do
 
     if not contestant.player then
 
@@ -139,7 +89,7 @@ function ServerRound.__index:start(): ()
           contestant = contestant;
         });
 
-        while task.wait() do
+        while self.status == "Active" and task.wait() do
 
           autopilot:run();
 
@@ -147,7 +97,7 @@ function ServerRound.__index:start(): ()
 
       end;
 
-      table.insert(self.autopilotTasks, task.spawn(runAutopilot));
+      task.spawn(runAutopilot);
       
     end;
 
@@ -238,21 +188,6 @@ function ServerRound.__index:stop(forced: boolean?): ()
 
   end;
 
-  -- Disable the actions.
-  if self.archetypes then
-
-    for _, archetype in ipairs(self.archetypes) do
-
-      task.spawn(function() 
-        
-        archetype:breakdown(); 
-      
-      end);
-
-    end;
-
-  end;
-
   -- Save the round info in the database.
   self.timeEnded = DateTime.now().UnixTimestampMillis;
 
@@ -262,6 +197,12 @@ function ServerRound.__index:stop(forced: boolean?): ()
     if contestant.id > 0 then
 
       table.insert(contestantIDs, contestant.id);
+
+    end;
+
+    if contestant.archetype then
+
+      coroutine.wrap(contestant.archetype.breakdown)(contestant.archetype);
 
     end;
 

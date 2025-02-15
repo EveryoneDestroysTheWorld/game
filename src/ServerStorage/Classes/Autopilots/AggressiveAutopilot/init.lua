@@ -2,9 +2,10 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 
+local launchDefense = require(script.launchDefense);
+local launchOffense = require(script.launchOffense);
 local searchForTargetContestant = require(script.searchForTargetContestant);
 local searchForTargetPart = require(script.searchForTargetPart);
-local healSelf = require(script.healSelf);
 
 local types = require(ServerStorage.Modules.types);
 
@@ -16,43 +17,87 @@ local AggressiveAutopilot = {
 
 function AggressiveAutopilot.new(properties: types.AggressiveAutopilotConstructorProperties)
 
-  local autopilot = {
-    contestant = properties.contestant;
-    name = AggressiveAutopilot.name;
-    id = AggressiveAutopilot.id;
-  };
+  local autopilot = (setmetatable({}, AggressiveAutopilot) :: unknown) :: types.AggressiveAutopilot;
+  autopilot.contestant = properties.contestant;
+  autopilot.name = AggressiveAutopilot.name;
+  autopilot.id = AggressiveAutopilot.id;
+  autopilot.rivalForgivenessMinDelaySeconds = 1;
+  autopilot.rivalForgivenessMaxDelaySeconds = 15;
+  autopilot.events = {};
+  
+  table.insert(autopilot.events, autopilot.contestant.onHealthUpdated:Connect(function(_, oldHealth, cause)
+  
+    if not autopilot.rivalContestantID and autopilot.contestant.currentHealth < oldHealth and cause and cause.contestantID then
 
-  return (setmetatable(autopilot, AggressiveAutopilot) :: unknown) :: types.AggressiveAutopilot
+      for _, contestant in autopilot.contestant.round.contestants do
+
+        if contestant.id == cause.contestantID then
+
+          if not autopilot.contestant.teamID or contestant.teamID ~= autopilot.contestant.teamID then
+
+            local declarationTime = DateTime.now().UnixTimestamp;
+            autopilot.rivalContestantID = cause.contestantID;
+            autopilot.rivalDeclaredSeconds = declarationTime;
+
+            local forgivenessDelaySeconds = math.random(autopilot.rivalForgivenessMinDelaySeconds, autopilot.rivalForgivenessMaxDelaySeconds);
+            task.delay(forgivenessDelaySeconds, function()
+            
+              if autopilot.rivalContestantID == cause.contestantID and autopilot.rivalDeclaredSeconds == declarationTime then
+
+                autopilot.rivalContestantID = nil;
+                autopilot.rivalDeclaredSeconds = nil;
+
+              end;
+
+            end);
+
+          end;
+
+          break;
+
+        end;
+
+      end;
+
+    end;
+
+  end));
+
+  return autopilot;
 
 end;
 
 function AggressiveAutopilot.__index:run(): ()
 
-  local character = self.contestant.character;
-  if not character then return end;
-
-  if self.contestant.currentHealth > 0 then
+  xpcall(function()
+  
+    if self.contestant.currentHealth > 0 then
     
-    local targetContestant = searchForTargetContestant(self.contestant);
-    local targetPart = searchForTargetPart(self.contestant);
+      local targetDamageContestant = searchForTargetContestant(self, "Rivals");
+      local targetDamagePart = searchForTargetPart(self.contestant, "Unclaimed");
+      local shouldLaunchOffense = targetDamageContestant or targetDamagePart;
+      if shouldLaunchOffense then
 
-    if targetPart or targetContestant then
+        launchOffense(self, targetDamageContestant, targetDamagePart);
 
-      -- TODO: Choose the part or the contestant as the final target.
+      else
+
+        launchDefense(self);
+
+      end;
 
     else
 
-      if self.contestant.currentHealth < self.contestant:getModifiedBaseValue("Health") then
-
-        healSelf(self.contestant);
-  
-      end;
-
-      -- TODO: Give the bot a hint.
+      -- TODO: Implement Undead Consciousness.
 
     end;
 
-  end;
+  end, function(error)
+  
+    warn(error);
+    debug.traceback();
+
+  end);
 
 end;
 

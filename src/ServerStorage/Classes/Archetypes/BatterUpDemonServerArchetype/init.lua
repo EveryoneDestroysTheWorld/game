@@ -6,8 +6,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local BatterUpDemonClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.BatterUpDemonClientArchetype);
 local ServerAction = require(ServerStorage.Classes.ServerAction);
 
-local downContestant = require(ServerStorage.Modules.downContestant);
-local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
 local initializeArchetypeActions = require(ServerStorage.Modules.initializeArchetypeActions);
 local filterTable = require(ReplicatedStorage.Shared.Modules.filterTable);
 
@@ -19,18 +17,17 @@ local BatterUpDemonServerArchetype = {
   description = BatterUpDemonClientArchetype.description;
   actionIDs = BatterUpDemonClientArchetype.actionIDs;
   type = BatterUpDemonClientArchetype.type;
-  __index = {
-    id = BatterUpDemonClientArchetype.id;
-    name = BatterUpDemonClientArchetype.name;
-    description = BatterUpDemonClientArchetype.description;
-    actionIDs = BatterUpDemonClientArchetype.actionIDs;
-    type = BatterUpDemonClientArchetype.type :: types.ArchetypeType;
-  } :: types.BatterUpDemonServerArchetype;
+  __index = {} :: types.BatterUpDemonServerArchetype;
 };
 
 function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerArchetypeConstructorProperties): types.BatterUpDemonServerArchetype
 
   local archetype = (setmetatable({}, BatterUpDemonServerArchetype) :: any) :: types.BatterUpDemonServerArchetype;
+  archetype.id = BatterUpDemonClientArchetype.id;
+  archetype.name = BatterUpDemonClientArchetype.name;
+  archetype.description = BatterUpDemonClientArchetype.description;
+  archetype.actionIDs = BatterUpDemonClientArchetype.actionIDs;
+  archetype.type = BatterUpDemonClientArchetype.type :: types.ArchetypeType;
   archetype.events = {};
   archetype.contestant = properties.contestant;
 
@@ -55,32 +52,6 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
     end);
 
   end;
-
-  table.insert(archetype.events, archetype.contestant.onHealthUpdated:Connect(function()
-  
-    if archetype.isContestantDowned and archetype.contestant.currentHealth > 0 then
-      
-      if archetype.ragdollClone then
-
-        archetype.ragdollClone:Destroy();
-
-      end;
-
-    elseif not archetype.isContestantDowned and archetype.contestant.currentHealth <= 0 then
-
-      archetype.isContestantDowned = true;
-
-      if archetype.contestant.character then
-
-        archetype.ragdollClone = createRagdollClone(archetype.contestant.character);
-
-      end;
-
-      downContestant(archetype.contestant);
-
-    end;
-
-  end));
 
   archetype.actions = initializeArchetypeActions(filterTable(archetype.actionIDs, isActionIDAllowed), archetype.contestant);
   table.insert(archetype.events, ServerStorage.Events.ArchetypeModeChanged.Event:Connect(function(contestantID: number)
@@ -112,7 +83,7 @@ function BatterUpDemonServerArchetype.new(properties: types.BatterUpDemonServerA
       task.spawn(function()
 
         local shouldCreateAction = true;
-        for _, action in archetype.actions do
+        for _, action in ipairs(archetype.actions) do
 
           if action.id == actionID then
 

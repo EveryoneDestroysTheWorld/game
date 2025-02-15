@@ -8,12 +8,16 @@ local HttpService = game:GetService("HttpService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local StarterPlayer = game:GetService("StarterPlayer");
 local ServerStorage = game:GetService("ServerStorage");
+
+local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
 local Profile = require(ServerStorage.Packages.Profile);
 type Profile = Profile.Profile;
 local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
 type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
 type PatchableTurfWarContestantStatistics = TurfWarContestantStatistics.PatchableContestantTurfWarStatistics;
 local types = require(ServerStorage.Modules.types);
+
+local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
 
 local ServerContestant = {
   __index = {} :: types.ServerContestant;
@@ -28,7 +32,8 @@ function ServerContestant.new(properties: types.ServerContestantConstructorPrope
   contestant.baseStamina = 100;
   contestant.currentStamina = contestant.baseStamina;
   contestant.items = {};
-  contestant.isDisqualified = false;
+  contestant.isEliminated = false;
+  contestant.isAutoEliminationEnabled = true;
   contestant.attributes = {};
   contestant.tags = {};
   contestant.walkSpeedWeights = {};
@@ -232,8 +237,8 @@ function ServerContestant.__index:convertToClient(): {any}
 
   return {
     id = self.id;
-    archetypeID = self.archetypeID;
-    isDisqualified = self.isDisqualified;
+    archetypeID = if self.archetype then self.archetype.id else nil;
+    isEliminated = self.isEliminated;
     player = self.player;
     name = self.name;
     characterName = if self.character then self.character.Name else nil;
@@ -247,11 +252,13 @@ function ServerContestant.__index:convertToClient(): {any}
 
 end;
 
-function ServerContestant.__index:updateArchetypeID(newArchetypeID: string): ()
+function ServerContestant.__index:updateArchetype(newArchetype: types.ServerArchetype?): ()
 
-  self.archetypeID = newArchetypeID;
-  events[self].onArchetypeUpdated:Fire(newArchetypeID);
-  ReplicatedStorage.Shared.Events.ContestantArchetypeUpdated:FireAllClients(self.id, newArchetypeID);
+  self.archetype = newArchetype;
+  
+  local archetypeID = if self.archetype then self.archetype.id else nil;
+  events[self].onArchetypeUpdated:Fire(archetypeID);
+  ReplicatedStorage.Shared.Events.ContestantArchetypeUpdated:FireAllClients(self.id, archetypeID);
 
 end;
 
@@ -270,6 +277,44 @@ function ServerContestant.__index:updateHealth(newHealth: number, cause: types.C
   end;
 
   self.currentHealth = newHealth;
+
+  if self.currentHealth < 0 and not self.isEliminated and self.isAutoEliminationEnabled then
+
+    self:eliminate(true);
+  
+  elseif self.currentHealth > 0 and self.isEliminated then
+
+    self.isEliminated = false;
+
+    if self.archetype then
+
+      self.archetype:breakdown();
+      self:updateArchetype();
+
+    end;
+
+    if self.ghostHighlight then
+
+      self.ghostHighlight:Destroy();
+      self.ghostHighlight = nil;
+
+    end;
+
+    if self.characterRagdollClone then
+
+      self.characterRagdollClone:Destroy();
+      self.characterRagdollClone = nil;
+
+    end;
+
+    if self.revivalProximityPrompt then
+
+      self.revivalProximityPrompt:Destroy();
+      self.revivalProximityPrompt = nil;
+
+    end;
+
+  end;
 
   ReplicatedStorage.Shared.Events.HealthUpdated:FireAllClients(self.id, newHealth, cause);
 
@@ -330,11 +375,79 @@ function ServerContestant.__index:updateCharacter(newCharacter: Model?): ()
 
 end;
 
-function ServerContestant.__index:disqualify()
+function ServerContestant.__index:eliminate(shouldCreateRagdoll: boolean)
 
-  assert(not self.isDisqualified, "Contestant has already been disqualified.");
+  assert(not self.isEliminated, "Contestant has already been eliminated.");
 
-  self.isDisqualified = true;
+  self.isEliminated = true;
+
+  -- Remove all items from their inventory.
+  self:updateInventory({});
+  
+  local undeadConsciousnessArchetype = ServerArchetype.get("UndeadConsciousness").new({
+    contestant = self;
+  })
+
+  self:updateArchetype(undeadConsciousnessArchetype);
+
+  -- Turn the player transparent.
+  if self.character then
+
+    if self.characterRagdollClone then
+
+      self.characterRagdollClone:Destroy();
+      self.characterRagdollClone = nil;
+
+    end;
+
+    -- Create a ragdoll clone.
+    if shouldCreateRagdoll then
+      
+      self.characterRagdollClone = createRagdollClone(self.character);
+
+    end;
+
+    if self.ghostHighlight then
+
+      self.ghostHighlight:Destroy();
+
+    end;
+
+    local highlight = Instance.new("Highlight");
+    self.ghostHighlight = highlight;
+    highlight.Name = "GhostHighlight";
+    highlight.Parent = self.character;
+    highlight.OutlineTransparency = 1;
+    highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
+    highlight.FillColor = Color3.fromRGB(152, 202, 248);
+    highlight.FillTransparency = 0.5;
+
+    if self.revivalProximityPrompt then
+
+      self.revivalProximityPrompt:Destroy();
+
+    end;
+
+    local proximityPrompt = Instance.new("ProximityPrompt");
+    self.revivalProximityPrompt = proximityPrompt;
+    proximityPrompt.Name = "RevivalProximityPrompt";
+    proximityPrompt.ObjectText = "Downed contestant";
+    proximityPrompt.ActionText = "Revive";
+    proximityPrompt.HoldDuration = 0;
+    proximityPrompt.Triggered:Once(function(player)
+  
+      -- Prevent the player from reviving themself.
+      if player ~= self.player then
+
+        self:updateHealth(self:getModifiedBaseValue("Health") / 2);
+
+      end;
+
+    end);
+    proximityPrompt.Parent = self.character;
+
+  end;
+
   events[self].onDisqualified:Fire();
 
 end;
@@ -343,7 +456,7 @@ function ServerContestant.__index:toString()
 
   return HttpService:JSONEncode({
     id = self.id;
-    archetypeID = self.archetypeID;
+    archetypeID = if self.archetype then self.archetype.id else nil;
   });
 
 end;

@@ -7,7 +7,6 @@ local ServerStorage = game:GetService("ServerStorage");
 local ExplosiveMimicClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.ExplosiveMimicClientArchetype);
 local types = require(ServerStorage.Modules.types);
 
-local downContestant = require(ServerStorage.Modules.downContestant);
 local initializeArchetypeActions = require(ServerStorage.Modules.initializeArchetypeActions);
 
 local ExplosiveMimicServerArchetype = {
@@ -21,18 +20,14 @@ local ExplosiveMimicServerArchetype = {
 
 function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServerArchetypeConstructorProperties): types.ExplosiveMimicServerArchetype
 
-  local overwrittenProperties = {
-    id = ExplosiveMimicServerArchetype.id;
-    name = ExplosiveMimicServerArchetype.name;
-    description = ExplosiveMimicServerArchetype.description;
-    actionIDs = ExplosiveMimicServerArchetype.actionIDs;
-    type = ExplosiveMimicServerArchetype.type;
-    round = properties.round;
-    contestant = properties.contestant;
-    events = {};
-  };
-
-  local archetype = (setmetatable(overwrittenProperties, ExplosiveMimicServerArchetype) :: any) :: types.ExplosiveMimicServerArchetype;
+  local archetype = (setmetatable({}, ExplosiveMimicServerArchetype) :: any) :: types.ExplosiveMimicServerArchetype;
+  archetype.id = ExplosiveMimicServerArchetype.id;
+  archetype.name = ExplosiveMimicServerArchetype.name;
+  archetype.description = ExplosiveMimicServerArchetype.description;
+  archetype.actionIDs = ExplosiveMimicServerArchetype.actionIDs;
+  archetype.type = ExplosiveMimicServerArchetype.type;
+  archetype.contestant = properties.contestant;
+  archetype.events = {};
 
   if archetype.contestant.player then
 
@@ -84,7 +79,7 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
       end;
 
       local tween = TweenService:Create(highlight, TweenInfo.new(3), {FillTransparency = 0});
-      tween.Completed:Connect(function()
+      tween.Completed:Once(function()
       
         -- Engulf the player in an explosion.
         local primaryPart = archetype.contestant.character.PrimaryPart;
@@ -99,7 +94,7 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
         explosion.Hit:Connect(function(basePart)
   
           -- Damage any parts or contestants that get hit.
-          for _, possibleEnemyContestant in archetype.round.contestants do
+          for _, possibleEnemyContestant in archetype.contestant.round.contestants do
 
             task.spawn(function()
 
@@ -107,7 +102,7 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
               if possibleEnemyContestant ~= archetype.contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
 
                 table.insert(hitContestants, possibleEnemyContestant);
-                possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 50, {
+                possibleEnemyContestant:updateHealth(math.max(possibleEnemyContestant.currentHealth - 750, 0), {
                   contestantID = archetype.contestant.id;
                   archetypeID = ExplosiveMimicServerArchetype.id;
                 });
@@ -150,7 +145,11 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
           end;
           changedEvent:Disconnect();
 
-          downContestant(archetype.contestant);
+        end;
+
+        if not archetype.contestant.isEliminated then
+
+          archetype.contestant:eliminate(false);
 
         end;
 
@@ -167,11 +166,15 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
 
   archetype.actions = initializeArchetypeActions(archetype.actionIDs, archetype.contestant);
 
+  archetype.contestant.isAutoEliminationEnabled = false;
+
   return archetype;
 
 end;
 
 function ExplosiveMimicServerArchetype.__index:breakdown()
+
+  self.contestant.isAutoEliminationEnabled = true;
 
   for _, event in self.events do
 

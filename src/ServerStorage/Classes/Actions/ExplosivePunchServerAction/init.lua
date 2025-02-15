@@ -16,23 +16,21 @@ local ExplosivePunchServerAction = {
   id = ExplosivePunchClientAction.id;
   name = ExplosivePunchClientAction.name;
   description = ExplosivePunchClientAction.description;
-  __index = {
-    id = ExplosivePunchClientAction.id;
-    name = ExplosivePunchClientAction.name;
-    description = ExplosivePunchClientAction.description;
-    minimumRequiredStamina = 5;
-    latestActivationTimes = {0, 0};
-    explosiveParts = {};
-  } :: types.ExplosivePunchServerAction;
+  __index = {} :: types.ExplosivePunchServerAction;
 };
 
 function ExplosivePunchServerAction.new(properties: types.ServerActionConstructorProperties): types.ExplosivePunchServerAction
   
-  local overwrittenProperties = {
-    contestant = properties.contestant;
-  };
+  local overwrittenProperties = {};
   
   local action = (setmetatable(overwrittenProperties, ExplosivePunchServerAction) :: any) :: types.ExplosivePunchServerAction;
+  action.contestant = properties.contestant;
+  action.id = ExplosivePunchClientAction.id;
+  action.name = ExplosivePunchClientAction.name;
+  action.description = ExplosivePunchClientAction.description;
+  action.minimumRequiredStamina = 5;
+  action.latestActivationTimes = {0, 0};
+  action.explosiveParts = {};
 
   local character = action.contestant.character;
   assert(character, "Character required");
@@ -126,7 +124,7 @@ function ExplosivePunchServerAction.__index:activate()
           if possibleEnemyContestant ~= self.contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
 
             table.insert(hitContestants, possibleEnemyContestant);
-            possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 15, {
+            possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 50, {
               contestantID = self.contestant.id;
               actionID = ExplosivePunchServerAction.id;
             });

@@ -7,8 +7,6 @@ local DraconicKnightClientArchetype = require(ReplicatedStorage.Client.Classes.A
 local ServerEffect = require(ServerStorage.Classes.ServerEffect);
 local types = require(ServerStorage.Modules.types);
 
-local downContestant = require(ServerStorage.Modules.downContestant);
-local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
 local initializeArchetypeActions = require(ServerStorage.Modules.initializeArchetypeActions);
 
 local DraconicKnightServerArchetype = {
@@ -22,24 +20,21 @@ local DraconicKnightServerArchetype = {
 
 function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServerArchetypeConstructorProperties): types.DraconicKnightServerArchetype
 
-  local overwrittenProperties = {
-    id = DraconicKnightServerArchetype.id;
-    name = DraconicKnightServerArchetype.name;
-    description = DraconicKnightServerArchetype.description;
-    actionIDs = DraconicKnightServerArchetype.actionIDs;
-    type = DraconicKnightServerArchetype.type;
+  local archetype = (setmetatable({}, DraconicKnightServerArchetype) :: any) :: types.DraconicKnightServerArchetype;
+  archetype.id = DraconicKnightServerArchetype.id;
+  archetype.name = DraconicKnightServerArchetype.name;
+  archetype.description = DraconicKnightServerArchetype.description;
+  archetype.actionIDs = DraconicKnightServerArchetype.actionIDs;
+  archetype.type = DraconicKnightServerArchetype.type;
+  archetype.contestant = properties.contestant;
+  archetype.roughArmorEffect = ServerEffect.get("RoughArmor").new({
     contestant = properties.contestant;
-    roughArmorEffect = ServerEffect.get("RoughArmor").new({
-      contestant = properties.contestant;
-    });
-    events = {};
-  };
-
-  local archetype = (setmetatable(overwrittenProperties, DraconicKnightServerArchetype) :: any) :: types.DraconicKnightServerArchetype;
+  });
+  archetype.events = {};
 
   if properties.contestant.player then
 
-    ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(properties.contestant.player, overwrittenProperties.id);
+    ReplicatedStorage.Shared.Functions.InitializeArchetype:InvokeClient(properties.contestant.player, archetype.id);
 
   end;
 
@@ -67,38 +62,6 @@ function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServe
   end
 
   properties.contestant:addEffect(archetype.roughArmorEffect);
-
-  local isDowned = false;
-  table.insert(archetype.events, properties.contestant.onHealthUpdated:Connect(function()
-  
-    if isDowned and properties.contestant.currentHealth > 0 then
-      
-      isDowned = false;
-      if archetype.ragdollClone then
-
-        archetype.ragdollClone:Destroy();
-
-      end;
-
-      properties.contestant:addEffect(archetype.roughArmorEffect);
-
-    elseif not isDowned and properties.contestant.currentHealth <= 0 then
-
-      isDowned = true;
-
-      if properties.contestant.character then
-        
-        archetype.ragdollClone = createRagdollClone(properties.contestant.character);
-
-      end;
-
-      properties.contestant:removeEffect(archetype.roughArmorEffect)
-
-      downContestant(properties.contestant);
-
-    end;
-
-  end));
 
   archetype.actions = initializeArchetypeActions(archetype.actionIDs, archetype.contestant);
 
