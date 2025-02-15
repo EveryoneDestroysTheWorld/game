@@ -2,35 +2,33 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 
+local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
 local types = require(ServerStorage.Modules.types);
 
 local findAction = require(script.Parent.findAction);
 
-local function destroyPart(autopilotContestant: types.ServerContestant, targetPart: BasePart)
+local function destroyPart(autopilotContestant: types.ServerContestant)
+
+  local archetype = autopilotContestant.archetype;
   
-  local character = autopilotContestant.character;
-  local userPrimaryPart = if character then character.PrimaryPart else nil;
-  local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
-  if not userPrimaryPart or not character or not humanoid or not humanoid:IsA("Humanoid") then return end;
+  if not archetype then
 
-  local goalDistance = 5;
-  if (targetPart.Position - userPrimaryPart.Position).Magnitude <= goalDistance then
+    archetype = ServerArchetype.get("ExplosiveMimic").new({
+      contestant = autopilotContestant;
+    });
 
-    local archetype = autopilotContestant.archetype;
-    if archetype then
+    autopilotContestant:updateArchetype(archetype);
 
-      local rocketFeetAction = findAction(archetype.actions, "RocketFeet");
-      if rocketFeetAction then
+  end
 
-        rocketFeetAction:activate();
+  if archetype then
 
-      end;
+    local rocketFeetAction = findAction(archetype.actions, "RocketFeet");
+    if rocketFeetAction then
+
+      rocketFeetAction:activate();
 
     end;
-
-  else
-
-    humanoid:MoveTo(targetPart.Position, targetPart);
 
   end;
 

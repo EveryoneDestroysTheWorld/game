@@ -6,9 +6,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local DefaultClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.DefaultClientArchetype);
 local types = require(ServerStorage.Modules.types);
 
-local downContestant = require(ServerStorage.Modules.downContestant);
-local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
-
 local DefaultServerArchetype = {
   id = DefaultClientArchetype.id;
   name = DefaultClientArchetype.name;
@@ -39,32 +36,6 @@ function DefaultServerArchetype.new(properties: types.UndeadConsciousnessServerA
     end);
 
   end;
-
-  table.insert(archetype.events, archetype.contestant.onHealthUpdated:Connect(function()
-  
-    if archetype.isContestantDowned and archetype.contestant.currentHealth > 0 then
-      
-      if archetype.ragdollClone then
-
-        archetype.ragdollClone:Destroy();
-
-      end;
-
-    elseif not archetype.isContestantDowned and archetype.contestant.currentHealth <= 0 then
-
-      archetype.isContestantDowned = true;
-
-      if archetype.contestant.character then
-
-        archetype.ragdollClone = createRagdollClone(archetype.contestant.character);
-
-      end;
-
-      downContestant(archetype.contestant);
-
-    end;
-
-  end));
 
   return archetype;
 

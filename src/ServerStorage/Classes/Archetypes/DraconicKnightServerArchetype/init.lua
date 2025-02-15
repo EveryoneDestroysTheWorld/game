@@ -7,8 +7,6 @@ local DraconicKnightClientArchetype = require(ReplicatedStorage.Client.Classes.A
 local ServerEffect = require(ServerStorage.Classes.ServerEffect);
 local types = require(ServerStorage.Modules.types);
 
-local downContestant = require(ServerStorage.Modules.downContestant);
-local createRagdollClone = require(ServerStorage.Modules.createRagdollClone);
 local initializeArchetypeActions = require(ServerStorage.Modules.initializeArchetypeActions);
 
 local DraconicKnightServerArchetype = {
@@ -64,38 +62,6 @@ function DraconicKnightServerArchetype.new(properties: types.DraconicKnightServe
   end
 
   properties.contestant:addEffect(archetype.roughArmorEffect);
-
-  local isDowned = false;
-  table.insert(archetype.events, properties.contestant.onHealthUpdated:Connect(function()
-  
-    if isDowned and properties.contestant.currentHealth > 0 then
-      
-      isDowned = false;
-      if archetype.ragdollClone then
-
-        archetype.ragdollClone:Destroy();
-
-      end;
-
-      properties.contestant:addEffect(archetype.roughArmorEffect);
-
-    elseif not isDowned and properties.contestant.currentHealth <= 0 then
-
-      isDowned = true;
-
-      if properties.contestant.character then
-        
-        archetype.ragdollClone = createRagdollClone(properties.contestant.character);
-
-      end;
-
-      properties.contestant:removeEffect(archetype.roughArmorEffect)
-
-      downContestant(properties.contestant);
-
-    end;
-
-  end));
 
   archetype.actions = initializeArchetypeActions(archetype.actionIDs, archetype.contestant);
 

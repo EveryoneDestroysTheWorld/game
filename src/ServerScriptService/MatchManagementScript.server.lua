@@ -119,6 +119,12 @@ local didSuccessfullyInitializeRound, message = pcall(function()
     assert(table.find(archetypeIDs, archetypeID), `{playerIdentifier} doesn't own archetype {archetypeID}, so it can't be used in this round.`);
   
     -- Update the archetype.
+    if contestant.archetype then
+
+      contestant.archetype:breakdown();
+
+    end;
+
     local archetype = ServerArchetype.get(archetypeID).new({
       contestant = contestant;
     });
@@ -134,7 +140,7 @@ local didSuccessfullyInitializeRound, message = pcall(function()
     -- Create required bot contestants.
     local team1BotCount = 4;
     local team2BotCount = 4;
-    for _, contestant in ipairs(round.contestants) do
+    for _, contestant in round.contestants do
   
       if contestant.teamID == 1 then
   
@@ -156,6 +162,20 @@ local didSuccessfullyInitializeRound, message = pcall(function()
   
       -- Create the NPC's character.
       local character: Model = ServerStorage:FindFirstChild("NPCRigs"):FindFirstChild("Rig"):Clone();
+      local spawnLocations = {};
+      for _, instance in workspace:GetChildren() do
+
+        if instance:IsA("SpawnLocation") then
+
+          table.insert(spawnLocations, instance);
+
+        end;
+
+      end;
+
+      local spawnLocation = spawnLocations[math.random(1, #spawnLocations)];
+      character:PivotTo(spawnLocation.CFrame);
+
       character.Name = `BOT {i}`;
       
       local humanoid = character:FindFirstChild("Humanoid");

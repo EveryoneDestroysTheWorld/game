@@ -2,10 +2,8 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 
-local ServerArchetype = require(ServerStorage.Classes.ServerArchetype);
-
-local attackContestant = require(script.attackContestant);
-local destroyPart = require(script.destroyPart);
+local launchDefense = require(script.launchDefense);
+local launchOffense = require(script.launchOffense);
 local searchForTargetContestant = require(script.searchForTargetContestant);
 local searchForTargetPart = require(script.searchForTargetPart);
 
@@ -19,54 +17,87 @@ local AggressiveAutopilot = {
 
 function AggressiveAutopilot.new(properties: types.AggressiveAutopilotConstructorProperties)
 
-  local autopilot = {
-    contestant = properties.contestant;
-    name = AggressiveAutopilot.name;
-    id = AggressiveAutopilot.id;
-  };
+  local autopilot = (setmetatable({}, AggressiveAutopilot) :: unknown) :: types.AggressiveAutopilot;
+  autopilot.contestant = properties.contestant;
+  autopilot.name = AggressiveAutopilot.name;
+  autopilot.id = AggressiveAutopilot.id;
+  autopilot.rivalForgivenessMinDelaySeconds = 1;
+  autopilot.rivalForgivenessMaxDelaySeconds = 15;
+  autopilot.events = {};
+  
+  table.insert(autopilot.events, autopilot.contestant.onHealthUpdated:Connect(function(_, oldHealth, cause)
+  
+    if not autopilot.rivalContestantID and autopilot.contestant.currentHealth < oldHealth and cause and cause.contestantID then
 
-  return (setmetatable(autopilot, AggressiveAutopilot) :: unknown) :: types.AggressiveAutopilot
+      for _, contestant in autopilot.contestant.round.contestants do
 
-end;
+        if contestant.id == cause.contestantID then
 
-function AggressiveAutopilot.__index:run(): ()
+          if not autopilot.contestant.teamID or contestant.teamID ~= autopilot.contestant.teamID then
 
-  local archetype = self.contestant.archetype;
-  if archetype and archetype.id ~= "Default" then
-    
-    if archetype.id == "ExplosiveMimic" then
-    
-      -- Prioritize parts over contestants, unless the contestants attack the user.
-      local targetContestant = searchForTargetContestant(self.contestant);
-      local targetPart = searchForTargetPart(self.contestant);
+            local declarationTime = DateTime.now().UnixTimestamp;
+            autopilot.rivalContestantID = cause.contestantID;
+            autopilot.rivalDeclaredSeconds = declarationTime;
 
-      if targetPart then
+            local forgivenessDelaySeconds = math.random(autopilot.rivalForgivenessMinDelaySeconds, autopilot.rivalForgivenessMaxDelaySeconds);
+            task.delay(forgivenessDelaySeconds, function()
+            
+              if autopilot.rivalContestantID == cause.contestantID and autopilot.rivalDeclaredSeconds == declarationTime then
 
-        destroyPart(self.contestant, targetPart);
+                autopilot.rivalContestantID = nil;
+                autopilot.rivalDeclaredSeconds = nil;
 
-      elseif targetContestant then
-        
-        attackContestant(self.contestant, targetContestant)
+              end;
 
-      else
+            end);
 
-        -- TODO: Get out of harm's way to heal?
+          end;
 
-        -- TODO: Give the bot a hint.
+          break;
+
+        end;
 
       end;
 
     end;
 
-  else
+  end));
 
-    archetype = ServerArchetype.get("ExplosiveMimic").new({
-      contestant = self.contestant;
-    });
+  return autopilot;
 
-    self.contestant:updateArchetype(archetype);
+end;
 
-  end;
+function AggressiveAutopilot.__index:run(): ()
+
+  xpcall(function()
+  
+    if self.contestant.currentHealth > 0 then
+    
+      local targetDamageContestant = searchForTargetContestant(self, "Rivals");
+      local targetDamagePart = searchForTargetPart(self.contestant, "Unclaimed");
+      local shouldLaunchOffense = targetDamageContestant or targetDamagePart;
+      if shouldLaunchOffense then
+
+        launchOffense(self, targetDamageContestant, targetDamagePart);
+
+      else
+
+        launchDefense(self);
+
+      end;
+
+    else
+
+      -- TODO: Implement Undead Consciousness.
+
+    end;
+
+  end, function(error)
+  
+    warn(error);
+    debug.traceback();
+
+  end);
 
 end;
 

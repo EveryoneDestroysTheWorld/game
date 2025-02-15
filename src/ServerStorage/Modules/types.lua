@@ -28,6 +28,12 @@ export type ServerContestantProperties = {
 
   round: ServerRound;
 
+  ghostHighlight: Highlight?;
+
+  characterRagdollClone: Model?;
+
+  revivalProximityPrompt: ProximityPrompt?;
+
   -- The ID of the contestant. 
   -- If the contestant is a bot, this is a unique temporary ID assigned by the server. It will be an irrational number.
   -- If the contestant is a player, this is the same value as player.UserId. It will be an integer.
@@ -38,7 +44,9 @@ export type ServerContestantProperties = {
   name: string;
 
   -- Is this contestant still a part of the game?
-  isDisqualified: boolean;
+  isEliminated: boolean;
+
+  isAutoEliminationEnabled: boolean;
 
   -- The player reference of the contestant. This should be nil if the contestant isn't a player.
   player: Player?;
@@ -76,6 +84,7 @@ export type ServerContestantMethods = {
   addWalkSpeedWeight: (self: ServerContestant, weight: WalkSpeedWeight) -> ();
   addBaseModifier: (self: ServerContestant, modifierType: BaseModifierType, modifier: BaseModifier) -> ();
   addItem: (self: ServerContestant, item: ServerItem) -> ();
+  eliminate: (self: ServerContestant) -> ();
   removeBaseModifier: (self: ServerContestant, modifierType: BaseModifierType, modifier: BaseModifier) -> ();
   removeWalkSpeedWeight: (self: ServerContestant, weight: WalkSpeedWeight) -> ();
   removeItem: (self: ServerContestant, item: ServerItem) -> ();
@@ -107,10 +116,14 @@ export type ServerContestantEvents = {
 export type AggressiveAutopilot = AggressiveAutopilotProperties & AggressiveAutopilotMethods;
 
 export type AggressiveAutopilotProperties = {
-  safeSpaceTime: number?;
   contestant: ServerContestant;
   name: string;
   id: string;
+  events: {RBXScriptConnection};
+  rivalForgivenessMaxDelaySeconds: number;
+  rivalForgivenessMinDelaySeconds: number;
+  rivalContestantID: number?;
+  rivalDeclaredSeconds: number?;
 }
 
 export type AggressiveAutopilotConstructorProperties = {
@@ -156,7 +169,6 @@ export type BatterUpDemonServerArchetypeProperties = {
   events: {RBXScriptConnection};
   isContestantDowned: boolean;
   type: ArchetypeType;
-  actions: {ServerAction};
 };
 
 export type BatterUpDemonServerArchetypeConstructorProperties = {
@@ -319,7 +331,6 @@ export type DraconicKnightServerArchetypeProperties = {
   events: {RBXScriptConnection};
   roughArmorEffect: RoughArmorServerEffect;
   wingProp: Model?;
-  actions: {ServerAction}; 
 };
 
 export type DraconicKnightServerArchetypeConstructorProperties = {
@@ -334,9 +345,7 @@ export type ExplosiveMimicServerArchetype = ServerArchetype<ExplosiveMimicServer
 
 export type ExplosiveMimicServerArchetypeProperties = {
   contestant: ServerContestant;
-  ragdollClone: Model?;
   events: {RBXScriptConnection};
-  actions: {ServerAction};
 };
 
 export type ExplosiveMimicServerArchetypeConstructorProperties = {
@@ -345,7 +354,7 @@ export type ExplosiveMimicServerArchetypeConstructorProperties = {
 }
 
 export type ExplosiveMimicServerArchetypeMethods = {
-  
+  breakdown: (self: ExplosiveMimicServerArchetype) -> ();
 };
 
 export type UndeadConsciousnessServerArchetype = ServerArchetype<UndeadConsciousnessServerArchetypeProperties & UndeadConsciousnessServerArchetypeMethods>;
@@ -356,7 +365,6 @@ export type UndeadConsciousnessServerArchetypeProperties = {
   round: ServerRound;
   events: {RBXScriptConnection};
   undeadEffect: UndeadServerEffect;
-  actions: {ServerAction};
 };
 
 export type UndeadConsciousnessServerArchetypeConstructorProperties = {
@@ -486,7 +494,7 @@ export type ServerActionConstructorProperties = {
   contestant: ServerContestant;
 }
 
-export type ServerAction<ExtendedProperties = unknown> = {
+export type ServerAction<ExtendedProperties = {[unknown]: any}> = {
   id: string;
   name: string;
   description: string;

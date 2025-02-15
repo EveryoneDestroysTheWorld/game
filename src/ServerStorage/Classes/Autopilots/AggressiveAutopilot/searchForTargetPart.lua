@@ -12,12 +12,12 @@ local sortPartsByDistance = require(script.Parent.sortPartsByDistance);
   
   This function only considers parts that are currently visible to the contestant and returns the closest, non-destroyed part.
 ]]
-local function searchForTargetPart(autopilotContestant: types.ServerContestant): BasePart?
+local function searchForTargetPart(autopilotContestant: types.ServerContestant, scope: "Unclaimed" | "RivalClaims"): BasePart?
 
   local primaryPart = if autopilotContestant.character then autopilotContestant.character.PrimaryPart else nil;
   if not primaryPart then return end;
 
-  local consideredParts = listVisibleVulnerableParts(autopilotContestant);
+  local consideredParts = listVisibleVulnerableParts(autopilotContestant, scope);
   sortPartsByDistance(primaryPart, consideredParts);
 
   for _, part in consideredParts do
@@ -25,7 +25,6 @@ local function searchForTargetPart(autopilotContestant: types.ServerContestant):
     local currentDurability = part:GetAttribute("CurrentDurability");
     if typeof(currentDurability) == "number" and currentDurability > 0 then
 
-      print("part")
       return part;
 
     end;

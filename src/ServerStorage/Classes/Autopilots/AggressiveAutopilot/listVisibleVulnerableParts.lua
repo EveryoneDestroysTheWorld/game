@@ -13,7 +13,7 @@ local listContestantInstances = require(script.Parent.listContestantInstances);
 --[[
   Returns a list of instances that the autopilot contestant can see.
 ]]
-local function listVisibleVulnerableParts(autopilotContestant: types.ServerContestant): {BasePart}
+local function listVisibleVulnerableParts(autopilotContestant: types.ServerContestant, scope: "Unclaimed" | "RivalClaims"): {BasePart}
 
   local character = autopilotContestant.character;
   if not character then 
@@ -33,6 +33,37 @@ local function listVisibleVulnerableParts(autopilotContestant: types.ServerConte
   end;
 
   for _, vulnerablePart in ServerStorage.Functions.GetVulnerableParts:Invoke() do
+
+    local currentDurability = vulnerablePart:GetAttribute("CurrentDurability");
+    local isClaimable = typeof(currentDurability) ~= "number" or currentDurability <= 0;
+    if scope == "Unclaimed" and isClaimable then
+
+      continue;
+
+    end;
+
+    local destroyerID = vulnerablePart:GetAttribute("DestroyerID");
+    if scope == "RivalClaims" and typeof(destroyerID) == "number" then
+
+      local shouldSkip = false;
+      for _, contestant in autopilotContestant.round.contestants do
+
+        if contestant.id == destroyerID and contestant.teamID and contestant.teamID == autopilotContestant.teamID then
+
+          shouldSkip = true;
+          break;
+
+        end;
+
+      end;
+
+      if shouldSkip then
+
+        continue;
+
+      end;
+
+    end;
 
     local raycastParams = RaycastParams.new();
     raycastParams.FilterDescendantsInstances = contestantInstances;

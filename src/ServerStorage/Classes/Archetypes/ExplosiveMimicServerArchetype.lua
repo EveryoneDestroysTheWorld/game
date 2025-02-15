@@ -7,7 +7,6 @@ local ServerStorage = game:GetService("ServerStorage");
 local ExplosiveMimicClientArchetype = require(ReplicatedStorage.Client.Classes.Archetypes.ExplosiveMimicClientArchetype);
 local types = require(ServerStorage.Modules.types);
 
-local downContestant = require(ServerStorage.Modules.downContestant);
 local initializeArchetypeActions = require(ServerStorage.Modules.initializeArchetypeActions);
 
 local ExplosiveMimicServerArchetype = {
@@ -80,7 +79,7 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
       end;
 
       local tween = TweenService:Create(highlight, TweenInfo.new(3), {FillTransparency = 0});
-      tween.Completed:Connect(function()
+      tween.Completed:Once(function()
       
         -- Engulf the player in an explosion.
         local primaryPart = archetype.contestant.character.PrimaryPart;
@@ -103,7 +102,7 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
               if possibleEnemyContestant ~= archetype.contestant and not table.find(hitContestants, possibleEnemyContestant) and possibleEnemyCharacter and basePart:IsDescendantOf(possibleEnemyCharacter) then
 
                 table.insert(hitContestants, possibleEnemyContestant);
-                possibleEnemyContestant:updateHealth(possibleEnemyContestant.currentHealth - 750, {
+                possibleEnemyContestant:updateHealth(math.max(possibleEnemyContestant.currentHealth - 750, 0), {
                   contestantID = archetype.contestant.id;
                   archetypeID = ExplosiveMimicServerArchetype.id;
                 });
@@ -146,10 +145,14 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
           end;
           changedEvent:Disconnect();
 
-          downContestant(archetype.contestant);
-
         end;
 
+        if not archetype.contestant.isEliminated then
+
+          archetype.contestant:eliminate();
+
+        end;
+        
         explosion.Parent = workspace;
         highlight:Destroy();
 
@@ -163,11 +166,15 @@ function ExplosiveMimicServerArchetype.new(properties: types.ExplosiveMimicServe
 
   archetype.actions = initializeArchetypeActions(archetype.actionIDs, archetype.contestant);
 
+  archetype.contestant.isAutoEliminationEnabled = false;
+
   return archetype;
 
 end;
 
 function ExplosiveMimicServerArchetype.__index:breakdown()
+
+  self.contestant.isAutoEliminationEnabled = true;
 
   for _, event in self.events do
 
