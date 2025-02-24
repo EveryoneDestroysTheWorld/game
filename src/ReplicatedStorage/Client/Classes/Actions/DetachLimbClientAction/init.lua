@@ -7,35 +7,34 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
-local React = require(ReplicatedStorage.Shared.Packages.react);
-local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local QuickSelectionMenu = require(ReplicatedStorage.Client.ReactComponents.QuickSelectionMenu);
+local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
-local types = require(ReplicatedStorage.Client.Modules.types);
+local activate = require(script.activate);
+local breakdown = require(script.breakdown);
 
 local DetachLimbClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
   name = "Detach Limb";
   iconImage = "rbxassetid://17551046771";
   description = "Detach a limb of your choice. It only hurts a little bit.";
-  __index = {} :: types.DetachLimbClientAction;
 };
 
 local player = Players.LocalPlayer;
 
-function DetachLimbClientAction.new(): types.DetachLimbClientAction
+function DetachLimbClientAction.new(): SharedTypes.DetachLimbClientAction
 
   local remoteName = `{player.UserId}_{DetachLimbClientAction.id}`;
-  local overwrittenProperties = {
+  local action: SharedTypes.DetachLimbClientAction = {
     id = DetachLimbClientAction.id;
     name = DetachLimbClientAction.name;
     iconImage = DetachLimbClientAction.iconImage;
     description = DetachLimbClientAction.description;
     remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+    attributes = {};
+    activate = activate;
+    breakdown = breakdown;
   };
-
-  local action = (setmetatable(overwrittenProperties, DetachLimbClientAction) :: any) :: types.DetachLimbClientAction;
 
   HUDService:addHUDButton({
     type = "Action";
@@ -60,73 +59,6 @@ function DetachLimbClientAction.new(): types.DetachLimbClientAction
 
   return action;
 
-end
-
-function DetachLimbClientAction.__index:activate()
-
-  local gui = self.gui or Instance.new("ScreenGui");
-  gui.ScreenInsets = Enum.ScreenInsets.None;
-  gui.Parent = player.PlayerGui;
-  self.gui = gui;
-
-  local reactRoot = ReactRoblox.createRoot(gui);
-  reactRoot:render(React.createElement(QuickSelectionMenu, {
-    options = {
-      {
-        key = "Head";
-        labelText = "Head";
-        iconImage = "rbxassetid://136558858062155"
-      };
-      {
-        key = "LeftArm";
-        labelText = "Left Arm";
-        iconImage = "rbxassetid://136558858062155"
-      };
-      {
-        key = "Torso";
-        labelText = "Torso";
-        iconImage = "rbxassetid://136558858062155"
-      };
-      {
-        key = "RightArm";
-        labelText = "Right Arm";
-        iconImage = "rbxassetid://136558858062155"
-      };
-      {
-        key = "LeftLeg";
-        labelText = "Left Leg";
-        iconImage = "rbxassetid://136558858062155"
-      };
-      {
-        key = "RightLeg";
-        labelText = "Right Leg";
-        iconImage = "rbxassetid://136558858062155"
-      };
-    };
-    onSelectionConfirmed = function(selection)
-
-      reactRoot:unmount();
-      gui:Destroy();
-      self.gui = nil;
-      self.remoteFunction:InvokeServer(selection.key);
-
-    end;
-  }));
-
-end;
-
-function DetachLimbClientAction.__index:breakdown()
-
-  if self.gui then
-
-    self.gui:Destroy();
-    self.gui = nil;
-    
-  end;
-
-  ContextActionService:UnbindAction("ActivateDetachLimbAction");
-  HUDService:removeHUDButton("Action", self.id);
-  
 end
 
 return DetachLimbClientAction;

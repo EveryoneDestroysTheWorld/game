@@ -144,9 +144,6 @@ export type ClientEffectMethods = {
 
 export type DetachLimbClientAction = ClientAction<{
   gui: ScreenGui?;
-  remoteFunction: RemoteFunction;
-  activate: (self: DetachLimbClientAction) -> ();
-  breakdown: (self: DetachLimbClientAction) -> ();
 }>;
 
 export type HeresThePitchClientAction = ClientAction<{
