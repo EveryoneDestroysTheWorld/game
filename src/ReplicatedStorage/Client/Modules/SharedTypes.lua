@@ -161,12 +161,8 @@ export type DiveBombClientAction = ClientAction;
 export type ExplosivePunchClientAction = ClientAction;
 
 export type FireBeamClientAction = ClientAction<{
-  remoteFunction: RemoteFunction;
-  chargeNotificationTask: thread?;
-  remoteEvent: RemoteEvent;
+  updateTask: thread?;
   isCharging: boolean;
-  activate: (self: FireBeamClientAction, shouldCharge: boolean) -> ();
-  breakdown: (self: FireBeamClientAction) -> ();
 }>;
 
 export type LockOnClientAction = ClientAction<{

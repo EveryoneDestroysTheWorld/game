@@ -11,44 +11,52 @@ local RunService = game:GetService("RunService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local targetingFramework = require(ReplicatedStorage.Client.Modules.EasyTargetingFramework);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 local FireBeamClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 	iconImage = "rbxassetid://17771917538";
 	name = "Fire Beam";
 	description = "Charge by holding down while flying, and release to fire a beam that lights the ground on fire.";
-	__index = {} :: types.FireBeamClientAction;
 };
 
 local player = Players.LocalPlayer;
 
-function FireBeamClientAction.new(): types.FireBeamClientAction
+function FireBeamClientAction.new(): SharedTypes.FireBeamClientAction
 
 	local remoteName = `{player.UserId}_{FireBeamClientAction.id}`;
-
-	local overwrittenProperties = {
+	local remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
+	local action: SharedTypes.FireBeamClientAction = {
 		id = FireBeamClientAction.id;
 		iconImage = FireBeamClientAction.iconImage;
 		name = FireBeamClientAction.name;
 		description = FireBeamClientAction.description;
+		remoteEvent = remoteEvent;
 		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
-		isCharging = false;
+		attributes = {
+			isCharging = false;
+		};
+		activate = function(self: SharedTypes.FireBeamClientAction)
+
+			self.remoteFunction:InvokeServer(self.attributes.isCharging);
+
+		end;
+		breakdown = function(self: SharedTypes.FireBeamClientAction)
+
+			ContextActionService:UnbindAction("ActivateFireBeam");
+			HUDService:removeHUDButton("Action", self.id);
+
+		end;
 	};
 
-  local action = (setmetatable(overwrittenProperties, FireBeamClientAction) :: any) :: types.FireBeamClientAction;
-	local updateTask: thread?;
-
-	local remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
-	assert(remoteEvent:IsA("RemoteEvent"));
-	
 	local shouldIgnoreInput = false;
-	local function checkJump(_, inputState: Enum.UserInputState)
+	local function checkInput(_, inputState: Enum.UserInputState)
 
 		if inputState == Enum.UserInputState.Begin then
 			
-			targetingFramework.displayTarget("Start")
-			action:activate(true);
+			targetingFramework.displayTarget("Start");
+			action.attributes.isCharging = true;
+			action:activate();
 
 		elseif inputState == Enum.UserInputState.End then
 
@@ -58,15 +66,9 @@ function FireBeamClientAction.new(): types.FireBeamClientAction
 
 			else
 
-				if action.chargeNotificationTask then
-
-					task.cancel(action.chargeNotificationTask);
-					action.chargeNotificationTask = nil;
-
-				end;
-
-				targetingFramework.displayTarget("Release")
-				action:activate(false, nil, true);
+				targetingFramework.displayTarget("Release");
+				action.attributes.isCharging = false;
+				action:activate();
 
 			end;
 
@@ -74,13 +76,11 @@ function FireBeamClientAction.new(): types.FireBeamClientAction
 
 	end;
 
-	ContextActionService:BindAction("ActivateFireBeam", checkJump, false, Enum.KeyCode.Two, Enum.KeyCode.KeypadTwo);
-
-	action.remoteEvent = remoteEvent.OnClientEvent:Connect(function(shouldActivateUpdateTask)
+	remoteEvent.OnClientEvent:Connect(function(shouldActivateUpdateTask)
 
 		if shouldActivateUpdateTask then
 
-			updateTask = updateTask or task.spawn(function()
+			action.attributes.updateTask = action.attributes.updateTask or task.spawn(function()
 
 				while RunService.RenderStepped:Wait() do
 
@@ -96,10 +96,10 @@ function FireBeamClientAction.new(): types.FireBeamClientAction
 
 		else
 
-			if updateTask then
+			if action.attributes.updateTask then
 
-				task.cancel(updateTask);
-				updateTask = nil;
+				task.cancel(action.attributes.updateTask);
+				action.attributes.updateTask = nil;
 				
 			end;
 
@@ -112,27 +112,17 @@ function FireBeamClientAction.new(): types.FireBeamClientAction
 		key = action.id;
 		onActivate = function()
 
-			action:activate("Input");
+			action.attributes.isCharging = not action.attributes.isCharging;
+			action:activate();
 
 		end;
 		shortcutCharacter = "1";
-		iconImage = "rbxassetid://81218648792587";
+		iconImage = action.iconImage;
 	});
 
+	ContextActionService:BindAction("ActivateFireBeam", checkInput, false, Enum.KeyCode.Two, Enum.KeyCode.KeypadTwo);
+
 	return action;
-
-end
-
-function FireBeamClientAction.__index:activate(shouldCharge: boolean)
-
-	self.remoteFunction:InvokeServer(shouldCharge);
-
-end
-
-function FireBeamClientAction.__index:breakdown()
-
-	ContextActionService:UnbindAction("ActivateFireBeam");
-	HUDService:removeHUDButton("Action", self.id);
 
 end
 
