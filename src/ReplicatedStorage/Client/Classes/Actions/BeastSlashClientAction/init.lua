@@ -24,14 +24,15 @@ function BeastSlashClientAction.new(): SharedTypes.BeastSlashClientAction
 
 	local player = Players.LocalPlayer;
 	local remoteName = `{player.UserId}_{BeastSlashClientAction.id}`;
-  local action = {} :: SharedTypes.BeastSlashClientAction;
-	action.id = BeastSlashClientAction.id;
-	action.iconImage = BeastSlashClientAction.iconImage;
-	action.name = BeastSlashClientAction.name;
-	action.description = BeastSlashClientAction.description;
-	action.remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
-	action.activate = activate;
-	action.breakdown = breakdown;
+  local action: SharedTypes.BeastSlashClientAction = {
+		id = BeastSlashClientAction.id;
+		iconImage = BeastSlashClientAction.iconImage;
+		name = BeastSlashClientAction.name;
+		description = BeastSlashClientAction.description;
+		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+		activate = activate;
+		breakdown = breakdown;
+	};
 
 	HUDService:addHUDButton({
 		type = "Action";
