@@ -9,6 +9,9 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 local BeastSlashClientAction = require(ReplicatedStorage.Client.Classes.Actions.BeastSlashClientAction);
+local ChangeBallTypeClientAction = require(ReplicatedStorage.Client.Classes.Actions.ChangeBallTypeClientAction);
+local ChangeModesClientAction = require(ReplicatedStorage.Client.Classes.Actions.ChangeModesClientAction);
+local DetachLimbClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetachLimbClientAction);
 
 local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
@@ -18,6 +21,9 @@ function ClientAction.get(actionID: string): SharedTypes.ClientActionClass
 
   local actions = {
     BeastSlash = BeastSlashClientAction;
+    ChangeBallType = ChangeBallTypeClientAction;
+    ChangeModes = ChangeModesClientAction;
+    DetachLimb = DetachLimbClientAction;
   };
 
   local action = actions[actionID];
