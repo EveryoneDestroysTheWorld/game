@@ -21,6 +21,12 @@ local function startAttack(action: types.TarBombServerAction, sourcePart: BasePa
 	part.Parent = workspace.Terrain
 	]]
 
+	if action.contestant.player and action.remoteEvent then
+
+		action.remoteEvent:FireClient(action.contestant.player, "Completed");
+
+	end;
+
 	local bomb = ReplicatedStorage.Shared.InGameDisplayObjects.TarBomb:Clone()
 	bomb.Parent = workspace.Terrain
 	bomb.Position = sourcePart.Position

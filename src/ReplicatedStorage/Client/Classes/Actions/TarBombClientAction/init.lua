@@ -63,9 +63,9 @@ function TarBombClientAction.new(): SharedTypes.TarBombClientAction
 
 	local ignoreInput = false;
 
-	remoteEvent.OnClientEvent:Connect(function(shouldActivateUpdateTask)
+	remoteEvent.OnClientEvent:Connect(function(eventType: "CoordinateRequest" | "Exhausted" | "Completed")
 	
-		if shouldActivateUpdateTask then
+		if eventType == "CoordinateRequest" then
 
 			action.attributes.updateTask = action.attributes.updateTask or task.spawn(function()
 
@@ -84,11 +84,16 @@ function TarBombClientAction.new(): SharedTypes.TarBombClientAction
 		else
 
 			targetingFramework.displayTarget("Release");
-			ignoreInput = true;
 			if action.attributes.updateTask then
 
 				task.cancel(action.attributes.updateTask);
 				action.attributes.updateTask = nil;
+
+			end;
+
+			if eventType == "Exhausted" then
+
+				ignoreInput = true;
 
 			end;
 

@@ -7,7 +7,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 local ClientContestant = require(script.Parent.ClientContestant);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local types = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 export type RoundStatus = "Waiting for players" | "Contestant selection" | "Matchup preview" | "Initializing character models" | "Pre-round countdown" | "Active";
 

@@ -76,7 +76,7 @@ function TarBombServerAction.new(properties: types.ServerActionConstructorProper
 		end);
 
 		local remoteEvent = createInventoryRemoteEvent(player, "Action", `{player.UserId}_{action.id}`);
-		remoteEvent.OnServerEvent:Connect(function(possiblePlayer: Player, coordinates: Vector3)
+		remoteEvent.OnServerEvent:Connect(function(possiblePlayer: Player, coordinates: unknown)
 
 			assert(possiblePlayer == player);
 			assert(typeof(coordinates) == "Vector3")

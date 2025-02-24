@@ -31,13 +31,19 @@ local function chargeAttack(action: types.TarBombServerAction, primaryPart: Base
 
 	task.spawn(function()
 	
+		if action.contestant.player and action.remoteEvent then
+
+			action.remoteEvent:FireClient(action.contestant.player, "CoordinateRequest");
+
+		end;
+
 		while task.wait(0.05) and action.startChargeTimeMilliseconds == originalChargeTime do
 
 			if action.contestant.currentStamina <= 0 then
 
 				if action.remoteEvent and action.contestant.player then
 
-					action.remoteEvent:FireClient(action.contestant.player);
+					action.remoteEvent:FireClient(action.contestant.player, "Exhausted");
 
 				end;
 

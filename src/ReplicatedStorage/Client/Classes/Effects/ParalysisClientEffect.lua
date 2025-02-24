@@ -2,7 +2,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local types = require(ReplicatedStorage.Client.Modules.types);
+local types = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 local ParalysisClientEffect = {
   name = "Paralysis";
