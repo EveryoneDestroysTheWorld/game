@@ -21,6 +21,7 @@ export type ChangeModesClientAction = ClientAction<{
 
 export type StrikeOutSwipeClientAction = ClientAction<{
   swingAnimation: AnimationTrack?;
+  isCharging: boolean;
 }>;
 
 export type ClientAction<Attributes = {}> = ClientActionProperties<Attributes> & ClientActionMethods<ClientAction<Attributes>>;

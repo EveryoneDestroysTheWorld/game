@@ -8,34 +8,47 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
-local id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
-local name = "Strike-out Swipe";
-local description = "";
-local iconImage = "rbxassetid://131445376714174";
+
 
 local StrikeOutSwipeClientAction = {
-  id = id;
-  name = name;
-  description = description;
-  iconImage = iconImage;
-  __index = {
-    id = id;
-    name = name;
-    iconImage = iconImage;
-    description = description;
-  } :: types.StrikeOutSwipeClientAction;
+  id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
+  name = "Strike-out Swipe";
+  description = "";
+  iconImage = "rbxassetid://131445376714174";
 };
 
 local player = Players.LocalPlayer;
 
-function StrikeOutSwipeClientAction.new(): types.StrikeOutSwipeClientAction
+function StrikeOutSwipeClientAction.new(): SharedTypes.StrikeOutSwipeClientAction
 
   local remoteName = `{player.UserId}_{StrikeOutSwipeClientAction.id}`;
-  local action = (setmetatable({}, StrikeOutSwipeClientAction) :: any) :: types.StrikeOutSwipeClientAction;
-  action.remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
-  action.remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
+  local remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
+  local action: SharedTypes.StrikeOutSwipeClientAction = {
+    id = StrikeOutSwipeClientAction.id;
+    name = StrikeOutSwipeClientAction.name;
+    iconImage = StrikeOutSwipeClientAction.iconImage;
+    description = StrikeOutSwipeClientAction.description;
+    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+    remoteEvent = remoteEvent;
+    attributes = {
+      isCharging = false;
+    };
+    activate = function(self: SharedTypes.StrikeOutSwipeClientAction)
+
+      local shouldCharge = self.attributes.isCharging;
+      self.attributes.isCharging = false;
+      self.remoteFunction:InvokeServer(shouldCharge);
+
+    end;
+    breakdown = function(self: SharedTypes.StrikeOutSwipeClientAction)
+    
+      HUDService:removeHUDButton("Action", self.id);
+      ContextActionService:UnbindAction("ActivateStrikeOutSwipe");
+    
+    end;
+  }
 
   action.remoteFunction.OnClientInvoke = function(shouldCharge: boolean): ()
 
@@ -45,9 +58,9 @@ function StrikeOutSwipeClientAction.new(): types.StrikeOutSwipeClientAction
 
     if animator and animator:IsA("Animator") then
 
-      if action.swingAnimation then
+      if action.attributes.swingAnimation then
 
-        action.swingAnimation:Stop(0);
+        action.attributes.swingAnimation:Stop(0);
 
       end;
 
@@ -56,14 +69,14 @@ function StrikeOutSwipeClientAction.new(): types.StrikeOutSwipeClientAction
       local currentAnimationTrack = animator:LoadAnimation(swingAnimation);
       currentAnimationTrack.Looped = false;
       currentAnimationTrack:Play(if shouldCharge then 1 else 0, 1, if shouldCharge then 0 else 8);
-      action.swingAnimation = currentAnimationTrack;
+      action.attributes.swingAnimation = currentAnimationTrack;
 
     end;
 
   end;
 
   local isExhausted = false;
-  action.remoteEvent.OnClientEvent:Connect(function()
+  remoteEvent.OnClientEvent:Connect(function()
   
     isExhausted = true;
 
@@ -75,18 +88,20 @@ function StrikeOutSwipeClientAction.new(): types.StrikeOutSwipeClientAction
     shortcutCharacter = "L";
     onActivate = function() 
     
-      action:activate(true);
-      action:activate(false);
+      action.attributes.isCharging = true;
+      action:activate();
+      action:activate();
 
     end;
-    iconImage = iconImage;
+    iconImage = action.iconImage;
   });
 
   local function checkInput(_, inputState: Enum.UserInputState, inputType: Enum.UserInputType)
 
     if inputState == Enum.UserInputState.Begin then
 
-      action:activate(true);
+      action.attributes.isCharging = true;
+      action:activate();
 
     elseif inputState == Enum.UserInputState.End then
 
@@ -96,7 +111,7 @@ function StrikeOutSwipeClientAction.new(): types.StrikeOutSwipeClientAction
         
       else 
         
-        action:activate(false);
+        action:activate();
 
       end;
 
@@ -109,18 +124,5 @@ function StrikeOutSwipeClientAction.new(): types.StrikeOutSwipeClientAction
   return action;
 
 end
-
-function StrikeOutSwipeClientAction.__index:activate(shouldCharge: boolean)
-
-  self.remoteFunction:InvokeServer(shouldCharge);
-
-end
-
-function StrikeOutSwipeClientAction.__index:breakdown()
-    
-  HUDService:removeHUDButton("Action", self.id);
-  ContextActionService:UnbindAction("ActivateStrikeOutSwipe");
-
-end;
 
 return StrikeOutSwipeClientAction;
