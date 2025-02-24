@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ContestantFrame = require(script.Parent.ContestantFrame);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local types = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 local function ContestantInformationContainer(props: {teams: {{types.ClientContestant}}})
 

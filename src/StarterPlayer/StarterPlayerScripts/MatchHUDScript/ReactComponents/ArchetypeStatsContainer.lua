@@ -10,7 +10,7 @@ local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype
 type ClientArchetype = ClientArchetype.ClientArchetype;
 local StatContainer = require(script.Parent.StatContainer);
 local Button = require(ReplicatedStorage.Client.ReactComponents.Button);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local types = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 type RoundTimerProps = {
   round: ClientRound;

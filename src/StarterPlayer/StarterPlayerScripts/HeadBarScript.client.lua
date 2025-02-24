@@ -7,7 +7,7 @@ type ClientRound = ClientRound.ClientRound;
 local HeadBarContainer = require(ReplicatedStorage.Client.ReactComponents.HeadBarContainer);
 local Players = game:GetService("Players");
 
-local types = require(ReplicatedStorage.Client.Modules.types);
+local types = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 local round = ClientRound.fromServerRound();
 local events = {};

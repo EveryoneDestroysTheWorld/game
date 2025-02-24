@@ -7,7 +7,7 @@ local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
 local ClientItem = require(ReplicatedStorage.Client.Classes.ClientItem);
 type ClientArchetype = ClientArchetype.ClientArchetype;
 type ClientItem = ClientItem.ClientItem;
-local types = require(ReplicatedStorage.Client.Modules.types);
+local types = require(ReplicatedStorage.Client.Modules.SharedTypes);
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 
 local initializedArchetype: ClientArchetype = nil;

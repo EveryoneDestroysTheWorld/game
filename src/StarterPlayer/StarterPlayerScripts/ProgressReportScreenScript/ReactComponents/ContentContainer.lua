@@ -9,7 +9,7 @@ local PlayerSelectionContainer = require(script.Parent.PlayerSelectionContainer)
 local StatisticsContainer = require(script.Parent.StatisticsContainer);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
-local types = require(ReplicatedStorage.Client.Modules.types);
+local types = require(ReplicatedStorage.Client.Modules.SharedTypes);
 local CameraService = require(ReplicatedStorage.Client.Modules.CameraService);
 
 export type ContentContainerProperties = {

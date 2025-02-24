@@ -4,7 +4,7 @@ local Players = game:GetService("Players");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local types = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 local function waitForLocalPlayerContestant(): types.ClientContestant
 

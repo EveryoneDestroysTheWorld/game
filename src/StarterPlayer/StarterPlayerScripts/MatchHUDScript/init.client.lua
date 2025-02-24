@@ -8,7 +8,7 @@ local RoundTimer = require(script.ReactComponents.RoundTimer);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 local BottomCenterSection = require(script.ReactComponents.BottomCenterSection);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local types = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 local popupContainer = nil;
 local player = Players.LocalPlayer;

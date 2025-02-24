@@ -7,7 +7,7 @@ type ClientRound = ClientRound.ClientRound;
 local StatisticContainer = require(script.Parent.StatisticContainer);
 local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
 type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
-local types = require(ReplicatedStorage.Client.Modules.types);
+local types = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 export type ProgressReportScreenProperties = {
   selectedContestant: types.ClientContestant;
