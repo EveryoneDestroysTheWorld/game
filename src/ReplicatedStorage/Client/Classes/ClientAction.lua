@@ -16,6 +16,13 @@ local DetachLimbClientAction = require(Actions.DetachLimbClientAction);
 local DetonateDetachedLimbsClientAction = require(Actions.DetonateDetachedLimbsClientAction);
 local DiveBombClientAction = require(Actions.DiveBombClientAction);
 local ExplosivePunchClientAction = require(Actions.ExplosivePunchClientAction);
+local FireBeamClientAction = require(Actions.FireBeamClientAction);
+local HeresThePitchClientAction = require(Actions.HeresThePitchClientAction);
+local LockOnClientAction = require(Actions.LockOnClientAction);
+local RocketFeetClientAction = require(Actions.RocketFeetClientAction);
+local StrikeOutSwipeClientAction = require(Actions.StrikeOutSwipeClientAction);
+local TakeFlightClientAction = require(Actions.TakeFlightClientAction);
+local TarBombClientAction = require(Actions.TarBombClientAction);
 
 local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
@@ -31,6 +38,13 @@ function ClientAction.get(actionID: string): SharedTypes.ClientActionClass
     DetonateDetachedLimbs = DetonateDetachedLimbsClientAction;
     DiveBomb = DiveBombClientAction;
     ExplosivePunch = ExplosivePunchClientAction;
+    FireBeam = FireBeamClientAction;
+    HeresThePitch = HeresThePitchClientAction;
+    LockOn = LockOnClientAction;
+    RocketFeet = RocketFeetClientAction;
+    StrikeOutSwipe = StrikeOutSwipeClientAction;
+    TakeFlight = TakeFlightClientAction;
+    TarBomb = TarBombClientAction;
   };
 
   local action = actions[actionID];

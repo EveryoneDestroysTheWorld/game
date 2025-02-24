@@ -83,7 +83,6 @@ function TarBombClientAction.new(): SharedTypes.TarBombClientAction
 
 		else
 
-			targetingFramework.displayTarget("Release");
 			if action.attributes.updateTask then
 
 				task.cancel(action.attributes.updateTask);
@@ -96,6 +95,8 @@ function TarBombClientAction.new(): SharedTypes.TarBombClientAction
 				ignoreInput = true;
 
 			end;
+
+			targetingFramework.displayTarget("Release");
 
 		end;
 

@@ -232,37 +232,37 @@ function TurfWarGameMode.new(round: types.ServerRound): types.GameMode
           end;
 
           -- Stop the round if all contestants on one team are eliminated.
-          local isTeam1Eliminated = true;
-          local isTeam2Eliminated = true;
-          for _, otherContestant in contestant.round.contestants do
+          -- local isTeam1Eliminated = true;
+          -- local isTeam2Eliminated = true;
+          -- for _, otherContestant in contestant.round.contestants do
 
-            if not otherContestant.isEliminated then
+          --   if not otherContestant.isEliminated then
 
-              if otherContestant.teamID == 1 then
+          --     if otherContestant.teamID == 1 then
 
-                isTeam1Eliminated = false;
+          --       isTeam1Eliminated = false;
 
-              elseif otherContestant.teamID == 2 then
+          --     elseif otherContestant.teamID == 2 then
 
-                isTeam2Eliminated = false;
+          --       isTeam2Eliminated = false;
 
-              end;
+          --     end;
 
-            end;
+          --   end;
 
-            if not isTeam1Eliminated and not isTeam2Eliminated then
+          --   if not isTeam1Eliminated and not isTeam2Eliminated then
 
-              break;
+          --     break;
 
-            end;
+          --   end;
             
-          end;
+          -- end;
 
-          if isTeam1Eliminated or isTeam2Eliminated then
+          -- if isTeam1Eliminated or isTeam2Eliminated then
 
-            contestant.round:stop();
+          --   contestant.round:stop();
 
-          end;
+          -- end;
 
         end;
 
