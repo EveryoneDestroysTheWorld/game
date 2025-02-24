@@ -5,40 +5,33 @@
 
 local ContextActionService = game:GetService("ContextActionService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
 local Players = game:GetService("Players");
-
 local KeybindNotificationService = require(ReplicatedStorage.Client.Modules.KeybindNotificationService);
-local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
-local React = require(ReplicatedStorage.Shared.Packages.react);
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local QuickSelectionMenu = require(ReplicatedStorage.Client.ReactComponents.QuickSelectionMenu);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
-local id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
-local name = "Change Ball Type";
-local description = "Do a change-up";
-local iconImage = "rbxassetid://75206024784140";
+local activate = require(script.activate);
+local breakdown = require(script.breakdown);
 
 local ChangeBallTypeClientAction = {
-  id = id;
-  name = name;
-  description = description;
-  iconImage = iconImage;
-  __index = {
-    id = id;
-    name = name;
-    iconImage = iconImage;
-    description = description;
-  } :: types.ChangeBallTypeClientAction;
+  id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
+  name = "Change Ball Type";
+  description = "Do a change-up";
+  iconImage = "rbxassetid://75206024784140";
 };
 
-local player = Players.LocalPlayer;
+function ChangeBallTypeClientAction.new(): SharedTypes.ChangeBallTypeClientAction
 
-function ChangeBallTypeClientAction.new(): types.ChangeBallTypeClientAction
-
-  local remoteName = `{player.UserId}_{ChangeBallTypeClientAction.id}`;
-  local action = (setmetatable({}, ChangeBallTypeClientAction) :: any) :: types.ChangeBallTypeClientAction;
+  local remoteName = `{Players.LocalPlayer.UserId}_{ChangeBallTypeClientAction.id}`;
+  local action = {} :: SharedTypes.ChangeBallTypeClientAction;
+  action.id = ChangeBallTypeClientAction.id;
+  action.name = ChangeBallTypeClientAction.name;
+  action.description = ChangeBallTypeClientAction.description;
+  action.iconImage = ChangeBallTypeClientAction.iconImage;
   action.remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+  action.activate = activate;
+  action.breakdown = breakdown;
 
   HUDService:addHUDButton({
     type = "Action";
@@ -67,7 +60,15 @@ function ChangeBallTypeClientAction.new(): types.ChangeBallTypeClientAction
       local ballType = map[inputObject.KeyCode];
       if ballType then
 
-        action:activate(ballType);
+        if action.attributes.gui then
+
+          action.attributes.gui:Destroy();
+          action.attributes.gui = nil;
+    
+        end;
+    
+        action.remoteFunction:InvokeServer(ballType);
+
         KeybindNotificationService:setMessage(`{ballType} Ball`);
 
       end;
@@ -81,70 +82,5 @@ function ChangeBallTypeClientAction.new(): types.ChangeBallTypeClientAction
   return action;
 
 end
-
-function ChangeBallTypeClientAction.__index:activate(ballType: types.BallType?)
-
-  if ballType then
-
-    if self.gui then
-
-      self.gui:Destroy();
-      self.gui = nil;
-
-    end;
-
-    self.remoteFunction:InvokeServer(ballType);
-
-  else
-
-    local gui = self.gui or Instance.new("ScreenGui");
-    self.gui = gui;
-    gui.ScreenInsets = Enum.ScreenInsets.None;
-    gui.Parent = player.PlayerGui;
-
-    local reactRoot = ReactRoblox.createRoot(gui);
-    reactRoot:render(React.createElement(QuickSelectionMenu, {
-      options = {
-        {
-          key = "Regular";
-          labelText = "Regular Ball";
-          iconImage = "rbxassetid://139648735745838"
-        };
-        {
-          key = "Explosive";
-          labelText = "Explosive Ball";
-          iconImage = "rbxassetid://73246050129377"
-        };
-        {
-          key = "Electric";
-          labelText = "Electric Ball";
-          iconImage = "rbxassetid://84087555822097"
-        };
-        {
-          key = "Poison";
-          labelText = "Poison Ball";
-          iconImage = "rbxassetid://89838520119073"
-        };
-      };
-      onSelectionConfirmed = function(selection)
-
-        reactRoot:unmount();
-        gui:Destroy();
-        self.gui = nil;
-        self.remoteFunction:InvokeServer(selection.key);
-
-      end;
-    }));
-
-  end;
-
-end
-
-function ChangeBallTypeClientAction.__index:breakdown()
-    
-  ContextActionService:UnbindAction("ActivateChangeBallTypeAction");
-  HUDService:removeHUDButton("Action", self.id);
-
-end;
 
 return ChangeBallTypeClientAction;

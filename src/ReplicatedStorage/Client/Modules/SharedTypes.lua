@@ -9,17 +9,10 @@ export type BallType = "Regular" | "Explosive" | "Electric" | "Poison";
 
 export type BatterUpDemonMode = "Batter" | "Pitcher";
 
-export type BeastSlashClientAction = ClientAction<{
-  remoteFunction: RemoteFunction;
-  activate: (self: BeastSlashClientAction) -> ();
-  breakdown: (self: BeastSlashClientAction) -> ();
-}>;
+export type BeastSlashClientAction = ClientAction;
 
 export type ChangeBallTypeClientAction = ClientAction<{
   gui: ScreenGui?;
-  remoteFunction: RemoteFunction;
-  activate: (self: ChangeBallTypeClientAction, ballType: BallType?) -> ();
-  breakdown: (self: ChangeBallTypeClientAction) -> ();
 }>;
 
 export type ChangeModesClientAction = ClientAction<{
@@ -31,34 +24,30 @@ export type ChangeModesClientAction = ClientAction<{
 }>;
 
 export type StrikeOutSwipeClientAction = ClientAction<{
-  remoteFunction: RemoteFunction;
-  remoteEvent: RemoteEvent;
   swingAnimation: AnimationTrack?;
 }>;
 
-export type ClientAction<Extension = unknown> = ClientActionProperties & Extension & ClientActionMethods;
+export type ClientAction<Attributes = {[unknown]: unknown}?> = ClientActionProperties<Attributes> & ClientActionMethods<ClientAction<Attributes>>;
 
 export type ClientActionClass<ConstructorProperties = any, Action = any> = {
   new: (...ConstructorProperties) -> Action
 }
 
-export type ClientActionMethods = {
+export type ClientActionMethods<Action> = {
 
   -- The function to activate the item on the server side.
   -- You can manually activate the item some other way too.
-  activate: (self: any, ...any) -> ();
+  activate: (self: Action) -> ();
 
   -- The function to "break down" the item. This usually runs after the round ends and sometimes after item use.
   -- You can manually break down the item some other way too.
-  breakdown: (self: any) -> ();
-
-  -- The function to initialize the item. This usually runs after the player receives an item. 
-  -- This function does not mean the player activated the item. Use :activate() instead.
-  initialize: (self: any) -> ();
+  breakdown: (self: Action) -> ();
 
 }
 
-export type ClientActionProperties = {
+export type ClientActionProperties<Attributes> = {
+
+  attributes: Attributes;
 
   -- The ID of the action. Keep this unique.
   id: string;
@@ -71,6 +60,10 @@ export type ClientActionProperties = {
 
   -- The description of the action.
   description: string;
+
+  remoteFunction: RemoteFunction;
+
+  remoteEvent: RemoteEvent?;
   
 };
 
