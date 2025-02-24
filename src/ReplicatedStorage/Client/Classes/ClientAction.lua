@@ -12,6 +12,7 @@ local BeastSlashClientAction = require(ReplicatedStorage.Client.Classes.Actions.
 local ChangeBallTypeClientAction = require(ReplicatedStorage.Client.Classes.Actions.ChangeBallTypeClientAction);
 local ChangeModesClientAction = require(ReplicatedStorage.Client.Classes.Actions.ChangeModesClientAction);
 local DetachLimbClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetachLimbClientAction);
+local DetonateDetachedLimbsClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetonateDetachedLimbsClientAction);
 
 local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
@@ -24,6 +25,7 @@ function ClientAction.get(actionID: string): SharedTypes.ClientActionClass
     ChangeBallType = ChangeBallTypeClientAction;
     ChangeModes = ChangeModesClientAction;
     DetachLimb = DetachLimbClientAction;
+    DetonateDetachedLimbs = DetonateDetachedLimbsClientAction;
   };
 
   local action = actions[actionID];

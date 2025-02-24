@@ -30,6 +30,7 @@ function BeastSlashClientAction.new(): SharedTypes.BeastSlashClientAction
 		name = BeastSlashClientAction.name;
 		description = BeastSlashClientAction.description;
 		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+		attributes = {};
 		activate = activate;
 		breakdown = breakdown;
 	};

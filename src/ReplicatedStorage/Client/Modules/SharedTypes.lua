@@ -23,7 +23,7 @@ export type StrikeOutSwipeClientAction = ClientAction<{
   swingAnimation: AnimationTrack?;
 }>;
 
-export type ClientAction<Attributes = {[unknown]: unknown}?> = ClientActionProperties<Attributes> & ClientActionMethods<ClientAction<Attributes>>;
+export type ClientAction<Attributes = {}> = ClientActionProperties<Attributes> & ClientActionMethods<ClientAction<Attributes>>;
 
 export type ClientActionClass<ConstructorProperties = any, Action = any> = {
   new: (...ConstructorProperties) -> Action
@@ -153,12 +153,7 @@ export type HeresThePitchClientAction = ClientAction<{
   breakdown: (self: HeresThePitchClientAction) -> ();
 }>;
 
-export type DetonateDetachedLimbsClientAction = ClientAction<{
-  gui: ScreenGui?;
-  remoteFunction: RemoteFunction;
-  activate: (self: DetonateDetachedLimbsClientAction) -> ();
-  breakdown: (self: DetonateDetachedLimbsClientAction) -> ();
-}>;
+export type DetonateDetachedLimbsClientAction = ClientAction;
 
 export type DiveBombClientAction = ClientAction<{
   remoteFunction: RemoteFunction;

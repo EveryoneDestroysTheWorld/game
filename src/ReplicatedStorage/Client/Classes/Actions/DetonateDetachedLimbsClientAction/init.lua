@@ -8,30 +8,33 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
+
+local activate = require(script.activate);
+local breakdown = require(script.breakdown);
 
 local DetonateDetachedLimbsClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
   name = "Detonate Detached Limbs";
   iconImage = "rbxassetid://17771918066";
   description = "Explodes all detached limbs and regenerates them.";
-  __index = {} :: types.DetonateDetachedLimbsClientAction;
 };
 
 local player = Players.LocalPlayer;
 
-function DetonateDetachedLimbsClientAction.new(): types.DetonateDetachedLimbsClientAction
+function DetonateDetachedLimbsClientAction.new(): SharedTypes.DetonateDetachedLimbsClientAction
 
   local remoteName = `{player.UserId}_{DetonateDetachedLimbsClientAction.id}`;
-  local overwrittenProperties = {
+  local action: SharedTypes.DetonateDetachedLimbsClientAction = {
     id = DetonateDetachedLimbsClientAction.id;
     iconImage = DetonateDetachedLimbsClientAction.iconImage;
     name = DetonateDetachedLimbsClientAction.name;
     description = DetonateDetachedLimbsClientAction.description;
     remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+    attributes = {};
+    activate = activate;
+    breakdown = breakdown;
   };
-
-  local action = (setmetatable(overwrittenProperties, DetonateDetachedLimbsClientAction) :: any) :: types.DetonateDetachedLimbsClientAction;
 
   HUDService:addHUDButton({
     type = "Action";
@@ -58,19 +61,6 @@ function DetonateDetachedLimbsClientAction.new(): types.DetonateDetachedLimbsCli
   ContextActionService:BindAction("ActivateDetonateDetachedLimbsAction", checkInput, false, Enum.KeyCode.V);
   
   return action;
-
-end
-
-function DetonateDetachedLimbsClientAction.__index:activate()
-
-  self.remoteFunction:InvokeServer();
-
-end;
-
-function DetonateDetachedLimbsClientAction.__index:breakdown()
-    
-  HUDService:removeHUDButton("Action", self.id);
-  ContextActionService:UnbindAction("ActivateDetonateDetachedLimbsAction");
 
 end
 
