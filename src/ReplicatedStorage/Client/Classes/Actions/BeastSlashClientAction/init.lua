@@ -8,30 +8,30 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
+
+local activate = require(script.activate);
+local breakdown = require(script.breakdown);
 
 local BeastSlashClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 	iconImage = "rbxassetid://17771917538";
 	name = "Beast Slash";
 	description = "Attack!!";
-	__index = {} :: types.BeastSlashClientAction;
 };
 
-function BeastSlashClientAction.new(): types.BeastSlashClientAction
+function BeastSlashClientAction.new(): SharedTypes.BeastSlashClientAction
 
 	local player = Players.LocalPlayer;
 	local remoteName = `{player.UserId}_{BeastSlashClientAction.id}`;
-
-	local overwrittenProperties = {
-		id = BeastSlashClientAction.id;
-		iconImage = BeastSlashClientAction.iconImage;
-		name = BeastSlashClientAction.name;
-		description = BeastSlashClientAction.description;
-		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
-	}
-
-  local action = (setmetatable(overwrittenProperties, BeastSlashClientAction) :: any) :: types.BeastSlashClientAction;
+  local action = {} :: SharedTypes.BeastSlashClientAction;
+	action.id = BeastSlashClientAction.id;
+	action.iconImage = BeastSlashClientAction.iconImage;
+	action.name = BeastSlashClientAction.name;
+	action.description = BeastSlashClientAction.description;
+	action.remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+	action.activate = activate;
+	action.breakdown = breakdown;
 
 	HUDService:addHUDButton({
 		type = "Action";
@@ -45,7 +45,7 @@ function BeastSlashClientAction.new(): types.BeastSlashClientAction
 		iconImage = "rbxassetid://104334768004371";
 	});
 
-	local function checkJump(_, inputState: Enum.UserInputState)
+	local function checkInput(_, inputState: Enum.UserInputState)
 
 		if inputState == Enum.UserInputState.Begin then
 
@@ -59,22 +59,9 @@ function BeastSlashClientAction.new(): types.BeastSlashClientAction
 
 	end;
 
-	ContextActionService:BindActionAtPriority("ActivateMelee", checkJump, false, 2, Enum.UserInputType.MouseButton1);
+	ContextActionService:BindActionAtPriority("ActivateMelee", checkInput, false, 2, Enum.UserInputType.MouseButton1);
 
 	return action;
-
-end
-
-function BeastSlashClientAction.__index:activate()
-
-	self.remoteFunction:InvokeServer();
-
-end
-
-function BeastSlashClientAction.__index:breakdown()
-
-	ContextActionService:UnbindAction("ActivateMelee");
-	HUDService:removeHUDButton("Action", self.id);
 
 end
 

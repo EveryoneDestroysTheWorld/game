@@ -8,21 +8,27 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local types = require(ReplicatedStorage.Client.Modules.types);
+local BeastSlashClientAction = require(ReplicatedStorage.Client.Classes.Actions.BeastSlashClientAction);
+
+local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 local ClientAction = {};
 
-function ClientAction.get(actionID: string): types.ClientActionClass
+function ClientAction.get(actionID: string): SharedTypes.ClientActionClass
 
-  local instance = script.Parent.Actions:FindFirstChild(`{actionID}ClientAction`);
-  if instance and instance:IsA("ModuleScript") then
+  local actions = {
+    BeastSlash = BeastSlashClientAction;
+  };
 
-    local action = require(instance) :: any;
-    return action;
+  local action = actions[actionID];
+  
+  if not action then
 
-  end
+    error(`{actionID} client action couldn't be found.`);
 
-  error(`Couldn't find action from ID {actionID}.`);
+  end;
+
+  return action;
 
 end;
 
