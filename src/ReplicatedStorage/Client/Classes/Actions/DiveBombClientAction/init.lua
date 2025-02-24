@@ -9,31 +9,34 @@ local ContextActionService = game:GetService("ContextActionService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local targetingFramework = require(ReplicatedStorage.Client.Modules.EasyTargetingFramework);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
+
+local activate = require(script.activate);
+local breakdown = require(script.breakdown);
 
 local DiveBombClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 	iconImage = "rbxassetid://17771917538";
 	name = "Dive Bomb";
 	description = "Rush to target location, stunning enemies in an area and dealing damage to EVERYONE nearby.";
-	__index = {} :: types.DiveBombClientAction;
 };
 
 local player = Players.LocalPlayer;
 
-function DiveBombClientAction.new(): types.DiveBombClientAction
+function DiveBombClientAction.new(): SharedTypes.DiveBombClientAction
 
 	local remoteName = `{player.UserId}_{DiveBombClientAction.id}`;
 
-	local overwrittenProperties = {
+	local action: SharedTypes.DiveBombClientAction = {
 		id = DiveBombClientAction.id;
 		iconImage = DiveBombClientAction.iconImage;
 		name = DiveBombClientAction.name;
 		description = DiveBombClientAction.description;
 		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+		attributes = {};
+		activate = activate;
+		breakdown = breakdown;
 	};
-
-  local action = (setmetatable(overwrittenProperties, DiveBombClientAction) :: any) :: types.DiveBombClientAction;
 
 	HUDService:addHUDButton({
 		type = "Action";
@@ -67,20 +70,6 @@ function DiveBombClientAction.new(): types.DiveBombClientAction
 	ContextActionService:BindActionAtPriority("ActivateDiveBomb", checkJump, false, 2, Enum.KeyCode.Q);
 
 	return action;
-
-end
-
-function DiveBombClientAction.__index:activate()
-    
-	local coordinates, shouldUseTarget = targetingFramework:getData()
-	self.remoteFunction:InvokeServer(coordinates, shouldUseTarget);
-
-end
-
-function DiveBombClientAction.__index:breakdown()
-
-	ContextActionService:UnbindAction("ActivateDiveBomb");
-	HUDService:removeHUDButton("Action", self.id);
 
 end
 

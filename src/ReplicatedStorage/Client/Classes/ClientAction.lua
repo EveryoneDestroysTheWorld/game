@@ -8,11 +8,13 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local BeastSlashClientAction = require(ReplicatedStorage.Client.Classes.Actions.BeastSlashClientAction);
-local ChangeBallTypeClientAction = require(ReplicatedStorage.Client.Classes.Actions.ChangeBallTypeClientAction);
-local ChangeModesClientAction = require(ReplicatedStorage.Client.Classes.Actions.ChangeModesClientAction);
-local DetachLimbClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetachLimbClientAction);
-local DetonateDetachedLimbsClientAction = require(ReplicatedStorage.Client.Classes.Actions.DetonateDetachedLimbsClientAction);
+local Actions = ReplicatedStorage.Client.Classes.Actions;
+local BeastSlashClientAction = require(Actions.BeastSlashClientAction);
+local ChangeBallTypeClientAction = require(Actions.ChangeBallTypeClientAction);
+local ChangeModesClientAction = require(Actions.ChangeModesClientAction);
+local DetachLimbClientAction = require(Actions.DetachLimbClientAction);
+local DetonateDetachedLimbsClientAction = require(Actions.DetonateDetachedLimbsClientAction);
+local DiveBombClientAction = require(Actions.DiveBombClientAction);
 
 local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
@@ -26,6 +28,7 @@ function ClientAction.get(actionID: string): SharedTypes.ClientActionClass
     ChangeModes = ChangeModesClientAction;
     DetachLimb = DetachLimbClientAction;
     DetonateDetachedLimbs = DetonateDetachedLimbsClientAction;
+    DiveBomb = DiveBombClientAction;
   };
 
   local action = actions[actionID];
