@@ -24,14 +24,16 @@ local ChangeBallTypeClientAction = {
 function ChangeBallTypeClientAction.new(): SharedTypes.ChangeBallTypeClientAction
 
   local remoteName = `{Players.LocalPlayer.UserId}_{ChangeBallTypeClientAction.id}`;
-  local action = {} :: SharedTypes.ChangeBallTypeClientAction;
-  action.id = ChangeBallTypeClientAction.id;
-  action.name = ChangeBallTypeClientAction.name;
-  action.description = ChangeBallTypeClientAction.description;
-  action.iconImage = ChangeBallTypeClientAction.iconImage;
-  action.remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
-  action.activate = activate;
-  action.breakdown = breakdown;
+  local action: SharedTypes.ChangeBallTypeClientAction = {
+    id = ChangeBallTypeClientAction.id;
+    name = ChangeBallTypeClientAction.name;
+    description = ChangeBallTypeClientAction.description;
+    iconImage = ChangeBallTypeClientAction.iconImage;
+    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+    activate = activate;
+    breakdown = breakdown;
+    attributes = {}
+  };
 
   HUDService:addHUDButton({
     type = "Action";
