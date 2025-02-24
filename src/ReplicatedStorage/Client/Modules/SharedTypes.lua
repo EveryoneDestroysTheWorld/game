@@ -163,16 +163,12 @@ export type FireBeamClientAction = ClientAction<{
 export type LockOnClientAction = ClientAction<{
   previousTargets: {Instance};
   targetingGUI: BillboardGui;
-  activate: (self: LockOnClientAction) -> ();
-  breakdown: (self: LockOnClientAction) -> ();
+  shouldLock: boolean;
 }>;
 
 export type RocketFeetClientAction = ClientAction<{
-  remoteFunction: RemoteFunction;
   jumpButtonClickEvent: RBXScriptConnection?;
   cFrameEvent: RBXScriptConnection?;
-  activate: (self: RocketFeetClientAction) -> ();
-  breakdown: (self: RocketFeetClientAction) -> ();
 }>;
 
 export type TakeFlightClientAction = ClientAction<{

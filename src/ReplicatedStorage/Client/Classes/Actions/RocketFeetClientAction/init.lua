@@ -9,30 +9,52 @@ local Players = game:GetService("Players");
 local UserInputService = game:GetService("UserInputService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 local RocketFeetClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
   name = "Rocket Feet";
   description = "Fly, touch the sky!";
   iconImage = "rbxassetid://18464513809";
-  __index = {} :: types.RocketFeetClientAction;
 };
 
-function RocketFeetClientAction.new(): types.RocketFeetClientAction
+function RocketFeetClientAction.new(): SharedTypes.RocketFeetClientAction
 
   local player = Players.LocalPlayer;
   local remoteName = `{player.UserId}_{RocketFeetClientAction.id}`
 
-  local overwrittenProperties = {
+  local action: SharedTypes.RocketFeetClientAction = {
     id = RocketFeetClientAction.id;
     name = RocketFeetClientAction.name;
     iconImage = RocketFeetClientAction.iconImage;
     description = RocketFeetClientAction.description;
     remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
-  }
+    attributes = {};
+    activate = function(self: SharedTypes.RocketFeetClientAction)
 
-  local action = (setmetatable(overwrittenProperties, RocketFeetClientAction) :: any) :: types.RocketFeetClientAction;
+      self.remoteFunction:InvokeServer();
+    
+    end;
+    breakdown = function(self: SharedTypes.RocketFeetClientAction)
+
+      ContextActionService:UnbindAction("ActivateRocketFeet");
+    
+      if self.attributes.cFrameEvent then
+    
+        self.attributes.cFrameEvent:Disconnect();
+    
+      end;
+    
+      if self.attributes.jumpButtonClickEvent then
+    
+        self.attributes.jumpButtonClickEvent:Disconnect();
+    
+      end
+      
+      HUDService:removeHUDButton("Action", self.id);
+    
+    end;
+  }
 
   local function checkJump(_, inputState: Enum.UserInputState)
 
@@ -56,7 +78,7 @@ function RocketFeetClientAction.new(): types.RocketFeetClientAction
     local jumpButton = player.PlayerGui:FindFirstChild("TouchGui"):FindFirstChild("TouchControlFrame"):FindFirstChild("JumpButton");
     if jumpButton then
 
-      action.jumpButtonClickEvent = jumpButton.MouseButton1Click:Connect(function()
+      action.attributes.jumpButtonClickEvent = jumpButton.MouseButton1Click:Connect(function()
       
         action:activate();
 
@@ -75,32 +97,6 @@ function RocketFeetClientAction.new(): types.RocketFeetClientAction
   });
 
   return action;
-
-end
-
-function RocketFeetClientAction.__index:activate()
-
-  self.remoteFunction:InvokeServer();
-
-end
-
-function RocketFeetClientAction.__index:breakdown()
-
-  ContextActionService:UnbindAction("ActivateRocketFeet");
-
-  if self.cFrameEvent then
-
-    self.cFrameEvent:Disconnect();
-
-  end;
-
-  if self.jumpButtonClickEvent then
-
-    self.jumpButtonClickEvent:Disconnect();
-
-  end
-  
-  HUDService:removeHUDButton("Action", self.id);
 
 end
 
