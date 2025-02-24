@@ -15,6 +15,7 @@ local ChangeModesClientAction = require(Actions.ChangeModesClientAction);
 local DetachLimbClientAction = require(Actions.DetachLimbClientAction);
 local DetonateDetachedLimbsClientAction = require(Actions.DetonateDetachedLimbsClientAction);
 local DiveBombClientAction = require(Actions.DiveBombClientAction);
+local ExplosivePunchClientAction = require(Actions.ExplosivePunchClientAction);
 
 local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
@@ -29,6 +30,7 @@ function ClientAction.get(actionID: string): SharedTypes.ClientActionClass
     DetachLimb = DetachLimbClientAction;
     DetonateDetachedLimbs = DetonateDetachedLimbsClientAction;
     DiveBomb = DiveBombClientAction;
+    ExplosivePunch = ExplosivePunchClientAction;
   };
 
   local action = actions[actionID];

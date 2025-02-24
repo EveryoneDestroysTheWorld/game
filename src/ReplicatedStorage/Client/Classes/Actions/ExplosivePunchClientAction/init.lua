@@ -8,30 +8,33 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
+
+local activate = require(script.activate);
+local breakdown = require(script.breakdown);
 
 local ExplosivePunchClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
   iconImage = "rbxassetid://17771917538";
   name = "Explosive Punch";
   description = "Land explosive punches to your enemies.";
-  __index = {} :: types.ExplosivePunchClientAction;
 };
 
 local player = Players.LocalPlayer;
 
-function ExplosivePunchClientAction.new(): types.ExplosivePunchClientAction
+function ExplosivePunchClientAction.new(): SharedTypes.ExplosivePunchClientAction
 
   local remoteName = `{player.UserId}_{ExplosivePunchClientAction.id}`;
-  local overwrittenProperties = {
+  local action: SharedTypes.ExplosivePunchClientAction = {
     id = ExplosivePunchClientAction.id;
     iconImage = ExplosivePunchClientAction.iconImage;
     name = ExplosivePunchClientAction.name;
     description = ExplosivePunchClientAction.description;
-    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName)
+    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+    attributes = {};
+    activate = activate;
+    breakdown = breakdown;
   }
-
-  local action = (setmetatable(overwrittenProperties, ExplosivePunchClientAction) :: any) :: types.ExplosivePunchClientAction;
 
   HUDService:addHUDButton({
     type = "Action";
@@ -58,19 +61,6 @@ function ExplosivePunchClientAction.new(): types.ExplosivePunchClientAction
   ContextActionService:BindActionAtPriority("ActivateExplosivePunch", checkInput, false, 2, Enum.UserInputType.MouseButton1, Enum.KeyCode.X);
 
   return action;
-
-end
-
-function ExplosivePunchClientAction.__index:activate()
-
-  self.remoteFunction:InvokeServer();
-
-end
-  
-function ExplosivePunchClientAction.__index:breakdown()
-
-  ContextActionService:UnbindAction("ActivateExplosivePunch");
-  HUDService:removeHUDButton("Action", self.id);
 
 end
 

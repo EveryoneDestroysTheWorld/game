@@ -157,11 +157,7 @@ export type DetonateDetachedLimbsClientAction = ClientAction;
 
 export type DiveBombClientAction = ClientAction;
 
-export type ExplosivePunchClientAction = ClientAction<{
-  remoteFunction: RemoteFunction;
-  activate: (self: ExplosivePunchClientAction) -> ();
-  breakdown: (self: ExplosivePunchClientAction) -> ();
-}>;
+export type ExplosivePunchClientAction = ClientAction;
 
 export type FireBeamClientAction = ClientAction<{
   remoteFunction: RemoteFunction;
