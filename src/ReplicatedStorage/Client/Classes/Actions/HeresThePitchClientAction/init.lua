@@ -8,30 +8,40 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 local HeresThePitchClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
   name = "Here's the Pitch";
   description = "Strike them out";
   iconImage = "rbxassetid://18464513809";
-  __index = {} :: types.HeresThePitchClientAction;
 };
 
 local player = Players.LocalPlayer;
 
-function HeresThePitchClientAction.new(): types.HeresThePitchClientAction
+function HeresThePitchClientAction.new(): SharedTypes.HeresThePitchClientAction
 
   local remoteName = `{player.UserId}_{HeresThePitchClientAction.id}`;
-  local overwrittenProperties = {
+  local action: SharedTypes.HeresThePitchClientAction = {
     id = HeresThePitchClientAction.id;
     name = HeresThePitchClientAction.name;
     iconImage = HeresThePitchClientAction.iconImage;
     description = HeresThePitchClientAction.description;
     remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
-  };
+    attributes = {};
+    activate = function(self: SharedTypes.HeresThePitchClientAction)
 
-  local action = (setmetatable(overwrittenProperties, HeresThePitchClientAction) :: any) :: types.HeresThePitchClientAction;
+      -- Ask the server to create the ball.
+      self.remoteFunction:InvokeServer(player:GetMouse().Hit.Position);
+    
+    end;
+    breakdown = function(self: SharedTypes.HeresThePitchClientAction)
+    
+      HUDService:removeHUDButton("Action", self.id);
+      ContextActionService:UnbindAction("ActivateFoulBallBlitz");
+    
+    end;
+  };
 
   HUDService:addHUDButton({
     type = "Action";
@@ -42,7 +52,7 @@ function HeresThePitchClientAction.new(): types.HeresThePitchClientAction
       action:activate();
 
     end;
-    iconImage = "rbxassetid://90434649353486";
+    iconImage = action.iconImage;
   });
 
   action.remoteFunction.OnClientInvoke = function(ballName: string)
@@ -62,7 +72,7 @@ function HeresThePitchClientAction.new(): types.HeresThePitchClientAction
 
     if inputState == Enum.UserInputState.Begin then
 
-      action:activate(if inputType then player:GetMouse().Hit.Position else nil);
+      action:activate();
 
     end;
 
@@ -73,19 +83,5 @@ function HeresThePitchClientAction.new(): types.HeresThePitchClientAction
   return action;
 
 end
-
-function HeresThePitchClientAction.__index:activate(coordinates: Vector3?)
-
-  -- Ask the server to create the ball.
-  self.remoteFunction:InvokeServer(coordinates);
-
-end
-
-function HeresThePitchClientAction.__index:breakdown()
-    
-  HUDService:removeHUDButton("Action", self.id);
-  ContextActionService:UnbindAction("ActivateFoulBallBlitz");
-
-end;
 
 return HeresThePitchClientAction;

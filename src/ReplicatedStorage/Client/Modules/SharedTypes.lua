@@ -40,7 +40,7 @@ export type ClientActionMethods<Action> = {
   -- You can manually break down the item some other way too.
   breakdown: (self: Action) -> ();
 
-}
+};
 
 export type ClientActionProperties<Attributes> = {
 
@@ -147,12 +147,7 @@ export type DetachLimbClientAction = ClientAction<{
   gui: ScreenGui?;
 }>;
 
-export type HeresThePitchClientAction = ClientAction<{
-  remoteEvent: RemoteEvent;
-  remoteFunction: RemoteFunction;
-  activate: (self: HeresThePitchClientAction) -> ();
-  breakdown: (self: HeresThePitchClientAction) -> ();
-}>;
+export type HeresThePitchClientAction = ClientAction;
 
 export type DetonateDetachedLimbsClientAction = ClientAction;
 
