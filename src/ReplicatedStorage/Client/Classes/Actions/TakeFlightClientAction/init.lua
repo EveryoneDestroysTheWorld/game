@@ -8,31 +8,41 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 local TakeFlightClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 	iconImage = "rbxassetid://92011231218008";
 	name = "Take Flight";
 	description = "You are great at flying! I'm surprised those wings can carry you.";
-	__index = {} :: types.TakeFlightClientAction;
+	__index = {} :: SharedTypes.TakeFlightClientAction;
 };
 
 local player = Players.LocalPlayer;
 
-function TakeFlightClientAction.new(): types.TakeFlightClientAction
+function TakeFlightClientAction.new(): SharedTypes.TakeFlightClientAction
 
 	local remoteName = `{player.UserId}_{TakeFlightClientAction.id}`;
 
-	local overwrittenProperties = {
+	local action: SharedTypes.TakeFlightClientAction = {
 		id = TakeFlightClientAction.id;
 		iconImage = TakeFlightClientAction.iconImage;
 		name = TakeFlightClientAction.name;
 		description = TakeFlightClientAction.description;
 		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
-	};
+		attributes = {};
+		activate = function(self: SharedTypes.TakeFlightClientAction)
 
-  local action = (setmetatable(overwrittenProperties, TakeFlightClientAction) :: any) :: types.TakeFlightClientAction;
+			self.remoteFunction:InvokeServer();
+		
+		end;
+		breakdown = function(self: SharedTypes.TakeFlightClientAction)
+
+			ContextActionService:UnbindAction("ActivateTakeFlight");
+			HUDService:removeHUDButton("Action", self.id);
+		
+		end;
+	};
 
 	HUDService:addHUDButton({
 		type = "Action";
@@ -65,18 +75,5 @@ function TakeFlightClientAction.new(): types.TakeFlightClientAction
 	return action;
 
 end
-
-function TakeFlightClientAction.__index:activate()
-
-	self.remoteFunction:InvokeServer();
-
-end;
-
-function TakeFlightClientAction.__index:breakdown()
-
-	ContextActionService:UnbindAction("ActivateTakeFlight");
-	HUDService:removeHUDButton("Action", self.id);
-
-end;
 
 return TakeFlightClientAction;

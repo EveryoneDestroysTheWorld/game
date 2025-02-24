@@ -4,44 +4,57 @@
 -- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local UserInputService = game:GetService("UserInputService");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
+local RunService = game:GetService("RunService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local targetingFramework = require(ReplicatedStorage.Client.Modules.EasyTargetingFramework);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 local TarBombClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 	iconImage = "rbxassetid://17771917538";
 	name = "Tar Bomb";
 	description = "Launch a projectile at the target location which explodes after a small amount of time, spreading tar onto nearby targets. Tar covered targets are slowed and take flat additional damage from all sources.";
-	__index = {} :: types.TarBombClientAction;
 };
 
-function TarBombClientAction.new(): types.TarBombClientAction
+function TarBombClientAction.new(): SharedTypes.TarBombClientAction
 
 	local player = Players.LocalPlayer;
 	local remoteName = `{player.UserId}_{TarBombClientAction.id}`
-
-	local overwrittenProperties = {
+	local remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
+	local action: SharedTypes.TarBombClientAction = {
 		id = TarBombClientAction.id;
 		iconImage = TarBombClientAction.iconImage;
 		name = TarBombClientAction.name;
 		description = TarBombClientAction.description;
 		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
-		remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
-		isCharging = false;
-	}
+		remoteEvent = remoteEvent;
+		attributes = {
+			isCharging = false;
+		};
+		activate = function(self: SharedTypes.TarBombClientAction)
 
-	local action = (setmetatable(overwrittenProperties, TarBombClientAction) :: any) :: types.TarBombClientAction;
+			local shouldCharge = self.attributes.isCharging;
+			self.remoteFunction:InvokeServer(shouldCharge, Players.LocalPlayer:GetMouse().Hit.Position);
+
+		end;
+		breakdown = function(self: SharedTypes.TarBombClientAction)
+
+			ContextActionService:UnbindAction("ActivateTarBomb");
+			HUDService:removeHUDButton("Action", self.id);
+		
+		end
+	}
 
 	HUDService:addHUDButton({
 		type = "Action";
 		key = action.id;
 		onActivate = function()
 
-			action:activate(false);
+			action:activate();
 
 		end;
 		shortcutCharacter = "1";
@@ -50,11 +63,36 @@ function TarBombClientAction.new(): types.TarBombClientAction
 
 	local ignoreInput = false;
 
-	action.remoteEvent.OnClientEvent:Connect(function()
+	remoteEvent.OnClientEvent:Connect(function(shouldActivateUpdateTask)
 	
-		targetingFramework.displayTarget("Release");
-		action.isCharging = false;
-		ignoreInput = true;
+		if shouldActivateUpdateTask then
+
+			action.attributes.updateTask = action.attributes.updateTask or task.spawn(function()
+
+				while RunService.RenderStepped:Wait() do
+
+					local mousePosition = UserInputService:GetMouseLocation();
+					local unitRay = workspace.CurrentCamera:ViewportPointToRay(mousePosition.X, mousePosition.Y)
+					local raycastResult = workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000);
+					local position = if raycastResult then raycastResult.Position else unitRay.Direction * 1000;
+					remoteEvent:FireServer(position);
+
+				end;
+			
+			end);
+
+		else
+
+			targetingFramework.displayTarget("Release");
+			ignoreInput = true;
+			if action.attributes.updateTask then
+
+				task.cancel(action.attributes.updateTask);
+				action.attributes.updateTask = nil;
+
+			end;
+
+		end;
 
 	end);
 
@@ -62,8 +100,9 @@ function TarBombClientAction.new(): types.TarBombClientAction
 
 		if inputState == Enum.UserInputState.Begin then
 			
-			targetingFramework.displayTarget("Start")
-			action:activate(true);
+			targetingFramework.displayTarget("Start");
+			action.attributes.isCharging = true;
+			action:activate();
 
 		elseif inputState == Enum.UserInputState.End then
 
@@ -73,15 +112,8 @@ function TarBombClientAction.new(): types.TarBombClientAction
 
 			else
 
-				if action.chargeNotificationTask then
-
-					task.cancel(action.chargeNotificationTask);
-					action.chargeNotificationTask = nil;
-
-				end;
-
 				targetingFramework.displayTarget("Release")
-				action:activate(false, nil, true);
+				action:activate();
 
 			end;
 
@@ -91,6 +123,7 @@ function TarBombClientAction.new(): types.TarBombClientAction
 
 	ContextActionService:BindActionAtPriority("ActivateTarBomb", checkJump, false, 2, Enum.KeyCode.One);
 
+	-- TODO: This needs to be handled on the server.
 	workspace.Terrain.ChildAdded:Connect(function(child)
 
 		if child.Name == "TarBomb" then
@@ -106,41 +139,6 @@ function TarBombClientAction.new(): types.TarBombClientAction
 	end)
 
 	return action;
-
-end
-
-function TarBombClientAction.__index:activate(shouldCharge: boolean)
-
-	self.isCharging = shouldCharge;
-
-	if self.isCharging then
-
-		if not self.chargeNotificationTask then
-
-			self.chargeNotificationTask = task.spawn(function()
-
-				while self.isCharging and task.wait() do 
-
-					self.remoteEvent:FireServer(Players.LocalPlayer:GetMouse().Hit.Position);
-
-				end;
-
-				self.chargeNotificationTask = nil;
-
-			end);
-
-		end;
-
-	end;
-
-	self.remoteFunction:InvokeServer(shouldCharge, Players.LocalPlayer:GetMouse().Hit.Position);
-
-end
-
-function TarBombClientAction.__index:breakdown()
-
-	ContextActionService:UnbindAction("ActivateTarBomb");
-	HUDService:removeHUDButton("Action", self.id);
 
 end
 

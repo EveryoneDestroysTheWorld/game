@@ -172,19 +172,11 @@ export type RocketFeetClientAction = ClientAction<{
   cFrameEvent: RBXScriptConnection?;
 }>;
 
-export type TakeFlightClientAction = ClientAction<{
-  remoteFunction: RemoteFunction;
-  activate: (self: TakeFlightClientAction) -> ();
-  breakdown: (self: TakeFlightClientAction) -> ();
-}>;
+export type TakeFlightClientAction = ClientAction;
 
 export type TarBombClientAction = ClientAction<{
-  remoteFunction: RemoteFunction;
   isCharging: boolean;
-  chargeNotificationTask: thread?;
-  remoteEvent: RemoteEvent;
-  activate: (self: TarBombClientAction, shouldCharge: boolean) -> ();
-  breakdown: (self: TarBombClientAction) -> ();
+  updateTask: thread?;
 }>;
 
 export type ParalysisClientEffect = ClientEffect<ParalysisClientEffectProperties & ParalysisClientEffectMethods>;
