@@ -31,8 +31,9 @@ export type ClientActionClass<ConstructorProperties = any, Action = any> = {
 
 export type ClientActionMethods<Action> = {
 
-  -- The function to activate the item on the server side.
-  -- You can manually activate the item some other way too.
+  --[[
+    The function to activate the item on the server side. You can manually activate the item some other way too.
+  ]]--
   activate: (self: Action) -> ();
 
   -- The function to "break down" the item. This usually runs after the round ends and sometimes after item use.

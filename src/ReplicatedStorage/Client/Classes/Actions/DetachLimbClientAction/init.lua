@@ -9,9 +9,10 @@ local ContextActionService = game:GetService("ContextActionService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
+local React = require(ReplicatedStorage.Shared.Packages.react);
+local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 
-local activate = require(script.activate);
-local breakdown = require(script.breakdown);
+local QuickSelectionMenu = require(ReplicatedStorage.Client.ReactComponents.QuickSelectionMenu);
 
 local DetachLimbClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
@@ -32,8 +33,71 @@ function DetachLimbClientAction.new(): SharedTypes.DetachLimbClientAction
     description = DetachLimbClientAction.description;
     remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
     attributes = {};
-    activate = activate;
-    breakdown = breakdown;
+    activate = function(self: SharedTypes.DetachLimbClientAction)
+
+      local gui = self.attributes.gui or Instance.new("ScreenGui");
+      gui.ScreenInsets = Enum.ScreenInsets.None;
+      gui.Parent = Players.LocalPlayer.PlayerGui;
+      self.attributes.gui = gui;
+    
+      local reactRoot = ReactRoblox.createRoot(gui);
+      reactRoot:render(React.createElement(QuickSelectionMenu, {
+        options = {
+          {
+            key = "Head";
+            labelText = "Head";
+            iconImage = "rbxassetid://136558858062155"
+          };
+          {
+            key = "LeftArm";
+            labelText = "Left Arm";
+            iconImage = "rbxassetid://136558858062155"
+          };
+          {
+            key = "Torso";
+            labelText = "Torso";
+            iconImage = "rbxassetid://136558858062155"
+          };
+          {
+            key = "RightArm";
+            labelText = "Right Arm";
+            iconImage = "rbxassetid://136558858062155"
+          };
+          {
+            key = "LeftLeg";
+            labelText = "Left Leg";
+            iconImage = "rbxassetid://136558858062155"
+          };
+          {
+            key = "RightLeg";
+            labelText = "Right Leg";
+            iconImage = "rbxassetid://136558858062155"
+          };
+        };
+        onSelectionConfirmed = function(selection)
+    
+          reactRoot:unmount();
+          gui:Destroy();
+          self.attributes.gui = nil;
+          self.remoteFunction:InvokeServer(selection.key);
+    
+        end;
+      }));
+    
+    end;
+    breakdown = function(self: SharedTypes.DetachLimbClientAction)
+
+      if self.attributes.gui then
+    
+        self.attributes.gui:Destroy();
+        self.attributes.gui = nil;
+        
+      end;
+    
+      ContextActionService:UnbindAction("ActivateDetachLimbAction");
+      HUDService:removeHUDButton("Action", self.id);
+    
+    end;
   };
 
   HUDService:addHUDButton({

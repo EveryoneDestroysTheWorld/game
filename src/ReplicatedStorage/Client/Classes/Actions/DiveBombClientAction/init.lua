@@ -11,9 +11,6 @@ local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local targetingFramework = require(ReplicatedStorage.Client.Modules.EasyTargetingFramework);
 local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
-local activate = require(script.activate);
-local breakdown = require(script.breakdown);
-
 local DiveBombClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 	iconImage = "rbxassetid://17771917538";
@@ -34,8 +31,18 @@ function DiveBombClientAction.new(): SharedTypes.DiveBombClientAction
 		description = DiveBombClientAction.description;
 		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
 		attributes = {};
-		activate = activate;
-		breakdown = breakdown;
+		activate = function(self: SharedTypes.DiveBombClientAction)
+
+			local coordinates, shouldUseTarget = targetingFramework:getData()
+			self.remoteFunction:InvokeServer(coordinates, shouldUseTarget);
+		
+		end;
+		breakdown = function(self: SharedTypes.DiveBombClientAction)
+
+			ContextActionService:UnbindAction("ActivateDiveBomb");
+			HUDService:removeHUDButton("Action", self.id);
+		
+		end;
 	};
 
 	HUDService:addHUDButton({

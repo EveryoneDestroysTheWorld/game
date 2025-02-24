@@ -5,14 +5,15 @@
 
 local ContextActionService = game:GetService("ContextActionService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
-
 local Players = game:GetService("Players");
+
+local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
+local React = require(ReplicatedStorage.Shared.Packages.react);
 local KeybindNotificationService = require(ReplicatedStorage.Client.Modules.KeybindNotificationService);
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
-local activate = require(script.activate);
-local breakdown = require(script.breakdown);
+local QuickSelectionMenu = require(ReplicatedStorage.Client.ReactComponents.QuickSelectionMenu);
 
 local ChangeBallTypeClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
@@ -30,8 +31,61 @@ function ChangeBallTypeClientAction.new(): SharedTypes.ChangeBallTypeClientActio
     description = ChangeBallTypeClientAction.description;
     iconImage = ChangeBallTypeClientAction.iconImage;
     remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
-    activate = activate;
-    breakdown = breakdown;
+    activate = function(self: SharedTypes.ChangeBallTypeClientAction)
+
+      local gui = self.attributes.gui or Instance.new("ScreenGui");
+      self.attributes.gui = gui;
+      gui.ScreenInsets = Enum.ScreenInsets.None;
+      gui.Parent = Players.LocalPlayer.PlayerGui;
+    
+      local reactRoot = ReactRoblox.createRoot(gui);
+      reactRoot:render(React.createElement(QuickSelectionMenu, {
+        options = {
+          {
+            key = "Regular";
+            labelText = "Regular Ball";
+            iconImage = "rbxassetid://139648735745838"
+          };
+          {
+            key = "Explosive";
+            labelText = "Explosive Ball";
+            iconImage = "rbxassetid://73246050129377"
+          };
+          {
+            key = "Electric";
+            labelText = "Electric Ball";
+            iconImage = "rbxassetid://84087555822097"
+          };
+          {
+            key = "Poison";
+            labelText = "Poison Ball";
+            iconImage = "rbxassetid://89838520119073"
+          };
+        };
+        onSelectionConfirmed = function(selection)
+    
+          reactRoot:unmount();
+          gui:Destroy();
+          self.attributes.gui = nil;
+          self.remoteFunction:InvokeServer(selection.key);
+    
+        end;
+      }));
+    
+    end;
+    breakdown = function(self: SharedTypes.ChangeBallTypeClientAction)
+
+      if self.attributes.gui then
+    
+        self.attributes.gui:Destroy();
+        self.attributes.gui = nil;
+    
+      end;
+    
+      ContextActionService:UnbindAction("ActivateChangeBallTypeAction");
+      HUDService:removeHUDButton("Action", self.id);
+    
+    end;
     attributes = {}
   };
 

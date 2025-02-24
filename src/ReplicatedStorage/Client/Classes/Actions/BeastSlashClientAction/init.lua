@@ -10,9 +10,6 @@ local ContextActionService = game:GetService("ContextActionService");
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
-local activate = require(script.activate);
-local breakdown = require(script.breakdown);
-
 local BeastSlashClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
 	iconImage = "rbxassetid://17771917538";
@@ -31,8 +28,17 @@ function BeastSlashClientAction.new(): SharedTypes.BeastSlashClientAction
 		description = BeastSlashClientAction.description;
 		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
 		attributes = {};
-		activate = activate;
-		breakdown = breakdown;
+		activate = function(self: SharedTypes.BeastSlashClientAction)
+
+			self.remoteFunction:InvokeServer();
+		
+		end;
+		breakdown = function(self: SharedTypes.BeastSlashClientAction)
+
+			ContextActionService:UnbindAction("ActivateMelee");
+			HUDService:removeHUDButton("Action", self.id);
+		
+		end;
 	};
 
 	HUDService:addHUDButton({

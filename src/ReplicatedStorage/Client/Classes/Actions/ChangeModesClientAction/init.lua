@@ -11,9 +11,6 @@ local KeybindNotificationService = require(ReplicatedStorage.Client.Modules.Keyb
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
-local activate = require(script.activate);
-local breakdown = require(script.breakdown);
-
 local ChangeModesClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
   name = "Change Modes";
@@ -34,8 +31,19 @@ function ChangeModesClientAction.new(): SharedTypes.ChangeModesClientAction
     attributes = {
       currentMode = "Pitcher" :: SharedTypes.BatterUpDemonMode;
     };
-    activate = activate;
-    breakdown = breakdown;
+    activate = function(self: SharedTypes.ChangeModesClientAction)
+
+      local requestedMode: SharedTypes.BatterUpDemonMode = if self.attributes.currentMode == "Pitcher" then "Batter" else "Pitcher";
+      self.remoteFunction:InvokeServer(requestedMode);
+      self.attributes.currentMode = requestedMode;
+    
+    end;
+    breakdown = function(self: SharedTypes.ChangeModesClientAction)
+
+      ContextActionService:UnbindAction("ActivateChangeModesAction");
+      HUDService:removeHUDButton("Action", self.id);
+    
+    end;
   };
 
   HUDService:addHUDButton({
