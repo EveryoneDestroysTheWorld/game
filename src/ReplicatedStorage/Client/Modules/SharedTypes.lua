@@ -17,10 +17,6 @@ export type ChangeBallTypeClientAction = ClientAction<{
 
 export type ChangeModesClientAction = ClientAction<{
   currentMode: BatterUpDemonMode;
-  remoteFunction: RemoteFunction;
-  isProcessing: boolean;
-  activate: (self: ChangeModesClientAction) -> ();
-  breakdown: (self: ChangeModesClientAction) -> ();
 }>;
 
 export type StrikeOutSwipeClientAction = ClientAction<{

@@ -9,34 +9,34 @@ local Players = game:GetService("Players");
 
 local KeybindNotificationService = require(ReplicatedStorage.Client.Modules.KeybindNotificationService);
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local types = require(ReplicatedStorage.Client.Modules.types);
+local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
-local id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
-local name = "Change Modes";
-local description = "Do a change-up";
-local iconImage = "rbxassetid://70575380921626";
+local activate = require(script.activate);
+local breakdown = require(script.breakdown);
 
 local ChangeModesClientAction = {
-  id = id;
-  name = name;
-  description = description;
-  iconImage = iconImage;
-  __index = {
-    id = id;
-    name = name;
-    iconImage = iconImage;
-    description = description;
-  } :: types.ChangeModesClientAction;
+  id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
+  name = "Change Modes";
+  description = "Do a change-up";
+  iconImage = "rbxassetid://70575380921626";
 };
 
-local player = Players.LocalPlayer;
+function ChangeModesClientAction.new(): SharedTypes.ChangeModesClientAction
 
-function ChangeModesClientAction.new(): types.ChangeModesClientAction
-
+  local player = Players.LocalPlayer;
   local remoteName = `{player.UserId}_{ChangeModesClientAction.id}`;
-  local action = (setmetatable({}, ChangeModesClientAction) :: any) :: types.ChangeModesClientAction;
-  action.remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
-  action.currentMode = "Pitcher";
+  local action: SharedTypes.ChangeModesClientAction = {
+    id = ChangeModesClientAction.id;
+    name = ChangeModesClientAction.name;
+    description = ChangeModesClientAction.description;
+    iconImage = ChangeModesClientAction.iconImage;
+    remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
+    attributes = {
+      currentMode = "Pitcher" :: SharedTypes.BatterUpDemonMode;
+    };
+    activate = activate;
+    breakdown = breakdown;
+  };
 
   HUDService:addHUDButton({
     type = "Action";
@@ -56,7 +56,7 @@ function ChangeModesClientAction.new(): types.ChangeModesClientAction
     if inputState == Enum.UserInputState.Begin then
 
       action:activate();
-      KeybindNotificationService:setMessage(action.currentMode);
+      KeybindNotificationService:setMessage(action.attributes.currentMode);
 
     end;
 
@@ -67,19 +67,5 @@ function ChangeModesClientAction.new(): types.ChangeModesClientAction
   return action;
 
 end
-
-function ChangeModesClientAction.__index:activate()
-
-  local requestedMode: types.BatterUpDemonMode = if self.currentMode == "Pitcher" then "Batter" else "Pitcher";
-  self.remoteFunction:InvokeServer(requestedMode);
-  self.currentMode = requestedMode;
-
-end
-
-function ChangeModesClientAction.__index:breakdown()
-    
-  HUDService:removeHUDButton("Action", self.id);
-
-end;
 
 return ChangeModesClientAction;
