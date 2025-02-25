@@ -2,48 +2,41 @@
 See [ClientArchetype.lua](../ClientArchetype.lua) for more information on what ClientArchetypes are.
 
 ## Template
-```lua
+```luau
 --!strict
 -- Programmers: [Name of programmer] ([Roblox username of programmer])
 -- Designers: [Name of designer] ([Roblox username of designer])
 -- © [current year] Beastslash LLC
 
 local ClientArchetype = require(script.Parent.Parent.ClientArchetype);
-local ClientContestant = require(script.Parent.Parent.ClientContestant);
-type ClientContestant = ClientContestant.ClientContestant;
 type ClientArchetype = ClientArchetype.ClientArchetype;
 
-local ExtendedClientArchetype = {
+local UnnamedClientArchetype = {
   id = script.Name:sub(1, script.Name:gsub("ClientArchetype", ""):len());
-  name = "Extended";
-  description = "This is an example archetype.";
-  iconImage = "rbxassetid://18584519829";
-  actionIDs = {}; -- Replace with action IDs.
-  type = "Defender" :: "Defender"; -- Replace both with "Destroyer", "Fighter", "Defender", or "Supporter".
+  name = "Unnamed Archetype";
+  description = "This archetype is so good, it doesn't even need a description.";
+  actionIDs = {"ActionID1", "ActionID2"};
+  iconImage = "rbxassetid://130983727429334";
+  type = "Supporter" :: "Supporter"; -- Replace both with "Destroyer", "Fighter", "Defender", or "Supporter".
 };
 
-function ExtendedClientArchetype.new(): ClientArchetype
+function UnnamedClientArchetype.new(): ClientArchetype
 
-  local function breakdown(self: ClientArchetype)
+  local archetype: ClientArchetype = {
+    id = UnnamedClientArchetype.id;
+    name = UnnamedClientArchetype.name;
+    description = UnnamedClientArchetype.description;
+    actionIDs = UnnamedClientArchetype.actionIDs;
+    type = UnnamedClientArchetype.type;
+    iconImage = UnnamedClientArchetype.iconImage;
+    breakdown = function(self: ClientArchetype)
 
-  end;
+    end;
+  };
 
-  local function initialize(self: ClientArchetype)
-
-  end;
-
-  return ClientArchetype.new({
-    id = ExtendedClientArchetype.id;
-    iconImage = ExtendedClientArchetype.iconImage;
-    name = ExtendedClientArchetype.name;
-    description = ExtendedClientArchetype.description;
-    actionIDs = ExtendedClientArchetype.actionIDs;
-    type = ExtendedClientArchetype.type;
-    breakdown = breakdown;
-    initialize = initialize;
-  });
+  return archetype;
 
 end;
 
-return ExtendedClientArchetype;
+return UnnamedClientArchetype;
 ```
