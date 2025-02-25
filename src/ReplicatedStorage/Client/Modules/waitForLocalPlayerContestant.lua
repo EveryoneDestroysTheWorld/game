@@ -3,22 +3,20 @@
 local Players = game:GetService("Players");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
-local types = require(ReplicatedStorage.Client.Modules.SharedTypes);
+local ClientRound = require(ReplicatedStorage.Client.Interfaces.ClientRound);
 
-local function waitForLocalPlayerContestant(): types.ClientContestant
+local function waitForLocalPlayerContestant(): ()
 
-  local round = ClientRound.fromServerRound();
-  local localPlayerContestant;
+  local localPlayerContestantInitializedEvent = Instance.new("BindableEvent");
 
   local function checkContestants()
 
-    for _, contestant in round:getContestants() do
+    local round = ReplicatedStorage.Shared.Functions.GetRound:InvokeServer() :: ClientRound.ClientRound;
+    for _, contestantID in round.contestantIDs do
 
-      if contestant.player and contestant.player == Players.LocalPlayer then
+      if contestantID == Players.LocalPlayer.UserId then
     
-        localPlayerContestant = contestant;
-        break;
+        localPlayerContestantInitializedEvent:Fire();
 
       end;
 
@@ -26,14 +24,12 @@ local function waitForLocalPlayerContestant(): types.ClientContestant
 
   end;
 
-  local onContestantAdded = round.onContestantAdded:Connect(checkContestants);
+  local onContestantAdded = ReplicatedStorage.Shared.Events.ContestantAdded:Connect(checkContestants);
   task.spawn(checkContestants)
 
-  repeat task.wait() until localPlayerContestant;
+  localPlayerContestantInitializedEvent.Event:Wait();
 
   onContestantAdded:Disconnect();
-
-  return localPlayerContestant;
 
 end;
 

@@ -6,7 +6,7 @@
 
 export type RoundStatus = "Waiting for players" | "Contestant selection" | "Matchup preview" | "Initializing character models" | "Pre-round countdown" | "Active";
 
-export type RoundProperties = {
+export type ClientRound = {
 
   id: string;  
   
@@ -19,6 +19,8 @@ export type RoundProperties = {
   timeEnded: number?;
 
   status: RoundStatus;
+  
+  contestantIDs: {number};
 
 }
 
