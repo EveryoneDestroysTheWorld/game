@@ -8,7 +8,7 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local ClientActionTypes = require(ReplicatedStorage.Client.Classes.ClientAction.types);
+local ClientAction = require(ReplicatedStorage.Client.Interfaces.ClientAction);
 
 local TakeFlightClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
@@ -19,23 +19,23 @@ local TakeFlightClientAction = {
 
 local player = Players.LocalPlayer;
 
-function TakeFlightClientAction.new(): ClientActionTypes.ClientAction
+function TakeFlightClientAction.new(): ClientAction.ClientAction
 
 	local remoteName = `{player.UserId}_{TakeFlightClientAction.id}`;
 
-	local action: ClientActionTypes.ClientAction = {
+	local action: ClientAction.ClientAction = {
 		id = TakeFlightClientAction.id;
 		iconImage = TakeFlightClientAction.iconImage;
 		name = TakeFlightClientAction.name;
 		description = TakeFlightClientAction.description;
 		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
 		attributes = {};
-		activate = function(self: ClientActionTypes.ClientAction)
+		activate = function(self: ClientAction.ClientAction)
 
 			self.remoteFunction:InvokeServer();
 		
 		end;
-		breakdown = function(self: ClientActionTypes.ClientAction)
+		breakdown = function(self: ClientAction.ClientAction)
 
 			ContextActionService:UnbindAction("ActivateTakeFlight");
 			HUDService:removeHUDButton("Action", self.id);

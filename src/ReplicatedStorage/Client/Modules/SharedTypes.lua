@@ -7,42 +7,6 @@ export type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarCon
 
 export type BallType = "Regular" | "Explosive" | "Electric" | "Poison";
 
-export type ClientContestant = ClientContestantProperties & ClientContestantEvents & ClientContestantMethods;
-
-export type ClientContestantConstructorProperties = ClientContestantProperties & {
-  characterName: string?;
-};
-
-export type ClientContestantProperties = {
-  
-  id: number;
-
-  archetypeID: string?;
-  
-  isDisqualified: boolean;
-
-  player: Player?;
-
-  character: Model?;
-
-  name: string;
-
-  isBot: boolean;
-
-  teamID: number?;
-
-  currentHealth: number?;
-
-  baseHealth: number?;
-
-  currentStamina: number?;
-
-  baseStamina: number?;
-
-  statistics: TurfWarContestantStatistics?;
-  
-}
-
 export type Cause = {
   archetypeID: string;
   contestantID: number;

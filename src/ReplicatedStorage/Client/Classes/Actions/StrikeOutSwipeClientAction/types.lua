@@ -2,9 +2,9 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local ClientActionTypes = require(ReplicatedStorage.Client.Classes.ClientAction.types);
+local ClientAction = require(ReplicatedStorage.Client.Interfaces.ClientAction);
 
-export type StrikeOutSwipeClientAction = ClientActionTypes.ClientAction<{
+export type StrikeOutSwipeClientAction = ClientAction.ClientAction<{
   swingAnimation: AnimationTrack?;
   isCharging: boolean;
 }>;

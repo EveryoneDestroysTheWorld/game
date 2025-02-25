@@ -2,9 +2,9 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local ClientActionTypes = require(ReplicatedStorage.Client.Classes.ClientAction.types);
+local ClientAction = require(ReplicatedStorage.Client.Interfaces.ClientAction);
 
-export type TarBombClientAction = ClientActionTypes.ClientAction<{
+export type TarBombClientAction = ClientAction.ClientAction<{
   isCharging: boolean;
   updateTask: thread?;
 }>;

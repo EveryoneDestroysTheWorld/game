@@ -2,10 +2,6 @@
 
 export type ClientAction<Attributes = {}> = ClientActionProperties<Attributes> & ClientActionMethods<ClientAction<Attributes>>;
 
-export type ClientActionClass<ConstructorProperties = any, Action = any> = {
-  new: (...ConstructorProperties) -> Action
-}
-
 export type ClientActionMethods<Action> = {
 
   --[[

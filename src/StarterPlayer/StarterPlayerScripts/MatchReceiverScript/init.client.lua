@@ -1,17 +1,19 @@
 --!strict
 
+local Players = game:GetService("Players");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local ClientArchetype = require(ReplicatedStorage.Client.Classes.ClientArchetype);
-local ClientAction = require(ReplicatedStorage.Client.Classes.ClientAction);
+local ClientArchetype = require(ReplicatedStorage.Client.Interfaces.ClientArchetype);
+local ClientActionFactory = require(ReplicatedStorage.Client.Classes.Factories.ClientActionFactory);
+local ClientAction = require(ReplicatedStorage.Client.Interfaces.ClientAction);
 local ClientItem = require(ReplicatedStorage.Client.Classes.ClientItem);
-type ClientArchetype = ClientArchetype.ClientArchetype;
-type ClientItem = ClientItem.ClientItem;
-local types = require(ReplicatedStorage.Client.Modules.SharedTypes);
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 
+type ClientArchetype = ClientArchetype.ClientArchetype;
+type ClientItem = ClientItem.ClientItem;
+
 local initializedArchetype: ClientArchetype = nil;
-local initializedActions: {types.ClientAction} = {};
+local initializedActions: {ClientAction.ClientAction} = {};
 local initializedItems: {[string]: {[string]: ClientItem}} = {};
 
 ReplicatedStorage.Shared.Functions.BreakdownAction.OnClientInvoke = function(actionID: string)
@@ -34,7 +36,7 @@ ReplicatedStorage.Shared.Functions.InitializeAction.OnClientInvoke = function(ac
 
   task.spawn(function()
     
-    local action = ClientAction.get(actionID).new();
+    local action = ClientActionFactory.get(actionID).new(Players.LocalPlayer.UserId);
     table.insert(initializedActions, action);
     print(`Action active: {action.name}`);
 

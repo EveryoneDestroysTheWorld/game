@@ -8,7 +8,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local ClientActionTypes = require(ReplicatedStorage.Client.Classes.ClientAction.types);
+
+local ClientAction = require(ReplicatedStorage.Client.Interfaces.ClientAction);
 
 local DetonateDetachedLimbsClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
@@ -19,22 +20,22 @@ local DetonateDetachedLimbsClientAction = {
 
 local player = Players.LocalPlayer;
 
-function DetonateDetachedLimbsClientAction.new(): ClientActionTypes.ClientAction
+function DetonateDetachedLimbsClientAction.new(): ClientAction.ClientAction
 
   local remoteName = `{player.UserId}_{DetonateDetachedLimbsClientAction.id}`;
-  local action: ClientActionTypes.ClientAction = {
+  local action: ClientAction.ClientAction = {
     id = DetonateDetachedLimbsClientAction.id;
     iconImage = DetonateDetachedLimbsClientAction.iconImage;
     name = DetonateDetachedLimbsClientAction.name;
     description = DetonateDetachedLimbsClientAction.description;
     remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
     attributes = {};
-    activate = function(self: ClientActionTypes.ClientAction)
+    activate = function(self: ClientAction.ClientAction)
 
       self.remoteFunction:InvokeServer();
     
     end;
-    breakdown = function(self: ClientActionTypes.ClientAction)
+    breakdown = function(self: ClientAction.ClientAction)
 
       HUDService:removeHUDButton("Action", self.id);
       ContextActionService:UnbindAction("ActivateDetonateDetachedLimbsAction");

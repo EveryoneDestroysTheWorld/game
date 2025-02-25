@@ -8,8 +8,8 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local ClientActionTypes = require(ReplicatedStorage.Client.Classes.ClientAction.types);
-type ClientAction = ClientActionTypes.ClientAction;
+local ClientAction = require(ReplicatedStorage.Client.Interfaces.ClientAction);
+type ClientAction = ClientAction.ClientAction;
 
 local BeastSlashClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());

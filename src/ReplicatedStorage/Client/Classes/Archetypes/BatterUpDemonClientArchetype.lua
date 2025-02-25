@@ -3,7 +3,9 @@
 -- Designers: Christian Toney (Christian_Toney)
 -- © 2024 – 2025 Beastslash LLC
 
-local ClientArchetype = require(script.Parent.Parent.ClientArchetype);
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
+local ClientArchetype = require(ReplicatedStorage.Client.Interfaces.ClientArchetype);
 type ClientArchetype = ClientArchetype.ClientArchetype;
 
 local BatterUpDemonClientArchetype = {
