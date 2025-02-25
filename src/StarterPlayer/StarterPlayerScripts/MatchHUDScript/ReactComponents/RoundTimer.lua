@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
-local Colors = require(ReplicatedStorage.Client.Colors);
+local Colors = require(ReplicatedStorage.Client.Modules.Colors);
 local useResponsiveDesign = require(ReplicatedStorage.Client.ReactHooks.useResponsiveDesign);
 local TextService = game:GetService("TextService");
 

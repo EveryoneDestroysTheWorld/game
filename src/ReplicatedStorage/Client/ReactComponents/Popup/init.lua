@@ -4,7 +4,7 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local ScreenUIListLayout = require(script.Parent.ScreenUIListLayout);
 local ScreenUIPadding = require(script.Parent.ScreenUIPadding);
 local Button = require(script.Parent.Button);
-local Colors = require(ReplicatedStorage.Client.Colors);
+local Colors = require(ReplicatedStorage.Client.Modules.Colors);
 local ParagraphTextLabel = require(script.Parent.ParagraphTextLabel);
 
 type PopupProps = {

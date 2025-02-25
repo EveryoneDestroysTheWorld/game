@@ -1,7 +1,7 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local Colors = require(ReplicatedStorage.Client.Colors);
+local Colors = require(ReplicatedStorage.Client.Modules.Colors);
 local Button = require(ReplicatedStorage.Client.ReactComponents.Button);
 local TweenService = game:GetService("TweenService");
 

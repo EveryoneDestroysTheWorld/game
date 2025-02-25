@@ -80,6 +80,8 @@ local function ComboNotification(props: ComboNotificationProperties)
 
   end;
 
+  return React.createElement(React.Fragment);
+
 end;
 
 return ComboNotification;
