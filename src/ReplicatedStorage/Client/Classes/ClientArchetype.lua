@@ -18,19 +18,11 @@ export type ClientArchetypeProperties = {
 
   breakdown: (self: ClientArchetype) -> ();
   
-  initialize: (self: ClientArchetype) -> ();
-  
 }
 
 local ClientArchetype = {}
 
 export type ClientArchetype = ClientArchetypeProperties;
-
-function ClientArchetype.new(properties: ClientArchetypeProperties): ClientArchetype
-
-  return properties;
-  
-end
 
 function ClientArchetype.get(archetypeID: string): ClientArchetype
 

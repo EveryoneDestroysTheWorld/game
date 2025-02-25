@@ -17,24 +17,19 @@ local DefaultClientArchetype = {
 
 function DefaultClientArchetype.new(): ClientArchetype
 
-  local function breakdown(self: ClientArchetype)
-
-  end;
-
-  local function initialize(self: ClientArchetype)
-
-  end;
-
-  return ClientArchetype.new({
+  local archetype: ClientArchetype = {
     id = DefaultClientArchetype.id;
     iconImage = DefaultClientArchetype.iconImage;
     name = DefaultClientArchetype.name;
     description = DefaultClientArchetype.description;
     actionIDs = DefaultClientArchetype.actionIDs;
     type = DefaultClientArchetype.type;
-    breakdown = breakdown;
-    initialize = initialize;
-  });
+    breakdown = function(self: ClientArchetype)
+      
+    end;
+  };
+
+  return archetype;
 
 end;
 
