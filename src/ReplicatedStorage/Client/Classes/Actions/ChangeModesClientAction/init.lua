@@ -9,7 +9,7 @@ local Players = game:GetService("Players");
 
 local KeybindNotificationService = require(ReplicatedStorage.Client.Modules.KeybindNotificationService);
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
+local LocalTypes = require(script.types);
 
 local ChangeModesClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
@@ -18,27 +18,27 @@ local ChangeModesClientAction = {
   iconImage = "rbxassetid://70575380921626";
 };
 
-function ChangeModesClientAction.new(): SharedTypes.ChangeModesClientAction
+function ChangeModesClientAction.new(): LocalTypes.ChangeModesClientAction
 
   local player = Players.LocalPlayer;
   local remoteName = `{player.UserId}_{ChangeModesClientAction.id}`;
-  local action: SharedTypes.ChangeModesClientAction = {
+  local action: LocalTypes.ChangeModesClientAction = {
     id = ChangeModesClientAction.id;
     name = ChangeModesClientAction.name;
     description = ChangeModesClientAction.description;
     iconImage = ChangeModesClientAction.iconImage;
     remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
     attributes = {
-      currentMode = "Pitcher" :: SharedTypes.BatterUpDemonMode;
+      currentMode = "Pitcher" :: LocalTypes.BatterUpDemonMode;
     };
-    activate = function(self: SharedTypes.ChangeModesClientAction)
+    activate = function(self: LocalTypes.ChangeModesClientAction)
 
-      local requestedMode: SharedTypes.BatterUpDemonMode = if self.attributes.currentMode == "Pitcher" then "Batter" else "Pitcher";
+      local requestedMode: LocalTypes.BatterUpDemonMode = if self.attributes.currentMode == "Pitcher" then "Batter" else "Pitcher";
       self.remoteFunction:InvokeServer(requestedMode);
       self.attributes.currentMode = requestedMode;
     
     end;
-    breakdown = function(self: SharedTypes.ChangeModesClientAction)
+    breakdown = function(self: LocalTypes.ChangeModesClientAction)
 
       ContextActionService:UnbindAction("ActivateChangeModesAction");
       HUDService:removeHUDButton("Action", self.id);

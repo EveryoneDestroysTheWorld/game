@@ -11,7 +11,7 @@ local RunService = game:GetService("RunService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local targetingFramework = require(ReplicatedStorage.Client.Modules.EasyTargetingFramework);
-local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
+local LocalTypes = require(script.types);
 
 local TarBombClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
@@ -20,12 +20,12 @@ local TarBombClientAction = {
 	description = "Launch a projectile at the target location which explodes after a small amount of time, spreading tar onto nearby targets. Tar covered targets are slowed and take flat additional damage from all sources.";
 };
 
-function TarBombClientAction.new(): SharedTypes.TarBombClientAction
+function TarBombClientAction.new(): LocalTypes.TarBombClientAction
 
 	local player = Players.LocalPlayer;
 	local remoteName = `{player.UserId}_{TarBombClientAction.id}`
 	local remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
-	local action: SharedTypes.TarBombClientAction = {
+	local action: LocalTypes.TarBombClientAction = {
 		id = TarBombClientAction.id;
 		iconImage = TarBombClientAction.iconImage;
 		name = TarBombClientAction.name;
@@ -35,13 +35,13 @@ function TarBombClientAction.new(): SharedTypes.TarBombClientAction
 		attributes = {
 			isCharging = false;
 		};
-		activate = function(self: SharedTypes.TarBombClientAction)
+		activate = function(self: LocalTypes.TarBombClientAction)
 
 			local shouldCharge = self.attributes.isCharging;
 			self.remoteFunction:InvokeServer(shouldCharge, Players.LocalPlayer:GetMouse().Hit.Position);
 
 		end;
-		breakdown = function(self: SharedTypes.TarBombClientAction)
+		breakdown = function(self: LocalTypes.TarBombClientAction)
 
 			ContextActionService:UnbindAction("ActivateTarBomb");
 			HUDService:removeHUDButton("Action", self.id);

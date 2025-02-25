@@ -9,7 +9,7 @@ local ContextActionService = game:GetService("ContextActionService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local targetingFramework = require(ReplicatedStorage.Client.Modules.EasyTargetingFramework);
-local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
+local ClientActionTypes = require(ReplicatedStorage.Client.Classes.ClientAction.types);
 
 local DiveBombClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
@@ -20,24 +20,24 @@ local DiveBombClientAction = {
 
 local player = Players.LocalPlayer;
 
-function DiveBombClientAction.new(): SharedTypes.DiveBombClientAction
+function DiveBombClientAction.new(): ClientActionTypes.ClientAction
 
 	local remoteName = `{player.UserId}_{DiveBombClientAction.id}`;
 
-	local action: SharedTypes.DiveBombClientAction = {
+	local action: ClientActionTypes.ClientAction = {
 		id = DiveBombClientAction.id;
 		iconImage = DiveBombClientAction.iconImage;
 		name = DiveBombClientAction.name;
 		description = DiveBombClientAction.description;
 		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
 		attributes = {};
-		activate = function(self: SharedTypes.DiveBombClientAction)
+		activate = function(self: ClientActionTypes.ClientAction)
 
 			local coordinates, shouldUseTarget = targetingFramework:getData()
 			self.remoteFunction:InvokeServer(coordinates, shouldUseTarget);
 		
 		end;
-		breakdown = function(self: SharedTypes.DiveBombClientAction)
+		breakdown = function(self: ClientActionTypes.ClientAction)
 
 			ContextActionService:UnbindAction("ActivateDiveBomb");
 			HUDService:removeHUDButton("Action", self.id);

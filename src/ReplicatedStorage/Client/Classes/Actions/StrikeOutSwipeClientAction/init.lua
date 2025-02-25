@@ -8,9 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Players = game:GetService("Players");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
-
-
+local LocalTypes = require(script.types);
 
 local StrikeOutSwipeClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
@@ -21,11 +19,11 @@ local StrikeOutSwipeClientAction = {
 
 local player = Players.LocalPlayer;
 
-function StrikeOutSwipeClientAction.new(): SharedTypes.StrikeOutSwipeClientAction
+function StrikeOutSwipeClientAction.new(): LocalTypes.StrikeOutSwipeClientAction
 
   local remoteName = `{player.UserId}_{StrikeOutSwipeClientAction.id}`;
   local remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
-  local action: SharedTypes.StrikeOutSwipeClientAction = {
+  local action: LocalTypes.StrikeOutSwipeClientAction = {
     id = StrikeOutSwipeClientAction.id;
     name = StrikeOutSwipeClientAction.name;
     iconImage = StrikeOutSwipeClientAction.iconImage;
@@ -35,14 +33,14 @@ function StrikeOutSwipeClientAction.new(): SharedTypes.StrikeOutSwipeClientActio
     attributes = {
       isCharging = false;
     };
-    activate = function(self: SharedTypes.StrikeOutSwipeClientAction)
+    activate = function(self: LocalTypes.StrikeOutSwipeClientAction)
 
       local shouldCharge = self.attributes.isCharging;
       self.attributes.isCharging = false;
       self.remoteFunction:InvokeServer(shouldCharge);
 
     end;
-    breakdown = function(self: SharedTypes.StrikeOutSwipeClientAction)
+    breakdown = function(self: LocalTypes.StrikeOutSwipeClientAction)
     
       HUDService:removeHUDButton("Action", self.id);
       ContextActionService:UnbindAction("ActivateStrikeOutSwipe");

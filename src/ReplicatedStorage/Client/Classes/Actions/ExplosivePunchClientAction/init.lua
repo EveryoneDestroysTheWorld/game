@@ -8,7 +8,7 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
+local ClientActionTypes = require(ReplicatedStorage.Client.Classes.ClientAction.types);
 
 local ExplosivePunchClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
@@ -19,22 +19,22 @@ local ExplosivePunchClientAction = {
 
 local player = Players.LocalPlayer;
 
-function ExplosivePunchClientAction.new(): SharedTypes.ExplosivePunchClientAction
+function ExplosivePunchClientAction.new(): ClientActionTypes.ClientAction
 
   local remoteName = `{player.UserId}_{ExplosivePunchClientAction.id}`;
-  local action: SharedTypes.ExplosivePunchClientAction = {
+  local action: ClientActionTypes.ClientAction = {
     id = ExplosivePunchClientAction.id;
     iconImage = ExplosivePunchClientAction.iconImage;
     name = ExplosivePunchClientAction.name;
     description = ExplosivePunchClientAction.description;
     remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
     attributes = {};
-    activate = function(self: SharedTypes.ExplosivePunchClientAction)
+    activate = function(self: ClientActionTypes.ClientAction)
 
       self.remoteFunction:InvokeServer();
     
     end;
-    breakdown = function(self: SharedTypes.ExplosivePunchClientAction)
+    breakdown = function(self: ClientActionTypes.ClientAction)
 
       ContextActionService:UnbindAction("ActivateExplosivePunch");
       HUDService:removeHUDButton("Action", self.id);

@@ -8,9 +8,9 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
+local LocalTypes = require(script.types);
 
 local QuickSelectionMenu = require(ReplicatedStorage.Client.ReactComponents.QuickSelectionMenu);
 
@@ -23,17 +23,17 @@ local DetachLimbClientAction = {
 
 local player = Players.LocalPlayer;
 
-function DetachLimbClientAction.new(): SharedTypes.DetachLimbClientAction
+function DetachLimbClientAction.new(): LocalTypes.DetachLimbClientAction
 
   local remoteName = `{player.UserId}_{DetachLimbClientAction.id}`;
-  local action: SharedTypes.DetachLimbClientAction = {
+  local action: LocalTypes.DetachLimbClientAction = {
     id = DetachLimbClientAction.id;
     name = DetachLimbClientAction.name;
     iconImage = DetachLimbClientAction.iconImage;
     description = DetachLimbClientAction.description;
     remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
     attributes = {};
-    activate = function(self: SharedTypes.DetachLimbClientAction)
+    activate = function(self: LocalTypes.DetachLimbClientAction)
 
       local gui = self.attributes.gui or Instance.new("ScreenGui");
       gui.ScreenInsets = Enum.ScreenInsets.None;
@@ -85,7 +85,7 @@ function DetachLimbClientAction.new(): SharedTypes.DetachLimbClientAction
       }));
     
     end;
-    breakdown = function(self: SharedTypes.DetachLimbClientAction)
+    breakdown = function(self: LocalTypes.DetachLimbClientAction)
 
       if self.attributes.gui then
     

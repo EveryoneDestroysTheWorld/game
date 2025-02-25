@@ -8,7 +8,8 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
+local ClientActionTypes = require(ReplicatedStorage.Client.Classes.ClientAction.types);
+type ClientAction = ClientActionTypes.ClientAction;
 
 local BeastSlashClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
@@ -17,23 +18,23 @@ local BeastSlashClientAction = {
 	description = "Attack!!";
 };
 
-function BeastSlashClientAction.new(): SharedTypes.BeastSlashClientAction
+function BeastSlashClientAction.new(): ClientAction
 
 	local player = Players.LocalPlayer;
 	local remoteName = `{player.UserId}_{BeastSlashClientAction.id}`;
-  local action: SharedTypes.BeastSlashClientAction = {
+  local action: ClientAction = {
 		id = BeastSlashClientAction.id;
 		iconImage = BeastSlashClientAction.iconImage;
 		name = BeastSlashClientAction.name;
 		description = BeastSlashClientAction.description;
 		remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
 		attributes = {};
-		activate = function(self: SharedTypes.BeastSlashClientAction)
+		activate = function(self: ClientAction)
 
 			self.remoteFunction:InvokeServer();
 		
 		end;
-		breakdown = function(self: SharedTypes.BeastSlashClientAction)
+		breakdown = function(self: ClientAction)
 
 			ContextActionService:UnbindAction("ActivateMelee");
 			HUDService:removeHUDButton("Action", self.id);

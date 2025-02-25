@@ -11,7 +11,7 @@ local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local KeybindNotificationService = require(ReplicatedStorage.Client.Modules.KeybindNotificationService);
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
+local LocalTypes = require(script.types);
 
 local QuickSelectionMenu = require(ReplicatedStorage.Client.ReactComponents.QuickSelectionMenu);
 
@@ -22,16 +22,16 @@ local ChangeBallTypeClientAction = {
   iconImage = "rbxassetid://75206024784140";
 };
 
-function ChangeBallTypeClientAction.new(): SharedTypes.ChangeBallTypeClientAction
+function ChangeBallTypeClientAction.new(): LocalTypes.ChangeBallTypeClientAction
 
   local remoteName = `{Players.LocalPlayer.UserId}_{ChangeBallTypeClientAction.id}`;
-  local action: SharedTypes.ChangeBallTypeClientAction = {
+  local action: LocalTypes.ChangeBallTypeClientAction = {
     id = ChangeBallTypeClientAction.id;
     name = ChangeBallTypeClientAction.name;
     description = ChangeBallTypeClientAction.description;
     iconImage = ChangeBallTypeClientAction.iconImage;
     remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
-    activate = function(self: SharedTypes.ChangeBallTypeClientAction)
+    activate = function(self: LocalTypes.ChangeBallTypeClientAction)
 
       local gui = self.attributes.gui or Instance.new("ScreenGui");
       self.attributes.gui = gui;
@@ -73,7 +73,7 @@ function ChangeBallTypeClientAction.new(): SharedTypes.ChangeBallTypeClientActio
       }));
     
     end;
-    breakdown = function(self: SharedTypes.ChangeBallTypeClientAction)
+    breakdown = function(self: LocalTypes.ChangeBallTypeClientAction)
 
       if self.attributes.gui then
     

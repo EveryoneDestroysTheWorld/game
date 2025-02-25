@@ -11,7 +11,7 @@ local RunService = game:GetService("RunService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local targetingFramework = require(ReplicatedStorage.Client.Modules.EasyTargetingFramework);
-local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
+local LocalTypes = require(script.types);
 
 local FireBeamClientAction = {
 	id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
@@ -22,11 +22,11 @@ local FireBeamClientAction = {
 
 local player = Players.LocalPlayer;
 
-function FireBeamClientAction.new(): SharedTypes.FireBeamClientAction
+function FireBeamClientAction.new(): LocalTypes.FireBeamClientAction
 
 	local remoteName = `{player.UserId}_{FireBeamClientAction.id}`;
 	local remoteEvent = ReplicatedStorage.Shared.Events.ActionEvents:WaitForChild(remoteName);
-	local action: SharedTypes.FireBeamClientAction = {
+	local action: LocalTypes.FireBeamClientAction = {
 		id = FireBeamClientAction.id;
 		iconImage = FireBeamClientAction.iconImage;
 		name = FireBeamClientAction.name;
@@ -36,12 +36,12 @@ function FireBeamClientAction.new(): SharedTypes.FireBeamClientAction
 		attributes = {
 			isCharging = false;
 		};
-		activate = function(self: SharedTypes.FireBeamClientAction)
+		activate = function(self: LocalTypes.FireBeamClientAction)
 
 			self.remoteFunction:InvokeServer(self.attributes.isCharging);
 
 		end;
-		breakdown = function(self: SharedTypes.FireBeamClientAction)
+		breakdown = function(self: LocalTypes.FireBeamClientAction)
 
 			ContextActionService:UnbindAction("ActivateFireBeam");
 			HUDService:removeHUDButton("Action", self.id);

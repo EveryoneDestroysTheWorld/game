@@ -24,11 +24,11 @@ local StrikeOutSwipeClientAction = require(Actions.StrikeOutSwipeClientAction);
 local TakeFlightClientAction = require(Actions.TakeFlightClientAction);
 local TarBombClientAction = require(Actions.TarBombClientAction);
 
-local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
+local Types = require(script.types);
 
 local ClientAction = {};
 
-function ClientAction.get(actionID: string): SharedTypes.ClientActionClass
+function ClientAction.get(actionID: string): Types.ClientActionClass
 
   local actions = {
     BeastSlash = BeastSlashClientAction;

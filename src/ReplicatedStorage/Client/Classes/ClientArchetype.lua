@@ -1,6 +1,8 @@
 --!strict
--- Written by Christian Toney (Sudobeast)
+-- Written by Christian Toney (Christian_Toney)
 -- This module represents an Archetype, which contains a list of powers.
+
+export type ClientArchetypeType = "Fighter" | "Defender" | "Destroyer" | "Supporter";
 
 export type ClientArchetypeProperties = {
   
@@ -10,7 +12,7 @@ export type ClientArchetypeProperties = {
 
   description: string?;
 
-  type: "Fighter" | "Defender" | "Destroyer" | "Supporter";
+  type: ClientArchetypeType;
 
   iconImage: string;
 
@@ -26,7 +28,7 @@ export type ClientArchetype = ClientArchetypeProperties;
 
 function ClientArchetype.get(archetypeID: string): ClientArchetype
 
-  for _, instance in ipairs(script.Parent.Archetypes:GetChildren()) do
+  for _, instance in script.Parent.Archetypes:GetChildren() do
   
     if instance:IsA("ModuleScript") then
   

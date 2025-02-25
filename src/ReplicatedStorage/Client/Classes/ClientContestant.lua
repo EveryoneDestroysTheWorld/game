@@ -18,7 +18,6 @@ function ClientContestant.new(properties: types.ClientContestantConstructorPrope
 
   end;
 
-
   local contestant = (setmetatable(properties, ClientContestant) :: unknown) :: types.ClientContestant;
 
   -- Set up events.

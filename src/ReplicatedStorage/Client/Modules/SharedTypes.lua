@@ -7,64 +7,6 @@ export type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarCon
 
 export type BallType = "Regular" | "Explosive" | "Electric" | "Poison";
 
-export type BatterUpDemonMode = "Batter" | "Pitcher";
-
-export type BeastSlashClientAction = ClientAction;
-
-export type ChangeBallTypeClientAction = ClientAction<{
-  gui: ScreenGui?;
-}>;
-
-export type ChangeModesClientAction = ClientAction<{
-  currentMode: BatterUpDemonMode;
-}>;
-
-export type StrikeOutSwipeClientAction = ClientAction<{
-  swingAnimation: AnimationTrack?;
-  isCharging: boolean;
-}>;
-
-export type ClientAction<Attributes = {}> = ClientActionProperties<Attributes> & ClientActionMethods<ClientAction<Attributes>>;
-
-export type ClientActionClass<ConstructorProperties = any, Action = any> = {
-  new: (...ConstructorProperties) -> Action
-}
-
-export type ClientActionMethods<Action> = {
-
-  --[[
-    The function to activate the item on the server side. You can manually activate the item some other way too.
-  ]]--
-  activate: (self: Action) -> ();
-
-  -- The function to "break down" the item. This usually runs after the round ends and sometimes after item use.
-  -- You can manually break down the item some other way too.
-  breakdown: (self: Action) -> ();
-
-};
-
-export type ClientActionProperties<Attributes> = {
-
-  attributes: Attributes;
-
-  -- The ID of the action. Keep this unique.
-  id: string;
-
-  -- The name of the action.
-  name: string;
-
-  -- The Roblox asset link to the action's icon image.
-  iconImage: string;
-
-  -- The description of the action.
-  description: string;
-
-  remoteFunction: RemoteFunction;
-
-  remoteEvent: RemoteEvent?;
-  
-};
-
 export type ClientContestant = ClientContestantProperties & ClientContestantEvents & ClientContestantMethods;
 
 export type ClientContestantConstructorProperties = ClientContestantProperties & {
@@ -143,41 +85,6 @@ export type ClientEffectMethods = {
   activate: ((self: any, ...any) -> ())?;
   deactivate: ((self: any, ...any) -> ())?;
 }
-
-export type DetachLimbClientAction = ClientAction<{
-  gui: ScreenGui?;
-}>;
-
-export type HeresThePitchClientAction = ClientAction;
-
-export type DetonateDetachedLimbsClientAction = ClientAction;
-
-export type DiveBombClientAction = ClientAction;
-
-export type ExplosivePunchClientAction = ClientAction;
-
-export type FireBeamClientAction = ClientAction<{
-  updateTask: thread?;
-  isCharging: boolean;
-}>;
-
-export type LockOnClientAction = ClientAction<{
-  previousTargets: {Instance};
-  targetingGUI: BillboardGui;
-  shouldLock: boolean;
-}>;
-
-export type RocketFeetClientAction = ClientAction<{
-  jumpButtonClickEvent: RBXScriptConnection?;
-  cFrameEvent: RBXScriptConnection?;
-}>;
-
-export type TakeFlightClientAction = ClientAction;
-
-export type TarBombClientAction = ClientAction<{
-  isCharging: boolean;
-  updateTask: thread?;
-}>;
 
 export type ParalysisClientEffect = ClientEffect<ParalysisClientEffectProperties & ParalysisClientEffectMethods>;
 

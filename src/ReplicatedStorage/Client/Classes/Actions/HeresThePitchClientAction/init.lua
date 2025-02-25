@@ -8,7 +8,7 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local SharedTypes = require(ReplicatedStorage.Client.Modules.SharedTypes);
+local ClientActionTypes = require(ReplicatedStorage.Client.Classes.ClientAction.types);
 
 local HeresThePitchClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());
@@ -19,23 +19,23 @@ local HeresThePitchClientAction = {
 
 local player = Players.LocalPlayer;
 
-function HeresThePitchClientAction.new(): SharedTypes.HeresThePitchClientAction
+function HeresThePitchClientAction.new(): ClientActionTypes.ClientAction
 
   local remoteName = `{player.UserId}_{HeresThePitchClientAction.id}`;
-  local action: SharedTypes.HeresThePitchClientAction = {
+  local action: ClientActionTypes.ClientAction = {
     id = HeresThePitchClientAction.id;
     name = HeresThePitchClientAction.name;
     iconImage = HeresThePitchClientAction.iconImage;
     description = HeresThePitchClientAction.description;
     remoteFunction = ReplicatedStorage.Shared.Functions.ActionFunctions:WaitForChild(remoteName);
     attributes = {};
-    activate = function(self: SharedTypes.HeresThePitchClientAction)
+    activate = function(self: ClientActionTypes.ClientAction)
 
       -- Ask the server to create the ball.
       self.remoteFunction:InvokeServer(player:GetMouse().Hit.Position);
     
     end;
-    breakdown = function(self: SharedTypes.HeresThePitchClientAction)
+    breakdown = function(self: ClientActionTypes.ClientAction)
     
       HUDService:removeHUDButton("Action", self.id);
       ContextActionService:UnbindAction("ActivateFoulBallBlitz");
