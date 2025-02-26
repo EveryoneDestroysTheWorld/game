@@ -7,33 +7,64 @@ local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 local ChangeBallTypeClientAction = require(ReplicatedStorage.Client.Classes.Actions.ChangeBallTypeClientAction);
-local types = require(ServerStorage.Modules.types);
+local IChangeBallTypeServerAction = require(ServerStorage.Interfaces.IChangeBallTypeServerAction);
+local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
+local IServerRound = require(ServerStorage.Interfaces.IServerRound);
+local SharedTypes = require(ServerStorage.Modules.SharedTypes);
 
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
+
+type BallType = SharedTypes.BallType;
+type IChangeBallTypeServerAction = IChangeBallTypeServerAction.IChangeBallTypeServerAction;
+type IServerContestant = IServerContestant.IServerContestant;
+type IServerRound = IServerRound.IServerRound;
 
 local ChangeBallTypeServerAction = {
   id = ChangeBallTypeClientAction.id;
   name = ChangeBallTypeClientAction.name;
   description = ChangeBallTypeClientAction.description;
-  __index = {
-    name = ChangeBallTypeClientAction.name;
-    id = ChangeBallTypeClientAction.id;
-    description = ChangeBallTypeClientAction.description;
-  } :: types.ChangeBallTypeServerAction;
 };
 
-function ChangeBallTypeServerAction.new(properties: types.ServerActionConstructorProperties): types.ChangeBallTypeServerAction
+function ChangeBallTypeServerAction.new(contestant: IServerContestant, round: IServerRound): IChangeBallTypeServerAction
 
-  local overwrittenProperties = {
-    contestant = properties.contestant;
-  };
+  local function activate(self: IChangeBallTypeServerAction, ballType: BallType): ()
 
-  local action = (setmetatable(overwrittenProperties, ChangeBallTypeServerAction) :: any) :: types.ChangeBallTypeServerAction;
+    local allowedBallTypes: {BallType} = {"Explosive", "Electric", "Poison", "Regular"};
+    assert(ballType and typeof(ballType) == "string" and table.find(allowedBallTypes, ballType));
+    contestant.attributes.ballType = ballType;
+  
+  end;
 
-  local player = action.contestant.player;
+  local function breakdown(self: IChangeBallTypeServerAction)
+
+    if self.remoteFunction then
+  
+      self.remoteFunction:Destroy();
+  
+    end;
+  
+    if contestant.player then
+  
+      ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(contestant.player, self.id);
+  
+    end;
+  
+  end
+
+  local action: IChangeBallTypeServerAction = {
+    id = ChangeBallTypeServerAction.id;
+    name = ChangeBallTypeClientAction.name;
+    description = ChangeBallTypeServerAction.description;
+    contestantID = contestant.id;
+    attributes = {};
+    activate = activate;
+    breakdown = breakdown;
+  }
+
+  local player = contestant.player;
   if player then
   
-    action.remoteFunction = createInventoryRemoteFunction(player, "Action", `{player.UserId}_{action.id}`, function(ballType: types.BallType)
+    action.remoteFunction = createInventoryRemoteFunction(player, "Action", `{player.UserId}_{action.id}`, function(ballType: BallType)
     
       action:activate(ballType);
 
@@ -43,33 +74,9 @@ function ChangeBallTypeServerAction.new(properties: types.ServerActionConstructo
 
   end;
 
-  action.contestant.attributes.ballType = action.contestant.attributes.ballType or "Regular";
+  contestant.attributes.ballType = contestant.attributes.ballType or "Regular";
 
   return action;
-
-end;
-
-function ChangeBallTypeServerAction.__index:activate(ballType: types.BallType): ()
-
-  local allowedBallTypes: {types.BallType} = {"Explosive", "Electric", "Poison", "Regular"};
-  assert(ballType and typeof(ballType) == "string" and table.find(allowedBallTypes, ballType));
-  self.contestant.attributes.ballType = ballType;
-
-end;
-
-function ChangeBallTypeServerAction.__index:breakdown(): ()
-
-  if self.remoteFunction then
-
-    self.remoteFunction:Destroy();
-
-  end;
-
-  if self.contestant.player then
-
-    ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(self.contestant.player, self.id);
-
-  end;
 
 end;
 

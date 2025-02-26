@@ -305,5 +305,4 @@ function ServerContestant.new(properties: IServerContestantConstructorProperties
   
 end
 
-
 return ServerContestant;
