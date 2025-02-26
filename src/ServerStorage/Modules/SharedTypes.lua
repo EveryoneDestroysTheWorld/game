@@ -72,14 +72,6 @@ export type BatterUpDemonServerArchetypeMethods = {
   
 };
 
-export type ChangeModesServerAction = ServerAction<{
-  contestant: ServerContestant;
-  bindableFunction: BindableFunction;
-  remoteFunction: RemoteFunction?;
-  activate: (self: ChangeModesServerAction, mode: BatterUpDemonModes) -> ();
-  breakdown: (self: ChangeModesServerAction) -> ();
-}>;
-
 export type HeresThePitchServerAction = ServerAction<{
   contestant: ServerContestant;
   collisionGroupName: string;

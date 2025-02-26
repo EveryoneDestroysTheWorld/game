@@ -7,33 +7,69 @@ local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 local ChangeModesClientAction = require(ReplicatedStorage.Client.Classes.Actions.ChangeModesClientAction);
-local types = require(ServerStorage.Modules.types);
+local SharedTypes = require(ServerStorage.Modules.SharedTypes);
+local IChangeModesServerAction = require(ServerStorage.Interfaces.IChangeModesServerAction);
+local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
 
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
+
+type IChangeModesServerAction = IChangeModesServerAction.IChangeModesServerAction;
+type IServerContestant = IServerContestant.IServerContestant;
 
 local ChangeModesServerAction = {
   id = ChangeModesClientAction.id;
   name = ChangeModesClientAction.name;
   description = ChangeModesClientAction.description;
-  __index = {
-    name = ChangeModesClientAction.name;
-    id = ChangeModesClientAction.id;
-    description = ChangeModesClientAction.description;
-  } :: types.ChangeModesServerAction;
 };
 
-function ChangeModesServerAction.new(contestant: IServerContestant): types.ChangeModesServerAction
+function ChangeModesServerAction.new(contestant: IServerContestant): IChangeModesServerAction
 
-  local overwrittenProperties = {
-    contestant = properties.contestant;
+  local function activate(self: IChangeModesServerAction, mode: SharedTypes.BatterUpDemonModes): ()
+
+    local allowedModes: {SharedTypes.BatterUpDemonModes} = {"Pitcher", "Batter"};
+    assert(mode and typeof(mode) == "string" and table.find(allowedModes, mode));
+    contestant.attributes.archetypeMode = mode;
+  
+    ServerStorage.Events.ArchetypeModeChanged:Fire(contestant.id);
+    
+    if contestant.player then
+      
+      ReplicatedStorage.Shared.Events.ArchetypeModeChanged:FireClient(contestant.player);
+  
+    end
+  
+  end;
+
+  local function breakdown(self: IChangeModesServerAction): ()
+
+    if self.remoteFunction then
+  
+      self.remoteFunction:Destroy();
+  
+    end;
+  
+    if contestant.player then
+  
+      ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(contestant.player, self.id);
+  
+    end;
+  
+  end;
+
+  local action: IChangeModesServerAction = {
+    id = ChangeModesServerAction.id;
+    name = ChangeModesServerAction.name;
+    contestantID = contestant.id;
+    description = ChangeModesServerAction.description;
+    attributes = {};
+    activate = activate;
+    breakdown = breakdown;
   };
 
-  local action = (setmetatable(overwrittenProperties, ChangeModesServerAction) :: any) :: types.ChangeModesServerAction;
-
-  local player = action.contestant.player;
+  local player = contestant.player;
   if player then
   
-    action.remoteFunction = createInventoryRemoteFunction(player, "Action", `{player.UserId}_{action.id}`, function(mode: types.BatterUpDemonModes)
+    action.remoteFunction = createInventoryRemoteFunction(player, "Action", `{player.UserId}_{action.id}`, function(mode: SharedTypes.BatterUpDemonModes)
     
       action:activate(mode);
 
@@ -44,38 +80,6 @@ function ChangeModesServerAction.new(contestant: IServerContestant): types.Chang
   end;
 
   return action;
-
-end;
-
-function ChangeModesServerAction.__index:activate(mode: types.BatterUpDemonModes): ()
-
-  local allowedModes: {types.BatterUpDemonModes} = {"Pitcher", "Batter"};
-  assert(mode and typeof(mode) == "string" and table.find(allowedModes, mode));
-  self.contestant.attributes.archetypeMode = mode;
-
-  ServerStorage.Events.ArchetypeModeChanged:Fire(self.contestant.id);
-  
-  if self.contestant.player then
-    
-    ReplicatedStorage.Shared.Events.ArchetypeModeChanged:FireClient(self.contestant.player);
-
-  end
-
-end;
-
-function ChangeModesServerAction.__index:breakdown(): ()
-
-  if self.remoteFunction then
-
-    self.remoteFunction:Destroy();
-
-  end;
-
-  if self.contestant.player then
-
-    ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(self.contestant.player, self.id);
-
-  end;
 
 end;
 

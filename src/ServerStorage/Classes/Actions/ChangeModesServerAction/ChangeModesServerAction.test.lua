@@ -15,7 +15,6 @@ return {
 
       action:activate("Batter");
 
-      assert(contestant.attributes.archetypeMode);
       assert(contestant.attributes.archetypeMode == "Batter");
 
       action:activate("Pitcher");
