@@ -17,7 +17,7 @@ export type IServerRoundMethods = {
   --[[
     Adds a contestant to the round.
   ]]
-  addContestant: (self: IServerRound, contestantID: number) -> ();
+  addContestant: (self: IServerRound, contestantProperties: IServerContestant.IServerContestantConstructorProperties) -> IServerContestant;
 
   --[[
     Converts the current server round to a client object, stripping any sensitive data.

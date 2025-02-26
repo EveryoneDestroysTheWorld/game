@@ -1,7 +1,7 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local ClientContestant = require(ReplicatedStorage.Client.Interfaces.IClientContestant);
+local IClientContestant = require(ReplicatedStorage.Client.Interfaces.IClientContestant);
 
 type HealthHeadBarProps = {
   roundID: string;
@@ -16,7 +16,7 @@ local function HealthHeadBar(props: HealthHeadBarProps)
 
     task.spawn(function()
     
-      local contestant = ReplicatedStorage.Shared.Functions.GetContestant:InvokeServer(props.roundID, props.contestantID) :: ClientContestant.ClientContestant;
+      local contestant = ClientRound.fromServerRound();
       setContestantName(contestant.name);
 
     end);

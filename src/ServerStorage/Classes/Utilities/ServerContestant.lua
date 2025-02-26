@@ -21,6 +21,7 @@ type IClientContestant = IClientContestant.IClientContestant;
 type IServerArchetype = IServerArchetype.IServerArchetype;
 type IServerContestant = IServerContestant.IServerContestant;
 type IServerContestantProperties = IServerContestant.IServerContestantProperties;
+type IServerContestantConstructorProperties = IServerContestant.IServerContestantConstructorProperties;
 type IServerEffect = IServerEffect.IServerEffect;
 type IServerRound = IServerRound.IServerRound;
 type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
@@ -28,7 +29,7 @@ type PatchableTurfWarContestantStatistics = TurfWarContestantStatistics.Patchabl
 
 local ServerContestant = {};
 
-function ServerContestant.new(properties: IServerContestantProperties): IServerContestant
+function ServerContestant.new(properties: IServerContestantConstructorProperties, round: IServerRound): IServerContestant
 
   local archetype: IServerArchetype? = nil;
   local character: Model? = nil;
@@ -260,23 +261,22 @@ function ServerContestant.new(properties: IServerContestantProperties): IServerC
   
   end;
 
-  local baseHealth = 1000;
-  local baseStamina = 1000;
+  local baseHealth = properties.baseHealth or 1000;
+  local baseStamina = properties.baseStamina or 1000;
   local contestant: IServerContestant = {
     baseHealth = baseHealth;
     currentHealth = baseHealth;
     baseStamina = baseStamina;
     currentStamina = baseStamina;
-    isEliminated = false;
-    isAutoEliminationEnabled = true;
-    attributes = {};
-    tags = {};
-    walkSpeedWeights = {};
-    baseModifiers = {
+    isEliminated = properties.isEliminated or false;
+    isAutoEliminationEnabled = if typeof(properties.isAutoEliminationEnabled) ~= "nil" then properties.isAutoEliminationEnabled else true;
+    attributes = properties.attributes or {};
+    tags = properties.tags or {};
+    walkSpeedWeights = properties.walkSpeedWeights or {};
+    baseModifiers = properties.baseModifiers or {
       health = {};
       stamina = {};
     };
-    effects = {};
     id = properties.id;
     name = properties.name;
     roundID = properties.roundID;

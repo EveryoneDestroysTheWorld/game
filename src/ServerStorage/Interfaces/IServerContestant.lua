@@ -27,6 +27,61 @@ export type WalkSpeedWeight = {
 
 export type IServerContestant = IServerContestantProperties & ServerContestantMethods;
 
+export type IServerContestantConstructorProperties = {
+
+  archetypeID: string?;
+
+  currentStamina: number?;
+
+  walkSpeedWeights: {WalkSpeedWeight}?;
+
+  roundID: string;
+
+  ghostHighlight: Highlight?;
+
+  characterRagdollClone: Model?;
+
+  revivalProximityPrompt: ProximityPrompt?;
+
+  -- The ID of the contestant. 
+  -- If the contestant is a bot, this is a unique temporary ID assigned by the server. It will be an irrational number.
+  -- If the contestant is a player, this is the same value as player.UserId. It will be an integer.
+  id: number;
+
+  -- The name of the contestant. This is here to easily reference bot names. 
+  -- If the contestant is a player, this is the same value as player.DisplayName. To get the username, use player.Name.
+  name: string;
+
+  -- Is this contestant still a part of the game?
+  isEliminated: boolean?;
+
+  isAutoEliminationEnabled: boolean?;
+
+  -- The player reference of the contestant. This should be nil if the contestant isn't a player.
+  player: Player?;
+
+  -- The team ID of the contestant. This will be nil if the game rules call for a free-for-all.
+  teamID: number?;
+
+  baseModifiers: {
+    health: {BaseModifier};
+    stamina: {BaseModifier};
+  };
+
+  currentHealth: number?;
+
+  baseHealth: number?;
+
+  baseStamina: number?;
+
+  attributes: {
+    [string]: unknown;
+  }?;
+
+  tags: {string}?;
+  
+}
+
 export type IServerContestantProperties = {
 
   archetypeID: string?;

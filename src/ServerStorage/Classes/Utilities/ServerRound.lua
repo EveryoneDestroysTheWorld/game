@@ -9,38 +9,40 @@ local MemoryStoreService = game:GetService("MemoryStoreService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
-local ServerContestant = require(ServerStorage.Classes.ServerContestant);
+local ServerContestant = require(ServerStorage.Classes.Utilities.ServerContestant);
 local IClientRound = require(ReplicatedStorage.Client.Interfaces.IClientRound);
 local IServerRound = require(ServerStorage.Interfaces.IServerRound);
 local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
 
 type ClientRound = IClientRound.ClientRound;
-type ServerRound = IServerRound.ServerRound;
+type IServerRound = IServerRound.IServerRound;
+type IServerRoundProperties = IServerRound.IServerRoundProperties;
 type RoundStatus = IServerRound.RoundStatus;
-type ServerContestant = IServerContestant.ServerContestant;
+type IServerContestant = IServerContestant.IServerContestant;
+type IServerContestantConstructorProperties = IServerContestant.IServerContestantConstructorProperties;
 
 local ServerRound = {};
 
-function ServerRound.new(properties: IServerRound.ServerRoundProperties): ServerRound
+function ServerRound.new(properties: IServerRoundProperties): IServerRound
 
-  local contestants: {ServerContestant} = {};
+  local contestants: {IServerContestant} = {};
 
-  local function addContestant(self: ServerRound, contestantID: number): ()
+  local function addContestant(self: IServerRound, contestantProperties: IServerContestantConstructorProperties): IServerContestant
 
-    table.insert(self.contestantIDs, contestantID);
+    table.insert(self.contestantIDs, contestantProperties.id);
 
-    local contestant = ServerContestant.new({
-      id = contestantID;
-    });
+    local contestant = ServerContestant.new(contestantProperties, self);
 
     table.insert(contestants, contestant);
 
-    ServerStorage.Events.ContestantAdded:Fire(self.id, contestantID);
-    ReplicatedStorage.Shared.Events.ContestantAdded:FireAllClients(self.id, contestantID);
+    ServerStorage.Events.ContestantAdded:Fire(self.id, contestant.id);
+    ReplicatedStorage.Shared.Events.ContestantAdded:FireAllClients(self.id, contestant.id);
+
+    return contestant;
 
   end;
 
-  local function convertToClientRound(self: ServerRound): ClientRound
+  local function convertToClientRound(self: IServerRound): ClientRound
 
     return {
       id = self.id;
@@ -54,7 +56,7 @@ function ServerRound.new(properties: IServerRound.ServerRoundProperties): Server
 
   end;
 
-  local function setStatus(self: ServerRound, status: RoundStatus)
+  local function setStatus(self: IServerRound, status: RoundStatus)
 
     if status == "Active" then
 
@@ -111,13 +113,13 @@ function ServerRound.new(properties: IServerRound.ServerRoundProperties): Server
 
   end;
 
-  local function setGameModeID(self: ServerRound, gameModeID: string)
+  local function setGameModeID(self: IServerRound, gameModeID: string)
 
     self.gameModeID = gameModeID;
 
   end;
 
-  local function getContestants(self: ServerRound): {ServerContestant}
+  local function getContestants(self: IServerRound): {IServerContestant}
 
     return contestants;
 
@@ -135,17 +137,11 @@ function ServerRound.new(properties: IServerRound.ServerRoundProperties): Server
     setGameModeID = setGameModeID;
   }
 
-  for _, contestantID in properties.contestantIDs do
-
-    round:addContestant(contestantID);
-
-  end;
-
   return round;
   
 end;
 
-function ServerRound.fromPrivateServerID(privateServerID: number): ServerRound
+function ServerRound.fromPrivateServerID(privateServerID: number): IServerRound
 
   -- Verify metadata integrity.
   local roundMetadataEncoded = MemoryStoreService:GetHashMap("PrivateServerRoundMetadata"):GetAsync(privateServerID);
