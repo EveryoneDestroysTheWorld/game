@@ -1,9 +1,12 @@
 --!strict
 
 local ServerStorage = game:GetService("ServerStorage");
-local types = require(ServerStorage.Modules.types);
 
-return function(contestant: types.ServerContestant): ()
+local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
+
+type IServerContestant = IServerContestant.IServerContestant;
+
+return function(contestant: IServerContestant): ()
 
   for _, modifier in contestant.baseModifiers.health do
 

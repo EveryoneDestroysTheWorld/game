@@ -56,7 +56,6 @@ function DetonateDetachedLimbsServerAction.__index:activate()
 
   -- Make sure the player has enough stamina.
   assert(self.contestant.currentStamina >= 20, "Contestant doesn't have enough stamina.");
-
   local detachedLimbs = ServerStorage.Functions.ActionFunctions:FindFirstChild(`{self.contestant.id}_GetDetachedLimbs`):Invoke();
   local didReduceStamina = false;
 
