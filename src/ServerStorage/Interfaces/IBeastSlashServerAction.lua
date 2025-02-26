@@ -4,10 +4,12 @@ local ServerStorage = game:GetService("ServerStorage");
 
 local IServerAction = require(ServerStorage.Interfaces.IServerAction);
 
-export type IBeastSlashServerAction = IServerAction.IServerAction<{
+type Attributes = {
   animationTracks: {
     [string]: AnimationTrack;
   };
-}>;
+};
+
+export type IBeastSlashServerAction = IServerAction.IServerAction<Attributes>;
 
 return {};

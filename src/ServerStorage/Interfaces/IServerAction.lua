@@ -1,12 +1,15 @@
 --!strict
 
-export type IServerAction<ExtendedProperties = {[unknown]: any}> = {
+export type IServerAction<Attributes = {[string]: any}, ActivationArguments... = (), BreakdownArguments... = ()> = {
   id: string;
   name: string;
   description: string;
-} & ExtendedProperties & {
-  activate: (self: any, ...any) -> ();
-  breakdown: (self: any, ...any) -> (); 
+  remoteFunction: RemoteFunction?;
+  attributes: Attributes;
+  contestantID: number;
+} & {
+  activate: (self: IServerAction<Attributes, ActivationArguments..., BreakdownArguments...>, ActivationArguments...) -> ();
+  breakdown: (self: IServerAction<Attributes, ActivationArguments..., BreakdownArguments...>, BreakdownArguments...) -> (); 
 };
 
 export type ServerActionClass<ConstructorProperties = any, Action = any> = {
