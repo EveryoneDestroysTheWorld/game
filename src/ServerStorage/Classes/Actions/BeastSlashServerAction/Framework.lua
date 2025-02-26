@@ -1,16 +1,21 @@
 --!strict
 -- Programmer: Hati (hati_bati) and Christian Toney (Christian_Toney)
 -- Designer: Hati (hati_bati)
--- © 2024 – 2025 Everyone Destroys the World Group LLC
+-- © 2024 – 2025 Beastslash LLC
 
 local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService");
 
-local types = require(ServerStorage.Modules.types);
-
 local mAnimate2 = require(ReplicatedStorage.Shared.Modules.MoonAnimator);
 local meleeAttackFramework = {}
+local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
+local IServerRound = require(ServerStorage.Interfaces.IServerRound);
+local IBeastSlashServerAction = require(ServerStorage.Interfaces.IBeastSlashServerAction);
+
+type IServerContestant = IServerContestant.IServerContestant;
+type IServerRound = IServerRound.IServerRound;
+type IBeastSlashServerAction = IBeastSlashServerAction.IBeastSlashServerAction;
 
 local defaultData = {
 	animName = "Melee",
@@ -27,7 +32,7 @@ local defaultData = {
 }
 
 export type KeyDownData = {
-	contestant: types.ServerContestant;
+	contestant: IServerContestant;
 	animations: {[any]: AnimationTrack};
 	animName: string?;
 	maxCombo: number?;
@@ -62,9 +67,9 @@ local storedCombos = {}
 export type AttackState = "Processing" | "Buffered" | "Buffered2" | "ButtonReleased";
 
 local currentlyAttacking: {
-	[types.ServerContestant]: AttackState
+	[IServerContestant]: AttackState
 } = {}
-function meleeAttackFramework.KeyDown(action: types.BeastSlashServerAction, data: KeyDownData, effect: (...any) -> (any), round, archetypeABRV: string)
+function meleeAttackFramework.KeyDown(action: IBeastSlashServerAction, data: KeyDownData, effect: (...any) -> (any), round: IServerRound, archetypeABRV: string)
 
 	local shouldRepeat = false;
 	repeat
@@ -72,7 +77,9 @@ function meleeAttackFramework.KeyDown(action: types.BeastSlashServerAction, data
 		if not currentlyAttacking[data.contestant] then
 
 			currentlyAttacking[data.contestant] = "Processing"
-			data.contestant:updateStamina(math.max(0, data.contestant.currentStamina - (data.lightStaminaDrain or defaultData.lightStaminaDrain)));
+			data.contestant:setCurrentStamina(math.max(0, data.contestant.currentStamina - (data.lightStaminaDrain or defaultData.lightStaminaDrain)), {
+				actionID = action.id;
+			});
 			local combo = storedCombos[data.contestant] or 1
 			local animations = data.animations
 
@@ -105,7 +112,7 @@ function meleeAttackFramework.KeyDown(action: types.BeastSlashServerAction, data
 			)
 			animations[animationName]:Play(animData.X,animData.Y,animData.Z)
 
-			local character = data.contestant.character;
+			local character = data.contestant:getCharacter();
 			assert(character);
 
 			local primaryPart = character.PrimaryPart;
@@ -174,14 +181,14 @@ function meleeAttackFramework.KeyDown(action: types.BeastSlashServerAction, data
 
 					if model and not table.find(blockedModels, model) and model:FindFirstChild("Humanoid") and model.Name ~= character.Name then
 
-						for _, contestant in round.contestants do
+						for _, contestant in round:getContestants() do
 
-							if contestant.character == model then
+							if contestant:getCharacter() == model then
 
 								table.insert(blockedModels, model);
 
-								contestant:updateHealth(contestant.currentHealth - damage, {
-									contestantID = action.contestant.id;
+								contestant:setCurrentHealth(contestant.currentHealth - damage, {
+									contestantID = data.contestant.id;
 									actionID = action.id;
 								});
 
@@ -218,10 +225,13 @@ function meleeAttackFramework.KeyDown(action: types.BeastSlashServerAction, data
 				linearVelocity.LineDirection = lookDirection
 			
 				if effect then
-					coroutine.wrap(effect)(data.contestant.character, combo)
+					coroutine.wrap(effect)(data.contestant:getCharacter(), combo)
 				end
 
-				data.contestant:updateStamina(math.max(0, data.contestant.currentStamina - ((data.heavyStaminaDrain or defaultData.heavyStaminaDrain) - (data.lightStaminaDrain or defaultData.lightStaminaDrain)))); -- since you already paid the cost for a light attack, reduce the heavy attack cost by that much
+				data.contestant:setCurrentStamina(math.max(0, data.contestant.currentStamina - ((data.heavyStaminaDrain or defaultData.heavyStaminaDrain) - (data.lightStaminaDrain or defaultData.lightStaminaDrain))), {
+					contestantID = data.contestant.id;
+					actionID = action.id;
+				}); -- since you already paid the cost for a light attack, reduce the heavy attack cost by that much
 				animations[animationName]:AdjustSpeed(1)
 
 				task.delay(0.24,function()

@@ -167,17 +167,6 @@ export type LockOnServerAction = ServerAction<{
   breakdown: (self: LockOnServerAction) -> ();
 }>;
 
-export type BeastSlashServerAction = ServerAction<{
-  contestant: ServerContestant;
-  bindableFunction: BindableFunction;
-  remoteFunction: RemoteFunction?;
-  animationTracks: {
-    [string]: AnimationTrack;
-  };
-  activate: (self: BeastSlashServerAction) -> ();
-  breakdown: (self: BeastSlashServerAction) -> ();
-}>;
-
 export type TakeFlightServerAction = ServerAction<{
   contestant: ServerContestant;
   remoteFunction: RemoteFunction?;
