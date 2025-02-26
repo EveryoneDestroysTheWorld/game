@@ -3,7 +3,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
-local ClientRound = require(ReplicatedStorage.Client.Interfaces.ClientRound);
+local ClientRound = require(ReplicatedStorage.Client.Interfaces.IClientRound);
 local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
 
 type IServerContestant = IServerContestant.IServerContestant;

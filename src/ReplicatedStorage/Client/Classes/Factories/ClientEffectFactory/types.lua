@@ -2,7 +2,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local ClientEffect = require(ReplicatedStorage.Client.Interfaces.ClientEffect);
+local ClientEffect = require(ReplicatedStorage.Client.Interfaces.IClientEffect);
 type ClientEffect = ClientEffect.ClientEffect;
 
 export type ClientEffectClass<Effect = ClientEffect> = {

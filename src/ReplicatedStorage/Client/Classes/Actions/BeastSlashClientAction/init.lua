@@ -8,7 +8,7 @@ local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
-local ClientAction = require(ReplicatedStorage.Client.Interfaces.ClientAction);
+local ClientAction = require(ReplicatedStorage.Client.Interfaces.IClientAction);
 type ClientAction = ClientAction.ClientAction;
 
 local BeastSlashClientAction = {

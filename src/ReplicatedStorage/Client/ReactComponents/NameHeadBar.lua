@@ -1,7 +1,7 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local ClientContestant = require(ReplicatedStorage.Client.Interfaces.ClientContestant);
+local ClientContestant = require(ReplicatedStorage.Client.Interfaces.IClientContestant);
 
 type HealthHeadBarProps = {
   roundID: string;

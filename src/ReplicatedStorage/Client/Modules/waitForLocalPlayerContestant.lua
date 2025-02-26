@@ -3,7 +3,7 @@
 local Players = game:GetService("Players");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local ClientRound = require(ReplicatedStorage.Client.Interfaces.ClientRound);
+local ClientRound = require(ReplicatedStorage.Client.Interfaces.IClientRound);
 
 local function waitForLocalPlayerContestant(): ()
 

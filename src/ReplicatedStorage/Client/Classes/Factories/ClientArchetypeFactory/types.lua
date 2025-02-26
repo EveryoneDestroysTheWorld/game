@@ -2,7 +2,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local ClientArchetype = require(ReplicatedStorage.Client.Interfaces.ClientArchetype);
+local ClientArchetype = require(ReplicatedStorage.Client.Interfaces.IClientArchetype);
 
 type ClientArchetype = ClientArchetype.ClientArchetype;
 

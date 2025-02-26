@@ -9,7 +9,7 @@ local Players = game:GetService("Players");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 
-local ClientAction = require(ReplicatedStorage.Client.Interfaces.ClientAction);
+local ClientAction = require(ReplicatedStorage.Client.Interfaces.IClientAction);
 
 local DetonateDetachedLimbsClientAction = {
   id = script.Name:sub(1, script.Name:gsub("ClientAction", ""):len());

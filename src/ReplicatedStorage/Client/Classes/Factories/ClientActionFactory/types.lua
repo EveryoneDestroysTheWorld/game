@@ -2,7 +2,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local ClientAction = require(ReplicatedStorage.Client.Interfaces.ClientAction);
+local ClientAction = require(ReplicatedStorage.Client.Interfaces.IClientAction);
 
 type ClientAction = ClientAction.ClientAction;
 

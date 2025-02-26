@@ -3,9 +3,9 @@
 local Players = game:GetService("Players");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local ClientArchetype = require(ReplicatedStorage.Client.Interfaces.ClientArchetype);
+local ClientArchetype = require(ReplicatedStorage.Client.Interfaces.IClientArchetype);
 local ClientActionFactory = require(ReplicatedStorage.Client.Classes.Factories.ClientActionFactory);
-local ClientAction = require(ReplicatedStorage.Client.Interfaces.ClientAction);
+local ClientAction = require(ReplicatedStorage.Client.Interfaces.IClientAction);
 local ClientItem = require(ReplicatedStorage.Client.Classes.ClientItem);
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 
