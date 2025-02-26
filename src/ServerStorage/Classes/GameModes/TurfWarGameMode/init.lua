@@ -5,10 +5,19 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
-local GameMode = require(script.Parent.Parent.GameMode);
 local HttpService = game:GetService("HttpService");
 local PhysicsService = game:GetService("PhysicsService");
-local types = require(ServerStorage.Modules.types);
+
+local IServerRound = require(ServerStorage.Interfaces.IServerRound);
+local IGameMode = require(ServerStorage.Interfaces.IGameMode);
+local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
+local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
+
+type IGameMode = IGameMode.IGameMode;
+type IServerContestant = IServerContestant.IServerContestant;
+type IServerRound = IServerRound.IServerRound;
+type TurfWarContestantStatistics = TurfWarContestantStatistics.TurfWarContestantStatistics;
+type PatchableTurfWarContestantStatistics = TurfWarContestantStatistics.PatchableTurfWarContestantStatistics;
 
 -- This is the class.
 local TurfWarGameMode = {
@@ -17,13 +26,13 @@ local TurfWarGameMode = {
   description = "";
 };
 
-function TurfWarGameMode.new(roundID: string): types.GameMode
+function TurfWarGameMode.new(round: IServerRound): IGameMode
 
   local events = {};
 
   local vulnerableParts = {};
 
-  local function start(self: types.GameMode)
+  local function start(self: IGameMode)
 
     assert(round.stage and round.stage.model, "No stage provided.");
     local restoredStage = round.stage.model:Clone();
@@ -33,6 +42,31 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
     local restorablePartsModel = Instance.new("Model");
     restorablePartsModel.Name = "RestorablePartsModel";
     restorablePartsModel.Parent = workspace;
+
+    local function mergeStatistics(contestant: IServerContestant, newStatistics: PatchableTurfWarContestantStatistics, cause: types.Cause?): ()
+
+      local oldStatistics = contestant.attributes.statistics;
+      if oldStatistics and typeof(oldStatistics) == "table" then
+    
+        local mergedStatistics = oldStatistics :: TurfWarContestantStatistics;
+
+        for key, value in newStatistics do
+    
+          mergedStatistics[key] = value;
+    
+        end;
+    
+        contestant.attributes.statistics = mergedStatistics;
+    
+      else
+    
+        contestant.attributes.statistics = newStatistics;
+      
+      end;
+    
+      ReplicatedStorage.Shared.Events.ContestantStatisticsUpdated:FireAllClients(round.id, contestant.id, contestant.attributes.statistics, oldStatistics, cause);
+    
+    end;
 
     local function checkChild(child: Instance)
 
@@ -55,7 +89,7 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
 
                 if contestant.id == destroyerID and contestant.statistics then
 
-                  contestant:mergeStatistics({
+                  mergeStatistics(contestant, {
                     partsDestroyed = contestant.statistics.partsDestroyed + 1;
                     partsClaimed = contestant.statistics.partsClaimed + 1;
                   }, {
@@ -76,7 +110,7 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
             local destroyerName;
             if destroyerID then
 
-              for _, contestant in ipairs(round.contestants) do
+              for _, contestant in round:getContestants() do
 
                 if contestant.id == destroyerID then
 
@@ -108,8 +142,10 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
             proximityPrompt.Triggered:Connect(function(restorer)
             
               -- Verify that the restorer is a participant.
-              for _, contestant in round.contestants do
+              for _, contestant in round:getContestants() do
 
+                local oldStatistics = contestant.attributes.statistics :: TurfWarContestantStatistics;
+                
                 if contestant.player == restorer then
 
                   -- Delete old parts.
@@ -121,17 +157,15 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
                   local restoredPart = partReference:Clone();
                   restoredPart.Parent = round.stage.model;
 
-                  if contestant.statistics then
+                  mergeStatistics(contestant, {
+                    partsRestored = oldStatistics.partsRestored + 1
+                  });
 
-                    contestant:mergeStatistics({
-                      partsRestored = contestant.statistics.partsRestored + 1
-                    });
+                elseif destroyerID and destroyerID == contestant.id and contestant.attributes.statistics then
 
-                  end
-
-                elseif destroyerID and destroyerID == contestant.id and contestant.statistics then
-
-                  contestant.statistics.partsClaimed -= 1
+                  mergeStatistics(contestant, {
+                    partsClaimed = oldStatistics.partsClaimed - 1
+                  });
 
                 end;
 
@@ -168,9 +202,9 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
     end;
 
     -- Keep track of downed players.
-    for _, contestant in round.contestants do
+    for _, contestant in round:getContestants() do
 
-      contestant:mergeStatistics({
+      mergeStatistics(contestant, {
         partsClaimed = 0;
         partsDestroyed = 0;
         partsRestored = 0;
@@ -189,7 +223,7 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
           while contestant.currentHealth > 0 and contestant.currentStamina < contestant:getModifiedBaseValue("Stamina") and task.wait(1) do
             
             -- Recover the contestant's stamina if we can.
-            contestant:updateStamina(math.min(contestant.currentStamina + 5, contestant:getModifiedBaseValue("Stamina")));
+            contestant:setCurrentStamina(math.min(contestant.currentStamina + 5, contestant:getModifiedBaseValue("Stamina")));
 
           end;
 
@@ -201,17 +235,95 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
 
       table.insert(events, contestant.onStaminaUpdated:Connect(recoverStamina));
 
+      contestant.onEliminated:Connect(function()
+
+        local archetype = contestant:getArchetype();
+        if archetype then
+
+          archetype:breakdown();
+
+        end;
+      
+        local undeadConsciousnessArchetype = ServerArchetype.get("UndeadConsciousness").new({
+          contestant = self;
+        })
+
+        contestant:setArchetype(undeadConsciousnessArchetype);
+      
+        -- Turn the player transparent.
+        local character = contestant:getCharacter();
+        if character then
+      
+          if self.characterRagdollClone then
+      
+            self.characterRagdollClone:Destroy();
+            self.characterRagdollClone = nil;
+      
+          end;
+      
+          -- Create a ragdoll clone.
+          if shouldCreateRagdoll then
+            
+            self.characterRagdollClone = createRagdollClone(character);
+      
+          end;
+      
+          if self.ghostHighlight then
+      
+            self.ghostHighlight:Destroy();
+      
+          end;
+      
+          local highlight = Instance.new("Highlight");
+          self.ghostHighlight = highlight;
+          highlight.Name = "GhostHighlight";
+          highlight.Parent = character;
+          highlight.OutlineTransparency = 1;
+          highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
+          highlight.FillColor = Color3.fromRGB(152, 202, 248);
+          highlight.FillTransparency = 0.5;
+      
+          if self.revivalProximityPrompt then
+      
+            self.revivalProximityPrompt:Destroy();
+      
+          end;
+      
+          local proximityPrompt = Instance.new("ProximityPrompt");
+          self.revivalProximityPrompt = proximityPrompt;
+          proximityPrompt.Name = "RevivalProximityPrompt";
+          proximityPrompt.ObjectText = "Downed contestant";
+          proximityPrompt.ActionText = "Revive";
+          proximityPrompt.HoldDuration = 0;
+          proximityPrompt.Triggered:Once(function(player)
+        
+            -- Prevent the player from reviving themself.
+            if player ~= contestant.player then
+      
+              contestant:setCurrentHealth(self:getModifiedBaseValue("Health") / 2, {
+                contestantID = player.UserId;
+              });
+      
+            end;
+      
+          end);
+          proximityPrompt.Parent = character;
+      
+        end;
+
+      end);
+
       local function trackEliminations(newHealth: number, oldHealth: number, cause: types.Cause?)
 
         if newHealth <= 0 and oldHealth > 0 and contestant.statistics then
 
-          contestant:mergeStatistics({
+          mergeStatistics(contestant, {
             deathCount = contestant.statistics.deathCount + 1;
           }, cause);
 
           if cause and cause.contestantID then
 
-            for _, possibleMurderer in round.contestants do
+            for _, possibleMurderer in round:getContestants() do
 
               if possibleMurderer.id == cause.contestantID and possibleMurderer.statistics then
 
@@ -223,6 +335,45 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
 
             end;
 
+          end;
+
+          if contestant.currentHealth < 0 and not contestant.isEliminated and contestant.isAutoEliminationEnabled then
+  
+            contestant:eliminate(true);
+          
+          elseif contestant.currentHealth > 0 and self.isEliminated then
+        
+            contestant.isEliminated = false;
+        
+            local archetype = contestant:getArchetype();
+            if archetype then
+        
+              archetype:breakdown();
+              contestant:setArchetype();
+        
+            end;
+        
+            if self.ghostHighlight then
+        
+              self.ghostHighlight:Destroy();
+              self.ghostHighlight = nil;
+        
+            end;
+        
+            if self.characterRagdollClone then
+        
+              self.characterRagdollClone:Destroy();
+              self.characterRagdollClone = nil;
+        
+            end;
+        
+            if self.revivalProximityPrompt then
+        
+              self.revivalProximityPrompt:Destroy();
+              self.revivalProximityPrompt = nil;
+        
+            end;
+        
           end;
 
         end;
@@ -329,6 +480,37 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
 
     end;
 
+    ReplicatedStorage.Shared.Functions.UpdateContestantArchetype.OnServerInvoke = function(player: Player, archetypeID: unknown): ()
+  
+      -- Verify that the player is a contestant.
+      local contestant = getContestantFromPlayer(player);
+      local playerIdentifier = `{player.Name} ({player.UserId})`;
+      assert(contestant, `{playerIdentifier} isn't a contestant in this round, so it is unnecessary for them to choose an archetype.`);
+  
+      local archetypeLocks = ServerStorage.Functions.GetArchetypeLocks:Invoke(contestant.id);
+      assert(not archetypeLocks, "Archetypes are currently locked.");
+      assert(contestant.profile, `Couldn't find the {playerIdentifier}'s profile.`);
+    
+      -- Verify that the contestant has that archetype.
+      assert(archetypeID and typeof(archetypeID) == "string", "Archetype ID must be a string.");
+      local archetypeIDs = archetypeIDListCache[player.UserId] or contestant.profile:getArchetypeIDs();
+      archetypeIDListCache[player.UserId] = archetypeIDs;
+      assert(table.find(archetypeIDs, archetypeID), `{playerIdentifier} doesn't own archetype {archetypeID}, so it can't be used in this round.`);
+    
+      -- Update the archetype.
+      if contestant.archetype then
+  
+        contestant.archetype:breakdown();
+  
+      end;
+  
+      local archetype = ServerArchetype.get(archetypeID).new({
+        contestant = contestant;
+      });
+      contestant:updateArchetype(archetype);
+    
+    end;
+
     ReplicatedStorage.Shared.Functions.GetTotalStagePartCount.OnServerInvoke = function()
 
       return #vulnerableParts;
@@ -336,7 +518,7 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
     end;
 
     -- Ready the archetypes and actions.
-    for _, contestant in self.contestants do
+    for _, contestant in round:getContestants() do
 
       if not contestant.player then
 
@@ -346,7 +528,7 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
             contestant = contestant;
           });
 
-          while self.status == "Active" and task.wait() do
+          while round.status == "Active" and task.wait() do
 
             autopilot:run();
 
@@ -362,7 +544,7 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
 
   end;
 
-  local function breakdown(self: types.GameMode)
+  local function breakdown(self: IGameMode)
 
     -- Disable all archetypes and actions.
     task.spawn(function()
@@ -415,7 +597,7 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
 
   end
 
-  local gameMode = GameMode.new({
+  local gameMode = {
     id = TurfWarGameMode.id;
     name = TurfWarGameMode.name;
     description = TurfWarGameMode.description;
@@ -429,7 +611,7 @@ function TurfWarGameMode.new(roundID: string): types.GameMode
       })
 
     end;
-  });
+  };
 
   ServerStorage.Events.RoundStatusChanged.Event:Connect(function(startedRoundID: string, roundStatus: unknown)
   

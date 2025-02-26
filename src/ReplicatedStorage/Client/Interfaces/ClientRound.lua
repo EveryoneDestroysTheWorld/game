@@ -4,7 +4,7 @@
 -- Programmers: Christian Toney (Christian_Toney)
 -- © 2024 – 2025 Beastslash LLC
 
-export type RoundStatus = "Waiting for players" | "Contestant selection" | "Matchup preview" | "Initializing character models" | "Pre-round countdown" | "Active" | "ForceStopped" | "Stopped";
+export type RoundStatus = "Waiting for players" | "Contestant selection" | "Matchup preview" | "Initializing character models" | "Pre-round countdown" | "Active" | "Stopped by administrator" | "Stopped";
 
 export type ClientRound = {
 

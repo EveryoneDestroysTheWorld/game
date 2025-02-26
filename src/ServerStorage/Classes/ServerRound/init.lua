@@ -9,23 +9,38 @@ local MemoryStoreService = game:GetService("MemoryStoreService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
-local types = require(script.types);
+local ServerContestant = require(ServerStorage.Classes.ServerContestant);
+local IClientRound = require(ReplicatedStorage.Client.Interfaces.ClientRound);
+local IServerRound = require(ServerStorage.Interfaces.IServerRound);
+local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
 
-local ClientRound = require(ReplicatedStorage.Client.Interfaces.ClientRound);
+type ClientRound = IClientRound.ClientRound;
+type ServerRound = IServerRound.ServerRound;
+type RoundStatus = IServerRound.RoundStatus;
+type ServerContestant = IServerContestant.ServerContestant;
 
 local ServerRound = {};
 
-function ServerRound.new(properties: types.ServerRoundProperties): types.ServerRound
+function ServerRound.new(properties: IServerRound.ServerRoundProperties): ServerRound
 
-  local function addContestant(self: types.ServerRound, contestantID: number): ()
+  local contestants: {ServerContestant} = {};
+
+  local function addContestant(self: ServerRound, contestantID: number): ()
 
     table.insert(self.contestantIDs, contestantID);
+
+    local contestant = ServerContestant.new({
+      id = contestantID;
+    });
+
+    table.insert(contestants, contestant);
+
     ServerStorage.Events.ContestantAdded:Fire(self.id, contestantID);
     ReplicatedStorage.Shared.Events.ContestantAdded:FireAllClients(self.id, contestantID);
 
   end;
 
-  local function convertToClientRound(self: types.ServerRound): ClientRound.ClientRound
+  local function convertToClientRound(self: ServerRound): ClientRound
 
     return {
       id = self.id;
@@ -39,7 +54,7 @@ function ServerRound.new(properties: types.ServerRoundProperties): types.ServerR
 
   end;
 
-  local function setStatus(self: types.ServerRound, status: types.RoundStatus)
+  local function setStatus(self: ServerRound, status: RoundStatus)
 
     if status == "Active" then
 
@@ -57,9 +72,9 @@ function ServerRound.new(properties: types.ServerRoundProperties): types.ServerR
           end);
 
           local onEndedEvent;
-          onEndedEvent = ServerStorage.Events.RoundStatusChanged:Connect(function(roundID: string, newStatus: types.RoundStatus)
+          onEndedEvent = ServerStorage.Events.RoundStatusChanged:Connect(function(roundID: string, newStatus: IServerRound.RoundStatus)
           
-            if roundID == self.id and (newStatus == "Stopped" or newStatus == "ForceStopped") then
+            if roundID == self.id and (newStatus == "Stopped" or newStatus == "Stopped by administrator") then
 
               onEndedEvent:Disconnect();
               if coroutine.status(timer) == "running" then
@@ -79,7 +94,7 @@ function ServerRound.new(properties: types.ServerRoundProperties): types.ServerR
 
       end;
 
-    elseif status == "ForceStopped" or status == "Stopped" then
+    elseif status == "Stopped by administrator" or status == "Stopped" then
 
       if not self.timeEnded then
 
@@ -96,9 +111,15 @@ function ServerRound.new(properties: types.ServerRoundProperties): types.ServerR
 
   end;
 
-  local function setGameModeID(self: types.ServerRound, gameModeID: string)
+  local function setGameModeID(self: ServerRound, gameModeID: string)
 
     self.gameModeID = gameModeID;
+
+  end;
+
+  local function getContestants(self: ServerRound): {ServerContestant}
+
+    return contestants;
 
   end;
 
@@ -108,16 +129,23 @@ function ServerRound.new(properties: types.ServerRoundProperties): types.ServerR
     id = properties.id;
     status = properties.status;
     addContestant = addContestant;
+    getContestants = getContestants;
     convertToClientRound = convertToClientRound;
     setStatus = setStatus;
     setGameModeID = setGameModeID;
   }
 
+  for _, contestantID in properties.contestantIDs do
+
+    round:addContestant(contestantID);
+
+  end;
+
   return round;
   
 end;
 
-function ServerRound.fromPrivateServerID(privateServerID: number): types.ServerRound
+function ServerRound.fromPrivateServerID(privateServerID: number): ServerRound
 
   -- Verify metadata integrity.
   local roundMetadataEncoded = MemoryStoreService:GetHashMap("PrivateServerRoundMetadata"):GetAsync(privateServerID);
@@ -144,7 +172,7 @@ function ServerRound.fromPrivateServerID(privateServerID: number): types.ServerR
     gameModeID = roundMetadata.gameModeID;
     duration = roundMetadata.duration;
     contestantIDs = roundMetadata.contestantIDs;
-    status = "Waiting for players" :: types.RoundStatus;
+    status = "Waiting for players" :: IServerRound.RoundStatus;
   });
 
 end;

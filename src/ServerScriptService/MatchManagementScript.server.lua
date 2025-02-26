@@ -101,37 +101,6 @@ local didSuccessfullyInitializeRound, message = pcall(function()
   
   end;
   
-  ReplicatedStorage.Shared.Functions.UpdateContestantArchetype.OnServerInvoke = function(player: Player, archetypeID: unknown): ()
-  
-    -- Verify that the player is a contestant.
-    local contestant = getContestantFromPlayer(player);
-    local playerIdentifier = `{player.Name} ({player.UserId})`;
-    assert(contestant, `{playerIdentifier} isn't a contestant in this round, so it is unnecessary for them to choose an archetype.`);
-
-    local archetypeLocks = ServerStorage.Functions.GetArchetypeLocks:Invoke(contestant.id);
-    assert(not archetypeLocks, "Archetypes are currently locked.");
-    assert(contestant.profile, `Couldn't find the {playerIdentifier}'s profile.`);
-  
-    -- Verify that the contestant has that archetype.
-    assert(archetypeID and typeof(archetypeID) == "string", "Archetype ID must be a string.");
-    local archetypeIDs = archetypeIDListCache[player.UserId] or contestant.profile:getArchetypeIDs();
-    archetypeIDListCache[player.UserId] = archetypeIDs;
-    assert(table.find(archetypeIDs, archetypeID), `{playerIdentifier} doesn't own archetype {archetypeID}, so it can't be used in this round.`);
-  
-    -- Update the archetype.
-    if contestant.archetype then
-
-      contestant.archetype:breakdown();
-
-    end;
-
-    local archetype = ServerArchetype.get(archetypeID).new({
-      contestant = contestant;
-    });
-    contestant:updateArchetype(archetype);
-  
-  end;
-  
   -- Get the match info.
   local expectedPlayerIDs = round.contestantIDs;
   

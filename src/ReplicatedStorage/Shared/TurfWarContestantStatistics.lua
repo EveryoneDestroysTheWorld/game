@@ -7,7 +7,7 @@ export type TurfWarContestantStatistics = {
   deathCount: number;
 }
 
-export type PatchableContestantTurfWarStatistics = {
+export type PatchableTurfWarContestantStatistics = {
   partsClaimed: number?;
   partsDestroyed: number?;
   partsRestored: number?;

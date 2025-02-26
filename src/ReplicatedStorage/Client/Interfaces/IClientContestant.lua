@@ -1,20 +1,18 @@
 --!strict
 
-export type ClientContestant = {
+export type IClientContestant = {
   
   id: number;
 
   archetypeID: string?;
   
-  isDisqualified: boolean;
+  isEliminated: boolean;
 
   player: Player?;
 
   characterName: string?;
 
   name: string;
-
-  isBot: boolean;
 
   teamID: number?;
 
@@ -25,8 +23,6 @@ export type ClientContestant = {
   currentStamina: number?;
 
   baseStamina: number?;
-
-  -- statistics: TurfWarContestantStatistics?;
   
 };
 

@@ -6,112 +6,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local Profile = require(ServerStorage.Packages.Profile);
 local Stage = require(ServerStorage.Packages.Stage);
 
-local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
-
-export type ServerContestant = ServerContestantProperties & ServerContestantEvents & ServerContestantMethods;
-
-export type ServerContestantProperties = {
-  
-  -- This could be nil if the server hasn't assigned an archetype to the contestant yet.
-  archetype: ServerArchetype?;
-
-  -- The character reference of the contestant. This is here to easily reference characters of bot contestants.
-  -- If the contestant is a player, this is the same value as player.Character.
-  character: Model?;
-
-  currentStamina: number;
-
-  walkSpeedWeights: {WalkSpeedWeight};
-
-  effects: {ServerEffect};
-
-  round: ServerRound;
-
-  ghostHighlight: Highlight?;
-
-  characterRagdollClone: Model?;
-
-  revivalProximityPrompt: ProximityPrompt?;
-
-  -- The ID of the contestant. 
-  -- If the contestant is a bot, this is a unique temporary ID assigned by the server. It will be an irrational number.
-  -- If the contestant is a player, this is the same value as player.UserId. It will be an integer.
-  id: number;
-
-  -- The name of the contestant. This is here to easily reference bot names. 
-  -- If the contestant is a player, this is the same value as player.DisplayName. To get the username, use player.Name.
-  name: string;
-
-  -- Is this contestant still a part of the game?
-  isEliminated: boolean;
-
-  isAutoEliminationEnabled: boolean;
-
-  -- The player reference of the contestant. This should be nil if the contestant isn't a player.
-  player: Player?;
-
-  -- The profile of the contestant. This should be nil if the contestant isn't a player.
-  profile: Profile.Profile?;
-
-  -- The team ID of the contestant. This will be nil if the game rules call for a free-for-all.
-  teamID: number?;
-
-  items: {ServerItem};
-
-  baseModifiers: {
-    health: {BaseModifier};
-    stamina: {BaseModifier};
-  };
-
-  currentHealth: number;
-
-  baseHealth: number;
-
-  baseStamina: number;
-
-  statistics: TurfWarContestantStatistics.TurfWarContestantStatistics?;
-
-  attributes: {
-    [string]: unknown;
-  };
-
-  tags: {string};
-  
-}
-
-export type ServerContestantMethods = {
-  addWalkSpeedWeight: (self: ServerContestant, weight: WalkSpeedWeight) -> ();
-  addBaseModifier: (self: ServerContestant, modifierType: BaseModifierType, modifier: BaseModifier) -> ();
-  addItem: (self: ServerContestant, item: ServerItem) -> ();
-  eliminate: (self: ServerContestant, shouldCreateRagdoll: boolean) -> ();
-  removeBaseModifier: (self: ServerContestant, modifierType: BaseModifierType, modifier: BaseModifier) -> ();
-  removeWalkSpeedWeight: (self: ServerContestant, weight: WalkSpeedWeight) -> ();
-  removeItem: (self: ServerContestant, item: ServerItem) -> ();
-  refreshWalkSpeed: (self: ServerContestant) -> ();
-  addEffect: (self: ServerContestant, effect: ServerEffect) -> ();
-  removeEffect: (self: ServerContestant, effect: ServerEffect) -> ();
-  convertToClient: (self: ServerContestant) -> {any};
-  disqualify: (self: ServerContestant) -> ();
-  getModifiedBaseValue: (self: ServerContestant, modifierType: BaseModifierType) -> number;
-  getInventoryItemIDs: (self: ServerContestant) -> {string};
-  updateArchetype: (self: ServerContestant, newArchetype: ServerArchetype?) -> ();
-  updateCharacter: (self: ServerContestant, newCharacter: Model?) -> ();
-  updateInventory: (self: ServerContestant, newInventory: {ServerItem}) -> ();
-  updateHealth: (self: ServerContestant, newHealth: number, cause: Cause?) -> ();
-  updateStamina: (self: ServerContestant, newStamina: number, cause: Cause?) -> ();
-  mergeStatistics: (self: ServerContestant, newStatistics: TurfWarContestantStatistics.PatchableContestantTurfWarStatistics, cause: Cause?) -> ();
-  toString: (self: ServerContestant) -> string;
-}
-
-export type ServerContestantEvents = {
-  onDisqualified: RBXScriptSignal;
-  onArchetypeUpdated: RBXScriptSignal;
-  onHealthUpdated: RBXScriptSignal<number, number, Cause?>;
-  onStaminaUpdated: RBXScriptSignal<number, number, Cause?>;
-  onInventoryUpdated: RBXScriptSignal<{number}>;
-  onEffectsUpdated: RBXScriptSignal;
-}
-
 export type AggressiveAutopilot = AggressiveAutopilotProperties & AggressiveAutopilotMethods;
 
 export type AggressiveAutopilotProperties = {
@@ -383,18 +277,6 @@ export type Cause = {
   effectID: string?;
 };
 
-export type GameModeProperties = {
-  id: string;
-  name: string;
-  description: string;
-  start: (self: GameMode) -> ();
-  breakdown: (self: GameMode) -> ();
-};
-
-export type GameMode = GameModeProperties;
-
-export type GameModeClass = GameModeProperties & {new: (...any) -> GameMode};
-
 export type HoldingHeavyItemServerEffect = ServerEffect<HoldingHeavyItemServerEffectProperties & HoldingHeavyItemServerEffectMethods>;
 
 export type HoldingHeavyItemServerEffectProperties = {
@@ -486,31 +368,6 @@ export type StunnedServerEffect = ServerEffect<{
   breakdown: (self: StunnedServerEffect) -> ();
 }>;
 
-export type ServerActionConstructorProperties = {
-  contestant: ServerContestant;
-}
-
-export type ServerAction<ExtendedProperties = {[unknown]: any}> = {
-  id: string;
-  name: string;
-  description: string;
-} & ExtendedProperties & {
-  activate: (self: any, ...any) -> ();
-  breakdown: (self: any, ...any) -> (); 
-};
-
-export type ServerActionClass<ConstructorProperties = any, Action = any> = {
-  new: (...ConstructorProperties) -> Action
-}
-
-export type ServerActionFactory = {
-  get: (
-    ((effectID: "ChangeModes") -> ServerActionClass<ServerActionConstructorProperties, ChangeModesServerAction>)
-    & ((effectID: "StrikeOutStrike") -> ServerActionClass<ServerActionConstructorProperties, StrikeOutSwipeServerAction>)
-    & ((actionID: string) -> ServerActionClass)
-  );
-}
-
 export type StrikeOutSwipeServerAction = ServerAction<{
   bat: BasePart;
   contestant: ServerContestant;
@@ -529,51 +386,11 @@ export type StrikeOutSwipeServerAction = ServerAction<{
   breakdown: (self: StrikeOutSwipeServerAction) -> ();
 }>;
 
-export type ServerArchetype<ExtendedProperties = unknown> = ServerArchetypeProperties & ExtendedProperties & ServerArchetypeMethods;
-
-export type ServerArchetypeClass = ServerArchetypeProperties & {new: (...any) -> ServerArchetype};
-
-export type ArchetypeType = "Fighter" | "Defender" | "Destroyer" | "Supporter";
-
-export type ServerArchetypeProperties = {
-  
-  id: string;
-  
-  name: string;
-
-  description: string;
-
-  type: ArchetypeType;
-
-  actions: {ServerAction};
-
-  actionIDs: {string};
-  
-};
-
-export type ServerArchetypeMethods = {
-
-  breakdown: (self: any) -> ();
-
-};
-
-export type WalkSpeedWeight = {
-  walkSpeed: number;
-  weight: number;
-};
-
 export type ServerContestantConstructorProperties = {
   id: number;
   round: ServerRound;
   name: string;
 }
-
-export type BaseModifierType = "Health" | "Stamina";
-
-export type BaseModifier = {
-  delta: number;
-  cause: Cause;
-};
 
 export type ServerItemProperties = {
 
@@ -604,37 +421,6 @@ export type ServerItemEvents = {
   -- Called when the item activates.
   onActivate: RBXScriptSignal<"Press" | "Hold">;
 
-}
-
-export type ServerEffectDefaultProperties = {
-  id: string;
-  name: string;
-  uniqueID: string;
-  description: string;
-};
-
-export type ServerEffect<ExtendedProperties = unknown> = ServerEffectDefaultProperties & ExtendedProperties & {
-  activate: (self: any, ...any) -> ();
-  breakdown: (self: any, ...any) -> (); 
-  updateContestantHealth: ((self: any, newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
-  updateContestantStamina: ((self: any, newHealth: number, oldHealth: number, cause: Cause?) -> number)?;
-};
-
-export type ServerEffectClass<ServerEffectConstructorProperties = any, ExtendedServerEffect = any> = ServerEffectDefaultProperties & {
-  new: (...ServerEffectConstructorProperties) -> ExtendedServerEffect
-}
-
-export type ServerEffectFactory = {
-  get: (
-    ((effectID: "Invincibility") -> ServerEffectClass<ServerEffectConstructorProperties, InvincibilityServerEffect>)
-    & ((effectID: "StaminaRecoverySuppression") -> ServerEffectClass)
-    & ((effectID: "HoldingHeavyItem") -> ServerEffectClass<ServerEffectConstructorProperties, HoldingHeavyItemServerEffect>)
-    & ((effectID: "Paralysis") -> ServerEffectClass<ServerEffectConstructorProperties, ParalysisServerEffect>)
-    & ((effectID: "Undead") -> ServerEffectClass<ServerEffectConstructorProperties, UndeadServerEffect>)
-    & ((effectID: "RoughArmor") -> ServerEffectClass<ServerEffectConstructorProperties, RoughArmorServerEffect>)
-    & ((effectID: string) -> ServerEffectClass)
-  );
-  random: () -> ServerEffectClass;
 }
 
 export type ServerItem = ServerItemProperties & ServerItemEvents;
