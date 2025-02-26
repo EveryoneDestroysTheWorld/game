@@ -22,10 +22,6 @@ export type ServerRoundMethods = {
 
   setStatus: (self: ServerRound, status: ClientRound.RoundStatus) -> ();
 
-  start: (self: ServerRound) -> ();
-
-  stop: (self: ServerRound, forced: boolean?) -> ();
-
   setGameModeID: (self: ServerRound, gameModeID: string) -> ();
 }
 

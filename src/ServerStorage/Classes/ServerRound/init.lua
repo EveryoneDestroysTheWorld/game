@@ -9,8 +9,6 @@ local MemoryStoreService = game:GetService("MemoryStoreService");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
-local GameMode = require(script.Parent.GameMode);
-local Autopilot = require(ServerStorage.Classes.Autopilot);
 local types = require(script.types);
 
 local ClientRound = require(ReplicatedStorage.Client.Interfaces.ClientRound);
@@ -18,44 +16,6 @@ local ClientRound = require(ReplicatedStorage.Client.Interfaces.ClientRound);
 local ServerRound = {};
 
 function ServerRound.new(properties: types.ServerRoundProperties): types.ServerRound
-
-  local function start(self: types.ServerRound): ()
-
-    assert(not self.timeStarted, "The round has already started.");
-
-    self.timeStarted = DateTime.now().UnixTimestampMillis;
-
-    if self.duration then
-
-      -- Start a timer.
-      local timer = task.delay(self.duration, function()
-      
-        self:stop();
-
-      end);
-
-      local onEndedEvent;
-      onEndedEvent = ServerStorage.Events.RoundStatusChanged:Connect(function(roundID: string, newStatus: types.RoundStatus)
-      
-        if roundID == self.id and (newStatus == "Stopped" or newStatus == "ForceStopped") then
-
-          onEndedEvent:Disconnect();
-          if coroutine.status(timer) == "running" then
-
-            task.cancel(timer);
-
-          end;
-
-        end;
-
-      end);
-
-    end;
-
-    ServerStorage.Events.RoundStarted:Fire(self.id, self.timeStarted);
-    ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(self.id, self.timeStarted);
-
-  end;
 
   local function addContestant(self: types.ServerRound, contestantID: number): ()
 
@@ -81,6 +41,54 @@ function ServerRound.new(properties: types.ServerRoundProperties): types.ServerR
 
   local function setStatus(self: types.ServerRound, status: types.RoundStatus)
 
+    if status == "Active" then
+
+      if not self.timeStarted then
+
+        self.timeStarted = DateTime.now().UnixTimestampMillis;
+
+        if self.duration then
+
+          -- Start a timer.
+          local timer = task.delay(self.duration, function()
+          
+            self:setStatus("Stopped");
+
+          end);
+
+          local onEndedEvent;
+          onEndedEvent = ServerStorage.Events.RoundStatusChanged:Connect(function(roundID: string, newStatus: types.RoundStatus)
+          
+            if roundID == self.id and (newStatus == "Stopped" or newStatus == "ForceStopped") then
+
+              onEndedEvent:Disconnect();
+              if coroutine.status(timer) == "running" then
+
+                task.cancel(timer);
+
+              end;
+
+            end;
+
+          end);
+
+        end;
+
+        ServerStorage.Events.RoundStarted:Fire(self.id, self.timeStarted);
+        ReplicatedStorage.Shared.Events.RoundStarted:FireAllClients(self.id, self.timeStarted);
+
+      end;
+
+    elseif status == "ForceStopped" or status == "Stopped" then
+
+      if not self.timeEnded then
+
+        self.timeEnded = DateTime.now().UnixTimestampMillis;
+
+      end;
+
+    end;
+
     local oldStatus = self.status;
     self.status = status;
     ServerStorage.Events.RoundStatusChanged:Fire(self.id, status, oldStatus);
@@ -94,29 +102,15 @@ function ServerRound.new(properties: types.ServerRoundProperties): types.ServerR
 
   end;
 
-  local function stop(self: types.ServerRound, isForced: boolean?): ()
-
-    assert(not self.timeEnded, "The round has already ended.");
-  
-    -- Break down the game mode.
-    self:setStatus(if isForced then "ForceStopped" else "Stopped");
-  
-    -- Save the round info in the database.
-    self.timeEnded = DateTime.now().UnixTimestampMillis;
-  
-  end
-
   local round = {
     contestantIDs = properties.contestantIDs;
     gameModeID = properties.gameModeID;
     id = properties.id;
     status = properties.status;
-    start = start;
     addContestant = addContestant;
     convertToClientRound = convertToClientRound;
     setStatus = setStatus;
     setGameModeID = setGameModeID;
-    stop = stop;
   }
 
   return round;
