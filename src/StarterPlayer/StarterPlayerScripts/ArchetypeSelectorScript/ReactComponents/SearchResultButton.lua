@@ -2,7 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ContextActionService = game:GetService("ContextActionService");
-local Fonts = require(ReplicatedStorage.Client.Fonts);
+local Fonts = require(ReplicatedStorage.Client.Modules.Fonts);
 
 export type SearchResultButtonProperties = {
   onActivate: () -> ();

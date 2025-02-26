@@ -4,7 +4,7 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 local ContextActionService = game:GetService("ContextActionService");
-local Fonts = require(ReplicatedStorage.Client.Fonts);
+local Fonts = require(ReplicatedStorage.Client.Modules.Fonts);
 
 type RoundTimerProps = {
   value: string;

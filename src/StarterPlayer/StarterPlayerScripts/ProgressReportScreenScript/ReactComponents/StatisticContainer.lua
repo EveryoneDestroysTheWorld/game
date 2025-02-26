@@ -5,7 +5,7 @@ local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 type ClientRound = ClientRound.ClientRound;
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
-local Fonts = require(ReplicatedStorage.Client.Fonts);
+local Fonts = require(ReplicatedStorage.Client.Modules.Fonts);
 
 export type ProgressReportScreenProperties = {
   LayoutOrder: number;

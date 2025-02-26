@@ -4,7 +4,7 @@ local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
 local TeamSelectionContainer = require(script.Parent.TeamSelectionContainer);
-local Fonts = require(ReplicatedStorage.Client.Fonts);
+local Fonts = require(ReplicatedStorage.Client.Modules.Fonts);
 
 export type PlayerSelectionContainerProperties = {
   teams: {

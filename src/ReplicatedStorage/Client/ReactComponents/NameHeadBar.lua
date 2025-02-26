@@ -1,21 +1,27 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
+local ClientContestant = require(ReplicatedStorage.Client.Interfaces.ClientContestant);
 
 type HealthHeadBarProps = {
-  contestant: ClientContestant.ClientContestant;
+  roundID: string;
+  contestantID: number;
 }
 
 local function HealthHeadBar(props: HealthHeadBarProps)
 
-  local contestantName, setContestantName = React.useState(props.contestant.name);
+  local contestantName, setContestantName = React.useState("");
 
   React.useEffect(function()
 
-    setContestantName(props.contestant.name);
+    task.spawn(function()
+    
+      local contestant = ReplicatedStorage.Shared.Functions.GetContestant:InvokeServer(props.roundID, props.contestantID) :: ClientContestant.ClientContestant;
+      setContestantName(contestant.name);
 
-  end, {props.contestant});
+    end);
+
+  end, {props.contestantID :: unknown, props.roundID});
 
   return React.createElement("TextLabel", {
     Size = UDim2.new(1, 0, 0.8, 0);

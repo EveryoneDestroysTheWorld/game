@@ -1,31 +1,38 @@
 --!strict
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local types = require(ReplicatedStorage.Client.Modules.SharedTypes);
 
 type HealthHeadBar = {
-  contestant: types.ClientContestant;
+  contestantID: number;
+  roundID: string;
 }
 
 local function HealthHeadBar(props: HealthHeadBar)
-
-  local contestant = props.contestant;
 
   local healthPercentage, setHealthPercentage = React.useState(1);
 
   React.useEffect(function()
   
-    local function updateHealthPercentage()
+    -- TODO: Fix this
+    local function updateHealthPercentage(currentHealth: number, baseHealth: number)
 
-      if contestant.currentHealth and contestant.baseHealth then
+      setHealthPercentage(currentHealth / baseHealth);
 
-        setHealthPercentage(contestant.currentHealth / contestant.baseHealth);
+    end;
+
+    local function verifyEvent(roundID: string, contestantID: number, newHealthData)
+
+      if roundID == props.roundID and contestantID == props.contestantID then
+
+        updateHealthPercentage(newHealthData.currentHealth, newHealthData.baseHealth)
 
       end;
 
     end;
 
-    local onHealthUpdated = contestant.onHealthUpdated:Connect(updateHealthPercentage);
+    local onHealthUpdated = ReplicatedStorage.Shared.Events.HealthUpdated:Connect(verifyEvent);
 
     return function()
 
@@ -33,7 +40,7 @@ local function HealthHeadBar(props: HealthHeadBar)
 
     end;
 
-  end, {contestant});
+  end, {props.contestantID :: unknown, props.roundID});
 
   return React.createElement("Frame", {
     Size = UDim2.new(1, 0, 0.1, 0);

@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 type ClientContestant = ClientContestant.ClientContestant;
-local Fonts = require(ReplicatedStorage.Client.Fonts);
+local Fonts = require(ReplicatedStorage.Client.Modules.Fonts);
 
 export type TeamProgressBarContainerProperties = {
   LayoutOrder: number;

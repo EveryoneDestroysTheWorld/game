@@ -8,7 +8,7 @@ local SelectionIndicator = require(script.SelectionIndicator);
 local types = require(script.types);
 local React = require(ReplicatedStorage.Shared.Packages.react);
 local ReactRoblox = require(ReplicatedStorage.Shared.Packages["react-roblox"]);
-local Fonts = require(ReplicatedStorage.Client.Fonts);
+local Fonts = require(ReplicatedStorage.Client.Modules.Fonts);
 
 local function QuickSelectionMenu(properties: types.QuickSelectionMenuProperties)
 

@@ -1,12 +1,12 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Shared.Packages.react);
-local ClientContestant = require(ReplicatedStorage.Client.Classes.ClientContestant);
 local NameHeadBar = require(ReplicatedStorage.Client.ReactComponents.NameHeadBar);
 local HealthHeadBar = require(ReplicatedStorage.Client.ReactComponents.HealthHeadBar);
 
 type HeadBarContainerProps = {
-  contestant: ClientContestant.ClientContestant;
+  contestantID: number;
+  roundID: string;
 }
 
 local function HeadBarContainer(props: HeadBarContainerProps)
@@ -16,8 +16,14 @@ local function HeadBarContainer(props: HeadBarContainerProps)
       SortOrder = Enum.SortOrder.LayoutOrder;
       Padding = UDim.new(0.1, 0);
     });
-    NameHeadBar = React.createElement(NameHeadBar, {contestant = props.contestant});
-    HealthHeadBar = React.createElement(HealthHeadBar, {contestant = props.contestant});
+    NameHeadBar = React.createElement(NameHeadBar, {
+      contestantID = props.contestantID;
+      roundID = props.roundID;
+    });
+    HealthHeadBar = React.createElement(HealthHeadBar, {
+      contestantID = props.contestantID;
+      roundID = props.roundID;
+    });
   });
 
 end

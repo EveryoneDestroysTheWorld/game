@@ -264,7 +264,8 @@ end;
 
 function ServerContestant.__index:updateHealth(newHealth: number, cause: types.Cause?): ()
 
-  local oldHealth = self.currentHealth;
+  local oldCurrentHealth = self.currentHealth;
+  local oldBaseHealth = self.baseHealth;
 
   for _, effect in self.effects do
 
