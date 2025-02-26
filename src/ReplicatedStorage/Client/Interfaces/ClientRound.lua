@@ -4,13 +4,17 @@
 -- Programmers: Christian Toney (Christian_Toney)
 -- © 2024 – 2025 Beastslash LLC
 
-export type RoundStatus = "Waiting for players" | "Contestant selection" | "Matchup preview" | "Initializing character models" | "Pre-round countdown" | "Active";
+export type RoundStatus = "Waiting for players" | "Contestant selection" | "Matchup preview" | "Initializing character models" | "Pre-round countdown" | "Active" | "ForceStopped" | "Stopped";
 
 export type ClientRound = {
 
-  id: string;  
+  id: string;
+
+  gameModeID: string;
   
-  stageID: string;
+  stageID: string?;
+
+  status: RoundStatus;
 
   timeStarted: number?;
 
@@ -18,8 +22,6 @@ export type ClientRound = {
 
   timeEnded: number?;
 
-  status: RoundStatus;
-  
   contestantIDs: {number};
 
 }

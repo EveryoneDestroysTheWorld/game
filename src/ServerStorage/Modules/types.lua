@@ -7,7 +7,6 @@ local Profile = require(ServerStorage.Packages.Profile);
 local Stage = require(ServerStorage.Packages.Stage);
 
 local TurfWarContestantStatistics = require(ReplicatedStorage.Shared.TurfWarContestantStatistics);
-local ClientRound = require(ReplicatedStorage.Client.Classes.ClientRound);
 
 export type ServerContestant = ServerContestantProperties & ServerContestantEvents & ServerContestantMethods;
 
@@ -376,8 +375,6 @@ export type UndeadConsciousnessServerArchetypeMethods = {
   
 };
 
-export type RoundStatus = ClientRound.RoundStatus;
-
 export type Cause = {
   contestantID: number?; 
   actionID: string?; 
@@ -392,7 +389,6 @@ export type GameModeProperties = {
   description: string;
   start: (self: GameMode) -> ();
   breakdown: (self: GameMode) -> ();
-  toString: (self: GameMode) -> string;
 };
 
 export type GameMode = GameModeProperties;
@@ -642,68 +638,5 @@ export type ServerEffectFactory = {
 }
 
 export type ServerItem = ServerItemProperties & ServerItemEvents;
-
-export type ServerRoundConstructorProperties = {
-
-  -- This round's unique ID.
-  id: string;
-
-  gameModeID: string;
-  
-  -- This stage's ID.
-  stageID: string;
-
-  status: ClientRound.RoundStatus;
-
-  timeStarted: number?;
-
-  duration: number?;
-
-  timeEnded: number?;
-
-  contestantIDs: {number};
-  
-  stage: Stage.Stage?
-
-}
-
-export type ServerRoundProperties = ServerRoundConstructorProperties & {  
-
-  stage: Stage.Stage;
-
-  contestants: {ServerContestant};
-
-  gameMode: GameMode?;
-
-};
-
-export type ServerRoundEvents = {
-  onStopped: RBXScriptSignal;
-  onEnded: RBXScriptSignal;
-  onStatusChanged: RBXScriptSignal;
-  onContestantAdded: RBXScriptSignal;
-  onContestantRemoved: RBXScriptSignal;
-  onTimeStartedChanged: RBXScriptSignal;
-}
-
-export type ServerRoundMethods = {
-
-  --[[
-    Adds a contestant to the round.
-  ]]
-  addContestant: (self: ServerRound, contestant: ServerContestant) -> ();
-
-  --[[
-    Converts the current server round to a client object, stripping any sensitive data.
-  ]]
-  getClientConstructorProperties: (self: ServerRound) -> any;
-  setStatus: (self: ServerRound, newStatus: ClientRound.RoundStatus) -> ();
-  start: (self: ServerRound) -> ();
-  stop: (self: ServerRound, forced: boolean?) -> ();
-  setGameMode: (self: ServerRound, gameMode: GameMode) -> ();
-  toString: (self: ServerRound) -> string;
-}
-
-export type ServerRound = ServerRoundProperties & ServerRoundEvents & ServerRoundMethods;
 
 return {};
