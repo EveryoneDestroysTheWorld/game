@@ -66,7 +66,7 @@ export type IServerContestantConstructorProperties = {
   baseModifiers: {
     health: {BaseModifier};
     stamina: {BaseModifier};
-  };
+  }?;
 
   currentHealth: number?;
 

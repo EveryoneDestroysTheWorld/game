@@ -29,7 +29,7 @@ type PatchableTurfWarContestantStatistics = TurfWarContestantStatistics.Patchabl
 
 local ServerContestant = {};
 
-function ServerContestant.new(properties: IServerContestantConstructorProperties, round: IServerRound): IServerContestant
+function ServerContestant.new(properties: IServerContestantConstructorProperties): IServerContestant
 
   local archetype: IServerArchetype? = nil;
   local character: Model? = nil;

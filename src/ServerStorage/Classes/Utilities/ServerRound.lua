@@ -31,7 +31,7 @@ function ServerRound.new(properties: IServerRoundProperties): IServerRound
 
     table.insert(self.contestantIDs, contestantProperties.id);
 
-    local contestant = ServerContestant.new(contestantProperties, self);
+    local contestant = ServerContestant.new(contestantProperties);
 
     table.insert(contestants, contestant);
 

@@ -2,15 +2,14 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 
-local ServerContestant = require(ServerStorage.Classes.ServerContestant);
-local types = require(ServerStorage.Modules.types);
+local ServerContestant = require(ServerStorage.Classes.Utilities.ServerContestant);
 
 local function createMockContestant()
 
   return ServerContestant.new({
-    round = {} :: types.ServerRound;
     name = "Test";
     id = 0;
+    roundID = "Test"
   });
 
 end;

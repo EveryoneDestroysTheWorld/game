@@ -22,7 +22,7 @@ local ChangeModesServerAction = {
   } :: types.ChangeModesServerAction;
 };
 
-function ChangeModesServerAction.new(properties: types.ServerActionConstructorProperties): types.ChangeModesServerAction
+function ChangeModesServerAction.new(contestant: IServerContestant): types.ChangeModesServerAction
 
   local overwrittenProperties = {
     contestant = properties.contestant;

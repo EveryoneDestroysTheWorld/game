@@ -2,7 +2,7 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 
-local ServerAction = require(ServerStorage.Classes.ServerAction);
+local ChangeModesServerAction = require(script.Parent);
 
 local createMockContestant = require(ServerStorage.Modules.createMockContestant);
 
@@ -11,9 +11,7 @@ return {
     ["can change archetype modes"] = function()
 
       local contestant = createMockContestant();
-      local action = ServerAction.get("ChangeModes").new({
-        contestant = contestant;
-      });
+      local action = ChangeModesServerAction.new(contestant);
 
       action:activate("Batter");
 
