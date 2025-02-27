@@ -99,14 +99,6 @@ export type DiveBombServerAction = ServerAction<{
   remoteFunction: RemoteFunction?;
 }>;
 
-export type DetonateDetachedLimbsServerAction = ServerAction<{
-  contestant: ServerContestant;
-  bindableFunction: BindableFunction;
-  remoteFunction: RemoteFunction?;
-  activate: (self: DetonateDetachedLimbsServerAction) -> ();
-  breakdown: (self: DetonateDetachedLimbsServerAction) -> ();
-}>;
-
 export type ExplosivePunchServerAction = ServerAction<{
   contestant: ServerContestant;
   bindableFunction: BindableFunction;
