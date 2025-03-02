@@ -4,19 +4,18 @@
 -- © 2024 – 2025 Beastslash LLC
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local RunService = game:GetService("RunService");
 local ServerStorage = game:GetService("ServerStorage");
+local TweenService = game:GetService("TweenService");
 
 local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
 local IServerRound = require(ServerStorage.Interfaces.IServerRound);
 local ITakeFlightServerAction = require(ServerStorage.Interfaces.ITakeFlightServerAction);
 local TakeFlightClientAction = require(ReplicatedStorage.Client.Classes.Actions.TakeFlightClientAction);
 
-local animateFlight = require(script.animateFlight);
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
 local mergeTable = require(ReplicatedStorage.Shared.Modules.mergeTable);
-local endFlight = require(script.endFlight);
 local preloadAnimations = require(ServerStorage.Modules.preloadAnimations);
-local startFlight = require(script.startFlight);
 
 type IServerContestant = IServerContestant.IServerContestant;
 type IServerRound = IServerRound.IServerRound;
@@ -30,8 +29,8 @@ local TakeFlightServerAction = {
 
 function TakeFlightServerAction.new(contestant: IServerContestant): ITakeFlightServerAction
 	
-	local animationTracks = {};
-	local linearVelocity;
+	local animationTracks: {[string]: AnimationTrack} = {};
+	local linearVelocity: LinearVelocity?;
 
 	local function activate(self: ITakeFlightServerAction): boolean
 
@@ -42,12 +41,79 @@ function TakeFlightServerAction.new(contestant: IServerContestant): ITakeFlightS
 	
 			local primaryPart = contestant.character.PrimaryPart;
 			if primaryPart then
+
+				local shouldEndFlight = not not primaryPart:FindFirstChild("FlightConstraint");
+				local function animateFlight(animationData: Vector3)
+
+					animationTracks.right:Play(animationData.X, animationData.Y, animationData.Z);
+					animationTracks.left:Play(animationData.X, animationData.Y, animationData.Z);
+
+					if shouldEndFlight then
+
+						animationTracks.rightIdle:Stop(0.1)
+						animationTracks.leftIdle:Stop(0.1)
+						animationTracks.idle:Stop(0.1)
+						animationTracks["end"]:Play(0.1,1,0.8)
+						task.wait(0.3)
+						animationTracks["end"]:AdjustWeight(0.01, 0.5)
+
+					else
+						animationTracks.start:Play(0.1,1,1.8)
+						task.wait(0.5)
+						animationTracks.start:AdjustWeight(0.01, 0.5)
+						animationTracks.idle:Play(0.5, 1, 1.2)
+						animationTracks.rightIdle:Play(0.5, 1, 1.2)
+						animationTracks.leftIdle:Play(0.5, 1, 1.2)
+						task.wait(0.3)
+
+						local flightConstraint = primaryPart:FindFirstChild("FlightConstraint");
+						if flightConstraint then
+
+							flightConstraint.Destroying:Once(function(change)
+								
+								animationTracks.rightIdle:Stop(0.3)
+								animationTracks.leftIdle:Stop(0.3)
+								animationTracks.idle:Stop(0.3)
+
+							end)
+
+						end;
+
+					end
+
+				end;
 	
-				if primaryPart:FindFirstChild("FlightConstraint") then
-	
-					coroutine.wrap(endFlight)(self, primaryPart);
-	
-					animateFlight(self, primaryPart, Vector3.new(0, 100, 2.5), true);
+				if shouldEndFlight then
+					
+					local function endFlight()
+
+						if linearVelocity then
+
+							local cachedLinearVelocity = linearVelocity;
+							linearVelocity.VectorVelocity = Vector3.new(0,15,0)
+							linearVelocity.MaxAxesForce = Vector3.new(math.huge,math.huge,math.huge);
+							linearVelocity.Parent = primaryPart;
+							linearVelocity.Attachment0 = primaryPart:FindFirstChild("RootAttachment") :: Attachment;
+					
+							task.wait(0.15)
+							linearVelocity.VectorVelocity = primaryPart.CFrame.LookVector * 30
+							task.delay(0.1, function()
+					
+								if linearVelocity and linearVelocity == cachedLinearVelocity then
+					
+									linearVelocity = nil;
+									linearVelocity:Destroy();
+					
+								end;
+					
+							end);
+					
+						end;
+
+					end;
+
+					endFlight();
+					animateFlight(Vector3.new(0, 100, 2.5));
 	
 				elseif contestant.currentStamina >= 10 then
 	
@@ -55,10 +121,78 @@ function TakeFlightServerAction.new(contestant: IServerContestant): ITakeFlightS
 						actionID = self.id;
 						contestantID = contestant.id;
 					});
+
+					local function startFlight()
+
+						--perhaps some of this could be clientside
+						local newLinearVelocity = Instance.new("LinearVelocity");
+						newLinearVelocity.VelocityConstraintMode = Enum.VelocityConstraintMode.Vector;
+						newLinearVelocity.Name = "FlightConstraint"
+						newLinearVelocity.VectorVelocity = Vector3.new(0,-5,0)
+						newLinearVelocity.ForceLimitMode = Enum.ForceLimitMode.PerAxis
+						newLinearVelocity.MaxAxesForce = Vector3.new(0,math.huge,0);
+						newLinearVelocity.Parent = primaryPart;
+						newLinearVelocity.Attachment0 = primaryPart:FindFirstChild("RootAttachment") :: Attachment;
+						linearVelocity = newLinearVelocity;
+
+						task.wait(0.3)
+
+						newLinearVelocity.VectorVelocity = Vector3.new(0,50,0)
+
+						local tween = TweenService:Create(linearVelocity, TweenInfo.new(1.0, Enum.EasingStyle.Sine), {VectorVelocity = Vector3.new(0,5,0)});
+						tween:Play()
+						task.wait(0.6)
+						local humanoid = (primaryPart.Parent :: Instance):FindFirstChild("Humanoid") :: Humanoid;
+						local connection
+						connection = humanoid:GetPropertyChangedSignal("FloorMaterial"):Connect(function(change)
+
+							if humanoid.FloorMaterial ~= Enum.Material.Air then
+
+								connection:Disconnect();
+
+								if linearVelocity then
+
+									linearVelocity:Destroy();
+									linearVelocity = nil;
+
+								end;
+
+							end
+
+						end)
+
+						task.spawn(function()
+						
+							while linearVelocity == newLinearVelocity and RunService.Stepped:Wait() do
+
+								local verticalVelocity = if humanoid.Jump then 0.8 else 0;
+								local value = (humanoid.MoveDirection) + Vector3.new(0, verticalVelocity, 0)
+								local tween = TweenService:Create(linearVelocity, TweenInfo.new(0.5, Enum.EasingStyle.Sine), {VectorVelocity = value * 20})
+								tween:Play()
+
+							end;
+
+						end);
+
+						while contestant.currentStamina <= 0 or not primaryPart:FindFirstChild("FlightConstraint") or newLinearVelocity ~= linearVelocity and task.wait(0.25) do
+
+							contestant:setCurrentStamina(math.max(0, contestant.currentStamina - 2), {
+								actionID = self.id;
+								contestantID = contestant.id;
+							});
+
+						end;
+
+						if contestant.currentStamina <= 0 and linearVelocity then
+
+							linearVelocity.LineDirection = Vector3.new(0, -8, 0);
+
+						end
+
+					end;
 	
-					coroutine.wrap(startFlight)(self, contestant, primaryPart);
-	
-					animateFlight(self, primaryPart, Vector3.new(0, 100, 1.8), false)
+					task.spawn(startFlight);
+					animateFlight(Vector3.new(0, 100, 1.8))
 	
 					return true;
 	
@@ -160,8 +294,6 @@ function TakeFlightServerAction.new(contestant: IServerContestant): ITakeFlightS
 		end;
 
 	end;
-
-	animationTracks = animationTracks;
 
 	local player = contestant.player;
 	if player then
