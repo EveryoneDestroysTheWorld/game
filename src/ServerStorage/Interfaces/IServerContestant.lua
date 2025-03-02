@@ -92,6 +92,8 @@ export type IServerContestantProperties = {
 
   roundID: string;
 
+  character: Model?;
+
   ghostHighlight: Highlight?;
 
   characterRagdollClone: Model?;
