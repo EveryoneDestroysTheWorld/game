@@ -3,18 +3,19 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 
-local ServerAction = require(ServerStorage.Classes.ServerAction);
+local HeresThePitchServerAction = require(script.Parent);
 
 local createMockContestant = require(ServerStorage.Modules.createMockContestant);
+local createMockRound = require(ServerStorage.Modules.createMockRound);
 
 return {
   HeresThePitchServerAction = {
     ["only works in pitcher mode"] = function()
 
+      local round = createMockRound();
       local contestant = createMockContestant();
-      local action = ServerAction.get("ChangeModes").new({
-        contestant = contestant;
-      });
+      round:addContestant(contestant);
+      local action = HeresThePitchServerAction.new(contestant, round);
 
       local function canRunAction()
 

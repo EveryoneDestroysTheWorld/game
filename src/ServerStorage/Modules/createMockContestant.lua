@@ -7,9 +7,9 @@ local ServerContestant = require(ServerStorage.Classes.Utilities.ServerContestan
 local function createMockContestant()
 
   return ServerContestant.new({
-    name = "Test";
+    name = "Mock";
     id = 0;
-    roundID = "Test"
+    roundID = "Mock"
   });
 
 end;
