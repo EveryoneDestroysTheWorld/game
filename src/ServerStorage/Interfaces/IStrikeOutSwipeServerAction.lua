@@ -8,6 +8,6 @@ local SharedTypes = require(ServerStorage.Modules.SharedTypes);
 
 type BallType = SharedTypes.BallType
 
-export type IStrikeOutServerAction = IServerAction.IServerAction<{}>;
+export type IStrikeOutSwipeServerAction = IServerAction.IServerAction<{}, (boolean)>;
 
 return {};
