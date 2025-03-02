@@ -2,24 +2,25 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 
-local ServerAction = require(ServerStorage.Classes.ServerAction);
+local StrikeOutSwipeServerAction = require(script.Parent);
 
 local createMockContestant = require(ServerStorage.Modules.createMockContestant);
+local createMockRound = require(ServerStorage.Modules.createMockRound);
 
 return {
   ChangeModesServerAction = {
     ["only works in batter mode"] = function()
 
+      local round = createMockRound();
       local contestant = createMockContestant();
-      local action = ServerAction.get("StrikeOutSwipe").new({
-        contestant = contestant;
-      });
+      round:addContestant(contestant);
+      local action = StrikeOutSwipeServerAction.new(contestant, round);
 
       local function canRunAction()
 
         return pcall(function()
       
-          action:activate();
+          action:activate(false);
   
         end)
 
