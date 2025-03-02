@@ -4,7 +4,14 @@
 -- © 2024 – 2025 Beastslash LLC
 
 local ServerStorage = game:GetService("ServerStorage");
-local types = require(ServerStorage.Modules.types);
+
+local IDiveBombServerAction = require(ServerStorage.Interfaces.IDiveBombServerAction);
+local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
+local ITarBombServerAction = require(ServerStorage.Interfaces.ITarBombServerAction);
+
+type IDiveBombServerAction = IDiveBombServerAction.IDiveBombServerAction;
+type IServerContestant = IServerContestant.IServerContestant;
+type ITarBombServerAction = ITarBombServerAction.ITarBombServerAction;
 
 local damageFramework = {};
 
@@ -48,7 +55,7 @@ export type OptionalExplosionData = {
 	knockUpAmount: number?;
 }
 
-function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExplosionData, action: types.DiveBombServerAction | types.TarBombServerAction, callback: ((victim: types.ServerContestant) -> ())?)
+function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExplosionData, contestantList: {IServerContestant}, action: IDiveBombServerAction | ITarBombServerAction, callback: ((victim: IServerContestant) -> ())?)
 
 	local defaults: ExplosionData = {
 		size = 5,
@@ -73,7 +80,7 @@ function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExpl
 		local model = basePart:FindFirstAncestorOfClass("Model")
 		if model and model:FindFirstChild("Humanoid") and model.PrimaryPart then
 
-			for i, possibleTargetContestant in action.contestant.round.contestants do
+			for i, possibleTargetContestant in contestantList do
 				
 				local character = possibleTargetContestant.character;
 				if not character or table.find(queriedModels, character) then
@@ -88,7 +95,7 @@ function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExpl
 					if character and primaryPart and character == model then
 
 						table.insert(queriedModels, character);
-						if possibleTargetContestant.id == action.contestant.id then
+						if possibleTargetContestant.id == action.contestantID then
 
 							size = size / 3
 
@@ -115,8 +122,8 @@ function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExpl
 						
 						end
 						
-						possibleTargetContestant:updateHealth(possibleTargetContestant.currentHealth - (data.playerDamage or defaults.playerDamage) * math.max((size + 1 - distanceFromExplosion) / (1 + size), 0), {
-							contestantID = action.contestant.id;
+						possibleTargetContestant:setCurrentHealth(possibleTargetContestant.currentHealth - (data.playerDamage or defaults.playerDamage) * math.max((size + 1 - distanceFromExplosion) / (1 + size), 0), {
+							contestantID = action.contestantID;
 							actionID = if action then action.id else nil;
 						});
 
@@ -138,7 +145,7 @@ function damageFramework.explosionEvent(coordinates: Vector3, data: OptionalExpl
 		if basePartCurrentDurability and basePartCurrentDurability > 0 then
 
 		ServerStorage.Functions.ModifyPartCurrentDurability:Invoke(basePart, basePartCurrentDurability - (data.objectDamage or defaults.objectDamage), {
-			contestantID = action.contestant.id;
+			contestantID = action.contestantID;
 			actionID = action.id;
 		});
 

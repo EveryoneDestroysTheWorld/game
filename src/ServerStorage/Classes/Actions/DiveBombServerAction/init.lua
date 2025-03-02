@@ -100,7 +100,7 @@ function DiveBombServerAction.new(contestant: IServerContestant, round: IServerR
 					local data = {
 						size = 15;
 					}
-					damageFramework.explosionEvent(coordinates, data, self, function(possibleContestant)
+					damageFramework.explosionEvent(coordinates, data, round:getContestants(), self, function(possibleContestant)
 					
 						if possibleContestant ~= contestant then
 				
@@ -190,7 +190,7 @@ function DiveBombServerAction.new(contestant: IServerContestant, round: IServerR
 					tween:Play();
 					task.wait(travelTime*0.6);
 					local data = {}
-					damageFramework.explosionEvent(originalCoords, data, self);
+					damageFramework.explosionEvent(originalCoords, data, round:getContestants(), self);
 					task.wait(travelTime*0.4);
 
 					
