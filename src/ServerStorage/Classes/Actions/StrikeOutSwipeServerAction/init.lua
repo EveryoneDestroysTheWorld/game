@@ -6,14 +6,16 @@
 local ServerStorage = game:GetService("ServerStorage");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
-local StrikeOutSwipeClientAction = require(ReplicatedStorage.Client.Classes.Actions.StrikeOutSwipeClientAction);
-local IStrikeOutSwipeServerAction = require(ServerStorage.Interfaces.IStrikeOutSwipeServerAction);
 local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
 local IServerRound = require(ServerStorage.Interfaces.IServerRound);
+local IStrikeOutSwipeServerAction = require(ServerStorage.Interfaces.IStrikeOutSwipeServerAction);
+local RagdollService = require(ServerStorage.Modules.RagdollService);
+local StrikeOutSwipeClientAction = require(ReplicatedStorage.Client.Classes.Actions.StrikeOutSwipeClientAction);
 
-local swingBat = require(script.swingBat);
+local calculateCharge = require(ServerStorage.Modules.calculateCharge);
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
 local createInventoryRemoteEvent = require(ServerStorage.Modules.createInventoryRemoteEvent);
+local findContestantFromPart = require(ServerStorage.Modules.findContestantFromPart);
 
 type IStrikeOutSwipeServerAction = IStrikeOutSwipeServerAction.IStrikeOutSwipeServerAction;
 type IServerContestant = IServerContestant.IServerContestant;
@@ -27,13 +29,15 @@ local StrikeOutSwipeServerAction = {
 
 function StrikeOutSwipeServerAction.new(contestant: IServerContestant, round: IServerRound): IStrikeOutSwipeServerAction
 
-  local startChargeTimeMilliseconds = 0;
+  local startChargeTimeMilliseconds: number?;
   local maxChargeDurationMilliseconds = 1000;
   local baseDamage = 12;
   local maxBonusDamage = 10;
   local requiredStamina = 5;
   local touchedTimeLimitSeconds = 0.8;
   local swingAnimationTrack;
+  local touchedEvent;
+  local touchedExpirationTask;
 
   local function activate(self: IStrikeOutSwipeServerAction, shouldCharge: boolean)
 
@@ -122,11 +126,95 @@ function StrikeOutSwipeServerAction.new(contestant: IServerContestant, round: IS
 
     else
 
-      local character = contestant.character;
-      local bat = if character then character:FindFirstChild("Bat") else nil;
-      assert(bat and bat:IsA("Accessory"), "The contestant's bat is missing.");
+      local function swingBat(): ()
 
-      swingBat(self, bat);
+        local character = contestant.character;
+        local bat = if character then character:FindFirstChild("Bat") else nil;
+        assert(bat and bat:IsA("Accessory"), "The contestant's bat is missing.");
+        assert(startChargeTimeMilliseconds);
+        local batHandle = bat:FindFirstChild("Handle");
+        assert(batHandle and batHandle:IsA("BasePart"));
+        
+        -- Reduce the stamina.
+        contestant:setCurrentStamina(contestant.currentStamina - requiredStamina, {
+          contestantID = contestant.id;
+          actionID = self.id;
+        });
+
+        -- Calculate the damage required.
+        local startTime = startChargeTimeMilliseconds;
+        startChargeTimeMilliseconds = nil;
+
+        local charge = calculateCharge(startTime, maxChargeDurationMilliseconds);
+
+        -- Run the swipe animation. Players should run animations on their own client.
+        playSwingAnimation();
+
+        -- Damage hit contestants.
+        if touchedEvent then
+
+          touchedEvent:Disconnect();
+
+        end;
+
+        if touchedExpirationTask then
+
+          task.cancel(touchedExpirationTask);
+          
+        end;
+
+        local immuneContestantIDs = {}
+        touchedEvent = batHandle.Touched:Connect(function(basePart)
+        
+          local victim = findContestantFromPart(round:getContestants(), basePart);
+          if victim and victim.id ~= contestant.id and not table.find(immuneContestantIDs, victim.id) then
+
+            table.insert(immuneContestantIDs, victim.id);
+
+            victim:updateHealth(math.max(victim.currentHealth - baseDamage - maxBonusDamage * charge, 0), {
+              actionID = self.id;
+              contestantID = contestant.id;
+            });
+
+            local character = victim.character;
+            if character and not RagdollService.ragdolls[character] then
+
+              local ragdollKey = `{contestant.id}-{self.id}`;
+              RagdollService:ragdollCharacter(character, ragdollKey);
+
+              task.delay(0.5, function()
+              
+                RagdollService:restoreCharacter(character, ragdollKey);
+
+              end);
+
+              local primaryPart = character.PrimaryPart;
+              if primaryPart then
+
+                local force = primaryPart.CFrame:VectorToObjectSpace(primaryPart.Position - batHandle.Position) * 100;
+                primaryPart:ApplyImpulse(force);
+
+              end;
+
+            end;
+
+          end;
+
+        end);
+
+        touchedExpirationTask = task.delay(touchedTimeLimitSeconds, function()
+        
+          if touchedEvent then
+
+            touchedEvent:Disconnect();
+
+          end;
+
+        end);
+
+      end;
+
+      swingBat();
 
     end;
 
