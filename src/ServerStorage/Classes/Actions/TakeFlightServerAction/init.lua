@@ -6,8 +6,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
+local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
+local IServerRound = require(ServerStorage.Interfaces.IServerRound);
+local ITakeFlightServerAction = require(ServerStorage.Interfaces.ITakeFlightServerAction);
 local TakeFlightClientAction = require(ReplicatedStorage.Client.Classes.Actions.TakeFlightClientAction);
-local types = require(ServerStorage.Modules.types);
 
 local animateFlight = require(script.animateFlight);
 local createInventoryRemoteFunction = require(ServerStorage.Modules.createInventoryRemoteFunction);
@@ -16,28 +18,106 @@ local endFlight = require(script.endFlight);
 local preloadAnimations = require(ServerStorage.Modules.preloadAnimations);
 local startFlight = require(script.startFlight);
 
+type IServerContestant = IServerContestant.IServerContestant;
+type IServerRound = IServerRound.IServerRound;
+type ITakeFlightServerAction = ITakeFlightServerAction.ITakeFlightServerAction;
+
 local TakeFlightServerAction = {
 	id = TakeFlightClientAction.id;
 	name = TakeFlightClientAction.name;
 	description = TakeFlightClientAction.description;
-	__index = {
-		name = TakeFlightClientAction.name;
-		id = TakeFlightClientAction.id;
-		description = TakeFlightClientAction.description;
-	} :: types.TakeFlightServerAction;
 };
 
-function TakeFlightServerAction.new(properties: types.ServerActionConstructorProperties): types.TakeFlightServerAction
+function TakeFlightServerAction.new(contestant: IServerContestant): ITakeFlightServerAction
 	
-	local overwrittenProperties = {
-		contestant = properties.contestant;
-	};
-
-  local action = (setmetatable(overwrittenProperties, TakeFlightServerAction) :: any) :: types.TakeFlightServerAction;
-
 	local animationTracks = {};
+	local linearVelocity;
 
-	local character = action.contestant.character;
+	local function activate(self: ITakeFlightServerAction): boolean
+
+		if contestant.character and contestant.currentHealth > 0 then
+
+			local humanoid = contestant.character:FindFirstChild("Humanoid");
+			assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {contestant.character}'s Humanoid`);
+	
+			local primaryPart = contestant.character.PrimaryPart;
+			if primaryPart then
+	
+				if primaryPart:FindFirstChild("FlightConstraint") then
+	
+					coroutine.wrap(endFlight)(self, primaryPart);
+	
+					animateFlight(self, primaryPart, Vector3.new(0, 100, 2.5), true);
+	
+				elseif contestant.currentStamina >= 10 then
+	
+					contestant:setCurrentStamina(math.max(0, contestant.currentStamina - 10), {
+						actionID = self.id;
+						contestantID = contestant.id;
+					});
+	
+					coroutine.wrap(startFlight)(self, contestant, primaryPart);
+	
+					animateFlight(self, primaryPart, Vector3.new(0, 100, 1.8), false)
+	
+					return true;
+	
+				end
+	
+			end;
+	
+		end;
+	
+		return false;
+
+	end;
+
+	local function breakdown(self: ITakeFlightServerAction)
+
+		if linearVelocity then
+
+			linearVelocity:Destroy();
+
+		end;
+
+		if self.remoteFunction then
+
+			self.remoteFunction:Destroy();
+
+		end
+
+		local character = contestant.character;
+		if character then
+
+			local wingProp = character:FindFirstChild("WingProp");
+
+			if wingProp then
+
+				wingProp:Destroy();
+
+			end;
+
+		end;
+
+		if contestant.player then
+
+			ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(contestant.player, self.id);
+
+		end;
+
+	end;
+
+	local action: ITakeFlightServerAction = {
+		attributes = {};
+		contestantID = contestant.id;
+		description = TakeFlightServerAction.description;
+		id = TakeFlightServerAction.id;
+		name = TakeFlightServerAction.name;
+		activate = activate;
+		breakdown = breakdown;
+	}
+
+	local character = contestant.character;
 	local humanoid = if character then character:FindFirstChild("Humanoid") else nil;
 	if character and humanoid then
 
@@ -81,9 +161,9 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 
 	end;
 
-	action.animationTracks = animationTracks;
+	animationTracks = animationTracks;
 
-	local player = action.contestant.player;
+	local player = contestant.player;
 	if player then
 
 		local remoteFunction = createInventoryRemoteFunction(player, "Action", `{player.UserId}_{action.id}`, function()
@@ -101,78 +181,5 @@ function TakeFlightServerAction.new(properties: types.ServerActionConstructorPro
 	return action;
 
 end;
-
-function TakeFlightServerAction.__index:activate(): boolean
-
-	if self.contestant.character and self.contestant.currentHealth > 0 then
-
-		local humanoid = self.contestant.character:FindFirstChild("Humanoid");
-		assert(humanoid and humanoid:IsA("Humanoid"), `Couldn't find {self.contestant.character}'s Humanoid`);
-
-		local primaryPart = self.contestant.character.PrimaryPart;
-		if primaryPart then
-
-			if primaryPart:FindFirstChild("FlightConstraint") then
-
-				coroutine.wrap(endFlight)(self, primaryPart);
-
-				animateFlight(self, primaryPart, Vector3.new(0, 100, 2.5), true);
-
-			elseif self.contestant.currentStamina >= 10 then
-
-				self.contestant:updateStamina(math.max(0, self.contestant.currentStamina - 10));
-
-				coroutine.wrap(startFlight)(self, self.contestant, primaryPart);
-
-				animateFlight(self, primaryPart, Vector3.new(0, 100, 1.8), false)
-
-				return true;
-
-			end
-
-		end;
-
-	end;
-
-	return false;
-
-end
-
-function TakeFlightServerAction.__index:breakdown()
-
-	local linearVelocity = self.linearVelocity;
-	if linearVelocity then
-
-		self.linearVelocity = nil;
-		linearVelocity:Destroy();
-
-	end;
-
-	if self.remoteFunction then
-
-		self.remoteFunction:Destroy();
-
-	end
-
-	local character = self.contestant.character;
-	if character then
-
-		local wingProp = character:FindFirstChild("WingProp");
-
-		if wingProp then
-
-			wingProp:Destroy();
-
-		end;
-
-	end;
-
-	if self.contestant.player then
-
-    ReplicatedStorage.Shared.Functions.BreakdownAction:InvokeClient(self.contestant.player, self.id);
-
-  end;
-
-end
 
 return TakeFlightServerAction;
