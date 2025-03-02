@@ -2,39 +2,63 @@
 
 local ServerStorage = game:GetService("ServerStorage");
 
-local types = require(ServerStorage.Modules.types);
+local IPitchableBall = require(ServerStorage.Interfaces.IPitchableBall);
+local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
 
 local findContestantFromPart = require(ServerStorage.Modules.findContestantFromPart);
 
-local function onTouched(action: types.HeresThePitchServerAction, ball: Model, part: BasePart)
+type IPitchableBall = IPitchableBall.IPitchableBall;
+type IServerContestant = IServerContestant.IServerContestant;
 
-  -- TODO: Verify that the ball is moving fast.
-  local contestant = findContestantFromPart(action.contestant.round.contestants, part);
-  if contestant and contestant ~= action.contestant then
+local RegularBall = {};
 
-    local attributeName = `{action.id}_{tostring(contestant.id):gsub("%.", "_")}`;
-    local latestValidHitTime = ball:GetAttribute(attributeName);
-    local currentHitTime = os.time();
-    local duplicateVictimCooldownSeconds = 3;
-    if latestValidHitTime and type(latestValidHitTime) == "number" and currentHitTime >= latestValidHitTime + duplicateVictimCooldownSeconds then
+function RegularBall.new(pitcher: IServerContestant, contestantList: {IServerContestant}, actionID: string): IPitchableBall
 
-      ball:SetAttribute(attributeName);
+  local function activate(self: IPitchableBall)
 
-    end;
+    local hitbox = self.model:FindFirstChild("Hitbox");
+    assert(hitbox and hitbox:IsA("BasePart"), "Hitbox required");
 
-    if not latestValidHitTime then
+    hitbox.Touched:Connect(function(part)
+    
+      -- TODO: Verify that the ball is moving fast.
+      local contestant = findContestantFromPart(contestantList, part);
+      if contestant and contestant ~= pitcher then
 
-      ball:SetAttribute(attributeName, currentHitTime);
+        local attributeName = `{actionID}_{tostring(contestant.id):gsub("%.", "_")}`;
+        local latestValidHitTime = self.model:GetAttribute(attributeName);
+        local currentHitTime = os.time();
+        local duplicateVictimCooldownSeconds = 3;
+        if latestValidHitTime and type(latestValidHitTime) == "number" and currentHitTime >= latestValidHitTime + duplicateVictimCooldownSeconds then
 
-      contestant:updateHealth(math.max(contestant.currentHealth - 20, 0), {
-        contestantID = action.contestant.id;
-        actionID = action.id;
-      });
-      
-    end;
+          self.model:SetAttribute(attributeName);
+
+        end;
+
+        if not latestValidHitTime then
+
+          self.model:SetAttribute(attributeName, currentHitTime);
+
+          contestant:updateHealth(math.max(contestant.currentHealth - 20, 0), {
+            contestantID = pitcher.id;
+            actionID = actionID;
+          });
+          
+        end;
+
+      end;
+
+    end);
 
   end;
+  
+  local ball = {
+    model = script.Ball:Clone();
+    activate = activate;
+  }
+
+  return ball;
 
 end;
 
-return onTouched;
+return RegularBall;
