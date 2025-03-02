@@ -100,9 +100,9 @@ function DiveBombServerAction.new(contestant: IServerContestant, round: IServerR
 					local data = {
 						size = 15;
 					}
-					damageFramework.explosionEvent(coordinates, data, self, function(contestant)
+					damageFramework.explosionEvent(coordinates, data, self, function(possibleContestant)
 					
-						if contestant ~= contestant then
+						if possibleContestant ~= contestant then
 				
 							local paralysisEffect = ParalysisServerEffect.new({
 								contestant = contestant;
