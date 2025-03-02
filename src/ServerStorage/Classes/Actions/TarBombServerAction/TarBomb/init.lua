@@ -7,11 +7,17 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local ServerStorage = game:GetService("ServerStorage");
 
 local damageFramework = require(ServerStorage.Modules.DamageFramework);
-local types = require(ServerStorage.Modules.types);
+local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
+local SharedTypes = require(ServerStorage.Modules.SharedTypes);
 
 local animateSprite = require(ReplicatedStorage.Shared.Modules.animateSprite);
 
-local function startAttack(action: types.TarBombServerAction, sourcePart: BasePart, coordinates: Vector3, split: boolean, size: number, explosionDelaySeconds: number?)
+type Cause = SharedTypes.Cause;
+type IServerContestant = IServerContestant.IServerContestant;
+
+local TarBomb = {};
+
+function TarBomb.new(sourcePart: BasePart, destination: Vector3, split: boolean, size: number, explosionDelaySeconds: number?, contestantList: {IServerContestant}, cause: Cause)
 
 	--[[ for testing to make sure projectile goes where it should
 	local part = Instance.new("Part")
@@ -20,12 +26,6 @@ local function startAttack(action: types.TarBombServerAction, sourcePart: BasePa
 	part.CanCollide = false
 	part.Parent = workspace.Terrain
 	]]
-
-	if action.contestant.player and action.remoteEvent then
-
-		action.remoteEvent:FireClient(action.contestant.player, "Completed");
-
-	end;
 
 	local bomb = ReplicatedStorage.Shared.InGameDisplayObjects.TarBomb:Clone()
 	bomb.Parent = workspace.Terrain
@@ -53,7 +53,7 @@ local function startAttack(action: types.TarBombServerAction, sourcePart: BasePa
 
 	coroutine.wrap(animateSprite)(data, 1, true)
 
-	local distance = (coordinates - bomb.Position)
+	local distance = (destination - bomb.Position)
 	local time = distance.Magnitude / 32 + 0.4
 	bomb.AssemblyLinearVelocity = Vector3.new(distance.X * 2 / time, (distance.Y + ((196.2/2) * (time/2))) ,distance.Z * 2 / time)
 	task.wait(0.3)
@@ -115,15 +115,15 @@ local function startAttack(action: types.TarBombServerAction, sourcePart: BasePa
 			knockUpAmount = 0.5,
 		}
 
-		damageFramework.explosionEvent(bomb.Position, data, action)
+		damageFramework.explosionEvent(bomb.Position, data, contestantList, cause)
 		if split then
 
 			local bombletCount = math.random(2, 10);
 			local bombletSize = size / math.random(2, 4);
 			for i = 1, bombletCount do
 
-				local scatterCoordinates = coordinates + Vector3.new(math.random(-100, 100) / 10, 0, math.random(-100, 100) / 10);
-				coroutine.wrap(startAttack)(action, bomb, scatterCoordinates, false, bombletSize, math.random(1, 1.5));
+				local scatterCoordinates = destination + Vector3.new(math.random(-100, 100) / 10, 0, math.random(-100, 100) / 10);
+				coroutine.wrap(TarBomb.new)(bomb, scatterCoordinates, false, bombletSize, math.random(1, 1.5), contestantList, cause);
 
 			end
 
@@ -137,4 +137,4 @@ local function startAttack(action: types.TarBombServerAction, sourcePart: BasePa
 	
 end
 
-return startAttack;
+return TarBomb;

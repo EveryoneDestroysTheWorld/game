@@ -7,7 +7,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local UserInputService = game:GetService("UserInputService");
 local Players = game:GetService("Players");
 local ContextActionService = game:GetService("ContextActionService");
-local RunService = game:GetService("RunService");
 
 local HUDService = require(ReplicatedStorage.Client.Modules.HUDService);
 local targetingFramework = require(ReplicatedStorage.Client.Modules.EasyTargetingFramework);
@@ -21,6 +20,17 @@ local TarBombClientAction = {
 };
 
 function TarBombClientAction.new(): LocalTypes.TarBombClientAction
+
+	local function getTargetPosition(): Vector3
+
+		local mousePosition = UserInputService:GetMouseLocation();
+		local unitRay = workspace.CurrentCamera:ViewportPointToRay(mousePosition.X, mousePosition.Y)
+		local raycastResult = workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000);
+		local position = if raycastResult then raycastResult.Position else unitRay.Direction * 1000;
+
+		return position;
+
+	end;
 
 	local player = Players.LocalPlayer;
 	local remoteName = `{player.UserId}_{TarBombClientAction.id}`
@@ -38,7 +48,8 @@ function TarBombClientAction.new(): LocalTypes.TarBombClientAction
 		activate = function(self: LocalTypes.TarBombClientAction)
 
 			local shouldCharge = self.attributes.isCharging;
-			self.remoteFunction:InvokeServer(shouldCharge, Players.LocalPlayer:GetMouse().Hit.Position);
+
+			self.remoteFunction:InvokeServer(shouldCharge, getTargetPosition());
 
 		end;
 		breakdown = function(self: LocalTypes.TarBombClientAction)
@@ -63,23 +74,16 @@ function TarBombClientAction.new(): LocalTypes.TarBombClientAction
 
 	local ignoreInput = false;
 
+	action.remoteFunction.OnClientInvoke = function()
+
+		ignoreInput = true;
+		return getTargetPosition();
+
+	end;
+
 	remoteEvent.OnClientEvent:Connect(function(eventType: "CoordinateRequest" | "Exhausted" | "Completed")
 	
 		if eventType == "CoordinateRequest" then
-
-			action.attributes.updateTask = action.attributes.updateTask or task.spawn(function()
-
-				while RunService.RenderStepped:Wait() do
-
-					local mousePosition = UserInputService:GetMouseLocation();
-					local unitRay = workspace.CurrentCamera:ViewportPointToRay(mousePosition.X, mousePosition.Y)
-					local raycastResult = workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000);
-					local position = if raycastResult then raycastResult.Position else unitRay.Direction * 1000;
-					remoteEvent:FireServer(position);
-
-				end;
-			
-			end);
 
 		else
 

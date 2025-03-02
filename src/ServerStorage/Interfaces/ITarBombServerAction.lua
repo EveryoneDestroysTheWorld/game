@@ -8,6 +8,6 @@ local SharedTypes = require(ServerStorage.Modules.SharedTypes);
 
 type BallType = SharedTypes.BallType
 
-export type ITarBombServerAction = IServerAction.IServerAction<{}>;
+export type ITarBombServerAction = IServerAction.IServerAction<{}, (boolean, Vector3?, boolean?, boolean?)>;
 
 return {};
