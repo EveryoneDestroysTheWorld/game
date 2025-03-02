@@ -16,7 +16,6 @@ local ExplosivePunchServerAction = {
   id = ExplosivePunchClientAction.id;
   name = ExplosivePunchClientAction.name;
   description = ExplosivePunchClientAction.description;
-  __index = {} :: types.ExplosivePunchServerAction;
 };
 
 function ExplosivePunchServerAction.new(properties: types.ServerActionConstructorProperties): types.ExplosivePunchServerAction
