@@ -9,6 +9,9 @@ local PhysicsService = game:GetService("PhysicsService");
 local HttpService = game:GetService("HttpService");
 
 local ElectricBall = require(script.Balls.ElectricBall);
+local ExplosiveBall = require(script.Balls.ExplosiveBall);
+local PoisonBall = require(script.Balls.PoisonBall);
+local RegularBall = require(script.Balls.ElectricBall);
 local HeresThePitchClientAction = require(ReplicatedStorage.Client.Classes.Actions.HeresThePitchClientAction);
 local IHeresThePitchServerAction = require(ServerStorage.Interfaces.IHeresThePitchServerAction);
 local IServerContestant = require(ServerStorage.Interfaces.IServerContestant);
@@ -39,10 +42,10 @@ function HeresThePitchServerAction.new(contestant: IServerContestant, round: ISe
   
     -- Verify that a ball type has been defined.
     local ballMap = {
-      Explosive = ElectricBall;
+      Explosive = ExplosiveBall;
       Electric = ElectricBall;
-      Poison = ElectricBall;
-      Regular = ElectricBall;
+      Poison = PoisonBall;
+      Regular = RegularBall;
     };
     local ballType: BallType? = contestant.attributes.ballType :: BallType?;
     local PitchableBall = ballMap[ballType];
