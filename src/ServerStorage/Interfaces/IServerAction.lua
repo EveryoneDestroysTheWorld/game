@@ -5,6 +5,7 @@ export type IServerAction<Attributes = {[string]: any}, ActivationArguments... =
   name: string;
   description: string;
   remoteFunction: RemoteFunction?;
+  remoteEvent: RemoteEvent?;
   attributes: Attributes;
   contestantID: number;
 } & {
